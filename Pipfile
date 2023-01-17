@@ -10,6 +10,10 @@ django-registration = "*"
 psycopg2-binary = "*"
 django-environ = "*"
 whitenoise = "*"
+django-braces = "*"
+plotly = "*"
+pandas = "*"
+kaleido = "*"
 
 [dev-packages]
 black = "*"

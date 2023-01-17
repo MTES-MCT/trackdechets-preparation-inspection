@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+    </head>
+    <body>
+        <style>
+    @page {
+        size: A4 landscape;
+        margin: 1cm;
+    }
+
+    body {
+        width: 100%;
+        font-family: Arial, Calibri, sans-serif;
+    }
+
+    .container {
+        width: 210mm;
+        margin: 0 auto;
+    }
+
+    .row {
+        margin-bottom: 3mm;
+    }
+
+    .graph {
+        display: inline-block;
+
+        width: 49%;
+        border: 1px solid #ccc;
+
+        border-radius: 3px;
+
+    }
+    .graph svg, .graph img {
+        width: 100%;
+    }
+        </style>
+        <div class="container">
+            <h1>Fiche d'inspection</h1>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="graph">
+                    <img src="{% url "create_bar" %}?hsqgdjqs" alt="">
+                </div>
+                <div class="graph">
+                    <img src="{% url "create_graph" %}?yuyuyu" alt="">
+                </div>
+            </div>
+            <div class="row">
+                <div class="graph">
+                    <img src="{% url "create_graph" %}?fghfgh" alt="">
+                </div>
+                <div class="graph">
+                    <img src="{% url "create_bar" %}?qspiqsi" alt="">
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

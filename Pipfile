@@ -14,12 +14,15 @@ django-braces = "*"
 plotly = "*"
 pandas = "*"
 kaleido = "*"
+gunicorn = "*"
+pytest-django = "*"
 
 [dev-packages]
 black = "*"
 isort = "*"
 flake8 = "*"
 djlint = "*"
+django-debug-toolbar = "*"
 
 [requires]
 python_version = "3.9"

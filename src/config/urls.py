@@ -7,3 +7,8 @@ urlpatterns = [
     path(f"{settings.ADMIN_SLUG}/", admin.site.urls),
     path("sheets/", include("sheets.urls")),
 ]
+
+if settings.DEBUG:
+    urlpatterns += [
+        path("__debug__/", include("debug_toolbar.urls")),
+    ]

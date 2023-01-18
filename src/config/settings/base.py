@@ -119,3 +119,5 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 ADMIN_SLUG = env("ADMIN_SLUG")
 
 AUTH_USER_MODEL = "accounts.User"
+
+LOGIN_REDIRECT_URL = "/"

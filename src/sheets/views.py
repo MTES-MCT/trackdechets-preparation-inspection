@@ -45,7 +45,7 @@ def create_graph(request):
     return HttpResponse(img_bytes, content_type="image/png")
 
 
-class BaseView(TemplateView):
+class HomeView(TemplateView):
     template_name = "base.html"
 
 

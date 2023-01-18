@@ -12,8 +12,8 @@ def anon_client(db):
 
 
 @pytest.fixture()
-def logged_in_superadmin(db):
-    """A Django test client logged in as a superadmin."""
+def logged_in_user(db):
+    """A Django test client logged in as a base user."""
     from django.test.client import Client
 
     user = UserFactory()

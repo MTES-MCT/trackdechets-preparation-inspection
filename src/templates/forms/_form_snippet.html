@@ -1,0 +1,23 @@
+{% load form_helpers %}
+{{ form.media }}
+{% if form.errors or has_errors %}
+    {% if not form.non_field_errors %}
+        <div class="fr-alert fr-alert--error fr-mb-2w">Le formulaire comporte des erreurs.</div>
+    {% endif %}
+{% endif %}
+{% if form.non_field_errors %}
+    <div class="fr-alert fr-alert--error fr-mb-2w">
+        <p>{{ form.non_field_errors.0 }}</p>
+    </div>
+{% endif %}
+{% for field in form.hidden_fields %}{{ field }}{% endfor %}
+{% for field in form.visible_fields %}
+    {# some fields type are not handled yet #}
+    {% if field|is_checkbox %}
+        {% include 'forms/_checkbox.html' with field=field %}
+    {% elif field|is_radio %}
+        {% include 'forms/_radio.html' with field=field %}
+    {% else %}
+        {% include 'forms/_field.html' with field=field %}
+    {% endif %}
+{% endfor %}

@@ -59,15 +59,15 @@
                     </div>
                 </div>
             </header>
-            {% block main %}
-                {% if user.is_authenticated %}
-                    <p>Vous êtes connecté</p>
-                    <p>
-                        <a href="{%  url "logout" %}">Déconnexion</a>
-                    </p>
-                {% endif %}
-            {% endblock %}
         </div>
+        {% block main %}
+            {% if user.is_authenticated %}
+                <p>Vous êtes connecté</p>
+                <p>
+                    <a href="{% url "logout" %}">Déconnexion</a>
+                </p>
+            {% endif %}
+        {% endblock %}
         {% block scripts %}{% endblock %}
     </body>
 </html>

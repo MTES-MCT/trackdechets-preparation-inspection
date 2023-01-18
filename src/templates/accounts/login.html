@@ -3,15 +3,23 @@
     {{ _('Login') }}
 {% endblock title %}
 {% block main %}
-    <div >
-        <div >
-            <form action="" method="post">
-                {% csrf_token %}
-                <h2 class="text-center">{{ _('Connexion ') }}</h2>
-                {{  form.as_p }}
-                <input type="hidden" name="next" value="{{ next }}"/>
-                <button class="fr-btn">{{ _('Connexion') }}</button>
-            </form>
+    <div class="fr-container">
+        <div class="fr-grid-row fr-grid-row--center fr-mt-4v">
+            <div class="fr-col-5">
+                <form action="" method="post">
+                    {% csrf_token %}
+                    <h2 class="text-center">{{ _('Connexion ') }}</h2>
+                    {%  include "forms/_form_snippet.html" with form=form %}
+                    <input type="hidden" name="next" value="{{ next }}"/>
+                    <button class="fr-btn">{{ _('Connexion') }}</button>
+                </form>
+            </div>
+        </div>
+    {% endblock %}
+    <div class="fr-container">
+        <div class="fr-grid-row">
+            <div class="fr-col"></div>
+            <div class="fr-col-4"></div>
+            <div class="fr-col-12 fr-col-lg-4"></div>
         </div>
     </div>
-{% endblock %}

@@ -16,6 +16,7 @@ pandas = "*"
 kaleido = "*"
 gunicorn = "*"
 pytest-django = "*"
+factory-boy = "*"
 
 [dev-packages]
 black = "*"

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "748cea46ff88dfa58a0ebd195293996e18ab6f8915b46c8e5c86ac0f3b655dd2"
+            "sha256": "4ef13c657dc1d32ea6a094b100f71cdc0165e4a1fd60a9773f8c473be1c532b8"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -250,6 +250,22 @@
             ],
             "markers": "python_version < '3.11'",
             "version": "==1.1.0"
+        },
+        "factory-boy": {
+            "hashes": [
+                "sha256:a98d277b0c047c75eb6e4ab8508a7f81fb03d2cb21986f627913546ef7a2a55e",
+                "sha256:eb02a7dd1b577ef606b75a253b9818e6f9eaf996d94449c9d5ebb124f90dc795"
+            ],
+            "index": "pypi",
+            "version": "==3.2.1"
+        },
+        "faker": {
+            "hashes": [
+                "sha256:0a74514d654db0a3d37b9ca681f2d9182d2ec556f78b4f1a842a2ccc944660cd",
+                "sha256:dc8b2a8bf0d852d26eacf7763afd5e7d6e9e50d80ec648b51b8ecd3c505435fd"
+            ],
+            "markers": "python_version >= '3.7'",
+            "version": "==16.6.0"
         },
         "fonttools": {
             "extras": [
@@ -835,7 +851,7 @@
                 "sha256:04924aca48770f36b5a41c27e4d917062507be05118acb0ba869c97389084297",
                 "sha256:eeb69ef21078486b615241f0393a72b41352c5219ee648e7c61f5632d26f0420"
             ],
-            "markers": "python_version >= '3.7' and python_version < '4.0'",
+            "markers": "python_version >= '3.7' and python_full_version < '4.0.0'",
             "version": "==0.1.2"
         },
         "html-void-elements": {
@@ -843,7 +859,7 @@
                 "sha256:784cf39db03cdeb017320d9301009f8f3480f9d7b254d0974272e80e0cb5e0d2",
                 "sha256:931b88f84cd606fee0b582c28fcd00e41d7149421fb673e1e1abd2f0c4f231f0"
             ],
-            "markers": "python_version >= '3.7' and python_version < '4.0'",
+            "markers": "python_version >= '3.7' and python_full_version < '4.0.0'",
             "version": "==0.1.0"
         },
         "importlib-metadata": {

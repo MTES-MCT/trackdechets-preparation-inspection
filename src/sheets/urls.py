@@ -10,7 +10,7 @@ from .views import (
 )
 
 urlpatterns = [
-    path("", BaseView.as_view()),
+    path("", BaseView.as_view(), name="base"),
     path("html/", SheetHtmlView.as_view()),
     path("pdf/", SheetPdfView.as_view()),
     path("img/", create_graph, name="create_graph"),

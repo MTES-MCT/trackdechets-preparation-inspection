@@ -42,9 +42,39 @@ def create_graph(request):
     return HttpResponse(img_bytes, content_type="image/png")
 
 
+class BaseView(TemplateView):
+    template_name = "base.html"
+
+
 class SheetHtmlView(LoginRequiredMixin, TemplateView):
     template_name = "sheets/pdf.html"
 
 
 class SheetPdfView(WeasyTemplateResponseMixin, SheetHtmlView):
     pass
+
+
+from django.shortcuts import render
+from plotly.graph_objs import Scatter
+from plotly.offline import plot
+
+
+def create_plot(request):
+    x_data = [0, 1, 2, 3]
+    y_data = [x**2 for x in x_data]
+    plot_div = plot(
+        [
+            Scatter(
+                x=x_data,
+                y=y_data,
+                mode="lines",
+                name="test",
+                opacity=0.8,
+                marker_color="green",
+            )
+        ],
+        output_type="div",
+        show_link=False,
+        link_text="",
+    )
+    return render(request, "sheets/plot.html", context={"plot_div": plot_div})

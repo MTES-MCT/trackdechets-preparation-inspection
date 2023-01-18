@@ -2,8 +2,8 @@
 
 ## Utilitaire de préparation de fiches d'inspection
 
-Dépôt de code du projet **Trackdéchets préparation inspection** incubé à la Fabrique Numérique du Ministère de la Transition Écologique.
-
+Dépôt de code du projet **Trackdéchets préparation inspection** incubé à la Fabrique Numérique du Ministère de la
+Transition Écologique.
 
 ## Installation
 
@@ -23,18 +23,12 @@ $ pipenv install -d
 
 Se référer au fichier src/core/settings/env.dist
 
-### Linting
+### Linting (python + templates)
 
-Utiliser : 
+Utiliser :
 
 ```
     $ ./lint.sh
-```
-
-et pour les templates :
-
-```
-    $ djlint templates --profile=django --reformat
 ```
 
 ## Licence

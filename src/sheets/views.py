@@ -3,8 +3,11 @@ import plotly.express as px
 import plotly.graph_objects as go
 from braces.views import LoginRequiredMixin
 from django.http import HttpResponse
+from django.shortcuts import render
 from django.views.generic import TemplateView
 from django_weasyprint import WeasyTemplateResponseMixin
+from plotly.graph_objs import Scatter
+from plotly.offline import plot
 
 
 def create_bar(request):
@@ -52,11 +55,6 @@ class SheetHtmlView(LoginRequiredMixin, TemplateView):
 
 class SheetPdfView(WeasyTemplateResponseMixin, SheetHtmlView):
     pass
-
-
-from django.shortcuts import render
-from plotly.graph_objs import Scatter
-from plotly.offline import plot
 
 
 def create_plot(request):

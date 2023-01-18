@@ -23,6 +23,21 @@ $ pipenv install -d
 
 Se référer au fichier src/core/settings/env.dist
 
+### Tests
+
+Cf. config/settings/tests.py
+
+Créer :
+- un rôle postgre `inspection`
+- une db postgre `inspection_test`
+
+Lancer les tests avec :
+
+```
+$ pytest
+```
+
+
 ### Linting (python + templates)
 
 Utiliser :

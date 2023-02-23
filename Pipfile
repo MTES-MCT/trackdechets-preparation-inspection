@@ -17,6 +17,10 @@ kaleido = "*"
 gunicorn = "*"
 pytest-django = "*"
 factory-boy = "*"
+sqlalchemy = "==1.4"
+celery = "*"
+redis = "*"
+geopandas = "*"
 
 [dev-packages]
 black = "*"
@@ -24,6 +28,7 @@ isort = "*"
 flake8 = "*"
 djlint = "*"
 django-debug-toolbar = "*"
+pywatchman = "*"
 
 [requires]
 python_version = "3.9"

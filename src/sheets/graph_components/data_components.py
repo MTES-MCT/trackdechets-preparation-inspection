@@ -30,7 +30,6 @@ class BSStatsComponent:
         bs_data: pd.DataFrame,
         bs_revised_data: pd.DataFrame = None,
     ) -> None:
-
         self.company_siret = company_siret
 
         self.bs_data = bs_data
@@ -46,7 +45,6 @@ class BSStatsComponent:
         self.fraction_outgoing = None
 
     def _check_data_empty(self) -> bool:
-
         bs_data = self.bs_data
         siret = self.company_siret
         bs_data = bs_data[bs_data["emitter_company_siret"] == siret]
@@ -62,7 +60,6 @@ class BSStatsComponent:
         return False
 
     def _preprocess_data(self) -> None:
-
         one_year_ago = (
             datetime.utcnow().replace(tzinfo=timezone.utc) - timedelta(days=365)
         ).strftime("%Y-%m-01")
@@ -156,7 +153,6 @@ class BSStatsComponent:
         return ctx
 
     def build(self):
-
         self._preprocess_data()
         return self.build_context()
 
@@ -182,7 +178,6 @@ class InputOutputWasteTableComponent:
         bs_data_dfs: Dict[str, pd.DataFrame],
         waste_codes_df: pd.DataFrame,
     ) -> None:
-
         self.bs_data_dfs = bs_data_dfs
         self.waste_codes_df = waste_codes_df
         self.company_siret = company_siret
@@ -266,7 +261,6 @@ class StorageStatsComponent:
         bs_data_dfs: Dict[str, pd.DataFrame],
         waste_codes_df: pd.DataFrame,
     ) -> None:
-
         self.company_siret = company_siret
 
         self.bs_data_dfs = bs_data_dfs
@@ -276,7 +270,6 @@ class StorageStatsComponent:
         self.total_stock = None
 
     def _preprocess_data(self) -> pd.Series:
-
         siret = self.company_siret
 
         dfs_to_concat = [df for df in self.bs_data_dfs.values()]
@@ -359,7 +352,6 @@ class AdditionalInfoComponent:
         company_siret: str,
         additional_data: Dict[str, Dict[str, pd.DataFrame]],
     ) -> None:
-
         self.company_siret = company_siret
 
         self.additional_data = additional_data
@@ -368,7 +360,6 @@ class AdditionalInfoComponent:
         self.quantity_outliers_data = None
 
     def _check_data_empty(self) -> bool:
-
         if (
             len(self.additional_data["date_outliers"])
             == len(self.additional_data["quantity_outliers"])
@@ -381,7 +372,6 @@ class AdditionalInfoComponent:
         return False
 
     def _preprocess_data(self) -> None:
-
         date_outliers_data = {}
         for key, value in self.additional_data["date_outliers"].items():
             date_outliers_data[key] = {
@@ -395,7 +385,6 @@ class AdditionalInfoComponent:
         """Create and add the layout for date outliers."""
         res = []
         for bs_type, outlier_data in self.date_outliers_data.items():
-
             bs_col_example_li = []
             for col, serie in outlier_data.items():
                 bs_col_example_li.append(
@@ -428,7 +417,6 @@ class AdditionalInfoComponent:
         return quantity_outliers_bs_list_layout
 
     def build(self) -> list:
-
         self._preprocess_data()
         res = {}
         if not self._check_data_empty():
@@ -468,7 +456,6 @@ class ICPEItemsComponent:
         bs_data_dfs: Dict[str, pd.DataFrame],
         mapping_processing_operation_code_rubrique: pd.DataFrame,
     ) -> None:
-
         self.company_siret = company_siret
         self.icpe_data = icpe_data
         self.bs_data_dfs = bs_data_dfs
@@ -498,7 +485,6 @@ class ICPEItemsComponent:
         self.max_2770_quantity = (0, None)
 
     def _preprocess_data(self) -> List[Dict[str, Any]]:
-
         preprocessed_inputs_dfs = []
         preprocessed_output_dfs = []
         actual_year = datetime.now().year
@@ -595,7 +581,6 @@ class ICPEItemsComponent:
             )
 
     def _add_items_list(self) -> List[Dict[str, Any]]:
-
         icpe_data = pd.concat(
             [
                 self.icpe_data.loc[
@@ -619,7 +604,6 @@ class ICPEItemsComponent:
         return icpe_items
 
     def _check_data_empty(self) -> bool:
-
         if not self.icpe_data or len(self.icpe_data) == 0:
             self.is_component_empty = True
             return self.is_component_empty
@@ -628,7 +612,6 @@ class ICPEItemsComponent:
         return False
 
     def build(self) -> list:
-
         if not self._check_data_empty():
             self._preprocess_data()
             icpe_items = self._add_items_list()

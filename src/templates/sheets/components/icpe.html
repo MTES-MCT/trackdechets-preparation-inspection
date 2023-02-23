@@ -1,7 +1,5 @@
 <h3 class="cell__title">Rubriques ICPE autorisées</h3>
-{% if not icpe_data %}
-    <p>Aucune donnée ICPE</p>
-{% endif %}
+{% if not icpe_data %}<p>Aucune donnée ICPE</p>{% endif %}
 {% for row in icpe_data %}
     <p>
         {{ row.rubrique }}

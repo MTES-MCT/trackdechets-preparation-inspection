@@ -55,7 +55,6 @@ class BsddGraph:
         )
 
     def _check_data_empty(self) -> bool:
-
         incoming_data_by_month = self.incoming_data_by_month
         outgoing_data_by_month = self.outgoing_data_by_month
 
@@ -75,7 +74,6 @@ class BsddGraph:
         return False
 
     def _create_figure(self) -> None:
-
         incoming_data_by_month = self.incoming_data_by_month
         outgoing_data_by_month = self.outgoing_data_by_month
 
@@ -134,7 +132,6 @@ class BsddGraph:
         self.figure = fig
 
     def build(self):
-
         self._preprocess_data()
         self._create_figure()
 
@@ -163,7 +160,6 @@ class BSCreatedAndRevisedComponent:
         bs_data: pd.DataFrame,
         bs_revised_data: pd.DataFrame = None,
     ) -> None:
-
         self.company_siret = company_siret
         self.bs_data = bs_data
         self.bs_revised_data = bs_revised_data
@@ -205,7 +201,6 @@ class BSCreatedAndRevisedComponent:
         self.bs_revised_by_month = bs_revised_by_month
 
     def _check_data_empty(self) -> bool:
-
         bs_emitted_by_month = self.bs_emitted_by_month
         bs_received_by_month = self.bs_received_by_month
         bs_revised_by_month = self.bs_revised_by_month
@@ -221,7 +216,6 @@ class BSCreatedAndRevisedComponent:
         return False
 
     def _create_figure(self) -> None:
-
         bs_emitted_by_month = self.bs_emitted_by_month
         bs_received_by_month = self.bs_received_by_month
         bs_revised_by_month = self.bs_revised_by_month
@@ -302,7 +296,6 @@ class BSCreatedAndRevisedComponent:
         self.figure = fig
 
     def build(self):
-
         self._preprocess_bs_data()
         if self.bs_revised_data is not None:
             self._preprocess_bs_revised_data()
@@ -340,7 +333,6 @@ class WasteOriginsComponent:
         self.preprocessed_serie = None
 
     def _preprocess_data(self) -> None:
-
         if len(self.bs_data_dfs) == 0:
             return
 
@@ -379,7 +371,6 @@ class WasteOriginsComponent:
         self.preprocessed_serie = final_serie
 
     def _check_data_empty(self) -> bool:
-
         if (
             (self.preprocessed_serie is None)
             or self.preprocessed_serie.isna().all()
@@ -392,7 +383,6 @@ class WasteOriginsComponent:
         return False
 
     def _create_figure(self) -> None:
-
         # Prepare order for horizontal bar chart, preserving "Autre origines" has bottom bar
         serie = pd.concat(
             (self.preprocessed_serie[-1:], self.preprocessed_serie[-2::-1])
@@ -441,7 +431,6 @@ class WasteOriginsComponent:
         self.figure = fig
 
     def build(self):
-
         self._preprocess_data()
 
         self._create_figure()
@@ -473,7 +462,6 @@ class WasteOriginsMapComponent:
         departements_regions_df: pd.DataFrame,
         regions_geodata: gpd.GeoDataFrame,
     ) -> None:
-
         self.company_siret = company_siret
         self.bs_data_dfs = bs_data_dfs
         self.departements_regions_df = departements_regions_df
@@ -482,7 +470,6 @@ class WasteOriginsMapComponent:
         self.preprocessed_df = None
 
     def _preprocess_data(self) -> None:
-
         if len(self.bs_data_dfs) == 0:
             return
 
@@ -515,7 +502,6 @@ class WasteOriginsMapComponent:
         self.preprocessed_df = final_df
 
     def _check_data_empty(self) -> bool:
-
         if (
             (self.preprocessed_df is None)
             or self.preprocessed_df["quantity_received"].isna().all()
@@ -529,7 +515,6 @@ class WasteOriginsMapComponent:
         return False
 
     def _create_figure(self) -> None:
-
         gdf = self.preprocessed_df
         geojson = json.loads(gdf.to_json())
         trace = go.Choropleth(
@@ -584,7 +569,6 @@ class WasteOriginsMapComponent:
         self._preprocess_data()
 
     def build(self):
-
         self._preprocess_data()
         self._create_figure()
 

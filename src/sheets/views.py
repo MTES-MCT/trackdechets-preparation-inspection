@@ -44,7 +44,6 @@ class Prepare(FormView):
         ).first()
 
     def form_valid(self, form):
-
         siret = form.cleaned_data["siret"]
 
         if self.existing_inspection:
@@ -231,5 +230,4 @@ class SheetPdfHtml(DetailView):
 
 class SheetPdf(WeasyTemplateResponseMixin, SheetPdfHtml):
     def get_pdf_filename(self):
-
         return f"FI-Trackdéchets-{self.object.org_id}-{self.object.created:%d-%m-%Y}"

@@ -18,11 +18,11 @@ INTERNAL_IPS = [
 ]
 
 MIDDLEWARE = (
-        MIDDLEWARE[:1]  # noqa
-        + [
-            "debug_toolbar.middleware.DebugToolbarMiddleware",
-        ]
-        + MIDDLEWARE[1:]  # noqa
+    MIDDLEWARE[:1]  # noqa
+    + [
+        "debug_toolbar.middleware.DebugToolbarMiddleware",
+    ]
+    + MIDDLEWARE[1:]  # noqa
 )
 
 # Celery config

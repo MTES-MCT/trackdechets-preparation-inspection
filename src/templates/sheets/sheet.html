@@ -16,8 +16,7 @@
                 <h4 class="cell__title">SIRET: {{ sheet.org_id }}</h4>
                 <p class="fr-text--bold">Profils établissements :</p>
                 <ul>
-                    {% for profile in sheet.company_profiles %}
-                        <li>{{ profile }}</li>{% endfor %}
+                    {% for profile in sheet.company_profiles %}<li>{{ profile }}</li>{% endfor %}
                 </ul>
                 <p>{{ sheet.company_address }}</p>
                 <p>
@@ -36,172 +35,174 @@
                     :
                 </p>
                 <p>
-                <ul>
-                    <li>les éventuels BSD papiers non dématérialisés</li>
-                    <li>les bons d’enlèvements (huiles usagées et pneus)</li>
-                    <li>les annexes 1 (petites quantités)</li>
-                </ul>
+                    <ul>
+                        <li>les éventuels BSD papiers non dématérialisés</li>
+                        <li>les bons d’enlèvements (huiles usagées et pneus)</li>
+                        <li>les annexes 1 (petites quantités)</li>
+                    </ul>
+                </div>
             </div>
+            {#  bsdd #}
+            <h2 class="section__title">Données des bordereaux de suivi dématérialisés issues de Trackdéchets</h2>
+            {% if  sheet.bsdd_created_rectified_data %}
+                <div class="row">
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">BSD Dangereux émis, reçus et corrigés</h3>
+                        <div id="bsdd_emitted_corrected_graph"></div>
+                    </div>
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">Quantité de déchets dangereux en tonnes</h3>
+                        <div id="bsdd_quantity_graph"></div>
+                    </div>
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">BSD dangereux sur l'année</h3>
+                        {% stats_graph sheet "bsdd" %}
+                    </div>
+                </div>
+            {% endif %}
+            {#  end bsdd #}
+            {#  bsda #}
+            {% if  sheet.bsda_created_rectified_data %}
+                <div class="row">
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">BSD Amiante émis, reçus et corrigés</h3>
+                        <div id="bsda_emitted_corrected_graph"></div>
+                    </div>
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">Quantité de déchets amiante en tonnes</h3>
+                        <div id="bsda_quantity_graph"></div>
+                    </div>
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">BS Amiante sur l'année</h3>
+                        {% stats_graph sheet "bsda" %}
+                    </div>
+                </div>
+            {% endif %}
+            {#  end bsda #}
+            {#  bsdasri #}
+            {% if  sheet.bsdasri_created_rectified_data %}
+                <div class="row">
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">
+                            BSD Dasri émis, reçus et corrigés
+                        </h3>
+                        <div id="bsdasri_emitted_corrected_graph">
+                        </div>
+                    </div>
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">
+                            Quantité de déchets Dasri en tonnes
+                        </h3>
+                        <div id="bsdasri_quantity_graph">
+                        </div>
+                    </div>
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">
+                            BS dasri sur l'année
+                        </h3>
+                        {% stats_graph sheet "bsdasri" %}
+                    </div>
+                </div>
+            {% endif %}
+            {#  end bsdasri #}
+            {#  bsff #}
+            {% if  sheet.bsff_created_rectified_data %}
+                <div class="row">
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">
+                            BS Fluide émis, reçus et corrigés
+                        </h3>
+                        <div id="bsff_emitted_corrected_graph">
+                        </div>
+                    </div>
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">
+                            Quantité de déchets Fluides en tonnes
+                        </h3>
+                        <div id="bsff_quantity_graph">
+                        </div>
+                    </div>
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">
+                            BS Fluides sur l'année
+                        </h3>
+                        {% stats_graph sheet "bsff" %}
+                    </div>
+                </div>
+            {% endif %}
+            {#  end bsff #}
+            {#  bsvhu #}
+            {% if  sheet.bsvhu_created_rectified_data %}
+                <div class="row">
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">
+                            BS VHU émis, reçus et corrigés
+                        </h3>
+                        <div id="bsvhu_emitted_corrected_graph">
+                        </div>
+                    </div>
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">
+                            Quantité de VHU en tonnes
+                        </h3>
+                        <div id="bsvhu_quantity_graph">
+                        </div>
+                    </div>
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">
+                            BS VHU sur l'année
+                        </h3>
+                        {% stats_graph sheet "bsvhu" %}
+                    </div>
+                </div>
+            {% endif %}
+            {#  end bsff #}
+            <h2 class="section__title">
+                Déchets sur site (théorique)
+            </h2>
+            <div class="row">
+                <div class="cell cell--bordered cell--third">
+                    {% include "sheets/components/on_site_wastes.html" with storage_data=sheet.storage_data %}
+                </div>
+                <div class="cell cell--bordered cell--third">
+                    <h3 class="cell__title">
+                        Origine des déchets
+                    </h3>
+                    <div id="waste_origin_graph">
+                    </div>
+                </div>
+                <div class="cell cell--bordered cell--third">
+                    <h3 class="cell__title">
+                        Origine des déchets
+                    </h3>
+                    <div id="waste_origin_map">
+                    </div>
+                </div>
+            </div>
+            {# ICPE #}
+            <h2 class="section__title">
+                Données installation classée pour la protection de l'Environnement (ICPE)
+            </h2>
+            <div class="cell cell--bordered">
+                <p>
+                    Les données ICPE proviennent de la base Géorisque. Ces données ne sont pas à jour et synchronisées pour
+                    le moment faute de lien entre Trackdéchets et Géorisque
+                </p>
+                {% render_icpe sheet %}
+            </div>
+            {# end ICPE #}
+            {# input/output #}
+            <h2 class="section__title">
+                Liste des déchets entrants/sortants
+            </h2>
+            <div>
+                {% render_in_out_table sheet %}
+            </div>
+            {# end input/output #}
         </div>
-        {#  bsdd #}
-        <h2 class="section__title">Données des bordereaux de suivi dématérialisés issues de Trackdéchets</h2>
-        {% if  sheet.bsdd_created_rectified_data %}
-            <div class="row">
-                <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">BSD Dangereux émis, reçus et corrigés</h3>
-                    <div id="bsdd_emitted_corrected_graph"></div>
-                </div>
-                <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">Quantité de déchets dangereux en tonnes</h3>
-                    <div id="bsdd_quantity_graph"></div>
-                </div>
-                <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">BSD dangereux sur l'année</h3>
-                    {% stats_graph sheet "bsdd" %}
-                </div>
-            </div>
-        {% endif %}
-        {#  end bsdd #}
-        {#  bsda #}
-        {% if  sheet.bsda_created_rectified_data %}
-            <div class="row">
-                <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">BSD Amiante émis, reçus et corrigés</h3>
-                    <div id="bsda_emitted_corrected_graph"></div>
-                </div>
-                <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">Quantité de déchets amiante en tonnes</h3>
-                    <div id="bsda_quantity_graph"></div>
-                </div>
-                <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">BS Amiante sur l'année</h3>
-                    {% stats_graph sheet "bsda" %}
-                </div>
-            </div>
-        {% endif %}
-        {#  end bsda #}
-        {#  bsdasri #}
-        {% if  sheet.bsdasri_created_rectified_data %}
-            <div class="row">
-                <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">BSD Dasri émis, reçus et corrigés</h3>
-                    <div id="bsdasri_emitted_corrected_graph">
-                    </div>
-                </div>
-                <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        Quantité de déchets Dasri en tonnes
-                    </h3>
-                    <div id="bsdasri_quantity_graph">
-                    </div>
-                </div>
-                <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        BS dasri sur l'année
-                    </h3>
-                    {% stats_graph sheet "bsdasri" %}
-                </div>
-            </div>
-        {% endif %}
-        {#  end bsdasri #}
-        {#  bsff #}
-        {% if  sheet.bsff_created_rectified_data %}
-            <div class="row">
-                <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        BS Fluide émis, reçus et corrigés
-                    </h3>
-                    <div id="bsff_emitted_corrected_graph">
-                    </div>
-                </div>
-                <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        Quantité de déchets Fluides en tonnes
-                    </h3>
-                    <div id="bsff_quantity_graph">
-                    </div>
-                </div>
-                <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        BS Fluides sur l'année
-                    </h3>
-                    {% stats_graph sheet "bsff" %}
-                </div>
-            </div>
-        {% endif %}
-        {#  end bsff #}
-        {#  bsvhu #}
-        {% if  sheet.bsvhu_created_rectified_data %}
-            <div class="row">
-                <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        BS VHU émis, reçus et corrigés
-                    </h3>
-                    <div id="bsvhu_emitted_corrected_graph">
-                    </div>
-                </div>
-                <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        Quantité de VHU en tonnes
-                    </h3>
-                    <div id="bsvhu_quantity_graph">
-                    </div>
-                </div>
-                <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        BS VHU sur l'année
-                    </h3>
-                    {% stats_graph sheet "bsvhu" %}
-                </div>
-            </div>
-        {% endif %}
-        {#  end bsff #}
-        <h2 class="section__title">
-            Déchets sur site (théorique)
-        </h2>
-        <div class="row">
-            <div class="cell cell--bordered cell--third">
-                {% include "sheets/components/on_site_wastes.html" with storage_data=sheet.storage_data %}
-            </div>
-            <div class="cell cell--bordered cell--third">
-                <h3 class="cell__title">
-                    Origine des déchets
-                </h3>
-                <div id="waste_origin_graph">
-                </div>
-            </div>
-            <div class="cell cell--bordered cell--third">
-                <h3 class="cell__title">
-                    Origine des déchets
-                </h3>
-                <div id="waste_origin_map">
-                </div>
-            </div>
-        </div>
-        {# ICPE #}
-        <h2 class="section__title">
-            Données installation classée pour la protection de l'Environnement (ICPE)
-        </h2>
-        <div class="cell cell--bordered">
-            <p>
-                Les données ICPE proviennent de la base Géorisque. Ces données ne sont pas à jour et synchronisées pour
-                le moment faute de lien entre Trackdéchets et Géorisque
-            </p>
-            {% render_icpe sheet %}
-        </div>
-        {# end ICPE #}
-        {# input/output #}
-        <h2 class="section__title">
-            Liste des déchets entrants/sortants
-        </h2>
-        <div>
-            {% render_in_out_table sheet %}
-        </div>
-        {# end input/output #}
-    </div>
-{% endblock %}
-{% block scripts %}
-    <script>
+    {% endblock %}
+    {% block scripts %}
+        <script>
         {% autoescape off %}
             const bsdd_created_rectified_data = {{ sheet.bsdd_created_rectified_data }};
             const bsdd_stock_data = {{ sheet.bsdd_stock_data }};
@@ -217,8 +218,8 @@
             const waste_origin_map = {{ sheet.waste_origin_map }};
 
         {% endautoescape %}
-    </script>
-    <script>
+        </script>
+        <script>
         const isNotEmpty = (obj) => (Object.keys(obj).length !== 0);
 
 
@@ -249,5 +250,5 @@
         }
         Plotly.newPlot('waste_origin_graph', waste_origin_data.data, waste_origin_data.layout, waste_origin_data.config);
         Plotly.newPlot('waste_origin_map', waste_origin_map.data, waste_origin_map.layout, waste_origin_map.config);
-    </script>
-{% endblock %}
+        </script>
+    {% endblock %}

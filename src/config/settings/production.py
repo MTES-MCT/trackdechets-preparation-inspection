@@ -1,8 +1,6 @@
 from .base import *  # noqa
 from .base import env
 
-DEBUG = False
-
 SECRET_KEY = env("SECRET_KEY")
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOST")
@@ -15,7 +13,6 @@ EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
 EMAIL_HOST_USER = env("EMAIL_HOST_USER")
 EMAIL_PORT = env("EMAIL_PORT")
 EMAIL_USE_TLS = env("EMAIL_USE_TLS")
-MESSAGE_RECIPIENT = env("MESSAGE_RECIPIENT")
 
 # Celery config
 CELERY_BROKER_URL = env("CELERY_BROKER_URL")

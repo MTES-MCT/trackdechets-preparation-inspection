@@ -69,6 +69,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {"default": env.db()}
+WAREHOUSE_URL = env("WAREHOUSE_URL")
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -121,3 +122,7 @@ ADMIN_SLUG = env("ADMIN_SLUG")
 AUTH_USER_MODEL = "accounts.User"
 
 LOGIN_REDIRECT_URL = "/"
+
+USE_THOUSAND_SEPARATOR = True
+
+CSV_FILES_DIR = BASE_DIR / "csv"

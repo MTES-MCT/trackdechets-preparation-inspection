@@ -4,10 +4,10 @@ DEBUG = True
 
 SECRET_KEY = "xyzabcdefghu"
 
-INSTALLED_APPS = [
+INSTALLED_APPS += [
     "whitenoise.runserver_nostatic",
     "debug_toolbar",
-] + INSTALLED_APPS  # noqa F405
+]  # noqa F405
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
@@ -18,13 +18,12 @@ INTERNAL_IPS = [
 ]
 
 MIDDLEWARE = (
-    MIDDLEWARE[:1]  # noqa
-    + [
-        "debug_toolbar.middleware.DebugToolbarMiddleware",
-    ]
-    + MIDDLEWARE[1:]  # noqa
+        MIDDLEWARE[:1]  # noqa
+        + [
+            "debug_toolbar.middleware.DebugToolbarMiddleware",
+        ]
+        + MIDDLEWARE[1:]  # noqa
 )
-
 
 # Celery config
 CELERY_BROKER_URL = "redis://localhost:6379/0"

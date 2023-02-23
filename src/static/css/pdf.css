@@ -1,0 +1,223 @@
+/* fonts */
+@font-face {
+  font-display: swap;
+  font-family: Marianne;
+  font-style: normal;
+  font-weight: 300;
+  src: url(fonts/Marianne-Light.woff2) format("woff2"), url(fonts/Marianne-Light.woff) format("woff")
+}
+
+@font-face {
+  font-display: swap;
+  font-family: Marianne;
+  font-style: italic;
+  font-weight: 300;
+  src: url(fonts/Marianne-Light_Italic.woff2) format("woff2"), url(fonts/Marianne-Light_Italic.woff) format("woff")
+}
+
+@font-face {
+  font-display: swap;
+  font-family: Marianne;
+  font-style: normal;
+  font-weight: 400;
+  src: url(fonts/Marianne-Regular.woff2) format("woff2"), url(fonts/Marianne-Regular.woff) format("woff")
+}
+
+@font-face {
+  font-display: swap;
+  font-family: Marianne;
+  font-style: italic;
+  font-weight: 400;
+  src: url(fonts/Marianne-Regular_Italic.woff2) format("woff2"), url(fonts/Marianne-Regular_Italic.woff) format("woff")
+}
+
+@font-face {
+  font-display: swap;
+  font-family: Marianne;
+  font-style: normal;
+  font-weight: 500;
+  src: url(fonts/Marianne-Medium.woff2) format("woff2"), url(fonts/Marianne-Medium.woff) format("woff")
+}
+
+@font-face {
+  font-display: swap;
+  font-family: Marianne;
+  font-style: italic;
+  font-weight: 500;
+  src: url(fonts/Marianne-Medium_Italic.woff2) format("woff2"), url(fonts/Marianne-Medium_Italic.woff) format("woff")
+}
+
+@font-face {
+  font-display: swap;
+  font-family: Marianne;
+  font-style: normal;
+  font-weight: 700;
+  src: url(fonts/Marianne-Bold.woff2) format("woff2"), url(fonts/Marianne-Bold.woff) format("woff")
+}
+
+@font-face {
+  font-display: swap;
+  font-family: Marianne;
+  font-style: italic;
+  font-weight: 700;
+  src: url(fonts/Marianne-Bold_Italic.woff2) format("woff2"), url(fonts/Marianne-Bold_Italic.woff) format("woff")
+}
+
+
+html {
+  font-family: Marianne, sans-serif;
+}
+
+body {
+  width: 100%;
+  font-size: 11pt;
+
+}
+
+/* print */
+@page {
+  counter-increment: page;
+  @top-right {
+    content: "Page " counter(page) " sur " counter(pages);
+    font-size: 10pt;
+    color: #444;
+  }
+}
+
+@page vertical {
+  size: A4 portrait;
+  margin: 5mm;
+}
+
+@page horizontal {
+  size: A4 landscape;
+  margin: 5mm;
+}
+
+
+.vertical {
+  page: vertical;
+}
+
+
+.horizontal {
+  page: horizontal;
+}
+
+.pagebreak { page-break-before: always; }
+
+/*reset*/
+ul { padding-left: 2rem;}
+
+/* typo utilities */
+.bold {
+  font-weight: bold;
+}
+
+.pdf-text {
+  font-size: 11pt;
+
+}
+
+/*  Margin utilities */
+
+.mb-0 {
+  margin-bottom: 0;
+}
+
+.mt-0 {
+  margin-top: 0;
+}
+
+
+.header {
+  display: flex;
+  align-items: center;
+  margin-top: 1mm;
+  margin-bottom: 3mm;
+}
+.header img {
+  margin-right: 1cm;
+}
+/*layout*/
+.row { display: flex; width: 100%; justify-content: space-between; }
+
+/*header*/
+.header__text {
+  display: flex;
+  flex-direction: column;
+  margin-left: 5mm;
+
+}
+
+.header__title, .header__company {
+  font-size: 20pt;
+  margin: 0;
+  line-height: 1.2;
+}
+
+
+/* cells */
+.cell {
+
+  vertical-align: top;
+  border-left: 3px solid #e3e3fd;
+  padding: 1mm 2mm;
+
+}
+
+.cell:not(:first-child) {
+  margin-left: 3mm;
+}
+
+.cell > * {
+  margin-top: 0;
+}
+.cell--third {
+  width: 32.5%;
+}
+.cell--bordered {
+  border: 1px solid #e3e3fd;
+  border-left: 5px solid #e3e3fd
+}
+
+.cell__img {
+  width: 100%;
+}
+
+.cell__title {
+  font-size: 14pt;
+  font-weight: 500;
+}
+
+
+/* Tables*/
+.pdf-table {
+  border: 1px solid #ccc;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.pdf-table thead th {
+  border: 1px solid #ccc;
+  padding: 0 6px;
+}
+
+.pdf-table tbody tr {
+  border: 1px solid #ccc;
+
+}
+
+.pdf-table tbody tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.pdf-table tbody td {
+  border: 1px solid #ccc;
+  padding: 3px 6px;
+
+}
+
+.td--right {
+  text-align: right;
+}

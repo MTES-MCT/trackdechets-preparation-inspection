@@ -1,0 +1,293 @@
+.sc-title {
+    font-weight: 700;
+}
+
+.sc-xl-number {
+    font-size: 5em;
+    margin-right: 1rem;
+    font-weight: 300;
+
+}
+
+.sc-large-number {
+    font-size: 2em;
+    margin-right: 10px;
+}
+
+.sc-medium-number {
+    font-size: 1.5em;
+    margin-right: 10px;
+
+}
+
+.sc-primary {
+    margin: 20% 0;
+}
+
+.sc-secondary {
+    margin-bottom: 10%;
+}
+
+
+
+.sc-secondary p {
+    margin: 0
+}
+
+.sc-number-incoming {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+}
+
+.sc-weight-bars {
+    display: grid;
+    grid-template-columns: repeat(101, 1fr);
+    grid-auto-rows: minmax(20px, auto);
+    grid-row-gap: 5px;
+
+}
+
+.sc-complete-bar {
+    grid-column: 1 / 111;
+    background-color: hsl(212, 93%, 57%, 0.5);
+}
+
+.sc-complete-bar-error {
+    grid-column: 1 / 111;
+    border-color: hsl(212, 93%, 57%, 0.5);
+    border: 3px dotted;
+}
+
+.sc-bar-consumed {
+    grid-row: 3/4;
+    background-color: hsl(148, 100%, 27%, 0.7);
+
+}
+
+.sc-bar-consumed-error {
+    grid-row: 3/4;
+    background-color: #8a0007;
+
+}
+
+.sc-bar-stock {
+    grid-row: 3/4;
+    background-color: hsl(45, 98%, 62%, 0.8);
+}
+
+
+.sc-bar-number-outgoing p, .sc-bar-number-stock p {
+    margin: 0;
+}
+
+.sc-bar-number-outgoing {
+    grid-column: 1 / 50;
+    grid-row: span 2 / 6;
+    text-align: left;
+}
+
+.sc-bar-number-stock {
+    grid-column: 60 / 102;
+    grid-row: span 2 / 6;
+    text-align: right;
+}
+
+.sc-stock-item {
+    display: flex;
+    flex-direction: row;
+    margin: 25px 0;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+#layout-container.printing .sc-stock-item {
+    margin: 15px 0;
+}
+
+.sc-quantity-value {
+    font-size: 1.7em;
+    min-width: 35%;
+    margin-right: 15px;
+}
+
+
+#sc-total-stock {
+    margin: 45px 0;
+}
+
+#layout-container.printing #sc-total-stock {
+    margin: 15px 0;
+}
+
+#sc-total-stock span {
+    font-size: 4em;
+    font-weight: 300;
+    margin-right: 15px;
+}
+
+#sc-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+
+#sc-date-outliers {
+    margin-top: 20px;
+}
+
+.sc-outlier-date-bs-type {
+    text-decoration: underline;
+}
+
+.sc-bs-outliers-list {
+    margin-top: 20px;
+}
+
+.sc-bs-outliers-list>li {
+    margin: 0;
+}
+
+.sc-bs-outlier-list-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.sc-bs-outlier-list-header>* {
+    margin: 0;
+}
+
+.sc-bs-outliers-item>* {
+    margin-bottom: 0;
+}
+
+.sc-outlier-quantity-example {
+    display: flex;
+    justify-content: space-between;
+}
+
+#icpe-items-component {
+    grid-column: span 2;
+}
+
+
+.sc-info-item {
+    display: flex;
+    margin-top: 15px;
+    align-items: center;
+}
+
+.sc-info-forbidden-image {
+    margin-right: 2em;
+    object-fit: contain;
+    max-width: 20%;
+    height: auto;
+}
+
+
+
+.sc-icpe-item-list {
+    list-style-type: none;
+
+}
+
+.sc-icpe-item-list>li {
+    padding: 10px;
+    border: 2px solid #6A6A6A;
+    background-color: #F9F8F6;
+    margin-bottom: 10px;
+    border-radius: 16px;
+    page-break-inside: avoid;
+}
+
+#sc-tr-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+#sc-tr-list>li {
+    margin-top: 15px;
+}
+
+.sc-tr-count {
+    font-weight: 700;
+}
+
+.sc-tr-quantity>span {
+    font-weight: 700;
+}
+
+.sc-tr-item-info {
+    display: flex;
+    flex-direction: row;
+    font-size: large
+}
+
+.sc-tr-item-info>div:nth-child(1n+2) {
+    margin-left: 10%;
+}
+
+.sc-tr-waste-code {
+    min-width: 20%;
+}
+
+.sc-tr-num-bs {
+    min-width: 30%;
+}
+
+.sc-tr-quantity {
+    min-width: 30%;
+}
+
+.sc-rubrique-item-details {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.sc-item-quantity-authorized {
+    min-width: 30%;
+}
+
+.sc-item-quantity-authorized span, .sc-onsite-quantity span {
+    font-size: x-large;
+
+}
+
+.sc-grid-onsite-quantity {
+    display: grid;
+    min-width: 50%;
+    grid-template-columns: repeat(100, 1fr);
+}
+
+.sc-grid-onsite-weight-bar {
+    background-color: #92C2F8;
+    grid-row: 1;
+}
+
+.sc-grid-onsite-weight-remaining-bar {
+    background-color: #FDCF41;
+    grid-row: 1;
+}
+
+.sc-grid-onsite-weight-value {
+    grid-row: 1;
+    grid-column: 3/50;
+}
+
+.sc-grid-onsite-weight-remaining-value {
+    grid-row: 1;
+    grid-column: 50/-3;
+    text-align: right;
+}
+
+.sc-onsite-quantity {
+    display: flex;
+    justify-content: space-between;
+    min-width: 60%;
+}
+
+.sc-onsite-quantity-detail {
+    display: flex;
+    flex-direction: column;
+}

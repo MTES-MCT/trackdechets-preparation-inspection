@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="fr" data-fr-scheme="system">
+<html lang="fr" data-fr-scheme="light">
     <head>
         <meta charset="UTF-8"/>
         <meta name="viewport"
@@ -29,45 +29,71 @@
         <meta name="theme-color" content="#ffffff">
     </head>
     <body>
-        <div class="fr-container">
-            <header role="banner" class="fr-header">
-                <div class="fr-header__body">
-                    <div class="fr-container">
-                        <div class="fr-header__body-row">
-                            <a href="/">
-                                <div class="fr-header__brand fr-enlarge-link">
-                                    <div class="fr-header__brand-top">
-                                        <div class="fr-header__logo">
-                                            <p class="fr-logo">
-                                                Ministère
-                                                <br/>
-                                                de la transition
-                                                <br/>
-                                                écologique
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="fr-header__service">
-                                        <img src="{% static "img/trackdechets.png" %}"
-                                             width="70px"
-                                             height="70px"
-                                             alt="Icone trackdéchets"/>
-                                    </div>
+        <header role="banner" class="fr-header">
+            <div class="fr-header__body">
+                <div class="fr-container">
+                    <div class="fr-header__body-row">
+                        {#                <a href="/">#}
+                        <div class="fr-header__brand fr-enlarge-link">
+                            <div class="fr-header__brand-top">
+                                <div class="fr-header__logo">
+                                    <p class="fr-logo">
+                                        Ministère
+                                        <br/>
+                                        de la transition
+                                        <br/>
+                                        écologique
+                                    </p>
                                 </div>
-                            </a>
+                            </div>
+                            <div class="fr-header__service">
+                                <img src="{% static "img/trackdechets.png" %}"
+                                     width="70px"
+                                     height="70px"
+                                     alt="Icone trackdéchets"/>
+                            </div>
+                            <div class="fr-h5">
+                                Trackdéchets
+                                <br>
+                                Fiche d'inspection
+                            </div>
+                        </div>
+                        {#                </a>#}
+                        <div class="fr-header__tools">
+                            <div class="fr-header__tools-links">
+                                <ul class="fr-btns-group">
+                                    <li>
+                                        <a target="_blank"
+                                           href="https://trackdechets.beta.gouv.fr/"
+                                           title="Trackdéchets - nouvelle fenêtre"
+                                           class="fr-btn fr-icon-chat-3-line">
+                                            Trackdéchets
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </header>
-        </div>
+            </div>
+        </header>
         {% block main %}
-            {% if user.is_authenticated %}
-                <p>Vous êtes connecté</p>
-                <p>
-                    <a href="{% url "logout" %}">Déconnexion</a>
-                </p>
-            {% endif %}
+            <div class="fr-container">
+                {% if user.is_authenticated %}
+                    <p>Vous êtes connecté</p>
+                    <p>
+                        <a href="{% url "prepare" %}">Préparer une fiche</a>
+                    </p>
+                    <p>
+                        <a href="{% url "logout" %}">Déconnexion</a>
+                    </p>
+                {% else %}
+                    <a href="{% url "login" %}">Connectez vous</a>
+                {% endif %}
+            </div>
         {% endblock %}
+        <script src="{% static "js/plotly-2.18.1.min.js" %}" charset="utf-8"></script>
+        <script src="{% static "js/htmx.1.8.5.min.js" %}"></script>
         {% block scripts %}{% endblock %}
     </body>
 </html>

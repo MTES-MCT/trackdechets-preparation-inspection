@@ -1,11 +1,32 @@
+from django.conf import settings
 from django.urls import path
 
-from .views import SheetHtmlView, SheetPdfView, create_bar, create_graph, create_plot
+from .views import (
+    FragmentResultView,
+    Prepare,
+    ResultView,
+    Sheet,
+    SheetPdf,
+    SheetPdfHtml,
+)
 
 urlpatterns = [
-    path("html/", SheetHtmlView.as_view()),
-    path("pdf/", SheetPdfView.as_view()),
-    path("img/", create_graph, name="create_graph"),
-    path("bar/", create_bar, name="create_bar"),
-    path("plot/", create_plot, name="create_plot"),
+    path("prepare/", Prepare.as_view(), name="prepare"),
+    path("sheet/<uuid:pk>", Sheet.as_view(), name="sheet"),
+    path("pdf/<uuid:pk>", SheetPdf.as_view(), name="sheet_pdf"),
+    path(
+        "compute/<str:task_id>/<uuid:compute_pk>/",
+        ResultView.as_view(),
+        name="pollable_result",
+    ),
+    path(
+        "compute-fragment/<str:task_id>/<uuid:compute_pk>/",
+        FragmentResultView.as_view(),
+        name="pollable_result_fragment",
+    ),
 ]
+
+if settings.DEBUG:
+    urlpatterns += [
+        path("pdf-debug/<uuid:pk>", SheetPdfHtml.as_view(), name="sheet_pdf_debug"),
+    ]

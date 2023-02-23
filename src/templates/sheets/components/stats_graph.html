@@ -1,0 +1,166 @@
+<style>
+
+  .sc-number {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-right: 0.5rem;
+
+  }
+
+
+
+  .sc-medium-number {
+    font-size: 1.5em;
+    margin-right: 10px;
+
+  }
+
+  .sc-primary {
+    margin-top: 1rem;
+  }
+
+  .sc-secondary {
+    margin-bottom: 10%;
+  }
+
+
+  .sc-secondary p {
+    margin: 0
+  }
+
+  .sc-number-incoming {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+
+  }
+
+
+  .sc-bar-number-outgoing p, .sc-bar-number-stock p {
+    margin: 0;
+  }
+
+
+  .sc-bar-number-outgoing-2 {
+    vertical-align: top;
+    display: inline-block;
+    width: 49%;
+  }
+
+  .sc-bar-number-stock-2 {
+    vertical-align: top;
+    display: inline-block;
+    width: 49%;
+    text-align: right;
+  }
+
+
+  #layout-container.printing .sc-stock-item {
+    margin: 15px 0;
+  }
+
+
+  #layout-container.printing #sc-total-stock {
+    margin: 15px 0;
+  }
+
+  #sc-total-stock span {
+    font-size: 4em;
+    font-weight: 300;
+    margin-right: 15px;
+  }
+
+
+  .sc-bs-outliers-list > li {
+    margin: 0;
+  }
+
+
+  .sc-bs-outlier-list-header > * {
+    margin: 0;
+  }
+
+  .sc-bs-outliers-item > * {
+    margin-bottom: 0;
+  }
+
+
+  .sc-icpe-item-list > li {
+    padding: 10px;
+    border: 2px solid #6A6A6A;
+    background-color: #F9F8F6;
+    margin-bottom: 10px;
+    border-radius: 16px;
+    page-break-inside: avoid;
+  }
+
+
+  #sc-tr-list > li {
+    margin-top: 15px;
+  }
+
+
+  .sc-tr-quantity > span {
+    font-weight: 700;
+  }
+
+
+  .sc-tr-item-info > div:nth-child(1n+2) {
+    margin-left: 10%;
+  }
+
+
+  .sc-item-quantity-authorized span, .sc-onsite-quantity span {
+    font-size: x-large;
+
+  }
+
+
+</style>
+{% if emitted_bs_count and emitted_bs_count != "0" %}
+    <div id="bsdd-stats" class="col-framed col-print">
+        <div class="sc-primary">
+            <span class="sc-number">{{ emitted_bs_count }}</span>émis
+        </div>
+        <div class="sc-secondary">
+            <p>
+                <span class="sc-number">{{ archived_bs_count }}</span>archivés
+            </p>
+            <p>
+                <span class="sc-number">{{ revised_bs_count }}</span>corrigés
+            </p>
+            <p>
+                <span class="sc-number">{{ more_than_one_month_bs_count }}</span>réponses supérieures à un mois
+            </p>
+        </div>
+        <div>
+            <p class="sc-number-incoming">
+                <span class="sc-medium-number">{{ total_incoming_weight }}</span>tonnes
+                entrantes
+            </p>
+        </div>
+        <div>
+            <svg style="width:100%;height:45px;">
+                <rect width="100%" height="20" y="0" x="0"
+                fill="{% if incoming_bar_error %}rgba(138, 0, 7, 1){% else %}rgba(43, 139, 247, 0.5){% endif %}">
+                </rect>
+                <rect width="{{ outgoing_bar_width }}%" height="20" y="25" x="0"
+                fill="{% if outgoing_bar_error %}rgba(138, 0, 7, 1){% else %}rgba(0, 138, 64, 0.7){% endif %}">
+                </rect>
+                <rect width="{{ stock_bar_width }}%" height="20" y="25" x="{{ stock_bar_x }}%"
+                fill="rgba(253, 206, 63, 0.8)">
+                </rect>
+            </svg>
+        </div>
+        <div>
+            <div class="sc-bar-number-outgoing-2">{{ total_outgoing_weight }} tonnes sortantes</div>
+            <div class="sc-bar-number-stock-2">
+                {{ theorical_stock }} tonnes
+                <p>stock théorique</p>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="sc-primary">
+        <span>Pas de données</span>
+    </div>
+{% endif %}

@@ -1,0 +1,19 @@
+{% if state != "done" %}
+    <div hx-get="{% url "pollable_result_fragment" task_id compute_pk %}"
+         hx-trigger="every 500ms"
+         hx-swap="outerHTML">
+        {% include "spinner.html" with percent=progress %}
+    </div>
+{% endif %}
+{% if state == "done" %}
+    {% if not errors %}
+        <p class="center">👍 Génération effectuée…</p>
+        <script>
+            window.setTimeout(function () {
+                window.location.href = "{%  url "sheet" compute_pk %}";
+            }, 1500);
+        </script>
+    {% else %}
+        <p>Erreur</p>
+    {% endif %}
+{% endif %}

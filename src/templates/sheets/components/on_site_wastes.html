@@ -1,0 +1,16 @@
+<h3 class="cell__title">Déchets entreposés sur site actuellement</h3>
+<div id="sc-content">
+    <div id="sc-total-stock">
+        <span>{{ storage_data.total_stock }}t</span>
+        <br>
+        de déchets dangereux
+    </div>
+    <div id="sc-top-waste-codes">
+        {% for row in storage_data.stored_waste %}
+            <div class="sc-stock-item">
+                <div class="sc-quantity-value">{{ row.quantity_received }}t</div>
+                <div class="sc-waste-code">{{ row.code }} - {{ row.description }}</div>
+            </div>
+        {% endfor %}
+    </div>
+</div>

@@ -1,0 +1,26 @@
+<table {% if graph_context == "web" %}class="fr-table fr-table--bordered" {% else %}class="pdf-table"{% endif %}>
+    <thead>
+        <tr>
+            <th>Code déchet</th>
+            <th>Description</th>
+            <th>Entrant/Sortant</th>
+            <th>Quantité&nbsp;(t)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in input_output_waste_data %}
+            <tr>
+                <td>{{ row.waste_code }}</td>
+                <td>{{ row.description }}</td>
+                <td>
+                    {% if row.incoming_or_outgoing == "incoming" %}
+                        ➜Entrant
+                    {% else %}
+                        Sortant➜
+                    {% endif %}
+                </td>
+                <td class="td--right">{{ row.quantity_received }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

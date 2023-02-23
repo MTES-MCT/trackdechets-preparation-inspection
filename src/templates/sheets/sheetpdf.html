@@ -1,0 +1,204 @@
+{% extends "base_pdf.html" %}
+{% load static graph_tags %}
+{% block main %}
+    <div>
+        <section class="horizontal">
+            <div class="header">
+                <img src="{% static "img/mtes.png" %}" style="height: 2.5cm;"/>
+                <img src="{% static "img/trackdechets.png" %}" style="height: 2cm;"/>
+                <div class="header__text">
+                    <h1 class="header__title">Fiche inspection</h1>
+                    <h2 class="header__title">{{ sheet.company_name }}</h2>
+                </div>
+            </div>
+            <div class="row">
+                <div class="cell">
+                    <p>
+                        <span class="bold">SIRET :</span> {{ sheet.org_id }}
+                    </p>
+                    <p class="pdf-text bold">Profils établissements :</p>
+                    <ul class="pdf-text">
+                        {% for profile in sheet.company_profiles %}<li>{{ profile }}</li>{% endfor %}
+                    </ul>
+                    <p class="pdf-text bold mb-0">Adresse :</p>
+                    <p class="pdf-text mt-0">{{ sheet.company_address }}</p>
+                    <p class="pdf-text">
+                        <span class="bold">Période du :</span>{{ sheet.period_start|date:"SHORT_DATE_FORMAT" }}
+                        au {{ sheet.period_end|date:"SHORT_DATE_FORMAT" }}
+                    </p>
+                    <p class="pdf-text">
+                        <span class="bold">Fiche éditée le :</span>{{ sheet.created|date:"DATETIME_FORMAT" }}
+                    </p>
+                </div>
+                <div class="cell">
+                    <span class="bold">Agréments et récépissés déclarés sur Trackdéchets</span>
+                    <p>Pas de récépissés ou d'agréments enregistrés sur Trackdéchets pour cet établissement.</p>
+                </div>
+                <div class="cell">
+                    <p class="pdf-text">Les données pour cet établissement peuvent être consultées sur Trackdéchets</p>
+                    <p class="pdf-text">
+                        Elles comprennent les bordereaux de suivi de déchets (BSD) dématérialisés, mais ne comprennent
+                        pas
+                        :
+                    </p>
+                    <ul class="pdf-text">
+                        <li>les éventuels BSD papiers non dématérialisés</li>
+                        <li>les bons d’enlèvements (huiles usagées et pneus)</li>
+                        <li>les annexes 1 (petites quantités)</li>
+                    </ul>
+                </div>
+            </div>
+            <h3 class="section-title">Données des bordereaux de suivi dématérialisés issues de Trackdéchets</h3>
+            {#  bsdd #}
+            <div class="row">
+                <div class="cell cell--bordered cell--third">
+                    <p class="cell__title">BSD Dangereux émis, reçus et corrigés</p>
+                    <img src="data:image/png;base64,{{ bsdd_created_rectified_graph }}"
+                         class="cell__img">
+                </div>
+                <div class="cell cell--bordered cell--third">
+                    <p class="cell__title">Quantité de déchets dangereux en tonnes</p>
+                    <img src="data:image/png;base64,{{ bsdd_stock_graph }}" class="cell__img">
+                </div>
+                <div class="cell cell--bordered cell--third">
+                    <p class="cell__title">BSD Dangereux sur l'année</p>
+                    {% stats_graph sheet "bsdd" %}
+                </div>
+            </div>
+            {#  end bsdd #}
+            {#  bsda #}
+            {% if bsda_created_rectified_graph %}
+                <div class="row">
+                    <div class="cell">
+                        <p class="cell__title">BSD Amiante émis, reçus et corrigés</p>
+                        <img src="data:image/png;base64,{{ bsda_created_rectified_graph }}"
+                             class="cell__img">
+                    </div>
+                    <div class="cell">
+                        <p class="cell__title">Quantité de déchets amiante en tonnes</p>
+                        <img src="data:image/png;base64,{{ bsda_stock_graph }}" class="cell__img">
+                    </div>
+                    <div class="cell">
+                        <p class="cell__title">BSD Amiante sur l'année</p>
+                        {% stats_graph sheet "bsda" %}
+                    </div>
+                </div>
+            {% endif %}
+            {#  end bsda #}
+            {#  bsdasri #}
+            {% if bsdasri_created_rectified_graph %}
+                <div class="row">
+                    <div class="cell">
+                        <p class="cell__title">BSD Dasri émis, reçus et corrigés</p>
+                        <img src="data:image/png;base64,{{ bsdasri_created_rectified_graph }}"
+                             class="cell__img">
+                    </div>
+                    <div class="cell">
+                        <p class="cell__title">Quantité de déchets Dasri en tonnes</p>
+                        <img src="data:image/png;base64,{{ bsdasri_stock_graph }}"
+                             class="cell__img">
+                    </div>
+                    <div class="cell">
+                        <p class="cell__title">BS Dasri sur l'année</p>
+                        {% stats_graph sheet "bsdasri" %}
+                    </div>
+                </div>
+            {% endif %}
+            {#  end bsdasri #}
+            {#  bsff #}
+            {% if bsff_created_rectified_graph %}
+                <div class="row">
+                    <div class="cell">
+                        <p class="cell__title">BS Fluides émis, reçus et corrigés</p>
+                        <img src="data:image/png;base64,{{ bsff_created_rectified_graph }}"
+                             class="cell__img">
+                    </div>
+                    <div class="cell">
+                        <p class="cell__title">
+                            Quantité de déchets Fluides en tonnes
+                        </p>
+                        <img src="data:image/png;base64,{{ bsff_stock_graph }}" class="cell__img">
+                    </div>
+                    <div class="cell">
+                        <p class="cell__title">
+                            BS Fluides sur l'année
+                        </p>
+                        {% stats_graph sheet "bsff" %}
+                    </div>
+                </div>
+            {% endif %}
+            {#  end bsff #}
+            {#  bsvhu #}
+            {% if bsvhu_created_rectified_graph %}
+                <div class="row">
+                    <div class="cell">
+                        <p class="cell__title">
+                            BS VHU émis, reçus et corrigés
+                        </p>
+                        <img src="data:image/png;base64,{{ bsvhu_created_rectified_graph }}"
+                             class="cell__img">
+                    </div>
+                    <div class="cell">
+                        <p class="cell__title">
+                            Quantité de déchets vhu en tonnes
+                        </p>
+                        <img src="data:image/png;base64,{{ bsvhustock_graph }}" class="cell__img">
+                    </div>
+                    <div class="cell">
+                        <p class="cell__title">
+                            BS VHU sur l'année
+                        </p>
+                        {% stats_graph sheet "bsvhu" %}
+                    </div>
+                </div>
+            {% endif %}
+            {#  end bsvhu #}
+            {#  on site #}
+            <h2 class="section__title">
+                Déchets sur site (théorique)
+            </h2>
+            <div class="row">
+                <div class="cell cell--third">
+                    {% include "sheets/components/on_site_wastes.html" with storage_data=sheet.storage_data %}
+                </div>
+                <div class="cell  cell--third">
+                    <h3 class="cell__title">
+                        Origine des déchets
+                    </h3>
+                    <img src="data:image/png;base64,{{ waste_origin_graph }}"
+                         class="cell__img">
+                </div>
+                <div class="cell  cell--third">
+                    <h3 class="cell__title">
+                        Origine des déchets
+                    </h3>
+                    <img src="data:image/png;base64,{{ waste_origin_map }}" class="cell__img">
+                </div>
+            </div>
+            {# end on site #}
+            {# ICPE #}
+            <h2 class="section__title">
+                Données installation classée pour la protection de l'Environnement (ICPE)
+            </h2>
+            <div class="cell cell--bordered">
+                <p>
+                    Les données ICPE proviennent de la base Géorisque. Ces données ne sont pas à jour et synchronisées
+                    pour
+                    le moment faute de lien entre Trackdéchets et Géorisque
+                </p>
+                {% render_icpe sheet %}
+            </div>
+            {# end ICPE #}
+            {# input/output #}
+        </section>
+        <section class="vertical">
+            <div>
+                <h3 class="section__title">
+                    Liste des déchets entrants/sortants
+                </h3>
+                {% render_in_out_table sheet graph_context="pdf" %}
+            </div>
+            {# endinput/output #}
+        </section>
+    </div>
+{% endblock %}

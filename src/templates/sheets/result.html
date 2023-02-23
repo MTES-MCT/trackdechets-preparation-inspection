@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load static %}
+{% block main %}
+    <div class="container">
+        {% if task_id %}
+            {% include "sheets/_prepare_result.html" %}
+        {% else %}
+            <p>ok</p>
+        {% endif %}
+    </div>
+{% endblock %}

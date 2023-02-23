@@ -1,0 +1,12 @@
+<h3 class="cell__title">Rubriques ICPE autorisées</h3>
+{% if not icpe_data %}
+    <p>Aucune donnée ICPE</p>
+{% endif %}
+{% for row in icpe_data %}
+    <p>
+        {{ row.rubrique }}
+        {% if row.alinea %}- {{ row.alinea }}{% endif %}
+        {{ row.libelle }} (valide à partir
+        du {{ row.date_debut }})
+    </p>
+{% endfor %}

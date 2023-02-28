@@ -2,6 +2,7 @@ import datetime as dt
 
 from braces.views import LoginRequiredMixin
 from celery.result import AsyncResult
+from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import DetailView, FormView, TemplateView
@@ -191,5 +192,13 @@ class SheetPdfHtml(LoginRequiredMixin, DetailView):
 
 
 class SheetPdf(WeasyTemplateResponseMixin, SheetPdfHtml):
+    pdf_stylesheets = [
+        str(settings.STATICFILES_DIR / "css/pdf-normalize.css"),
+        str(settings.STATICFILES_DIR / "css/pdf.css"),
+    ]
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**kwargs, hide_css=True)
+
     def get_pdf_filename(self):
         return f"FI-Trackdéchets-{self.object.org_id}-{self.object.created:%d-%m-%Y}"

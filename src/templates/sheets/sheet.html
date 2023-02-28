@@ -14,7 +14,7 @@
             {% endif %}
             -
             <a href="{% url "prepare" %}">Préparer une autre fiche</a>
-            {% if user.is_superuser %}
+            {% if user.is_superuser and debug %}
                 -
                 <a href="{% url "sheet_pdf_debug" sheet.pk %}" target="_blank">Pdf debug</a>
             {% endif %}

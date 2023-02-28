@@ -1,18 +1,17 @@
 import datetime as dt
-from base64 import b64encode
 
 from braces.views import LoginRequiredMixin
 from celery.result import AsyncResult
+from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import DetailView, FormView, TemplateView
 from django_weasyprint import WeasyTemplateResponseMixin
-from plotly.io import from_json
 
 from config.celery_app import app
 
 from .forms import SiretForm
 from .models import ComputedInspectionData
-from .task import prepare_sheet
+from .task import prepare_sheet, render_pdf
 
 
 class HomeView(TemplateView):
@@ -66,7 +65,7 @@ class Prepare(FormView):
         )
 
 
-class ResultView(TemplateView):
+class ComputingView(TemplateView):
     """Optional `task_id` trigger result polling in template"""
 
     template_name = "sheets/result.html"
@@ -77,6 +76,18 @@ class ResultView(TemplateView):
             {
                 "task_id": self.kwargs.get("task_id", None),
                 "compute_pk": self.kwargs.get("compute_pk", None),
+                "redirect_to": "html",
+            }
+        )
+        return ctx
+
+
+class RenderingView(ComputingView):
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx.update(
+            {
+                "redirect_to": "pdf",
             }
         )
         return ctx
@@ -103,34 +114,54 @@ class FragmentResultView(LoginRequiredMixin, TemplateView):
 
         if isinstance(result, dict):
             progress = result.get("progress", 0)
-            subscription_count = result.get("subscription_count", 0)
+
         else:
             progress = 100.0 if done else 0.0
-            subscription_count = 0
 
-        ctx.update(
-            {"progress": int(progress), "subscription_count": subscription_count}
-        )
+        ctx.update({"progress": int(progress)})
 
         if not job.ready():
             ctx.update({"state": STATE_RUNNING})
         else:
-            ctx.update({"errors": job.get(), "state": STATE_DONE})
+            print(job.result)
+            result = job.get()
+            ctx.update(
+                {
+                    "errors": result.get("errors", []),
+                    "state": STATE_DONE,
+                    "redirect_to": result.get("redirect", ""),
+                }
+            )
         return ctx
 
 
-class Sheet(DetailView):
+class Sheet(LoginRequiredMixin, DetailView):
     model = ComputedInspectionData
     template_name = "sheets/sheet.html"
     context_object_name = "sheet"
 
 
-def plotly_to_bs64(fig):
-    return b64encode(fig.to_image(format="png")).decode("ascii")
+class PrepareSheetPdf(LoginRequiredMixin, DetailView):
+    model = ComputedInspectionData
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        if self.object.is_graph_rendered:
+            return HttpResponseRedirect(reverse("sheet_pdf", args=[self.object.pk]))
+        if self.object.is_computed:
+            task = render_pdf.delay(self.object.pk)
+            return HttpResponseRedirect(
+                reverse(
+                    "pollable_result_pdf",
+                    kwargs={"compute_pk": self.object.pk, "task_id": task.id},
+                )
+            )
+        return HttpResponseRedirect("/")
 
 
-class SheetPdfHtml(DetailView):
-    """For debugging purposes"""
+class SheetPdfHtml(LoginRequiredMixin, DetailView):
+    """For debugging purpose"""
 
     model = ComputedInspectionData
     template_name = "sheets/sheetpdf.html"
@@ -138,91 +169,22 @@ class SheetPdfHtml(DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data()
-        # bsdd
-        bsdd_created_rectified_data = from_json(self.object.bsdd_created_rectified_data)
-        bsdd_created_rectified_graph = plotly_to_bs64(bsdd_created_rectified_data)
 
-        bsdd_stock_data = from_json(self.object.bsdd_stock_data)
-        bsdd_stock_graph = plotly_to_bs64(bsdd_stock_data)
-
-        # bsda
-        if self.object.bsda_created_rectified_data:
-            bsda_created_rectified_data = from_json(
-                self.object.bsda_created_rectified_data
-            )
-            bsda_created_rectified_graph = plotly_to_bs64(bsda_created_rectified_data)
-        else:
-            bsda_created_rectified_graph = None
-        if self.object.bsda_stock_data:
-            bsda_stock_data = from_json(self.object.bsda_stock_data)
-            bsda_stock_graph = plotly_to_bs64(bsda_stock_data)
-        else:
-            bsda_stock_graph = None
-
-        # bsdasri
-        if self.object.bsdasri_created_rectified_data:
-            bsdasri_created_rectified_data = from_json(
-                self.object.bsdasri_created_rectified_data
-            )
-            bsdasri_created_rectified_graph = plotly_to_bs64(
-                bsdasri_created_rectified_data
-            )
-        else:
-            bsdasri_created_rectified_graph = None
-        if self.object.bsdasri_stock_data:
-            bsdasri_stock_data = from_json(self.object.bsdasri_stock_data)
-            bsdasri_stock_graph = plotly_to_bs64(bsdasri_stock_data)
-        else:
-            bsdasri_stock_graph = None
-        # bsff
-        if self.object.bsff_created_rectified_data:
-            bsff_created_rectified_data = from_json(
-                self.object.bsff_created_rectified_data
-            )
-            bsff_created_rectified_graph = plotly_to_bs64(bsff_created_rectified_data)
-        else:
-            bsff_created_rectified_graph = None
-        if self.object.bsff_stock_data:
-            bsff_stock_data = from_json(self.object.bsff_stock_data)
-            bsff_stock_graph = plotly_to_bs64(bsff_stock_data)
-        else:
-            bsff_stock_graph = None
-
-        # bsvhu
-        if self.object.bsvhu_created_rectified_data:
-            bsvhu_created_rectified_data = from_json(
-                self.object.bsvhu_created_rectified_data
-            )
-            bsvhu_created_rectified_graph = plotly_to_bs64(bsvhu_created_rectified_data)
-        else:
-            bsvhu_created_rectified_graph = None
-
-        if self.object.bsvhu_stock_data:
-            bsvhu_stock_data = from_json(self.object.bsvhu_stock_data)
-            bsvhu_stock_graph = plotly_to_bs64(bsvhu_stock_data)
-        else:
-            bsvhu_stock_graph = None
-
-        waste_origin_data = from_json(self.object.waste_origin_data)
-        waste_origin_graph = plotly_to_bs64(waste_origin_data)
-
-        waste_origin_map_data = from_json(self.object.waste_origin_map)
-        waste_origin_map = plotly_to_bs64(waste_origin_map_data)
-
+        # todo: useless, remove
         ctx.update(
             {
-                "bsdd_created_rectified_graph": bsdd_created_rectified_graph,
-                "bsdd_stock_graph": bsdd_stock_graph,
-                "bsda_created_rectified_graph": bsda_created_rectified_graph,
-                "bsda_stock_graph": bsda_stock_graph,
-                "bsdasri_created_rectified_graph": bsdasri_created_rectified_graph,
-                "bsdasri_stock_graph": bsdasri_stock_graph,
-                "bsff_created_rectified_graph": bsff_created_rectified_graph,
-                "bsff_stock_graph": bsff_stock_graph,
-                "bsvhu_created_rectified_graph": bsvhu_created_rectified_graph,
-                "bsvhu_stock_graph": bsvhu_stock_graph,
-                "waste_origin_graph": waste_origin_graph,
-                "waste_origin_map": waste_origin_map,
+                "bsdd_created_rectified_graph": self.object.bsdd_created_rectified_graph,
+                "bsdd_stock_graph": self.object.bsdd_stock_graph,
+                "bsda_created_rectified_graph": self.object.bsda_created_rectified_graph,
+                "bsda_stock_graph": self.object.bsda_stock_graph,
+                "bsdasri_created_rectified_graph": self.object.bsdasri_created_rectified_graph,
+                "bsdasri_stock_graph": self.object.bsdasri_stock_graph,
+                "bsff_created_rectified_graph": self.object.bsff_created_rectified_graph,
+                "bsff_stock_graph": self.object.bsff_stock_graph,
+                "bsvhu_created_rectified_graph": self.object.bsvhu_created_rectified_graph,
+                "bsvhu_stock_graph": self.object.bsvhu_stock_graph,
+                "waste_origin_graph": self.object.waste_origin_graph,
+                "waste_origin_map_graph": self.object.waste_origin_map_graph,
             }
         )
         return ctx

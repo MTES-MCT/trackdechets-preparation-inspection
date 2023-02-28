@@ -8,7 +8,6 @@
   }
 
 
-
   .sc-medium-number {
     font-size: 1.5em;
     margin-right: 10px;
@@ -26,12 +25,6 @@
 
   .sc-secondary p {
     margin: 0
-  }
-
-  .sc-number-incoming {
-    grid-column: 1 / -1;
-    margin-bottom: 0;
-
   }
 
 
@@ -117,7 +110,7 @@
 
 </style>
 {% if emitted_bs_count and emitted_bs_count != "0" %}
-    <div id="bsdd-stats" class="col-framed col-print">
+    <div class="col-framed col-print">
         <div class="sc-primary">
             <span class="sc-number">{{ emitted_bs_count }}</span>émis
         </div>
@@ -133,7 +126,7 @@
             </p>
         </div>
         <div>
-            <p class="sc-number-incoming">
+            <p class="sc-number">
                 <span class="sc-medium-number">{{ total_incoming_weight }}</span>tonnes
                 entrantes
             </p>

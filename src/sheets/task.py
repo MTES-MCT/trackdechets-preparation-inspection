@@ -1,7 +1,9 @@
 from typing import Dict, List, Tuple
 
 import pandas as pd
-from celery import current_task
+from celery import current_task, group
+from django.db import transaction
+from django.shortcuts import get_object_or_404
 
 from config.celery_app import app
 from sheets.graph_components.data_components import (
@@ -36,6 +38,7 @@ from .database import (
     get_agreement_data,
     get_icpe_data,
 )
+from .utils import data_to_bs64_plot
 
 WASTE_CODES_DATA = load_waste_code_data()
 DEPARTEMENTS_REGION_DATA = load_departements_regions_data()
@@ -137,6 +140,9 @@ class SheetBuilder:
 
 def prepare_sheet_fn(computed_pk):
     computed = ComputedInspectionData.objects.get(pk=computed_pk)
+
+    if not computed.is_initial:
+        return
     siret = computed.org_id
     company_data_df = build_query_company(siret=siret, date_params=["created_at"])
     company_values = company_data_df.iloc[0]
@@ -150,7 +156,7 @@ def prepare_sheet_fn(computed_pk):
     additional_data = {"date_outliers": {}, "quantity_outliers": {}}
 
     computed.agreement_data = get_agreement_data(company_data_df)
-
+    # todo: loop over a config object
     # bsdd
     bsdd_df = build_bsdd_query(siret=computed.org_id, date_params=["processed_at"])
     quantity_outliers = get_quantity_outliers(bsdd_df, "BSDD")
@@ -286,21 +292,91 @@ def prepare_sheet_fn(computed_pk):
     waste_origin_map = WasteOriginsMapComponent(
         siret, bsds_dfs, DEPARTEMENTS_REGION_DATA, REGIONS_GEODATA
     )
-    computed.waste_origin_map = waste_origin_map.build()
+    computed.waste_origin_map_data = waste_origin_map.build()
 
     outliers_data = AdditionalInfoComponent(siret, additional_data)
 
     computed.outliers_data = outliers_data.build()
 
+    computed.state = ComputedInspectionData.StateChoice.COMPUTED
     computed.save()
+
+
+def render_pdf_fn(computed_pk):
+    computed = ComputedInspectionData.objects.get(pk=computed_pk)
+    computed.bsdd_created_rectified_graph = data_to_bs64_plot(
+        computed.bsdd_created_rectified_data
+    )
+
+    computed.bsdd_stock_graph = data_to_bs64_plot(computed.bsdd_stock_data)
+
+    computed.bsda_created_rectified_graph = data_to_bs64_plot(
+        computed.bsda_created_rectified_data
+    )
+    computed.bsda_stock_graph = data_to_bs64_plot(computed.bsda_stock_data)
+
+    computed.bsdasri_created_rectified_graph = data_to_bs64_plot(
+        computed.bsdasri_created_rectified_data
+    )
+    computed.bsdasri_stock_graph = data_to_bs64_plot(computed.bsdasri_stock_data)
+    computed.bsff_created_rectified_graph = data_to_bs64_plot(
+        computed.bsff_created_rectified_data
+    )
+    computed.bsff_stock_graph = data_to_bs64_plot(computed.bsff_stock_data)
+    computed.bsvhu_created_rectified_graph = data_to_bs64_plot(
+        computed.bsvhu_created_rectified_data
+    )
+    computed.bsvhu_stock_graph = data_to_bs64_plot(computed.bsvhu_stock_data)
+    computed.waste_origin_graph = data_to_bs64_plot(computed.waste_origin_data)
+
+    computed.waste_origin_map_graph = data_to_bs64_plot(computed.waste_origin_map_data)
+    computed.save()
+
+
+allowed_names = [
+    "bsdd_created_rectified",
+    "bsdd_stock",
+    "bsda_created_rectified",
+    "bsda_stock",
+    "bsdasri_created_rectified",
+    "bsdasri_stock",
+    "bsff_created_rectified",
+    "bsff_stock",
+    "bsvhu_created_rectified",
+    "bsvhu_stock",
+    "waste_origin",
+    "waste_origin_map",
+]
+
+
+def render_pdf_graph_fn(computed_pk, name):
+    if name not in allowed_names:
+        raise Exception("Invalid argument")
+
+    with transaction.atomic():
+        computed = get_object_or_404(
+            ComputedInspectionData.objects.select_for_update(), pk=computed_pk
+        )
+        if not computed.is_computed:
+            return
+        graph = data_to_bs64_plot(getattr(computed, f"{name}_data"))
+        setattr(computed, f"{name}_graph", graph)
+
+        computed.save()
+
+
+@app.task
+def render_indiv_graph(computed_pk, name):
+    render_pdf_graph_fn(computed_pk, name)
+    return True
 
 
 @app.task
 def prepare_sheet(computed_pk):
     """
-    Pollable task to check siret existence and validity on api.
+     Pollable task to prepare html view.
 
-    :param data: {"siret": row.siret, "row_number": row.index}
+    :param computed_pk: ComputedInspectionData pk
     """
     errors = []
 
@@ -308,4 +384,33 @@ def prepare_sheet(computed_pk):
 
     current_task.update_state(state="DONE", meta={"progress": 100})
 
-    return errors
+    return {"errors": errors, "redirect": "html"}
+
+
+@app.task
+def render_pdf(computed_pk: str):
+    """
+    Pollable task to prepare pdf rendering by computing each graph in a distinct async task.
+
+    :param computed_pk: ComputedInspectionData pk
+    """
+    errors = []
+
+    computed = ComputedInspectionData.objects.get(pk=computed_pk)
+    if not computed.is_computed:
+        return
+
+    graph_rendering = group(
+        (render_indiv_graph.s(computed_pk, name) for name in allowed_names)
+    )
+
+    result = graph_rendering.delay()
+
+    while not result.ready():
+        pass
+
+    computed = ComputedInspectionData.objects.get(pk=computed_pk)
+    computed.mark_as_graph_rendered()
+
+    current_task.update_state(state="DONE", meta={"progress": 100})
+    return {"errors": errors, "redirect": "pdf"}

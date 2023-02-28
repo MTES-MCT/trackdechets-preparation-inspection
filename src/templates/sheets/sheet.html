@@ -7,9 +7,17 @@
         <p>
             <span class="fr-text--bold">{{ sheet.created|date:"DATE_FORMAT" }}</span>
             -
-            <a href="{% url "sheet_pdf" sheet.pk %}" target="_blank">Voir le pdf</a>
+            {% if sheet.is_graph_rendered %}
+                <a href="{% url "sheet_pdf" sheet.pk %}" target="_blank">Voir la fiche en Pdf</a>
+            {% else %}
+                <a href="{% url "prepare_pdf" sheet.pk %}" target="_blank">Voir la fiche en Pdf</a>
+            {% endif %}
             -
-            <a href="{% url "prepare" %}">Voir une autre fiche</a>
+            <a href="{% url "prepare" %}">Préparer une autre fiche</a>
+            {% if user.is_superuser %}
+                -
+                <a href="{% url "sheet_pdf_debug" sheet.pk %}" target="_blank">Pdf debug</a>
+            {% endif %}
         </p>
         <div class="row">
             <div class="cell cell--bordered cell--third">
@@ -44,7 +52,7 @@
             </div>
             {#  bsdd #}
             <h2 class="section__title">Données des bordereaux de suivi dématérialisés issues de Trackdéchets</h2>
-            {% if  sheet.bsdd_created_rectified_data %}
+            {% if sheet.bsdd_created_rectified_data %}
                 <div class="row">
                     <div class="cell cell--bordered cell--third">
                         <h3 class="cell__title">BSD Dangereux émis, reçus et corrigés</h3>
@@ -70,10 +78,13 @@
                     </div>
                     <div class="cell cell--bordered cell--third">
                         <h3 class="cell__title">Quantité de déchets amiante en tonnes</h3>
-                        <div id="bsda_quantity_graph"></div>
+                        <div id="bsda_quantity_graph">
+                        </div>
                     </div>
                     <div class="cell cell--bordered cell--third">
-                        <h3 class="cell__title">BS Amiante sur l'année</h3>
+                        <h3 class="cell__title">
+                            BS Amiante sur l'année
+                        </h3>
                         {% stats_graph sheet "bsda" %}
                     </div>
                 </div>
@@ -215,14 +226,14 @@
             const bsvhu_created_rectified_data = {{ sheet.bsvhu_created_rectified_data }};
             const bsvhu_stock_data = {{ sheet.bsvhu_stock_data }};
             const waste_origin_data = {{ sheet.waste_origin_data }};
-            const waste_origin_map = {{ sheet.waste_origin_map }};
+            const waste_origin_map_data = {{ sheet.waste_origin_map_data }};
 
         {% endautoescape %}
         </script>
         <script>
         const isNotEmpty = (obj) => (Object.keys(obj).length !== 0);
 
-
+        console.log(bsdd_created_rectified_data)
         if (bsdd_created_rectified_data) {
             Plotly.newPlot(
                 'bsdd_emitted_corrected_graph',
@@ -249,6 +260,6 @@
             Plotly.newPlot('bsvhu_quantity_graph', bsvhu_stock_data.data, bsvhu_stock_data.layout, bsvhu_stock_data.config);
         }
         Plotly.newPlot('waste_origin_graph', waste_origin_data.data, waste_origin_data.layout, waste_origin_data.config);
-        Plotly.newPlot('waste_origin_map', waste_origin_map.data, waste_origin_map.layout, waste_origin_map.config);
+        Plotly.newPlot('waste_origin_map_data', waste_origin_map_data.data, waste_origin_map_data.layout, waste_origin_map_data.config);
         </script>
     {% endblock %}

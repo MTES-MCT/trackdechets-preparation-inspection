@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List
 
@@ -6,7 +7,7 @@ import pandas as pd
 
 from sheets.utils import format_number_str
 
-# classes returning a context to be rendered in a non-plltly template
+# classes returning a context to be rendered in a non-plotly template
 
 
 class BSStatsComponent:
@@ -428,9 +429,6 @@ class AdditionalInfoComponent:
         return res
 
 
-import re
-
-
 class ICPEItemsComponent:
     """Component that displays list of ICPE authorized items.
 
@@ -604,7 +602,7 @@ class ICPEItemsComponent:
         return icpe_items
 
     def _check_data_empty(self) -> bool:
-        if not self.icpe_data or len(self.icpe_data) == 0:
+        if self.icpe_data is None or len(self.icpe_data) == 0:
             self.is_component_empty = True
             return self.is_component_empty
 

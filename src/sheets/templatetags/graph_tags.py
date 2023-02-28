@@ -27,8 +27,6 @@ def render_in_out_table(computed, graph_context="web"):
 
 @register.inclusion_tag("sheets/components/icpe.html")
 def render_icpe(computed):
-    icpe = computed.icpe_data
-
     return {
         "icpe_data": computed.icpe_data,
     }

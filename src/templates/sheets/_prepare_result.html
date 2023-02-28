@@ -8,12 +8,20 @@
 {% if state == "done" %}
     {% if not errors %}
         <p class="center">👍 Génération effectuée…</p>
-        <script>
+        {% if redirect_to == "pdf" %}
+            <script>
+                window.setTimeout(function () {
+                    window.location.href = "{% url "sheet_pdf" compute_pk %}";
+                }, 1500);     
+            </script>
+        {% else %}
+            <script>
             window.setTimeout(function () {
-                window.location.href = "{%  url "sheet" compute_pk %}";
+                window.location.href = "{% url "sheet" compute_pk %}";
             }, 1500);
-        </script>
-    {% else %}
-        <p>Erreur</p>
+        {% endif %}
+            </script>
+        {% else %}
+            <p>Erreur</p>
+        {% endif %}
     {% endif %}
-{% endif %}

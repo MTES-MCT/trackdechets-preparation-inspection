@@ -129,28 +129,32 @@ ul { padding-left: 2rem;}
   margin-top: 0;
 }
 
+/*header*/
+.header__text {
+  display: inline-block;
+
+  margin-left: 5mm;
+
+}
 
 .header {
-  display: flex;
+  display: inline-block;
   align-items: center;
   margin-top: 1mm;
   margin-bottom: 3mm;
 }
+
 .header img {
   margin-right: 1cm;
 }
+
 /*layout*/
-.row { display: flex; width: 100%; justify-content: space-between;   margin-bottom: 3mm;}
-
-
-
-/*header*/
-.header__text {
-  display: flex;
-  flex-direction: column;
-  margin-left: 5mm;
-
+.row {
+  display: block;
+  width: 100%;
+  margin-bottom: 3mm;
 }
+
 
 .header__title, .header__company {
   font-size: 20pt;
@@ -161,7 +165,7 @@ ul { padding-left: 2rem;}
 
 /* cells */
 .cell {
-
+  display: inline-block;
   vertical-align: top;
   border-left: 3px solid #e3e3fd;
   padding: 1mm 2mm;
@@ -175,9 +179,11 @@ ul { padding-left: 2rem;}
 .cell > * {
   margin-top: 0;
 }
+
 .cell--third {
-  width: 32.5%;
+  width: 30%;
 }
+
 .cell--bordered {
   border: 1px solid #e3e3fd;
   border-left: 5px solid #e3e3fd

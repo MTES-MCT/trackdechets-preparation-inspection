@@ -1,3 +1,4 @@
+import base64
 import datetime as dt
 
 from braces.views import LoginRequiredMixin
@@ -195,9 +196,11 @@ class SheetPdf(LoginRequiredMixin, DetailView):
     def get(self, request, *args, **kwargs):
         sheet = self.get_object()
         # todo: check state
-        response = HttpResponse(sheet.pdf, content_type="application/pdf")
+        decoded = base64.b64decode(sheet.pdf)
+
+        response = HttpResponse(content_type="application/pdf")
         response[
             "Content-Disposition"
         ] = f'attachment; filename="{sheet.pdf_filename}.pdf"'
-        response.write(sheet.pdf)
+        response.write(decoded)
         return response

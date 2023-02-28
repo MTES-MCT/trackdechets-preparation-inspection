@@ -1,8 +1,8 @@
+import base64
 from typing import Dict, List, Tuple
 
 import pandas as pd
 from celery import current_task, group
-from django.core.files.base import File
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
@@ -595,7 +595,10 @@ def render_pdf_sheet(computed_pk: str):
     html.write_pdf(f"/tmp/{sheet.pk}.pdf", stylesheets=[css])
 
     with open(f"/tmp/{sheet.pk}.pdf", "rb") as f:
-        sheet.pdf.save(f"{sheet.pdf_filename}.pdf", File(f))
+        encoded_string = base64.b64encode(f.read()).decode("ascii")
+
+        sheet.pdf = encoded_string
+        sheet.save()
 
 
 @app.task

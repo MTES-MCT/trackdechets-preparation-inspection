@@ -89,7 +89,7 @@ class ComputedInspectionData(models.Model):
     waste_origin_graph = models.TextField(blank=True)
     waste_origin_map_graph = models.TextField(blank=True)
 
-    pdf = models.ImageField(_("Pdf"), blank=True)
+    pdf = models.TextField(blank=True)
 
     class Meta:
         verbose_name = _("ComputedInspectionData")

@@ -2,11 +2,9 @@ import datetime as dt
 
 from braces.views import LoginRequiredMixin
 from celery.result import AsyncResult
-from django.conf import settings
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import DetailView, FormView, TemplateView
-from django_weasyprint import WeasyTemplateResponseMixin
 
 from config.celery_app import app
 
@@ -191,14 +189,15 @@ class SheetPdfHtml(LoginRequiredMixin, DetailView):
         return ctx
 
 
-class SheetPdf(WeasyTemplateResponseMixin, SheetPdfHtml):
-    pdf_stylesheets = [
-        str(settings.STATICFILES_DIR / "css/pdf-normalize.css"),
-        str(settings.STATICFILES_DIR / "css/pdf.css"),
-    ]
+class SheetPdf(LoginRequiredMixin, DetailView):
+    model = ComputedInspectionData
 
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs, hide_css=True)
-
-    def get_pdf_filename(self):
-        return f"FI-Trackdéchets-{self.object.org_id}-{self.object.created:%d-%m-%Y}"
+    def get(self, request, *args, **kwargs):
+        sheet = self.get_object()
+        # todo: check state
+        response = HttpResponse(sheet.pdf, content_type="application/pdf")
+        response[
+            "Content-Disposition"
+        ] = f'attachment; filename="{sheet.pdf_filename}.pdf"'
+        response.write(sheet.pdf)
+        return response

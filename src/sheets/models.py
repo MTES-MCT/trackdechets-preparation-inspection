@@ -89,6 +89,8 @@ class ComputedInspectionData(models.Model):
     waste_origin_graph = models.TextField(blank=True)
     waste_origin_map_graph = models.TextField(blank=True)
 
+    pdf = models.ImageField(_("Pdf"), blank=True)
+
     class Meta:
         verbose_name = _("ComputedInspectionData")
         verbose_name_plural = _("ComputedInspectionDatas")
@@ -117,6 +119,10 @@ class ComputedInspectionData(models.Model):
     @property
     def is_graph_rendered(self):
         return self.state == self.StateChoice.GRAPH_RENDERED
+
+    @property
+    def pdf_filename(self):
+        return f"FI-Trackdéchets-{self.org_id}-{self.created:%d-%m-%Y}"
 
     def mark_as_computed(self):
         self.state = self.StateChoice.COMPUTED

@@ -125,3 +125,7 @@ LOGIN_REDIRECT_URL = "/"
 USE_THOUSAND_SEPARATOR = True
 
 CSV_FILES_DIR = BASE_DIR / "csv"
+
+
+MEDIA_ROOT = BASE_DIR.parent / "public" / "medias"
+MEDIA_URL = "/medias/"

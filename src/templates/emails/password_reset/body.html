@@ -1,0 +1,10 @@
+Vous recevez ce message en réponse à votre demande de réinitialisation du mot de passe de votre compte sur
+l'application de fiche d'inspection Trackdéchets.
+Veuillez vous rendre sur cette page et choisir un nouveau mot de passe :
+<a rel="noreferrer"
+   href="{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uid token %}">
+    {{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uid token %}
+</a>
+Votre nom d’utilisateur, en cas d’oubli: {{ user.get_username }}
+Merci pour votre confiance.
+L’équipe Trackdéchets.

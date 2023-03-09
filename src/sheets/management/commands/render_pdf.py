@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from ...models import ComputedInspectionData
-from ...task import render_pdf, render_pdf_sheet
+from ...task import render_pdf_sheet
 
 
 class Command(BaseCommand):

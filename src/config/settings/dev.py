@@ -2,10 +2,10 @@ from .base import *  # noqa
 
 SECRET_KEY = "xyzabcdefghu"
 
-INSTALLED_APPS += [
+INSTALLED_APPS += [  # noqa F405
     "whitenoise.runserver_nostatic",
     "debug_toolbar",
-]  # noqa F405
+]
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 

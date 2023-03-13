@@ -3,7 +3,7 @@ from .base import env
 
 SECRET_KEY = env("SECRET_KEY")
 
-ALLOWED_HOSTS = env.list("ALLOWED_HOST")
+ALLOWED_HOSTS = ["localhost"] + env.list("ALLOWED_HOST")
 
 ADMINS = [el.split(":") for el in env.list("DJANGO_ADMINS", default=[])]
 

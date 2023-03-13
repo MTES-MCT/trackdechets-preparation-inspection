@@ -1,2 +1,12 @@
 [flake8]
 ignore = E501,W503
+exclude =
+    .git,
+    .venv,
+    __pycache__,
+    data,
+    docs,
+max-line-length = 120
+max-complexity = 10
+per-file-ignores =
+    test_*.py: F401,F811

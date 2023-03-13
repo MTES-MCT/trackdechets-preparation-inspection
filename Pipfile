@@ -27,8 +27,8 @@ black = "*"
 isort = "*"
 flake8 = "*"
 djlint = "*"
-django-debug-toolbar = "*"
 pywatchman = "*"
+django-debug-toolbar = "*"
 
 [requires]
 python_version = "3.9"

@@ -132,7 +132,7 @@ CSV_FILES_DIR = BASE_DIR / "csv"
 MEDIA_ROOT = BASE_DIR.parent / "public" / "medias"
 MEDIA_URL = "/medias/"
 
-SITE_ID = 1
+SITE_ID = env.int("SITE_ID", 1)
 
 # path to ignore from stats
 REQUEST_IGNORE_PATHS = (rf"^{ADMIN_SLUG}/",)

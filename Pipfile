@@ -21,6 +21,8 @@ sqlalchemy = "==1.4"
 celery = "*"
 redis = "*"
 geopandas = "*"
+django-defender = "*"
+django-request = "*"
 
 [dev-packages]
 black = "*"

@@ -27,6 +27,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
+    "request",  # webstats module
     "accounts",
     "sheets",
 ]
@@ -40,6 +42,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "request.middleware.RequestMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -126,6 +129,10 @@ USE_THOUSAND_SEPARATOR = True
 
 CSV_FILES_DIR = BASE_DIR / "csv"
 
-
 MEDIA_ROOT = BASE_DIR.parent / "public" / "medias"
 MEDIA_URL = "/medias/"
+
+SITE_ID = 1
+
+# path to ignore from stats
+REQUEST_IGNORE_PATHS = (rf"^{ADMIN_SLUG}/",)

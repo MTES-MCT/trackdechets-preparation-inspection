@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
+    "defender",
     "request",  # webstats module
     "accounts",
     "sheets",
@@ -42,6 +43,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "defender.middleware.FailedLoginMiddleware",
     "request.middleware.RequestMiddleware",
 ]
 
@@ -136,3 +138,10 @@ SITE_ID = env.int("SITE_ID", 1)
 
 # path to ignore from stats
 REQUEST_IGNORE_PATHS = (rf"^{ADMIN_SLUG}/",)
+
+# defender
+DEFENDER_REDIS_URL = env.str("DEFENDER_REDIS_URL", "redis://localhost:6379/0")
+DEFENDER_LOGIN_FAILURE_LIMIT_USERNAME = 3
+DEFENDER_LOGIN_FAILURE_LIMIT_IP = 3
+DEFENDER_LOCKOUT_TEMPLATE = "accounts/lockout.html"
+DEFENDER_LOCKOUT_COOLOFF_TIME = 5 * 60  # seconds

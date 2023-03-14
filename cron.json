@@ -1,0 +1,12 @@
+{
+  "jobs": [
+    {
+      "command": "3 23 * * * python /app/src/manage.py cleanup_django_defender --settings=config.settings.production",
+      "size": "M"
+    },
+    {
+      "command": "7 23 * * * python /app/src/manage.py clearsessions --settings=config.settings.production",
+      "size": "M"
+    }
+  ]
+}

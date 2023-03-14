@@ -30,9 +30,6 @@ class Prepare(FormView):
         self.existing_inspection = None
         self.new_inspection = None
 
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
     def check_existing_inspection(self, siret):
         if not CHECK_INSPECTION:
             self.existing_inspection = None

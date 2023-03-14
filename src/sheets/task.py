@@ -1,8 +1,10 @@
 import base64
 
 from celery import current_task, group
+from django.conf import settings
 from django.template.loader import render_to_string
 from weasyprint import CSS, HTML
+from weasyprint.text.fonts import FontConfiguration
 
 from config.celery_app import app
 from sheets.models import ComputedInspectionData
@@ -34,182 +36,6 @@ def prepare_sheet(computed_pk):
     return {"errors": errors, "redirect": "html"}
 
 
-# todo: import
-the_css = """
-/* PDF style sheet - some css properties are not or poorly supported */
-
-/* fonts */
-
-/* Skip most font variants for performance */
-
-html {
-  font-family: Marianne, sans-serif;
-}
-
-body {
-  width: 100%;
-  font-size: 11pt;
-
-}
-
-/* print */
-@page {
-  counter-increment: page;
-  @top-right {
-    content: "Page " counter(page) " sur " counter(pages);
-    font-size: 10pt;
-    color: #444;
-  }
-}
-
-@page vertical {
-  size: A4 portrait;
-  margin: 5mm;
-}
-
-@page horizontal {
-  size: A4 landscape;
-  margin: 5mm;
-}
-
-
-.vertical {
-  page: vertical;
-}
-
-
-.horizontal {
-  page: horizontal;
-}
-
-.pagebreak { page-break-before: always; }
-
-/*reset*/
-ul { padding-left: 2rem;}
-
-/* typo utilities */
-.bold {
-  font-weight: bold;
-}
-
-.pdf-text {
-  font-size: 11pt;
-
-}
-
-/*  Margin utilities */
-
-.mb-0 {
-  margin-bottom: 0;
-}
-
-.mt-0 {
-  margin-top: 0;
-}
-
-/*header*/
-.header__text {
-  display: inline-block;
-
-  margin-left: 5mm;
-
-}
-
-.header {
-  display: inline-block;
-  align-items: center;
-  margin-top: 1mm;
-  margin-bottom: 3mm;
-}
-
-.header img {
-  margin-right: 1cm;
-}
-
-/*layout*/
-.row {
-  display: block;
-  width: 100%;
-  margin-bottom: 3mm;
-}
-
-
-.header__title, .header__company {
-  font-size: 20pt;
-  margin: 0;
-  line-height: 1.2;
-}
-
-
-/* cells */
-.cell {
-  display: inline-block;
-  vertical-align: top;
-  border-left: 3px solid #e3e3fd;
-  padding: 1mm 2mm;
-
-}
-
-.cell:not(:first-child) {
-  margin-left: 3mm;
-}
-
-.cell > * {
-  margin-top: 0;
-}
-
-.cell--third {
-  width: 30%;
-}
-
-.cell--bordered {
-  border: 1px solid #e3e3fd;
-  border-left: 5px solid #e3e3fd
-}
-
-.cell__img {
-  width: 100%;
-}
-
-.cell__title {
-  font-size: 14pt;
-  font-weight: 500;
-}
-
-
-/* Tables*/
-.pdf-table {
-  border: 1px solid #ccc;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-
-.pdf-table thead th {
-  border: 1px solid #ccc;
-  padding: 0 6px;
-}
-
-.pdf-table tbody tr {
-  border: 1px solid #ccc;
-
-}
-
-.pdf-table tbody tr:nth-child(even) {
-  background-color: #f2f2f2;
-}
-
-.pdf-table tbody td {
-  border: 1px solid #ccc;
-  padding: 3px 6px;
-
-}
-
-.td--right {
-  text-align: right;
-}
-"""
-
-
 @app.task
 def render_pdf_sheet(computed_pk: str):
     sheet = ComputedInspectionData.objects.get(pk=computed_pk)
@@ -227,22 +53,25 @@ def render_pdf_sheet(computed_pk: str):
         "bsvhu_stock_graph": sheet.bsvhu_stock_graph,
         "waste_origin_graph": sheet.waste_origin_graph,
         "waste_origin_map_graph": sheet.waste_origin_map_graph,
+        "skip_css": True,
     }
 
     content = render_to_string("sheets/sheetpdf.html", ctx)
+    font_config = FontConfiguration()
+    html = HTML(string=content, base_url=settings.BASE_URL)
+    with open(settings.STATICFILES_DIR / "css" / "pdf.css") as f:
+        css_content = f.read()
 
-    html = HTML(
-        string=content,
-    )
-    css = CSS(string=the_css)
+    css = CSS(string=css_content, font_config=font_config)
+    tmp_pdf_path = f"/tmp/{sheet.pk}.pdf"
 
-    html.write_pdf(f"/tmp/{sheet.pk}.pdf", stylesheets=[css])
+    html.write_pdf(tmp_pdf_path, stylesheets=[css], font_config=font_config)
 
-    with open(f"/tmp/{sheet.pk}.pdf", "rb") as f:
+    with open(tmp_pdf_path, "rb") as f:
         encoded_string = base64.b64encode(f.read()).decode("ascii")
-
         sheet.pdf = encoded_string
         sheet.save()
+    # delete tmp
 
 
 @app.task

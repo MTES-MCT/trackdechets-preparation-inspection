@@ -31,5 +31,3 @@ ALLOWED_NAMES = [  # todo: find a better name
     "waste_origin",
     "waste_origin_map",
 ]
-
-

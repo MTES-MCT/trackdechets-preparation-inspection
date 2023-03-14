@@ -1,9 +1,9 @@
 import re
-from base64 import b64encode
 
 import numpy as np
 import pandas as pd
-from plotly.io import from_json
+
+from sheets.constants import COMPANY_TYPES
 
 
 def get_code_departement(postal_code: str) -> str:
@@ -29,9 +29,7 @@ def format_number_str(input_number: float, precision: int = 2) -> str:
     return re.sub(r"\.0$", "", "{:,}".format(input_number).replace(",", " "))
 
 
-def data_to_bs64_plot(json_plotly):
-    """Takes a precomputed json from plotly and returns a base 64 png to embed in pdf."""
-    if not json_plotly:
-        return ""
-    fig = from_json(json_plotly)
-    return b64encode(fig.to_image(format="png")).decode("ascii")
+def to_verbose_company_types(db_company_types):
+    return [
+        COMPANY_TYPES.get(ct) for ct in db_company_types if ct in COMPANY_TYPES.keys()
+    ]

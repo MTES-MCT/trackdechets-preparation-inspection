@@ -51,7 +51,7 @@ def build_query(
     if date_columns is not None:
         date_params = {e: {"utc": True} for e in date_columns}
     # todo: use utc
-    engine = create_engine(settings.WAREHOUSE_URL)
+    engine = wh_engine
     df = pd.read_sql_query(
         query,
         params=query_params,

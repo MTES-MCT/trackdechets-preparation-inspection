@@ -15,7 +15,12 @@ from .task import prepare_sheet, render_pdf
 
 
 class HomeView(TemplateView):
-    template_name = "base.html"
+    template_name = "home.html"
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return HttpResponseRedirect(reverse("login"))
+        return super().get(request, *args, **kwargs)
 
 
 CHECK_INSPECTION = False
@@ -120,7 +125,6 @@ class FragmentResultView(LoginRequiredMixin, TemplateView):
         if not job.ready():
             ctx.update({"state": STATE_RUNNING})
         else:
-            print(job.result)
             result = job.get()
             ctx.update(
                 {

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+{% block main %}
+    <div class="fr-container">
+        {% if user.is_authenticated %}
+            <p>Bonjour, {{ user.username }}</p>
+            <p>
+                <a href="{% url "prepare" %}">Préparer une fiche</a>
+            </p>
+            {% if user.is_staff %}
+                <p>
+                    <a href="{% url "admin:index" %}">Interface d'administration équipe</a>
+                </p>
+            {% endif %}
+            <p>
+                <a href="{% url "logout" %}">Déconnexion</a>
+            </p>
+        {% else %}
+            <a href="{% url "login" %}">Connectez vous</a>
+        {% endif %}
+    </div>
+{% endblock %}

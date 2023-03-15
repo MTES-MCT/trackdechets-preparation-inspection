@@ -147,3 +147,7 @@ DEFENDER_LOCKOUT_TEMPLATE = "accounts/lockout.html"
 DEFENDER_LOCKOUT_COOLOFF_TIME = 5 * 60  # seconds
 
 BASE_URL = env.str("BASE_URL", "http://127.0.0.1:8000")
+LOGIN_URL = "login"
+LOGOUT_REDIRECT_URL = "home"
+
+PASSWORD_RESET_TIMEOUT = 3600 * 12  # 12 hours

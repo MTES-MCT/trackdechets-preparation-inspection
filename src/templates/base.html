@@ -80,7 +80,7 @@
         {% block main %}
             <div class="fr-container">
                 {% if user.is_authenticated %}
-                    <p>Vous êtes connecté</p>
+                    <p>Bonjour, {{ user.usernmae }}</p>
                     <p>
                         <a href="{% url "prepare" %}">Préparer une fiche</a>
                     </p>

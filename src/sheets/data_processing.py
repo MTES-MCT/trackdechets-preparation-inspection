@@ -16,6 +16,8 @@ from .database import (
     build_bsff_query,
     build_bsvhu_query,
     build_query_company,
+    build_revised_bsda_query,
+    build_revised_bsdd_query,
     get_agreement_data,
     get_icpe_data,
 )
@@ -124,21 +126,30 @@ def get_outliers_datetimes_df(
 
 
 bsds_config = [
-    {"bsd_type": BSDD, "bs_data": build_bsdd_query},
-    {"bsd_type": BSDA, "bs_data": build_bsda_query},
+    {
+        "bsd_type": BSDD,
+        "bs_data": build_bsdd_query,
+        "bs_revised_data": build_revised_bsdd_query,
+    },
+    {
+        "bsd_type": BSDA,
+        "bs_data": build_bsda_query,
+        "bs_revised_data": build_revised_bsda_query,
+    },
     {"bsd_type": BSDASRI, "bs_data": build_bsdasri_query},
     {"bsd_type": BSFF, "bs_data": build_bsff_query},
     {"bsd_type": BSVHU, "bs_data": build_bsvhu_query},
 ]
 
 
-def prepare_sheet_fn(computed_pk):
+def prepare_sheet_fn(computed_pk, force_recompute=False):
     computed = ComputedInspectionData.objects.get(pk=computed_pk)
 
-    if not computed.is_initial:
+    if not computed.is_initial and not force_recompute:
         return
     siret = computed.org_id
     company_data_df = build_query_company(siret=siret, date_params=["created_at"])
+    company_id = company_data_df.iloc[0].id
     company_values = company_data_df.iloc[0]
     computed.company_name = company_values.get("name")
     computed.company_address = company_values.get("address")
@@ -148,6 +159,7 @@ def prepare_sheet_fn(computed_pk):
 
     computed.save()
     bsds_dfs = {}
+    revised_bsds_dfs = {}
     additional_data = {"date_outliers": {}, "quantity_outliers": {}}
 
     computed.agreement_data = get_agreement_data(company_data_df)
@@ -155,6 +167,7 @@ def prepare_sheet_fn(computed_pk):
     # prepare df from sql queries fro each bsd type
     for bsd_config in bsds_config:
         bsd_type = bsd_config["bsd_type"]
+        # compute and store df in a dict
         df = bsd_config["bs_data"](siret=computed.org_id, date_params=["processed_at"])
         bsds_dfs[bsd_type] = df
         quantity_outliers = get_quantity_outliers(df, bsd_type.upper())
@@ -165,6 +178,15 @@ def prepare_sheet_fn(computed_pk):
         )
         if len(date_outliers) > 0:
             additional_data["date_outliers"][bsd_type] = date_outliers
+
+        bs_revised_data = bsd_config.get("bs_revised_data", None)
+        if bs_revised_data:
+            revised_df = bs_revised_data(
+                company_id=company_id,
+                date_params=["created_at"],
+            )
+            if len(revised_df) > 0:
+                revised_bsds_dfs[bsd_type] = revised_df
 
     icpe_data = get_icpe_data(computed.org_id)
 
@@ -177,7 +199,9 @@ def prepare_sheet_fn(computed_pk):
     for bsd_type, df in bsds_dfs.items():
         if not len(df):
             continue
-        created_rectified_graph = BSCreatedAndRevisedComponent(siret, df)
+        created_rectified_graph = BSCreatedAndRevisedComponent(
+            siret, df, revised_bsds_dfs.get(bsd_type, None)
+        )
         setattr(
             computed,
             f"{bsd_type}_created_rectified_data",

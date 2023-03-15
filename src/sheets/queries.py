@@ -41,8 +41,8 @@ select id,
     broker_receipt_id,
     vhu_agrement_demolisseur_id,
     vhu_agrement_broyeur_id
-from trusted_zone_trackdechets.company
-where  siret  = :siret
+from trusted_zone_trackdechets.company c
+where c.siret = :siret
 """
 
 sql_bsda_query_str = """

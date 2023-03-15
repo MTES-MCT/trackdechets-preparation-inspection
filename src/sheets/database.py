@@ -74,13 +74,35 @@ def build_bsdd_query(siret, date_params=None):
     return df
 
 
+def build_revised_bsdd_query(company_id, date_params=None):
+    df = build_query(
+        sql_revised_bsdd_query_str,
+        query_params={"company_id": company_id},
+        date_columns=bsd_date_params,
+        # dtypes=bs_dtypes,
+    )
+
+    return df
+
+
 def build_bsda_query(siret, date_params=None):
     date_params = ["sent_at", "received_at", "processed_at"]
     return build_query(
         sql_bsda_query_str,
         query_params={"siret": siret},
-        date_columns=bsd_date_params,
+        date_columns=["created_at"],
     )
+
+
+def build_revised_bsda_query(company_id, date_params=None):
+    df = build_query(
+        sql_revised_bsda_query_str,
+        query_params={"company_id": company_id},
+        date_columns=["created_at"],
+        # dtypes=bs_dtypes,
+    )
+
+    return df
 
 
 def build_bsdasri_query(siret, date_params=None):

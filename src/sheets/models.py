@@ -71,6 +71,7 @@ class ComputedInspectionData(models.Model):
     outliers_data = models.JSONField(default=dict)
     icpe_data = models.JSONField(default=dict)
     agreement_data = models.JSONField(default=dict)
+    traceability_interruptions_data = models.JSONField(default=dict)
 
     # Prerendered plotly viz
 

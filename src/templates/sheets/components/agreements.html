@@ -1,0 +1,8 @@
+{%  if not agreement_data %}
+    <p>Pas de récépissés ou d'agréments enregistrés sur Trackdéchets pour cet établissement.</p>
+{% endif %}
+{% for agreement in agreement_data %}
+    <p>
+        <span class="fr-text--bold bold">{{ agreement.name }}</span> n°{{ agreement.number }} {{ agreement.validity_str }}
+    </p>
+{% endfor %}

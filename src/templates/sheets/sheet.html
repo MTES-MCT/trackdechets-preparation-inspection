@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% load graph_tags %}
 {% block main %}
-    <style></style>
     <div class="fr-container sheet">
         <h1>{{ sheet.company_name }}</h1>
         <p>
@@ -33,8 +32,8 @@
                 </p>
             </div>
             <div class="cell cell--bordered cell--third">
-                <span class="bold">Agréments et récépissés déclarés sur Trackdéchets</span>
-                <p>Pas de récépissés ou d'agréments enregistrés sur Trackdéchets pour cet établissement.</p>
+                <h3 class="cell__title">Agréments et récépissés déclarés sur Trackdéchets</h3>
+                {% render_agreements sheet %}
             </div>
             <div class="cell cell--bordered cell--third">
                 <p>Les données pour cet établissement peuvent être consultées sur Trackdéchets</p>
@@ -78,13 +77,10 @@
                     </div>
                     <div class="cell cell--bordered cell--third">
                         <h3 class="cell__title">Quantité de déchets amiante en tonnes</h3>
-                        <div id="bsda_quantity_graph">
-                        </div>
+                        <div id="bsda_quantity_graph"></div>
                     </div>
                     <div class="cell cell--bordered cell--third">
-                        <h3 class="cell__title">
-                            BS Amiante sur l'année
-                        </h3>
+                        <h3 class="cell__title">BS Amiante sur l'année</h3>
                         {% stats_graph sheet "bsda" %}
                     </div>
                 </div>
@@ -167,7 +163,18 @@
                     </div>
                 </div>
             {% endif %}
-            {#  end bsff #}
+            {# end bsff #}
+            {# outliers #}
+            {#    Todo: fix outliers#}
+            {#        <div class="row">#}
+            {#            <div class="cell cell--bordered cell--third">#}
+            {#                 <h3 class="cell__title">#}
+            {#                       Informations complémentaires#}
+            {#                    </h3>#}
+            {#                {% render_outliers sheet %}#}
+            {#            </div>#}
+            {#        </div>#}
+            {# end outliers #}
             <h2 class="section__title">
                 Déchets sur site (théorique)
             </h2>
@@ -194,14 +201,19 @@
             <h2 class="section__title">
                 Données installation classée pour la protection de l'Environnement (ICPE)
             </h2>
-            <div class="cell cell--bordered">
-                <p>
-                    Les données ICPE proviennent de la base Géorisque. Ces données ne sont pas à jour et synchronisées pour
-                    le moment faute de lien entre Trackdéchets et Géorisque
-                </p>
-                {% render_icpe sheet %}
+            <p>
+                Les données ICPE proviennent de la base Géorisque. Ces données ne sont pas à jour et synchronisées pour
+                le moment faute de lien entre Trackdéchets et Géorisque.
+            </p>
+            <div class="row">
+                <div class="cell cell--bordered cell--half">
+                    {% render_icpe sheet %}
+                </div>
+                {# end ICPE #}
+                <div class="cell cell--bordered cell--half">
+                    {% render_traceabilty_break sheet %}
+                </div>
             </div>
-            {# end ICPE #}
             {# input/output #}
             <h2 class="section__title">
                 Liste des déchets entrants/sortants
@@ -233,8 +245,7 @@
         <script>
         const isNotEmpty = (obj) => (Object.keys(obj).length !== 0);
 
-        console.log(bsdd_created_rectified_data)
-        if (bsdd_created_rectified_data) {
+        if (isNotEmpty(bsdd_created_rectified_data)) {
             Plotly.newPlot(
                 'bsdd_emitted_corrected_graph',
                 bsdd_created_rectified_data.data,

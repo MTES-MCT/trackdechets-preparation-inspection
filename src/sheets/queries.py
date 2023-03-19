@@ -195,10 +195,11 @@ and id_regime in ('E','DC','D','A')
 sql_get_trader_receipt_id_data = """
 SELECT id,
     receipt_number,
-    validity_limit,
+    validity_limit
 FROM trusted_zone_trackdechets.trader_receipt
 WHERE id = :id
 """
+
 sql_get_transporter_receipt_id_data_str = """
 SELECT id,
     receipt_number,

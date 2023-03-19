@@ -30,3 +30,24 @@ def render_icpe(computed):
     return {
         "icpe_data": computed.icpe_data,
     }
+
+
+@register.inclusion_tag("sheets/components/traceabilty_break.html")
+def render_traceabilty_break(computed):
+    return {
+        "traceability_interruptions_data": computed.traceability_interruptions_data,
+    }
+
+
+@register.inclusion_tag("sheets/components/outliers.html")
+def render_outliers(computed):
+    return {
+        "outliers_data": computed.outliers_data,
+    }
+
+
+@register.inclusion_tag("sheets/components/agreements.html")
+def render_agreements(computed):
+    return {
+        "agreement_data": computed.agreement_data,
+    }

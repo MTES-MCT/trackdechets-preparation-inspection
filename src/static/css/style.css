@@ -1,3 +1,20 @@
+/* Typography */
+.td-font-display {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-right: 0.5rem;
+}
+
+.td-font-lead {
+  font-size: 12pt;
+  font-weight: 700;
+}
+
+/* cells */
+.row {
+  display: flex;
+  gap: 10px;
+}
 .cell__img {
   width: 100%;
 }
@@ -7,36 +24,40 @@
 }
 
 .cell {
-  display: inline-block;
 
   vertical-align: top;
   padding: 1rem 0.5rem;}
 
 .cell--third {
-  width: 33%;
+  flex-basis: 33%;
+}
+
+.cell--half {
+  flex-basis: 49%;
+}
+
+.cell--two-thirds {
+  flex-basis: 66%;
 }
 
 .cell--bordered {
   border: 1px solid #e3e3fd;
   border-left: 5px solid #e3e3fd
 }
+.cell__title {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
 
+/* sections */
 .section__title {
   margin-top: 2rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   font-size: 2rem;
 }
 
-.row {
-  margin-top: 3rem;
-}
-
-.cell__title {
-
-  font-size: 1rem;
-  margin-bottom: 2rem;
-}
-
-.fr-table .td--right {
+/* tables */
+table .td--right {
   text-align: right;
 }

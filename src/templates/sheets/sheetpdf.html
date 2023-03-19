@@ -30,9 +30,9 @@
                         <span class="bold">Fiche éditée le :</span>{{ sheet.created|date:"DATETIME_FORMAT" }}
                     </p>
                 </div>
-                <div class="cell cell--third">
-                    <span class="bold">Agréments et récépissés déclarés sur Trackdéchets</span>
-                    <p>Pas de récépissés ou d'agréments enregistrés sur Trackdéchets pour cet établissement.</p>
+                <div class="cell cell--bordered cell--third">
+                    <h3 class="cell__title">Agréments et récépissés déclarés sur Trackdéchets</h3>
+                    {% render_agreements sheet %}
                 </div>
                 <div class="cell cell--third">
                     <p class="pdf-text">Les données pour cet établissement peuvent être consultées sur Trackdéchets</p>
@@ -114,9 +114,7 @@
                              class="cell__img">
                     </div>
                     <div class="cell cell--bordered cell--third">
-                        <p class="cell__title">
-                            Quantité de déchets Fluides en tonnes
-                        </p>
+                        <p class="cell__title">Quantité de déchets Fluides en tonnes</p>
                         <img src="data:image/png;base64,{{ bsff_stock_graph }}" class="cell__img">
                     </div>
                     <div class="cell cell--bordered cell--third">
@@ -178,19 +176,27 @@
             </div>
             {# end on site #}
             {# ICPE #}
-            <h2 class="section__title">
+            <h3 class="section__title">
                 Données installation classée pour la protection de l'Environnement (ICPE)
-            </h2>
-            <div class="cell cell--bordered">
-                <p>
-                    Les données ICPE proviennent de la base Géorisque. Ces données ne sont pas à jour et synchronisées
-                    pour
-                    le moment faute de lien entre Trackdéchets et Géorisque
-                </p>
-                {% render_icpe sheet %}
+            </h3>
+            <p>
+                Les données ICPE proviennent de la base Géorisque. Ces données ne sont pas à jour et synchronisées
+                pour le moment faute de lien entre Trackdéchets et Géorisque
+            </p>
+            <div class="row">
+                <div class="cell cell--bordered">
+                    {% render_icpe sheet %}
+                    {# end ICPE #}
+                </div>
             </div>
-            {# end ICPE #}
-            {# input/output #}
+            <div class="row">
+                {# traceability #}
+                <div class="cell cell--bordered">
+                    {% render_traceabilty_break sheet %}
+                </div>
+                {# end traceability #}
+                {# input/output #}
+            </div>
         </section>
         <section class="vertical">
             <div>

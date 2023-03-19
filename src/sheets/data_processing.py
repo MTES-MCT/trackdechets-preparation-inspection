@@ -26,7 +26,9 @@ from .graph_components.data_components import (
     BSStatsComponent,
     ICPEItemsComponent,
     InputOutputWasteTableComponent,
+    ReceiptAgrementsComponent,
     StorageStatsComponent,
+    TraceabilityInterruptionsComponent,
 )
 from .graph_components.viz_components import (
     BSCreatedAndRevisedComponent,
@@ -63,19 +65,19 @@ def get_quantity_outliers(df: pd.DataFrame, bs_type: str) -> pd.DataFrame:
     """
 
     df = df.copy()
-    if bs_type in ["BSDD", "BSDA"]:
+    if bs_type in [BSDD, BSDA]:
         df_quantity_outliers = df[
             (df["quantity_received"] > 40)
             & (df["transporter_transport_mode"] == "ROAD")
         ]
-    elif bs_type == "BSDASRI":
+    elif bs_type == BSDASRI:
         df_quantity_outliers = df[
             (df["quantity_received"] > 20)
             & (df["transporter_transport_mode"] == "ROAD")
         ]
-    elif bs_type == "BSVHU":
+    elif bs_type == BSVHU:
         df_quantity_outliers = df[(df["quantity_received"] > 40)]
-    elif bs_type == "BSFF":
+    elif bs_type == BSFF:
         df_quantity_outliers = df[df["quantity_received"] > 20]
 
     return df_quantity_outliers
@@ -162,7 +164,8 @@ def prepare_sheet_fn(computed_pk, force_recompute=False):
     revised_bsds_dfs = {}
     additional_data = {"date_outliers": {}, "quantity_outliers": {}}
 
-    computed.agreement_data = get_agreement_data(company_data_df)
+    agreement_data = ReceiptAgrementsComponent(get_agreement_data(company_data_df))
+    computed.agreement_data = agreement_data.build()
 
     # prepare df from sql queries for each bsd type
     for bsd_config in bsds_config:
@@ -170,7 +173,7 @@ def prepare_sheet_fn(computed_pk, force_recompute=False):
         # compute and store df in a dict
         df = bsd_config["bs_data"](siret=computed.org_id, date_params=["processed_at"])
         bsds_dfs[bsd_type] = df
-        quantity_outliers = get_quantity_outliers(df, bsd_type.upper())
+        quantity_outliers = get_quantity_outliers(df, bsd_type)
         if len(quantity_outliers) > 0:
             additional_data["quantity_outliers"][bsd_type.upper()] = quantity_outliers
         bs_data_df, date_outliers = get_outliers_datetimes_df(
@@ -213,7 +216,6 @@ def prepare_sheet_fn(computed_pk, force_recompute=False):
         stats_graph = BSStatsComponent(siret, df)
         setattr(computed, f"{bsd_type}_stats_data", stats_graph.build())
 
-    # table
     table = InputOutputWasteTableComponent(siret, bsds_dfs, WASTE_CODES_DATA)
     computed.input_output_waste_data = table.build()
 
@@ -231,6 +233,11 @@ def prepare_sheet_fn(computed_pk, force_recompute=False):
     outliers_data = AdditionalInfoComponent(siret, additional_data)
 
     computed.outliers_data = outliers_data.build()
+
+    traceability_interruptions = TraceabilityInterruptionsComponent(
+        siret, bsds_dfs[BSDD], WASTE_CODES_DATA
+    )
+    computed.traceability_interruptions_data = traceability_interruptions.build()
 
     computed.state = ComputedInspectionData.StateChoice.COMPUTED
     computed.save()

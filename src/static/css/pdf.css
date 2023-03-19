@@ -1,9 +1,8 @@
 /* PDF style sheet - some css properties are not or poorly supported */
+/* flexbox and css grids not supported*/
 
 /* fonts */
-
 /* Skip most font variants for performance */
-
 
 @font-face {
   font-family: "Marianne";
@@ -14,13 +13,12 @@
 
 
 html {
-  font-family: Marianne, serif; /* todo: switch to sansserif */
+  font-family: Marianne, sans-serif;
 }
 
 body {
   width: 100%;
-  font-size: 11pt;
-
+  font-size: 10pt;
 }
 
 /* print */
@@ -64,7 +62,7 @@ ul { padding-left: 2rem;}
 }
 
 .pdf-text {
-  font-size: 11pt;
+  font-size: 9pt;
 
 }
 
@@ -81,9 +79,7 @@ ul { padding-left: 2rem;}
 /*header*/
 .header__text {
   display: inline-block;
-
   margin-left: 5mm;
-
 }
 
 .header {
@@ -118,7 +114,6 @@ ul { padding-left: 2rem;}
   vertical-align: top;
   border-left: 3px solid #e3e3fd;
   padding: 1mm 2mm;
-
 }
 
 .cell:not(:first-child) {
@@ -143,7 +138,7 @@ ul { padding-left: 2rem;}
 }
 
 .cell__title {
-  font-size: 14pt;
+  font-size: 11pt;
   font-weight: 500;
 }
 
@@ -177,4 +172,17 @@ ul { padding-left: 2rem;}
 
 .td--right {
   text-align: right;
+}
+
+/*Typography*/
+
+.td-font-lead {
+  font-size: 12pt;
+  font-weight: 700;
+}
+
+.td-font-display {
+  font-size: 14pt;
+  font-weight: 700;
+  margin-right: 0.5rem;
 }

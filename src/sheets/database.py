@@ -138,27 +138,27 @@ def build_query_company(siret, date_params=None):
 
 company_query_config = [
     {
-        "name": "transporter_receipt",
+        "name": "Récépissé Transporteur",
         "column": "transporter_receipt_id",
         "sql": sql_get_transporter_receipt_id_data_str,
     },
     {
-        "name": "trader_receipt",
+        "name": "Récépissé Négociant",
         "column": "trader_receipt_id",
         "sql": sql_get_trader_receipt_id_data,
     },
     {
-        "name": "broker_receip",
+        "name": "Récépissé Courtier",
         "column": "broker_receipt_id",
         "sql": sql_get_broker_receipt_id_data,
     },
     {
-        "name": "vhu_agrement_demolisseur",
+        "name": "Agrément Démolisseur ",
         "column": "vhu_agrement_demolisseur_id",
         "sql": sql_get_vhu_agrement_data,
     },
     {
-        "name": "vhu_agrement_broyeu",
+        "name": "Agrément Broyeur",
         "column": "vhu_agrement_broyeur_id",
         "sql": sql_get_vhu_agrement_data,
     },
@@ -176,7 +176,7 @@ def get_agreement_data(company_data_df: pd.DataFrame) -> dict:
                 query_params={"id": id_},
             )
             if len(df) != 0:
-                res[config["name"]] = df.to_json()
+                res[config["name"]] = df
     return res
 
 

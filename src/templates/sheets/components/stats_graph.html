@@ -4,14 +4,11 @@
     font-size: 1.2rem;
     font-weight: 700;
     margin-right: 0.5rem;
-
   }
 
-
   .sc-medium-number {
-    font-size: 1.5em;
+    font-size: 2rem;
     margin-right: 10px;
-
   }
 
   .sc-primary {
@@ -106,28 +103,26 @@
     font-size: x-large;
 
   }
-
-
 </style>
 {% if emitted_bs_count and emitted_bs_count != "0" %}
     <div class="col-framed col-print">
         <div class="sc-primary">
-            <span class="sc-number">{{ emitted_bs_count }}</span>émis
+            <span class="td-font-lead">{{ emitted_bs_count }}</span> émis
         </div>
         <div class="sc-secondary">
             <p>
-                <span class="sc-number">{{ archived_bs_count }}</span>archivés
+                <span class="td-font-lead">{{ archived_bs_count }}</span> archivés
             </p>
             <p>
-                <span class="sc-number">{{ revised_bs_count }}</span>corrigés
+                <span class="td-font-lead">{{ revised_bs_count }}</span> corrigés
             </p>
             <p>
-                <span class="sc-number">{{ more_than_one_month_bs_count }}</span>réponses supérieures à un mois
+                <span class="td-font-lead">{{ more_than_one_month_bs_count }}</span> réponses supérieures à un mois
             </p>
         </div>
         <div>
             <p class="sc-number">
-                <span class="sc-medium-number">{{ total_incoming_weight }}</span>tonnes
+                <span class="td-font-display">{{ total_incoming_weight }}</span>tonnes
                 entrantes
             </p>
         </div>

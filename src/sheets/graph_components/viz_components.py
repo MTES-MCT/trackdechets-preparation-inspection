@@ -268,9 +268,7 @@ class BSCreatedAndRevisedComponent:
             max_points = max(max_points, len(bs_revised_by_month))
 
         fig.update_layout(
-            margin={
-                "t": 20,
-            },
+            margin={"t": 20, "l": 35, "r": 5},
             legend={"orientation": "h", "y": -0.05, "x": 0.5},
             showlegend=True,
             paper_bgcolor="#fff",

@@ -5,6 +5,10 @@ from django.urls import include, path
 
 from sheets.views import HomeView
 
+# Admin config
+admin.site.index_title = "Administration de l'outil de fiche d'inspection"
+
+
 urlpatterns = [
     path("grappelli/", include("grappelli.urls")),  # grappelli URLS
     path(f"{settings.ADMIN_SLUG}/", admin.site.urls),

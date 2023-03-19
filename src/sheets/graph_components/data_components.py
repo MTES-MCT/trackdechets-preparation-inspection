@@ -10,6 +10,7 @@ from sheets.utils import format_number_str
 # classes returning a context to be rendered in a non-plotly template
 
 
+# todo: rename
 class BSStatsComponent:
     """Component that displays aggregated data about 'bordereaux' and estimations of the onsite waste stock.
 

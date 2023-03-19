@@ -62,7 +62,11 @@ def render_pdf_sheet(computed_pk: str):
     with open(settings.STATICFILES_DIR / "css" / "pdf.css") as f:
         css_content = f.read()
 
-    css = CSS(string=css_content, font_config=font_config)
+    css = CSS(
+        string=css_content,
+        font_config=font_config,
+        base_url=f"{settings.BASE_URL}/static/css/",
+    )
     tmp_pdf_path = f"/tmp/{sheet.pk}.pdf"
 
     html.write_pdf(tmp_pdf_path, stylesheets=[css], font_config=font_config)

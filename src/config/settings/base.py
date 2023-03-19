@@ -136,8 +136,13 @@ MEDIA_URL = "/medias/"
 
 SITE_ID = env.int("SITE_ID", 1)
 
-# path to ignore from stats
-REQUEST_IGNORE_PATHS = (rf"^{ADMIN_SLUG}/",)
+# path to ignore for requests stats
+REQUEST_IGNORE_PATHS = (
+    rf"^{ADMIN_SLUG}/",
+    r"/sheets/compute-fragment/",
+    r"/static/",
+    r"favicon.ico",
+)
 
 # defender
 DEFENDER_REDIS_URL = env.str("DEFENDER_REDIS_URL", "redis://localhost:6379/0")

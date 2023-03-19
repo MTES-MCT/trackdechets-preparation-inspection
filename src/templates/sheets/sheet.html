@@ -186,7 +186,7 @@
                     <h3 class="cell__title">
                         Origine des déchets
                     </h3>
-                    <div id="waste_origin_map">
+                    <div id="waste_origin_map_graph">
                     </div>
                 </div>
             </div>
@@ -260,6 +260,6 @@
             Plotly.newPlot('bsvhu_quantity_graph', bsvhu_stock_data.data, bsvhu_stock_data.layout, bsvhu_stock_data.config);
         }
         Plotly.newPlot('waste_origin_graph', waste_origin_data.data, waste_origin_data.layout, waste_origin_data.config);
-        Plotly.newPlot('waste_origin_map_data', waste_origin_map_data.data, waste_origin_map_data.layout, waste_origin_map_data.config);
+        Plotly.newPlot('waste_origin_map_graph', waste_origin_map_data.data, waste_origin_map_data.layout, waste_origin_map_data.config);
         </script>
     {% endblock %}

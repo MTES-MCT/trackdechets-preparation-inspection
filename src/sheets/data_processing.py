@@ -164,7 +164,7 @@ def prepare_sheet_fn(computed_pk, force_recompute=False):
 
     computed.agreement_data = get_agreement_data(company_data_df)
 
-    # prepare df from sql queries fro each bsd type
+    # prepare df from sql queries for each bsd type
     for bsd_config in bsds_config:
         bsd_type = bsd_config["bsd_type"]
         # compute and store df in a dict
@@ -211,7 +211,7 @@ def prepare_sheet_fn(computed_pk, force_recompute=False):
         setattr(computed, f"{bsd_type}_stock_data", stock_graph.build())
 
         stats_graph = BSStatsComponent(siret, df)
-        setattr(computed, f"{bsd_type}_stats_graph", stats_graph.build())
+        setattr(computed, f"{bsd_type}_stats_data", stats_graph.build())
 
     # table
     table = InputOutputWasteTableComponent(siret, bsds_dfs, WASTE_CODES_DATA)

@@ -21,6 +21,7 @@ DEBUG = env("DEBUG")
 # Application definition
 
 INSTALLED_APPS = [
+    "grappelli",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -156,3 +157,5 @@ LOGIN_URL = "login"
 LOGOUT_REDIRECT_URL = "home"
 
 PASSWORD_RESET_TIMEOUT = 3600 * 12  # 12 hours
+
+GRAPPELLI_ADMIN_TITLE = "Trackdéchets - Inspection"

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "e59dadf88ae9aad29f14df795343dcb64fbdbf9847e22d4c2835b4d302b7d584"
+            "sha256": "42be034adcb7cfd774effe51942c86c5722117f96c6be003dc2976ba5c4e47b5"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -312,6 +312,14 @@
             "index": "pypi",
             "version": "==0.10.0"
         },
+        "django-grappelli": {
+            "hashes": [
+                "sha256:344bff45a10bf9fa251d9e0ec724a3ed1bae5dada58bbc1c030421ce9d428a72",
+                "sha256:f2d515de1f58c50b0f723fdf99cea66f4a26a8e9c9229291f8cee47a2dc94110"
+            ],
+            "index": "pypi",
+            "version": "==3.0.4"
+        },
         "django-registration": {
             "hashes": [
                 "sha256:884a4cc9ec87b9f1c0ceb6b6c4b7ba491c1877997a3cd29cc923697dac785eb8",
@@ -391,11 +399,11 @@
                 "woff"
             ],
             "hashes": [
-                "sha256:909c104558835eac27faeb56be5a4c32694192dca123d073bf746ce9254054af",
-                "sha256:f5e764e1fd6ad54dfc201ff32af0ba111bcfbe0d05b24540af74c63db4ed6390"
+                "sha256:85245aa2fd4cf502a643c9a9a2b5a393703e150a6eaacc3e0e84bb448053f061",
+                "sha256:e2d9f10337c9e3b17f9bce17a60a16a885a7d23b59b7f45ce07ea643e5580439"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==4.39.0"
+            "version": "==4.39.2"
         },
         "geopandas": {
             "hashes": [
@@ -798,11 +806,11 @@
         },
         "pyphen": {
             "hashes": [
-                "sha256:847f57a043a58408f24670ae0184ff6edfb5fd5731743208228c028ddc514438",
-                "sha256:e88cfb46aed61f4c7fe49592ff322e6266485fd2447c818a9123485cd92b7ef4"
+                "sha256:414c9355958ca3c6a3ff233f65678c245b8ecb56418fb291e2b93499d61cd510",
+                "sha256:596c8b3be1c1a70411ba5f6517d9ccfe3083c758ae2b94a45f2707346d8e66fa"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==0.13.2"
+            "version": "==0.14.0"
         },
         "pyproj": {
             "hashes": [
@@ -1279,11 +1287,11 @@
         },
         "pathspec": {
             "hashes": [
-                "sha256:3a66eb970cbac598f9e5ccb5b2cf58930cd8e3ed86d393d541eaf2d8b1705229",
-                "sha256:64d338d4e0914e91c1792321e6907b5a593f1ab1851de7fc269557a21b30ebbc"
+                "sha256:2798de800fa92780e33acca925945e9a19a133b715067cf165b8866c15a31687",
+                "sha256:d8af70af76652554bd134c22b3e8a1cc46ed7d91edcdd721ef1a0c51a84a5293"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==0.11.0"
+            "version": "==0.11.1"
         },
         "platformdirs": {
             "hashes": [

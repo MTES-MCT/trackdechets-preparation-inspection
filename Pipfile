@@ -23,6 +23,7 @@ redis = "*"
 geopandas = "*"
 django-defender = "*"
 django-request = "*"
+django-grappelli = "*"
 
 [dev-packages]
 black = "*"

@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 
 from sheets.utils import format_number_str, get_code_departement
 
-# classes returning a serialized (json) plotly vizualization to be consumed by a plotly script
+# classes returning a serialized (json) plotly visualization to be consumed by a plotly script
 
 
 class BsddGraph:
@@ -138,7 +138,7 @@ class BsddGraph:
         return self.figure.to_json()
 
 
-class BSCreatedAndRevisedComponent:
+class BsdCreatedAndRevisedProcessor:
     "cf BSCreatedAndRevisedComponent"
     """Component with a Bar Figure of created and revised 'bordereaux'.
 
@@ -303,7 +303,7 @@ class BSCreatedAndRevisedComponent:
         return self.figure.to_json()
 
 
-class WasteOriginsComponent:
+class WasteOriginProcessor:
     """Component with a bar figure representing the quantity of waste received by départements (only TOP 6).
 
     Parameters
@@ -436,7 +436,7 @@ class WasteOriginsComponent:
         return self.figure.to_json()
 
 
-class WasteOriginsMapComponent:
+class WasteOriginsMapProcessor:
     """Component with a bubble map figure representing the quantity of waste received by regions.
 
     Parameters

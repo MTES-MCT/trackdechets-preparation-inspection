@@ -21,20 +21,20 @@ from .database import (
     get_agreement_data,
     get_icpe_data,
 )
-from .graph_components.data_components import (
-    AdditionalInfoComponent,
-    BSStatsComponent,
-    ICPEItemsComponent,
-    InputOutputWasteTableComponent,
-    ReceiptAgrementsComponent,
-    StorageStatsComponent,
-    TraceabilityInterruptionsComponent,
+from .graph_processors.html_components_processors import (
+    AdditionalInfoProcessor,
+    BsdStatsProcessor,
+    ICPEItemsProcessor,
+    InputOutputWasteTableProcessor,
+    ReceiptAgrementsProcessor,
+    StorageStatsProcessor,
+    TraceabilityInterruptionsProcessor,
 )
-from .graph_components.viz_components import (
-    BSCreatedAndRevisedComponent,
+from .graph_processors.plotly_components_processors import (
+    BsdCreatedAndRevisedProcessor,
     BsddGraph,
-    WasteOriginsComponent,
-    WasteOriginsMapComponent,
+    WasteOriginProcessor,
+    WasteOriginsMapProcessor,
 )
 from .models import ComputedInspectionData
 from .utils import to_verbose_company_types
@@ -164,7 +164,7 @@ def prepare_sheet_fn(computed_pk, force_recompute=False):
     revised_bsds_dfs = {}
     additional_data = {"date_outliers": {}, "quantity_outliers": {}}
 
-    agreement_data = ReceiptAgrementsComponent(get_agreement_data(company_data_df))
+    agreement_data = ReceiptAgrementsProcessor(get_agreement_data(company_data_df))
     computed.agreement_data = agreement_data.build()
 
     # prepare df from sql queries for each bsd type
@@ -193,7 +193,7 @@ def prepare_sheet_fn(computed_pk, force_recompute=False):
 
     icpe_data = get_icpe_data(computed.org_id)
 
-    comp = ICPEItemsComponent(
+    comp = ICPEItemsProcessor(
         computed.org_id, icpe_data, bsds_dfs, PROCESSING_OPERATION_CODE_RUBRIQUE_MAPPING
     )
     computed.icpe_data = comp.build()
@@ -202,7 +202,7 @@ def prepare_sheet_fn(computed_pk, force_recompute=False):
     for bsd_type, df in bsds_dfs.items():
         if not len(df):
             continue
-        created_rectified_graph = BSCreatedAndRevisedComponent(
+        created_rectified_graph = BsdCreatedAndRevisedProcessor(
             siret, df, revised_bsds_dfs.get(bsd_type, None)
         )
         setattr(
@@ -213,28 +213,28 @@ def prepare_sheet_fn(computed_pk, force_recompute=False):
         stock_graph = BsddGraph(siret, df)
         setattr(computed, f"{bsd_type}_stock_data", stock_graph.build())
 
-        stats_graph = BSStatsComponent(siret, df)
+        stats_graph = BsdStatsProcessor(siret, df)
         setattr(computed, f"{bsd_type}_stats_data", stats_graph.build())
 
-    table = InputOutputWasteTableComponent(siret, bsds_dfs, WASTE_CODES_DATA)
+    table = InputOutputWasteTableProcessor(siret, bsds_dfs, WASTE_CODES_DATA)
     computed.input_output_waste_data = table.build()
 
-    storage_stats = StorageStatsComponent(siret, bsds_dfs, WASTE_CODES_DATA)
+    storage_stats = StorageStatsProcessor(siret, bsds_dfs, WASTE_CODES_DATA)
     computed.storage_data = storage_stats.build()
 
-    waste_origin = WasteOriginsComponent(siret, bsds_dfs, DEPARTEMENTS_REGION_DATA)
+    waste_origin = WasteOriginProcessor(siret, bsds_dfs, DEPARTEMENTS_REGION_DATA)
     computed.waste_origin_data = waste_origin.build()
 
-    waste_origin_map = WasteOriginsMapComponent(
+    waste_origin_map = WasteOriginsMapProcessor(
         siret, bsds_dfs, DEPARTEMENTS_REGION_DATA, REGIONS_GEODATA
     )
     computed.waste_origin_map_data = waste_origin_map.build()
 
-    outliers_data = AdditionalInfoComponent(siret, additional_data)
+    outliers_data = AdditionalInfoProcessor(siret, additional_data)
 
     computed.outliers_data = outliers_data.build()
 
-    traceability_interruptions = TraceabilityInterruptionsComponent(
+    traceability_interruptions = TraceabilityInterruptionsProcessor(
         siret, bsds_dfs[BSDD], WASTE_CODES_DATA
     )
     computed.traceability_interruptions_data = traceability_interruptions.build()

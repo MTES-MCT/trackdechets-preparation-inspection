@@ -11,7 +11,7 @@ from sheets.utils import format_number_str
 
 
 # todo: rename
-class BSStatsComponent:
+class BsdStatsProcessor:
     """Component that displays aggregated data about 'bordereaux' and estimations of the onsite waste stock.
 
     Parameters
@@ -159,7 +159,7 @@ class BSStatsComponent:
         return self.build_context()
 
 
-class InputOutputWasteTableComponent:
+class InputOutputWasteTableProcessor:
     """Component that displays an exhaustive tables with input and output wastes classified by waste codes.
 
     Parameters
@@ -242,7 +242,7 @@ class InputOutputWasteTableComponent:
         return self.build_context()
 
 
-class StorageStatsComponent:
+class StorageStatsProcessor:
     """Component that displays waste stock on site by waste codes (TOP 4) and total stock in tons.
 
     Parameters
@@ -335,7 +335,7 @@ class StorageStatsComponent:
         return self._add_stats()
 
 
-class AdditionalInfoComponent:
+class AdditionalInfoProcessor:
     """Component that displays additional informations like outliers quantities or inconsistent dates.
 
     Parameters
@@ -430,7 +430,7 @@ class AdditionalInfoComponent:
         return res
 
 
-class ICPEItemsComponent:
+class ICPEItemsProcessor:
     """Component that displays list of ICPE authorized items.
 
     Parameters
@@ -621,7 +621,7 @@ class ICPEItemsComponent:
         return []
 
 
-class TraceabilityInterruptionsComponent:
+class TraceabilityInterruptionsProcessor:
     """Component that displays list of ICPE authorized items.
 
     Parameters
@@ -711,7 +711,7 @@ class TraceabilityInterruptionsComponent:
         return []
 
 
-class ReceiptAgrementsComponent:
+class ReceiptAgrementsProcessor:
     """Component that displays informations about the company receipts and agreements.
 
     Parameters

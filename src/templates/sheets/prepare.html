@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block main %}
-    <div class="fr-container">
+    <div class="fr-container fr-mt-1v">
         <div class="fr-col-6">
             <h3>
                 Préparer une fiche d'inspection
@@ -11,7 +11,7 @@
                 Entrez le siret d'un établissement, vous pourrez accéder à des statistiques le concernant et exporter un
                 pdf
             </p>
-            <form action="" method="post" style="width: ">
+            <form action="" method="post">
                 {% csrf_token %}
                 {% include "forms/_form_snippet.html" with form=form %}
                 <button class="fr-btn">Préparer la fiche</button>

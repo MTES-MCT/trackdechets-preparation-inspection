@@ -133,6 +133,7 @@ class FragmentResultView(LoginRequiredMixin, TemplateView):
                     "redirect_to": result.get("redirect", ""),
                 }
             )
+        print(ctx)
         return ctx
 
 

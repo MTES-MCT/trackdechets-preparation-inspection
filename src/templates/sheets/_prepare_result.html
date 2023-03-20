@@ -7,12 +7,14 @@
 {% endif %}
 {% if state == "done" %}
     {% if not errors %}
-        <p class="center">👍 Génération effectuée…</p>
+        <div class="fr-container fr-mt-1v">
+            <p class="center">👍 Génération effectuée…</p>
+        </div>
         {% if redirect_to == "pdf" %}
             <script>
                 window.setTimeout(function () {
                     window.location.href = "{% url "sheet_pdf" compute_pk %}";
-                }, 1500);     
+                }, 1500);
             </script>
         {% else %}
             <script>
@@ -22,6 +24,10 @@
         {% endif %}
             </script>
         {% else %}
-            <p>Erreur</p>
+            <div class="fr-container fr-mt-1v">
+                <p>
+                    💥 Une erreur est survenue -  <a href="{% url "prepare" %}">Préparer une autre fiche</a>
+                </p>
+            </div>
         {% endif %}
     {% endif %}

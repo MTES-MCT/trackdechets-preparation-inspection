@@ -28,9 +28,11 @@ def prepare_sheet(computed_pk):
     :param computed_pk: ComputedInspectionData pk
     """
     errors = []
-
-    prepare_sheet_fn(computed_pk)
-
+    try:
+        prepare_sheet_fn(computed_pk)
+    except Exception as e:  # noqa
+        current_task.update_state(state="ERROR", meta={"progress": 100})
+        return {"errors": "Error"}
     current_task.update_state(state="DONE", meta={"progress": 100})
 
     return {"errors": errors, "redirect": "html"}

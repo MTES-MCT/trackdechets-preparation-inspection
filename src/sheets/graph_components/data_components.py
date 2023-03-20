@@ -748,7 +748,7 @@ class ReceiptAgrementsComponent:
                     {
                         "name": name,
                         "number": line.receipt_number,
-                        f"validity_str": validity_str,
+                        "validity_str": validity_str,
                     }
                 )
 

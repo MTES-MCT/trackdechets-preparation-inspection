@@ -11,7 +11,7 @@ from .models import User
 
 
 @admin.action(description="Send invitation email")
-def send_invitation_email(modeladmin, request, queryset):
+def send_invitation_email(_, request, queryset):
     for user in queryset:
         if user.last_login:
             continue
@@ -39,7 +39,12 @@ class CustomUserAdmin(UserAdmin):
     list_display = [
         "email",
         "username",
+        "is_staff",
+        "is_superuser",
+        "last_login",
+        "date_joined",
     ]
+
     fieldsets = (
         (None, {"fields": ("username", "password")}),
         (_("Personal info"), {"fields": ("email",)}),

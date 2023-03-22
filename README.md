@@ -5,6 +5,12 @@
 Dépôt de code du projet **Trackdéchets préparation inspection** incubé à la Fabrique Numérique du Ministère de la
 Transition Écologique.
 
+## Prérequis:
+
+- Une instance de prosgresql récente
+- Une instance redis
+- Python >= 3.9 avec pipenv
+
 ## Installation
 
 Initialisation et activation d'un environnement
@@ -19,9 +25,48 @@ $ pipenv shell
 $ pipenv install -d
 ```
 
-### Environnement
+### Variable Environnement
+
+2 db sont nécessaires:
+- DATABASE_URL, managée par django, pour les comptes, les données calculées etc.
+- WAREHOUSE_URL, en lecture seule, contenant un dump des données du data warehouse Trackdéchets
 
 Se référer au fichier src/core/settings/env.dist
+
+### Setup de la db
+
+Lancer la commande de migration:
+
+```
+    $ manage.py migrate
+```
+
+Créer un super utilisateur
+
+```
+    $ manage.py createsuperuser
+```
+
+### Lancement de l'application
+
+```
+    $ manage.py runserver
+```
+
+Pour les tâches asynchrones, dans une autre fenêtre de terminal:
+
+```
+    DJANGO_SETTINGS_MODULE='config.settings.dev' celery -A config worker -l info
+```
+
+### Utilitaires
+
+Pour lancer un rendu de manière synchrone (et glisser plus facilement des breakspoints):
+
+```
+    $ manage.py prepare_sheet <sheet_pk>
+```
+
 
 ### Tests
 
@@ -34,7 +79,7 @@ Créer :
 Lancer les tests avec :
 
 ```
-$ pytest
+    $ pytest
 ```
 
 

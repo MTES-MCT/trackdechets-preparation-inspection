@@ -8,9 +8,10 @@ pytestmark = pytest.mark.django_db
 login_url = reverse("login")
 
 
-def test_base_view(anon_client):
+def test_base_view_redirects_to_login(anon_client):
     res = anon_client.get(reverse("home"))
-    assert res.status_code == 200
+    assert res.status_code == 302
+    assert res.url == reverse("login")
 
 
 def test_login_view_get(anon_client):

@@ -18,5 +18,5 @@ def logged_in_user(db):
 
     user = UserFactory()
     client = Client()
-    client.login(email=user.email, password="passpass")
+    client.login(email=user.email, password=DEFAULT_PASSWORD)
     return client

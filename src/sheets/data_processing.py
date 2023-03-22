@@ -144,100 +144,106 @@ bsds_config = [
 ]
 
 
-def prepare_sheet_fn(computed_pk, force_recompute=False):
-    computed = ComputedInspectionData.objects.get(pk=computed_pk)
+class SheetProcessor:
+    def __init__(self, computed_pk, force_recompute=False):
+        self.computed = ComputedInspectionData.objects.get(pk=computed_pk)
+        self.force_recompute = force_recompute
+        self.siret = self.computed.org_id
 
-    if not computed.is_initial and not force_recompute:
-        return
-    siret = computed.org_id
-    company_data_df = build_query_company(siret=siret, date_params=["created_at"])
-    company_id = company_data_df.iloc[0].id
-    company_values = company_data_df.iloc[0]
-    computed.company_name = company_values.get("name")
-    computed.company_address = company_values.get("address")
-    computed.company_profiles = to_verbose_company_types(
-        company_values.get("company_types")
-    )
-
-    computed.save()
-    bsds_dfs = {}
-    revised_bsds_dfs = {}
-    additional_data = {"date_outliers": {}, "quantity_outliers": {}}
-
-    agreement_data = ReceiptAgrementsProcessor(get_agreement_data(company_data_df))
-    computed.agreement_data = agreement_data.build()
-
-    # prepare df from sql queries for each bsd type
-    for bsd_config in bsds_config:
-        bsd_type = bsd_config["bsd_type"]
-        # compute and store df in a dict
-        df = bsd_config["bs_data"](siret=computed.org_id, date_params=["processed_at"])
-        bsds_dfs[bsd_type] = df
-        quantity_outliers = get_quantity_outliers(df, bsd_type)
-        if len(quantity_outliers) > 0:
-            additional_data["quantity_outliers"][bsd_type.upper()] = quantity_outliers
-        bs_data_df, date_outliers = get_outliers_datetimes_df(
-            df, date_columns=["sent_at", "received_at", "processed_at"]
+    def _process_company_data(self):
+        company_data_df = build_query_company(
+            siret=self.siret, date_params=["created_at"]
         )
-        if len(date_outliers) > 0:
-            additional_data["date_outliers"][bsd_type] = date_outliers
+        self.company_id = company_data_df.iloc[0].id
+        company_values = company_data_df.iloc[0]
+        self.computed.company_name = company_values.get("name")
+        self.computed.company_address = company_values.get("address")
+        self.computed.company_profiles = to_verbose_company_types(
+            company_values.get("company_types")
+        )
+        agreement_data = ReceiptAgrementsProcessor(get_agreement_data(company_data_df))
+        self.computed.agreement_data = agreement_data.build()
 
-        bs_revised_data = bsd_config.get("bs_revised_data", None)
-        if bs_revised_data:
-            revised_df = bs_revised_data(
-                company_id=company_id,
-                date_params=["created_at"],
+        self.computed.save()
+
+    def _process_bsds(self):
+        bsds_dfs = {}
+        revised_bsds_dfs = {}
+        additional_data = {"date_outliers": {}, "quantity_outliers": {}}
+
+        for bsd_config in bsds_config:
+            bsd_type = bsd_config["bsd_type"]
+            # compute and store df in a dict
+            df = bsd_config["bs_data"](
+                siret=self.computed.org_id, date_params=["processed_at"]
             )
-            if len(revised_df) > 0:
-                revised_bsds_dfs[bsd_type] = revised_df
+            bsds_dfs[bsd_type] = df
+            quantity_outliers = get_quantity_outliers(df, bsd_type)
+            if len(quantity_outliers) > 0:
+                additional_data["quantity_outliers"][
+                    bsd_type.upper()
+                ] = quantity_outliers
+            bs_data_df, date_outliers = get_outliers_datetimes_df(
+                df, date_columns=["sent_at", "received_at", "processed_at"]
+            )
+            if len(date_outliers) > 0:
+                additional_data["date_outliers"][bsd_type] = date_outliers
 
-    icpe_data = get_icpe_data(computed.org_id)
+            bs_revised_data = bsd_config.get("bs_revised_data", None)
+            if bs_revised_data:
+                revised_df = bs_revised_data(
+                    company_id=self.company_id,
+                    date_params=["created_at"],
+                )
+                if len(revised_df) > 0:
+                    revised_bsds_dfs[bsd_type] = revised_df
+        # prepare plotly graph as json from each precompute dataframes
+        for bsd_type, df in bsds_dfs.items():
+            if not len(df):
+                continue
+            created_rectified_graph = BsdCreatedAndRevisedProcessor(
+                self.siret, df, revised_bsds_dfs.get(bsd_type, None)
+            )
+            setattr(
+                self.computed,
+                f"{bsd_type}_created_rectified_data",
+                created_rectified_graph.build(),
+            )
+            stock_graph = BsddGraph(self.siret, df)
+            setattr(self.computed, f"{bsd_type}_stock_data", stock_graph.build())
 
-    comp = ICPEItemsProcessor(
-        computed.org_id, icpe_data, bsds_dfs, PROCESSING_OPERATION_CODE_RUBRIQUE_MAPPING
-    )
-    computed.icpe_data = comp.build()
+            stats_graph = BsdStatsProcessor(self.siret, df)
+            setattr(self.computed, f"{bsd_type}_stats_data", stats_graph.build())
 
-    # prepare plotly graph as json from each precompute dataframes
-    for bsd_type, df in bsds_dfs.items():
-        if not len(df):
-            continue
-        created_rectified_graph = BsdCreatedAndRevisedProcessor(
-            siret, df, revised_bsds_dfs.get(bsd_type, None)
+        table = InputOutputWasteTableProcessor(self.siret, bsds_dfs, WASTE_CODES_DATA)
+        self.computed.input_output_waste_data = table.build()
+
+        storage_stats = StorageStatsProcessor(self.siret, bsds_dfs, WASTE_CODES_DATA)
+        self.computed.storage_data = storage_stats.build()
+
+        waste_origin = WasteOriginProcessor(
+            self.siret, bsds_dfs, DEPARTEMENTS_REGION_DATA
         )
-        setattr(
-            computed,
-            f"{bsd_type}_created_rectified_data",
-            created_rectified_graph.build(),
+        self.computed.waste_origin_data = waste_origin.build()
+
+        waste_origin_map = WasteOriginsMapProcessor(
+            self.siret, bsds_dfs, DEPARTEMENTS_REGION_DATA, REGIONS_GEODATA
         )
-        stock_graph = BsddGraph(siret, df)
-        setattr(computed, f"{bsd_type}_stock_data", stock_graph.build())
+        self.computed.waste_origin_map_data = waste_origin_map.build()
 
-        stats_graph = BsdStatsProcessor(siret, df)
-        setattr(computed, f"{bsd_type}_stats_data", stats_graph.build())
+        outliers_data = AdditionalInfoProcessor(self.siret, additional_data)
 
-    table = InputOutputWasteTableProcessor(siret, bsds_dfs, WASTE_CODES_DATA)
-    computed.input_output_waste_data = table.build()
+        self.computed.outliers_data = outliers_data.build()
 
-    storage_stats = StorageStatsProcessor(siret, bsds_dfs, WASTE_CODES_DATA)
-    computed.storage_data = storage_stats.build()
+        traceability_interruptions = TraceabilityInterruptionsProcessor(
+            self.siret, bsds_dfs[BSDD], WASTE_CODES_DATA
+        )
+        self.computed.traceability_interruptions_data = (
+            traceability_interruptions.build()
+        )
+        self.computed.state = ComputedInspectionData.StateChoice.COMPUTED
+        self.computed.save()
 
-    waste_origin = WasteOriginProcessor(siret, bsds_dfs, DEPARTEMENTS_REGION_DATA)
-    computed.waste_origin_data = waste_origin.build()
-
-    waste_origin_map = WasteOriginsMapProcessor(
-        siret, bsds_dfs, DEPARTEMENTS_REGION_DATA, REGIONS_GEODATA
-    )
-    computed.waste_origin_map_data = waste_origin_map.build()
-
-    outliers_data = AdditionalInfoProcessor(siret, additional_data)
-
-    computed.outliers_data = outliers_data.build()
-
-    traceability_interruptions = TraceabilityInterruptionsProcessor(
-        siret, bsds_dfs[BSDD], WASTE_CODES_DATA
-    )
-    computed.traceability_interruptions_data = traceability_interruptions.build()
-
-    computed.state = ComputedInspectionData.StateChoice.COMPUTED
-    computed.save()
+    def process(self):
+        self._process_company_data()
+        self._process_bsds()

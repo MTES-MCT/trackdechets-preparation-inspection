@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from ...task import prepare_sheet_fn
+from ...task import SheetProcessor
 
 
 class Command(BaseCommand):
@@ -9,4 +9,5 @@ class Command(BaseCommand):
 
     def handle(self, verbosity=0, **options):
         pk = options.get("sheet_pk")
-        prepare_sheet_fn(pk, force_recompute=True)
+        processor = SheetProcessor(pk)
+        processor.process()

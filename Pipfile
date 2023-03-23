@@ -32,6 +32,7 @@ flake8 = "*"
 djlint = "*"
 pywatchman = "*"
 django-debug-toolbar = "*"
+django-extensions = "*"
 
 [requires]
 python_version = "3.9"

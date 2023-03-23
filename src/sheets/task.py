@@ -41,7 +41,6 @@ def prepare_sheet(computed_pk):
     return {"errors": errors, "redirect": "html"}
 
 
-@app.task
 def render_pdf_sheet(computed_pk: str):
     sheet = ComputedInspectionData.objects.get(pk=computed_pk)
     ctx = {
@@ -60,7 +59,6 @@ def render_pdf_sheet(computed_pk: str):
         "waste_origin_map_graph": sheet.waste_origin_map_graph,
         "skip_css": True,
     }
-
     content = render_to_string("sheets/sheetpdf.html", ctx)
     font_config = FontConfiguration()
     html = HTML(string=content, base_url=settings.BASE_URL)
@@ -105,12 +103,12 @@ def render_pdf(computed_pk: str):
     while not result.ready():
         pass
 
-    computed = ComputedInspectionData.objects.get(pk=computed_pk)
-    computed.mark_as_graph_rendered()
-
-    pdf = render_pdf_sheet.delay(computed_pk)
-    while not pdf.ready():
-        pass
+    ComputedInspectionData.objects.mark_as_graph_rendered(pk=computed_pk)
+    try:
+        render_pdf_sheet(computed_pk)
+    except Exception as e:  # noqa
+        current_task.update_state(state="ERROR", meta={"progress": 100})
+        return {"errors": "Error"}
 
     current_task.update_state(state="DONE", meta={"progress": 100})
     return {"errors": errors, "redirect": "pdf"}

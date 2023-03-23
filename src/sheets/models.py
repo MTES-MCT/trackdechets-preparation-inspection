@@ -22,6 +22,9 @@ class ComputedInspectionDataCustomManager(models.Manager):
     def mark_as_failed(self, pk):
         self.filter(pk=pk).update(state="COMPUTED_FAILED")
 
+    def mark_as_graph_rendered(self, pk):
+        self.filter(pk=pk).update(state="GRAPH_RENDERED")
+
 
 class ComputedInspectionData(models.Model):
     class StateChoice(models.TextChoices):

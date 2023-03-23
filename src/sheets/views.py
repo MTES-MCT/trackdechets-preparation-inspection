@@ -26,7 +26,7 @@ class HomeView(TemplateView):
 CHECK_INSPECTION = False
 
 
-class Prepare(FormView):
+class Prepare(LoginRequiredMixin, FormView):
     template_name = "sheets/prepare.html"
     form_class = SiretForm
 
@@ -69,7 +69,7 @@ class Prepare(FormView):
         )
 
 
-class ComputingView(TemplateView):
+class ComputingView(LoginRequiredMixin, TemplateView):
     """Optional `task_id` trigger result polling in template"""
 
     template_name = "sheets/result.html"

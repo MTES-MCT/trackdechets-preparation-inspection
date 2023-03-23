@@ -5,6 +5,7 @@ SECRET_KEY = "xyzabcdefghu"
 INSTALLED_APPS += [  # noqa F405
     "whitenoise.runserver_nostatic",
     "debug_toolbar",
+    "django_extensions",
 ]
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

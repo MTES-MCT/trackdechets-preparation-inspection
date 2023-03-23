@@ -18,11 +18,17 @@ class CustomJSONEncoder(json.JSONEncoder):
         )
 
 
+class ComputedInspectionDataCustomManager(models.Manager):
+    def mark_as_failed(self, pk):
+        self.filter(pk=pk).update(state="COMPUTED_FAILED")
+
+
 class ComputedInspectionData(models.Model):
     class StateChoice(models.TextChoices):
         INITIAL = "INITIAL", _("Initial")
         COMPUTED = "COMPUTED", _("Computed")
         GRAPH_RENDERED = "GRAPH_RENDERED", _("Graph rendered")
+        COMPUTED_FAILED = "COMPUTED_FAILED", _("Computation failed")
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     state = models.CharField(
@@ -92,6 +98,10 @@ class ComputedInspectionData(models.Model):
 
     pdf = models.TextField(blank=True)
 
+    created_by = models.EmailField(verbose_name=_("Created by"), blank=True)
+
+    objects = ComputedInspectionDataCustomManager()
+
     class Meta:
         verbose_name = _("ComputedInspectionData")
         verbose_name_plural = _("ComputedInspectionDatas")
@@ -124,11 +134,3 @@ class ComputedInspectionData(models.Model):
     @property
     def pdf_filename(self):
         return f"FI-Trackdéchets-{self.org_id}-{self.created:%d-%m-%Y}"
-
-    def mark_as_computed(self):
-        self.state = self.StateChoice.COMPUTED
-        self.save()
-
-    def mark_as_graph_rendered(self):
-        self.state = self.StateChoice.GRAPH_RENDERED
-        self.save()

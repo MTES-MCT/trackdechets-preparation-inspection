@@ -1,26 +1,30 @@
 <h3 class="cell__title">Rupture de traçabilité</h3>
-<p>
-    L'établissement a indiqué sur les BSDs être autorisé à la rupture de traçabilité, par arrêté préfectoral pour les
-    déchets suivants:
-</p>
-<div class="fr-table">
-    <table >
-        <tbody>
-            {% for row in traceability_interruptions_data %}
-                <tr >
-                    <td>{{ row.waste_code }}</td>
-                    <td class="td--right">
-                        <span class="fr-text--bold">{{ row.count }}</span>
-                        bordereau{{ row.count|pluralize:"x" }}
-                    </td>
-                    <td class="td--right">
-                        <span class="fr-text--bold">{{ row.quantity }}</span> tonnes
-                    </td>
-                </tr>
-                <tr >
-                    <td colspan="3">{{ row.description }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+{% if traceability_interruptions_data %}
+    <p>
+        L'établissement a indiqué sur les BSDs être autorisé à la rupture de traçabilité, par arrêté préfectoral pour
+        les déchets suivants:
+    </p>
+    <div class="fr-table">
+        <table>
+            <tbody>
+                {% for row in traceability_interruptions_data %}
+                    <tr>
+                        <td>{{ row.waste_code }}</td>
+                        <td class="td--right">
+                            <span class="fr-text--bold">{{ row.count }}</span>
+                            bordereau{{ row.count|pluralize:"x" }}
+                        </td>
+                        <td class="td--right">
+                            <span class="fr-text--bold">{{ row.quantity }}</span> tonnes
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">{{ row.description }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p>Aucune donnée</p>
+{% endif %}

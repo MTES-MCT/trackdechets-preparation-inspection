@@ -10,7 +10,7 @@ from config.celery_app import app
 from sheets.models import ComputedInspectionData
 
 from .constants import ALLOWED_NAMES
-from .data_processing import SheetProcessor, prepare_sheet_fn
+from .data_processing import SheetProcessor
 from .rendering_helpers import render_pdf_graph_fn
 
 
@@ -33,8 +33,8 @@ def prepare_sheet(computed_pk):
         processor.process()
 
     except Exception as e:  # noqa
-        print(e)
         current_task.update_state(state="ERROR", meta={"progress": 100})
+        ComputedInspectionData.objects.mark_as_failed(computed_pk)
         return {"errors": "Error"}
     current_task.update_state(state="DONE", meta={"progress": 100})
 

@@ -215,6 +215,16 @@ class SheetProcessor:
             stats_graph = BsdStatsProcessor(self.siret, df)
             setattr(self.computed, f"{bsd_type}_stats_data", stats_graph.build())
 
+        icpe_data = get_icpe_data(self.computed.org_id)
+
+        icpe_processor = ICPEItemsProcessor(
+            self.computed.org_id,
+            icpe_data,
+            bsds_dfs,
+            PROCESSING_OPERATION_CODE_RUBRIQUE_MAPPING,
+        )
+        self.computed.icpe_data = icpe_processor.build()
+
         table = InputOutputWasteTableProcessor(self.siret, bsds_dfs, WASTE_CODES_DATA)
         self.computed.input_output_waste_data = table.build()
 

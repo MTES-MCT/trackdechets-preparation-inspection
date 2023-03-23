@@ -50,7 +50,9 @@ class Prepare(FormView):
         if self.existing_inspection:
             return super().form_valid(form)
 
-        self.new_inspection = ComputedInspectionData.objects.create(org_id=siret)
+        self.new_inspection = ComputedInspectionData.objects.create(
+            org_id=siret, created_by=self.request.user.email
+        )
         self.task_id = prepare_sheet.delay(self.new_inspection.pk)
 
         return super().form_valid(form)

@@ -1,6 +1,9 @@
 from .base import *  # noqa
 from .base import env
 
+SESSION_COOKIE_AGE = 60 * 60 * 12  # 12 hours
+SESSION_COOKIE_SECURE = True
+
 SECRET_KEY = env("SECRET_KEY")
 
 ALLOWED_HOSTS = ["localhost"] + env.list("ALLOWED_HOST")

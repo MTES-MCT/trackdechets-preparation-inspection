@@ -24,6 +24,7 @@ geopandas = "*"
 django-defender = "*"
 django-request = "*"
 django-grappelli = "*"
+sentry-sdk = {extras = ["django"], version = "*"}
 
 [dev-packages]
 black = "*"

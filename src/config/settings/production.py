@@ -1,3 +1,5 @@
+import sentry_sdk
+
 from .base import *  # noqa
 from .base import env
 
@@ -23,3 +25,7 @@ CELERY_BROKER_URL = env("CELERY_BROKER_URL")
 CELERY_RESULT_BACKEND = env("CELERY_BROKER_URL")
 
 DEFENDER_BEHIND_REVERSE_PROXY = True
+
+SENTRY_URL = env("SENTRY_URL")
+
+sentry_sdk.init(SENTRY_URL, traces_sample_rate=1.0)

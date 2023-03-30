@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 django = "*"
-django-weasyprint = "*"
 django-registration = "*"
 psycopg2-binary = "*"
 django-environ = "*"

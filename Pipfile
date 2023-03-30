@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 django = "*"
-django-weasyprint = "*"
 django-registration = "*"
 psycopg2-binary = "*"
 django-environ = "*"
@@ -24,6 +23,7 @@ geopandas = "*"
 django-defender = "*"
 django-request = "*"
 django-grappelli = "*"
+weasyprint = "*"
 sentry-sdk = {extras = ["django"], version = "*"}
 
 [dev-packages]

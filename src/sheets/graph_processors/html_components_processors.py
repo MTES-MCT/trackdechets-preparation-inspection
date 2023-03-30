@@ -37,22 +37,25 @@ class BsdStatsProcessor:
         self.bs_data = bs_data
         self.bs_revised_data = bs_revised_data
 
-        self.emitted_bs_count = None
-        self.archived_bs_count = None
+        keys = ["total", "archived", "more_than_one_month"]
+        self.emitted_bs_stats = {key: None for key in keys}
+        self.received_bs_stats = {key: None for key in keys}
+
         self.revised_bs_count = None
-        self.more_than_one_month_bs_count = None
+
         self.total_incoming_weight = None
         self.total_outgoing_weight = None
-        self.theorical_stock = None
-        self.fraction_outgoing = None
+        self.incoming_bar_size = None
+        self.outgoing_bar_size = None
 
     def _check_data_empty(self) -> bool:
         bs_data = self.bs_data
         siret = self.company_siret
-        bs_data = bs_data[bs_data["emitter_company_siret"] == siret]
+        bs_emitted_data = bs_data[bs_data["emitter_company_siret"] == siret]
+        bs_received_data = bs_data[bs_data["recipient_company_siret"] == siret]
         bs_revised_data = self.bs_revised_data
 
-        if (len(bs_data) == 0) and (
+        if (len(bs_emitted_data) == len(bs_received_data) == 0) and (
             (bs_revised_data is None) or (len(bs_revised_data) == 0)
         ):
             self.is_component_empty = True
@@ -65,92 +68,95 @@ class BsdStatsProcessor:
         one_year_ago = (
             datetime.utcnow().replace(tzinfo=timezone.utc) - timedelta(days=365)
         ).strftime("%Y-%m-01")
-
-        bs_data = self.bs_data
-        bs_revised_data = self.bs_revised_data
         siret = self.company_siret
 
-        self.emitted_bs_count = len(bs_data[bs_data["emitter_company_siret"] == siret])
-        self.archived_bs_count = len(
-            bs_data[
-                (bs_data["emitter_company_siret"] == siret)
-                & bs_data["status"].isin(["PROCESSED", "REFUSED", "NO_TRACEABILITY"])
+        bs_data = self.bs_data
+        bs_emitted_data = bs_data[bs_data["emitter_company_siret"] == siret]
+        bs_received_data = bs_data[bs_data["recipient_company_siret"] == siret]
+
+        bs_revised_data = self.bs_revised_data
+
+        self.emitted_bs_stats["total"] = len(bs_emitted_data)
+        self.received_bs_stats["total"] = len(bs_received_data)
+
+        self.emitted_bs_stats["archived"] = len(
+            bs_emitted_data[
+                bs_emitted_data["status"].isin(
+                    ["PROCESSED", "REFUSED", "NO_TRACEABILITY"]
+                )
             ]
         )
-        self.revised_bs_count = (
-            bs_revised_data["bsId"].nunique() if bs_revised_data is not None else 0
+        self.received_bs_stats["archived"] = len(
+            bs_received_data[
+                bs_received_data["status"].isin(
+                    ["PROCESSED", "REFUSED", "NO_TRACEABILITY"]
+                )
+            ]
         )
 
-        self.more_than_one_month_bs_count = len(
-            bs_data[
-                (bs_data["recipient_company_siret"] == siret)
-                & (
-                    (bs_data["processed_at"] - bs_data["received_at"])
+        self.emitted_bs_stats["more_than_one_month"] = len(
+            bs_emitted_data[
+                (
+                    (bs_emitted_data["processed_at"] - bs_emitted_data["received_at"])
+                    > np.timedelta64(1, "M")
+                )
+            ]
+        )
+        self.received_bs_stats["more_than_one_month"] = len(
+            bs_received_data[
+                (
+                    (bs_received_data["processed_at"] - bs_received_data["received_at"])
                     > np.timedelta64(1, "M")
                 )
             ]
         )
 
-        self.total_incoming_weight = bs_data.loc[
-            (bs_data["recipient_company_siret"] == siret)
-            & (bs_data["received_at"] >= one_year_ago),
+        self.revised_bs_count = (
+            bs_revised_data["bsId"].nunique() if bs_revised_data is not None else 0
+        )
+
+        self.total_incoming_weight = bs_received_data.loc[
+            bs_received_data["received_at"] >= one_year_ago,
             "quantity_received",
         ].sum()
-        self.total_outgoing_weight = bs_data.loc[
-            (bs_data["emitter_company_siret"] == siret)
-            & (bs_data["sent_at"] >= one_year_ago),
+        self.total_outgoing_weight = bs_emitted_data.loc[
+            bs_emitted_data["sent_at"] >= one_year_ago,
             "quantity_received",
         ].sum()
 
-        if self.total_outgoing_weight != 0:
-            self.theorical_stock = (
-                self.total_incoming_weight - self.total_outgoing_weight
-            )
-        else:
-            self.theorical_stock = 0
+        self.incoming_bar_size = 0
+        self.outgoing_bar_size = 0
 
-        if self.total_incoming_weight != 0:
-            self.fraction_outgoing = int(
-                round(self.total_outgoing_weight / self.total_incoming_weight, 2) * 100
-            )
+        if not (self.total_incoming_weight == self.total_outgoing_weight == 0):
+            if self.total_incoming_weight > self.total_outgoing_weight:
+                self.incoming_bar_size = 100
+                self.outgoing_bar_size = int(
+                    100 * (self.total_outgoing_weight / self.total_incoming_weight)
+                )
+            else:
+                self.incoming_bar_size = int(
+                    100 * (self.total_incoming_weight / self.total_outgoing_weight)
+                )
+                self.outgoing_bar_size = 100
 
     def build_context(self):
         ctx = {
-            "emitted_bs_count": format_number_str(self.emitted_bs_count, precision=0),
-            "archived_bs_count": format_number_str(self.archived_bs_count, precision=0),
+            "emitted_bs_stats": {
+                k: format_number_str(v, 0) for k, v in self.emitted_bs_stats.items()
+            },
+            "received_bs_stats": {
+                k: format_number_str(v, 0) for k, v in self.received_bs_stats.items()
+            },
             "revised_bs_count": format_number_str(self.revised_bs_count, precision=0),
-            "more_than_one_month_bs_count": format_number_str(
-                self.more_than_one_month_bs_count, precision=0
+            "total_incoming_weight": format_number_str(
+                self.total_incoming_weight, precision=2
             ),
+            "total_outgoing_weight": format_number_str(
+                self.total_outgoing_weight, precision=2
+            ),
+            "incoming_bar_size": self.incoming_bar_size,
+            "outgoing_bar_size": self.outgoing_bar_size,
         }
-        # cast numpy boolean to python base boolean type to avoid serialization issues
-        incoming_bar_error = bool(self.total_incoming_weight == 0)
-        outgoing_bar_error = (
-            (self.total_outgoing_weight == 0)
-            or (self.fraction_outgoing is None)
-            or self.fraction_outgoing > 100
-        )
-        outgoing_bar_width = max(self.fraction_outgoing or 0, 2)
-        stock_bar_width = 100 - outgoing_bar_width
-        offset = 1
-        stock_bar_x = outgoing_bar_width + offset
-
-        ctx.update(
-            {
-                "incoming_bar_error": incoming_bar_error,
-                "outgoing_bar_width": outgoing_bar_width,
-                "outgoing_bar_error": outgoing_bar_error,
-                "stock_bar_x": stock_bar_x,
-                "stock_bar_width": stock_bar_width,
-                "total_incoming_weight": format_number_str(
-                    self.total_incoming_weight, precision=1
-                ),
-                "total_outgoing_weight": format_number_str(
-                    self.total_outgoing_weight, precision=1
-                ),
-                "theorical_stock": format_number_str(self.theorical_stock, precision=1),
-            }
-        )
 
         return ctx
 

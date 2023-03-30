@@ -4,6 +4,7 @@
     font-size: 1.2rem;
     font-weight: 700;
     margin-right: 0.5rem;
+    margin-bottom:0;
   }
 
   .sc-medium-number {
@@ -103,52 +104,100 @@
     font-size: x-large;
 
   }
+
+  .bs-stats {
+    margin-bottom: 15px;
+  }
+
+  th[scope='row'] {
+    text-align: left;
+  }
+
+  th[scope='col'] {
+    text-align: left;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  th[scope='col'].table-headline {
+    text-align: center;
+  }
+
+  .revised-bs-count {
+    margin-bottom: 20px;
+  }
+  .revised-bs-count span {
+    margin-right: 5px;
+    
+  }
+
+
 </style>
-{% if emitted_bs_count and emitted_bs_count != "0" %}
-    <div class="col-framed col-print">
-        <div class="sc-primary">
-            <span class="td-font-lead">{{ emitted_bs_count }}</span> émis
-        </div>
-        <div class="sc-secondary">
-            <p>
-                <span class="td-font-lead">{{ archived_bs_count }}</span> archivés
-            </p>
-            <p>
-                <span class="td-font-lead">{{ revised_bs_count }}</span> corrigés
-            </p>
-            <p>
-                <span class="td-font-lead">{{ more_than_one_month_bs_count }}</span> réponses supérieures à un mois
-            </p>
-        </div>
-        <div>
-            <p class="sc-number">
-                <span class="td-font-display">{{ total_incoming_weight }}</span>tonnes
-                entrantes
-            </p>
-        </div>
-        <div>
-            <svg style="width:100%;height:45px;">
-                <rect width="100%" height="20" y="0" x="0"
-                fill="{% if incoming_bar_error %}rgba(138, 0, 7, 1){% else %}rgba(43, 139, 247, 0.5){% endif %}">
-                </rect>
-                <rect width="{{ outgoing_bar_width }}%" height="20" y="25" x="0"
-                fill="{% if outgoing_bar_error %}rgba(138, 0, 7, 1){% else %}rgba(0, 138, 64, 0.7){% endif %}">
-                </rect>
-                <rect width="{{ stock_bar_width }}%" height="20" y="25" x="{{ stock_bar_x }}%"
-                fill="rgba(253, 206, 63, 0.8)">
-                </rect>
-            </svg>
-        </div>
-        <div>
-            <div class="sc-bar-number-outgoing-2">{{ total_outgoing_weight }} tonnes sortantes</div>
-            <div class="sc-bar-number-stock-2">
-                {{ theorical_stock }} tonnes
-                <p>stock théorique</p>
-            </div>
-        </div>
+{% if emitted_bs_stats.total != 0 or received_bs_stats.total != "0" %}
+  <div class="col-framed col-print">
+    <div class="bs-stats">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col" class="table-headline">Bordereaux</th>
+            <th scope="col">Émis</th>
+            <th scope="col">Reçus</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Total</th>
+            <td>{{ emitted_bs_stats.total }}</td>
+            <td>{{ received_bs_stats.total }}</td>
+          </tr>
+          <tr>
+            <th scope="row">Archivés</th>
+            <td>{{ emitted_bs_stats.archived }}</td>
+            <td>{{ received_bs_stats.archived }}</td>
+          </tr>
+          <tr>
+            <th scope="row">Traitements > 1 mois</th>
+            <td>{{ emitted_bs_stats.more_than_one_month }}</td>
+            <td>{{ received_bs_stats.more_than_one_month }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+    <div class="revised-bs-count">
+      <span class="td-font-lead">{{ revised_bs_count }}</span>bordereaux corrigés
+    </div>
+    <div>
+      <p class="sc-number">
+        <span class="td-font-display">{{ total_incoming_weight }}</span>tonnes
+        entrantes
+      </p>
+    </div>
+    <div>
+      <svg style="width:100%;height:45px;">
+        <rect width="{{ incoming_bar_size }}%" height="20" y="0" x="0"
+        fill="rgba(43, 139, 247, 0.7)">
+        </rect>
+        <rect width="100%" height="20" y="0" x="0"
+        stroke="rgba(43, 139, 247, 1)", fill="rgba(0,0,0,0)">
+        </rect>
+        <rect width="{{ outgoing_bar_size }}%" height="20" y="25" x="0"
+        fill="rgba(239, 85, 59, 0.7)">
+        </rect>
+        <rect width="100%" height="20" y="25" x="0"
+        stroke="rgba(239, 85, 59, 1)", fill="rgba(0,0,0,0)">
+        </rect>
+      </svg>
+    </div>
+    <div>
+      <p class="sc-number">
+        <span class="td-font-display">{{ total_outgoing_weight }}</span>tonnes sortantes
+      </p>
+    </div>
+  </div>
 {% else %}
-    <div class="sc-primary">
-        <span>Pas de données</span>
-    </div>
+  <div class="sc-primary">
+    <span>Pas de données</span>
+  </div>
 {% endif %}

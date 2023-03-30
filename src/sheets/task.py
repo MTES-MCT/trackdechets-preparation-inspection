@@ -1,4 +1,5 @@
 import base64
+import logging
 
 from celery import current_task, group
 from django.conf import settings
@@ -12,6 +13,8 @@ from sheets.models import ComputedInspectionData
 from .constants import ALLOWED_NAMES
 from .data_processing import SheetProcessor
 from .rendering_helpers import render_pdf_graph_fn
+
+logger = logging.getLogger(__name__)
 
 
 @app.task
@@ -35,6 +38,7 @@ def prepare_sheet(computed_pk):
     except Exception as e:  # noqa
         current_task.update_state(state="ERROR", meta={"progress": 100})
         ComputedInspectionData.objects.mark_as_failed(computed_pk)
+        logger.error(e)
         return {"errors": "Error"}
     current_task.update_state(state="DONE", meta={"progress": 100})
 

@@ -30,38 +30,39 @@
     </head>
     <body>
         <div class="warning-banner">
-            Cette application est en phase de beta-test et peut encore comporter des dysfonctionnements que nous corrigeons au plus vite
+            Cette application est en phase de beta-test et peut encore comporter des dysfonctionnements que nous corrigeons au
+            plus vite
         </div>
-        <header role="banner" class="fr-header">
-            <div class="fr-header__body">
+        <header role="banner" class="fr-header" style="margin-bottom: 24px;">
+            <div class="fr-header__body" style="border-bottom: 1px solid #ccc">
                 <div class="fr-container">
                     <div class="fr-header__body-row">
-                        {#                <a href="/">#}
-                        <div class="fr-header__brand fr-enlarge-link">
-                            <div class="fr-header__brand-top">
-                                <div class="fr-header__logo">
-                                    <p class="fr-logo">
-                                        Ministère
-                                        <br/>
-                                        de la transition
-                                        <br/>
-                                        écologique
-                                    </p>
+                        <a href="/">
+                            <div class="fr-header__brand fr-enlarge-link">
+                                <div class="fr-header__brand-top">
+                                    <div class="fr-header__logo">
+                                        <p class="fr-logo">
+                                            Ministère
+                                            <br/>
+                                            de la transition
+                                            <br/>
+                                            écologique
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="fr-header__service">
+                                    <img src="{% static "img/trackdechets.png" %}"
+                                         width="70px"
+                                         height="70px"
+                                         alt="Icone trackdéchets"/>
+                                </div>
+                                <div class="fr-h5">
+                                    Trackdéchets
+                                    <br>
+                                    Fiche d'inspection
                                 </div>
                             </div>
-                            <div class="fr-header__service">
-                                <img src="{% static "img/trackdechets.png" %}"
-                                     width="70px"
-                                     height="70px"
-                                     alt="Icone trackdéchets"/>
-                            </div>
-                            <div class="fr-h5">
-                                Trackdéchets
-                                <br>
-                                Fiche d'inspection
-                            </div>
-                        </div>
-                        {#                </a>#}
+                        </a>
                         <div class="fr-header__tools">
                             <div class="fr-header__tools-links">
                                 <ul class="fr-btns-group">
@@ -79,22 +80,39 @@
                     </div>
                 </div>
             </div>
+            {% if user.is_authenticated %}
+                <div class="fr-container">
+                    <nav id="navigation-866"
+                         role="navigation"
+                         aria-label="Menu principal"
+                         class="fr-nav">
+                        <ul class="fr-nav__list">
+                            <li class="fr-nav__item">
+                                <a href="{% url "prepare" %}"
+                                   target="_self"
+                                   aria-controls="modal-header__menu"
+                                   class="fr-nav__link">Préparer une fiche</a>
+                            </li>
+                            {% if user.is_staff %}
+                                <li class="fr-nav__item">
+                                    <a href="{% url "admin:index" %}"
+                                       target="_self"
+                                       aria-controls="modal-header__menu"
+                                       class="fr-nav__link">Interface d'administration équipe</a>
+                                </li>
+                            {% endif %}
+                            <li class="fr-nav__item">
+                                <a href="{% url "logout" %}"
+                                   target="_self"
+                                   aria-controls="modal-header__menu"
+                                   class="fr-nav__link">Déconnexion</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
         </header>
-        {% block main %}
-            <div class="fr-container fr-mt-1v">
-                {% if user.is_authenticated %}
-                    <p>Bonjour, {{ user.usernmae }}</p>
-                    <p>
-                        <a href="{% url "prepare" %}">Préparer une fiche</a>
-                    </p>
-                    <p>
-                        <a href="{% url "logout" %}">Déconnexion</a>
-                    </p>
-                {% else %}
-                    <a href="{% url "login" %}">Connectez vous</a>
-                {% endif %}
-            </div>
-        {% endblock %}
+        {% block main %}{% endblock %}
         <script src="{% static "js/plotly-2.18.1.min.js" %}" charset="utf-8"></script>
         <script src="{% static "js/htmx.1.8.5.min.js" %}"></script>
         {% block scripts %}{% endblock %}

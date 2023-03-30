@@ -27,6 +27,13 @@ CHECK_INSPECTION = False
 
 
 class Prepare(LoginRequiredMixin, FormView):
+    """
+    View to prepare an inspection shee:.
+        - render a form
+        - launch an async task
+        - redirect to a self refreshing waiting page
+    """
+
     template_name = "sheets/prepare.html"
     form_class = SiretForm
 
@@ -135,7 +142,6 @@ class FragmentResultView(LoginRequiredMixin, TemplateView):
                     "redirect_to": result.get("redirect", ""),
                 }
             )
-        print(ctx)
         return ctx
 
 

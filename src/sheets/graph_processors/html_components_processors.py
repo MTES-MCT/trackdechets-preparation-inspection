@@ -596,7 +596,9 @@ class ICPEItemsProcessor:
                 "rubrique": item.rubrique,
                 "alinea": item.alinea,
                 "libelle": item.libelle_court_activite,
-                "date_debut": f"{item.date_debut_exploitation:%d-%m-%Y}",
+                "date_debut": f"{item.date_debut_exploitation:%d-%m-%Y}"
+                if not pd.isnull(item.date_debut_exploitation)
+                else None,
             }
             for item in icpe_data.itertuples()
         ]

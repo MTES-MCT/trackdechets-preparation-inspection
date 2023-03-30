@@ -56,7 +56,7 @@ Créer un super utilisateur
 Pour les tâches asynchrones, dans une autre fenêtre de terminal:
 
 ```
-    DJANGO_SETTINGS_MODULE='config.settings.dev' celery -A config worker -l info
+    $ DJANGO_SETTINGS_MODULE='config.settings.dev' celery -A config worker -l info
 ```
 
 ### Utilitaires

@@ -24,6 +24,7 @@ django-defender = "*"
 django-request = "*"
 django-grappelli = "*"
 weasyprint = "*"
+sentry-sdk = {extras = ["django"], version = "*"}
 
 [dev-packages]
 black = "*"

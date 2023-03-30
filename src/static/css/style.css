@@ -16,6 +16,7 @@
   gap: 10px;
   margin-bottom: 12px;
 }
+
 .cell__img {
   width: 100%;
 }
@@ -45,6 +46,7 @@
   border: 1px solid #e3e3fd;
   border-left: 5px solid #e3e3fd
 }
+
 .cell__title {
   font-size: 1rem;
   margin-bottom: 1rem;
@@ -62,7 +64,14 @@
 table .td--right {
   text-align: right;
 }
-.warning-banner{
+
+/* Header */
+.fr-header__body {
+  border-bottom: 1px solid var(--grey-975-75-active);
+}
+
+/* Warning */
+.warning-banner {
   height: 32px;
   line-height: 32px;
   text-align: center;

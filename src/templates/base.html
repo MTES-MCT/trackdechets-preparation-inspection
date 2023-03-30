@@ -33,8 +33,8 @@
             Cette application est en phase de beta-test et peut encore comporter des dysfonctionnements que nous corrigeons au
             plus vite
         </div>
-        <header role="banner" class="fr-header" style="margin-bottom: 24px;">
-            <div class="fr-header__body" style="border-bottom: 1px solid #ccc">
+        <header role="banner" class="fr-header fr-mb-2v">
+            <div class="fr-header__body">
                 <div class="fr-container">
                     <div class="fr-header__body-row">
                         <a href="/">
@@ -82,10 +82,7 @@
             </div>
             {% if user.is_authenticated %}
                 <div class="fr-container">
-                    <nav id="navigation-866"
-                         role="navigation"
-                         aria-label="Menu principal"
-                         class="fr-nav">
+                    <nav role="navigation" aria-label="Menu principal" class="fr-nav">
                         <ul class="fr-nav__list">
                             <li class="fr-nav__item">
                                 <a href="{% url "prepare" %}"

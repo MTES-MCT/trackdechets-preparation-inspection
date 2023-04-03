@@ -5,7 +5,11 @@ Les changements importants de Trackdéchets préparation inspection sont documen
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 et le projet suit un schéma de versionning inspiré de [Calendar Versioning](https://calver.org/).
 
-# 30/03/2023
+## 03/04/2023
+
+- Ajoute un composant permettant de lister les déchets indiqués comme dangereux mais qui n'ont pas de code déchets dangereux
+
+## 30/03/2023
 
 - Corrige la gestion des date manquantes sur le tableau icpe [#3](https://github.com/MTES-MCT/trackdechets-preparation-inspection/pull/3)
 - Améliore le composant de statistiques déchets [#4](https://github.com/MTES-MCT/trackdechets-preparation-inspection/pull/4)

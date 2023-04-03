@@ -21,7 +21,7 @@
         <div class="row">
             <div class="cell cell--bordered cell--third">
                 <h4 class="cell__title">SIRET: {{ sheet.org_id }}</h4>
-                <p class="fr-text--bold">Profils établissements :</p>
+                <p class="fr-text--bold">Profils établissements renseignés sur Trackdéchets :</p>
                 <ul>
                     {% for profile in sheet.company_profiles %}<li>{{ profile }}</li>{% endfor %}
                 </ul>
@@ -44,7 +44,6 @@
                 <ul>
                     <li>les éventuels BSD papiers non dématérialisés</li>
                     <li>les bons d’enlèvements (huiles usagées et pneus)</li>
-                    <li>les annexes 1 (petites quantités)</li>
                 </ul>
             </div>
         </div>
@@ -89,9 +88,7 @@
         {% if sheet.bsdasri_created_rectified_data %}
             <div class="row">
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        BSD Dasri émis, reçus et corrigés
-                    </h3>
+                    <h3 class="cell__title">BSD Dasri émis, reçus et corrigés</h3>
                     <div id="bsdasri_emitted_corrected_graph">
                     </div>
                 </div>

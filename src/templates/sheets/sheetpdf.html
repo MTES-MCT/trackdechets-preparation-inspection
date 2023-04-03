@@ -16,7 +16,7 @@
                     <p>
                         <span class="bold">SIRET :</span> {{ sheet.org_id }}
                     </p>
-                    <p class="pdf-text bold">Profils établissements :</p>
+                    <p class="pdf-text bold">Profils établissements renseignés sur Trackdéchets :</p>
                     <ul class="pdf-text">
                         {% for profile in sheet.company_profiles %}<li>{{ profile }}</li>{% endfor %}
                     </ul>
@@ -44,7 +44,6 @@
                     <ul class="pdf-text">
                         <li>les éventuels BSD papiers non dématérialisés</li>
                         <li>les bons d’enlèvements (huiles usagées et pneus)</li>
-                        <li>les annexes 1 (petites quantités)</li>
                     </ul>
                 </div>
             </div>

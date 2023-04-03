@@ -32,8 +32,8 @@ from .graph_processors.html_components_processors import (
     WasteIsDangerousStatementsProcessor,
 )
 from .graph_processors.plotly_components_processors import (
-    BsdCreatedAndRevisedProcessor,
-    BsddGraph,
+    BsdTrackedAndRevisedProcessor,
+    BsdQuantitiesGraph,
     WasteOriginProcessor,
     WasteOriginsMapProcessor,
 )
@@ -202,7 +202,7 @@ class SheetProcessor:
         for bsd_type, df in bsds_dfs.items():
             if not len(df):
                 continue
-            created_rectified_graph = BsdCreatedAndRevisedProcessor(
+            created_rectified_graph = BsdTrackedAndRevisedProcessor(
                 self.siret, df, revised_bsds_dfs.get(bsd_type, None)
             )
             setattr(
@@ -210,10 +210,12 @@ class SheetProcessor:
                 f"{bsd_type}_created_rectified_data",
                 created_rectified_graph.build(),
             )
-            stock_graph = BsddGraph(self.siret, df)
+            stock_graph = BsdQuantitiesGraph(self.siret, df)
             setattr(self.computed, f"{bsd_type}_stock_data", stock_graph.build())
 
-            stats_graph = BsdStatsProcessor(self.siret, df)
+            stats_graph = BsdStatsProcessor(
+                self.siret, df, revised_bsds_dfs.get(bsd_type, None)
+            )
             setattr(self.computed, f"{bsd_type}_stats_data", stats_graph.build())
 
         icpe_data = get_icpe_data(self.computed.org_id)

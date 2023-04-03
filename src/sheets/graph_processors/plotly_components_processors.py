@@ -12,7 +12,7 @@ from sheets.utils import format_number_str, get_code_departement
 # classes returning a serialized (json) plotly visualization to be consumed by a plotly script
 
 
-class BsddGraph:
+class BsdQuantitiesGraph:
     def __init__(self, company_siret, bs_data):
         self.bs_data = bs_data
         self.incoming_data_by_month = None
@@ -88,6 +88,7 @@ class BsddGraph:
                 for index, e in incoming_data_by_month.items()
             ],
             hoverinfo="text",
+            marker_color="#E1000F",
         )
         outgoing_line = go.Scatter(
             x=outgoing_data_by_month.index,
@@ -99,6 +100,7 @@ class BsddGraph:
                 for index, e in outgoing_data_by_month.items()
             ],
             hoverinfo="text",
+            marker_color="#6A6AF4",
         )
 
         fig = go.Figure(data=[incoming_line, outgoing_line])
@@ -138,9 +140,8 @@ class BsddGraph:
         return self.figure.to_json()
 
 
-class BsdCreatedAndRevisedProcessor:
-    "cf BSCreatedAndRevisedComponent"
-    """Component with a Bar Figure of created and revised 'bordereaux'.
+class BsdTrackedAndRevisedProcessor:
+    """Component with a Bar Figure of emitted, received and revised 'bordereaux'.
 
     Parameters
     ----------
@@ -196,7 +197,7 @@ class BsdCreatedAndRevisedProcessor:
 
         bs_revised_by_month = bs_revised_data.groupby(
             pd.Grouper(key="created_at", freq="1M")
-        ).id.count()
+        ).bs_id.nunique()
 
         self.bs_revised_by_month = bs_revised_by_month
 
@@ -230,6 +231,7 @@ class BsdCreatedAndRevisedProcessor:
             textfont_size=text_size,
             textposition="outside",
             constraintext="none",
+            marker_color="#6A6AF4",
         )
 
         bs_received_bars = go.Bar(
@@ -240,6 +242,7 @@ class BsdCreatedAndRevisedProcessor:
             textfont_size=text_size,
             textposition="outside",
             constraintext="none",
+            marker_color="#E1000F",
         )
 
         tick0_min = min(
@@ -261,6 +264,7 @@ class BsdCreatedAndRevisedProcessor:
                     textfont_size=text_size,
                     textposition="outside",
                     constraintext="none",
+                    marker_color="#B7A73F",
                 )
             )
             tick0_min = min(tick0_min, bs_revised_by_month.index.min())

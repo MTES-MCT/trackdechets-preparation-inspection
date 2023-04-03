@@ -15,7 +15,8 @@ select
     bsdd.status,
     bsdd.transporter_transport_mode,
     bsdd.no_traceability,
-    bsdd.waste_details_pop as waste_pop
+    bsdd.waste_details_pop as waste_pop,
+    bsdd.waste_details_is_dangerous as is_dangerous
  from
     trusted_zone_trackdechets.bsdd
 where

@@ -81,7 +81,7 @@ class ComputedInspectionData(models.Model):
     icpe_data = models.JSONField(default=dict)
     agreement_data = models.JSONField(default=dict)
     traceability_interruptions_data = models.JSONField(default=dict)
-
+    waste_is_dangerous_statements_data = models.JSONField(default=dict)
     # Prerendered plotly viz
 
     bsdd_created_rectified_graph = models.TextField(blank=True)

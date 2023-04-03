@@ -29,6 +29,7 @@ from .graph_processors.html_components_processors import (
     ReceiptAgrementsProcessor,
     StorageStatsProcessor,
     TraceabilityInterruptionsProcessor,
+    WasteIsDangerousStatementsProcessor,
 )
 from .graph_processors.plotly_components_processors import (
     BsdCreatedAndRevisedProcessor,
@@ -251,6 +252,14 @@ class SheetProcessor:
         self.computed.traceability_interruptions_data = (
             traceability_interruptions.build()
         )
+
+        waste_is_dangerous_statements = WasteIsDangerousStatementsProcessor(
+            self.siret, bsds_dfs[BSDD], WASTE_CODES_DATA
+        )
+        self.computed.waste_is_dangerous_statements_data = (
+            waste_is_dangerous_statements.build()
+        )
+
         self.computed.state = ComputedInspectionData.StateChoice.COMPUTED
         self.computed.save()
 

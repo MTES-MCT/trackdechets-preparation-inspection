@@ -719,6 +719,97 @@ class TraceabilityInterruptionsProcessor:
         return []
 
 
+class WasteIsDangerousStatementsProcessor:
+    """Component that displays list of wastes tracked without dangerous waste code but with the "waste_is_dangerous" option enabled.
+
+    Parameters
+    ----------
+    component_title : str
+        Title of the component that will be displayed in the component layout.
+    company_siret: str
+        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
+    bsdd_data: DataFrame
+        DataFrame containing bsdd data.
+
+
+    """
+
+    def __init__(
+        self,
+        company_siret: str,
+        bsdd_data: pd.DataFrame,
+        waste_codes_df: pd.DataFrame,
+    ) -> None:
+        self.company_siret = company_siret
+
+        self.preprocessed_data = None
+
+        self.bsdd_data = bsdd_data
+        self.waste_codes_df = waste_codes_df
+
+    def _preprocess_data(self) -> None:
+        if self.bsdd_data is None:
+            return
+
+        df_filtered = self.bsdd_data[
+            self.bsdd_data["is_dangerous"]
+            & (self.bsdd_data["emitter_company_siret"] == self.company_siret)
+            & (~self.bsdd_data["waste_code"].str.contains(pat=r".*\*$"))
+        ]
+
+        if len(df_filtered) == 0:
+            return
+
+        df_grouped = df_filtered.groupby("waste_code", as_index=False).agg(
+            quantity=pd.NamedAgg(column="quantity_received", aggfunc="sum"),
+            count=pd.NamedAgg(column="id", aggfunc="count"),
+        )
+
+        final_df = pd.merge(
+            df_grouped,
+            self.waste_codes_df,
+            left_on="waste_code",
+            right_index=True,
+            how="left",
+            validate="one_to_one",
+        )
+
+        final_df["quantity"] = final_df["quantity"].apply(
+            format_number_str, precision=2
+        )
+
+        self.preprocessed_data = final_df
+
+    def _check_data_empty(self) -> bool:
+        if (self.preprocessed_data is None) or (len(self.preprocessed_data) == 0):
+            self.is_component_empty = True
+            return True
+
+        return False
+
+    def _add_stats(self) -> list:
+        stats = []
+
+        for e in self.preprocessed_data.sort_values(
+            "quantity", ascending=False
+        ).itertuples():
+            row = {
+                "waste_code": e.waste_code,
+                "count": e.count,
+                "quantity": e.quantity,
+                "description": e.description,
+            }
+            stats.append(row)
+        return stats
+
+    def build(self) -> list:
+        self._preprocess_data()
+
+        if not self._check_data_empty():
+            return self._add_stats()
+        return []
+
+
 class ReceiptAgrementsProcessor:
     """Component that displays informations about the company receipts and agreements.
 

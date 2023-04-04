@@ -112,7 +112,7 @@ class BsdStatsProcessor:
         )
 
         self.revised_bs_count = (
-            bs_revised_data["bsId"].nunique() if bs_revised_data is not None else 0
+            bs_revised_data["bs_id"].nunique() if bs_revised_data is not None else 0
         )
 
         self.total_incoming_weight = bs_received_data.loc[

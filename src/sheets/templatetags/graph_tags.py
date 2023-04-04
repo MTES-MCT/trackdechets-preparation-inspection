@@ -39,6 +39,13 @@ def render_traceabilty_break(computed):
     }
 
 
+@register.inclusion_tag("sheets/components/waste_is_dangerous_statements.html")
+def render_waste_is_dangerous_statements(computed):
+    return {
+        "waste_is_dangerous_statements_data": computed.waste_is_dangerous_statements_data,
+    }
+
+
 @register.inclusion_tag("sheets/components/outliers.html")
 def render_outliers(computed):
     return {

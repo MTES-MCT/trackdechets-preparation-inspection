@@ -151,6 +151,13 @@
                 </div>
             {% endif %}
             {#  end bsvhu #}
+            {#  "waste is dangerous" statements #}
+            {% if sheet.waste_is_dangerous_statements_data %}
+                <div class="cell cell--bordered cell--half">
+                    {% render_waste_is_dangerous_statements sheet %}
+                </div>
+            {% endif %}
+            {# end "waste is dangerous" statements #}
             {#  on site #}
             <h2 class="section__title">
                 Déchets sur site (théorique)

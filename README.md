@@ -25,7 +25,7 @@ $ pipenv shell
 $ pipenv install -d
 ```
 
-### Variable Environnement
+### Variable d'environnement
 
 2 db sont nécessaires:
 - DATABASE_URL, managée par django, pour les comptes, les données calculées etc.

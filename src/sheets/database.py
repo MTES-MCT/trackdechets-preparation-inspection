@@ -86,11 +86,11 @@ def build_revised_bsdd_query(company_id, date_params=None):
 
 
 def build_bsda_query(siret, date_params=None):
-    date_params = ["sent_at", "received_at", "processed_at"]
+    date_params = ["created_at", "sent_at", "received_at", "processed_at"]
     return build_query(
         sql_bsda_query_str,
         query_params={"siret": siret},
-        date_columns=["created_at"],
+        date_columns=date_params,
     )
 
 

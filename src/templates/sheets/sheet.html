@@ -187,9 +187,12 @@
             </div>
             <div class="cell cell--bordered cell--third">
                 <h3 class="cell__title">
-                    Origine des déchets
+                    Origine des déchets - Départements
                 </h3>
                 <div id="waste_origin_graph">
+                    <div class="no-data">
+                        Pas de données à afficher.
+                    </div>
                 </div>
             </div>
             <div class="cell cell--bordered cell--third">
@@ -273,7 +276,11 @@
             Plotly.newPlot('bsvhu_emitted_corrected_graph', bsvhu_created_rectified_data.data, bsvhu_created_rectified_data.layout, bsvhu_created_rectified_data.config);
             Plotly.newPlot('bsvhu_quantity_graph', bsvhu_stock_data.data, bsvhu_stock_data.layout, bsvhu_stock_data.config);
         }
-        Plotly.newPlot('waste_origin_graph', waste_origin_data.data, waste_origin_data.layout, waste_origin_data.config);
+        if (isNotEmpty(waste_origin_data)) {
+            document.querySelector('#waste_origin_graph > .no-data').remove();
+            Plotly.newPlot('waste_origin_graph', waste_origin_data.data, waste_origin_data.layout, waste_origin_data.config);
+        }
+        
         Plotly.newPlot('waste_origin_map_graph', waste_origin_map_data.data, waste_origin_map_data.layout, waste_origin_map_data.config);
     </script>
 {% endblock %}

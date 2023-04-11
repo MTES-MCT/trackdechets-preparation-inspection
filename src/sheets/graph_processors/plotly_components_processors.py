@@ -367,6 +367,7 @@ class WasteOriginProcessor:
 
         final_serie = serie[:5]
         final_serie["Autres origines"] = serie[5:].sum()
+        final_serie = final_serie.astype(int)
         final_serie = final_serie.round(2)
         final_serie = final_serie[final_serie > 0]
 
@@ -435,9 +436,12 @@ class WasteOriginProcessor:
     def build(self):
         self._preprocess_data()
 
-        self._create_figure()
+        figure = {}
+        if not self._check_data_empty():
+            self._create_figure()
+            figure = self.figure.to_json()
 
-        return self.figure.to_json()
+        return figure
 
 
 class WasteOriginsMapProcessor:

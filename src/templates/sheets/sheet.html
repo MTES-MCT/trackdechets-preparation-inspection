@@ -197,9 +197,12 @@
             </div>
             <div class="cell cell--bordered cell--third">
                 <h3 class="cell__title">
-                    Origine des déchets
+                    Origine des déchets - Régions
                 </h3>
                 <div id="waste_origin_map_graph">
+                    <div class="no-data">
+                        Pas de données à afficher.
+                    </div>
                 </div>
             </div>
         </div>
@@ -250,6 +253,21 @@
     </script>
     <script>
         const isNotEmpty = (obj) => (Object.keys(obj).length !== 0);
+        function removeNoDataClass(query) {
+            const divElement = document.querySelector(query);
+            if (divElement !== null) {
+              divElement.remove();
+            }
+        }
+
+        function addNoDataDiv(target_query) {
+            const parentDiv = document.querySelector('target_query');
+            const noDataDiv = document.createElement('div');
+            noDataDiv.classList.add('no-data');
+            noDataDiv.textContent = 'Pas de données à afficher.';
+            parentDiv.appendChild(noDataDiv);
+        }
+          
 
         if (isNotEmpty(bsdd_created_rectified_data)) {
             Plotly.newPlot(
@@ -277,10 +295,14 @@
             Plotly.newPlot('bsvhu_quantity_graph', bsvhu_stock_data.data, bsvhu_stock_data.layout, bsvhu_stock_data.config);
         }
         if (isNotEmpty(waste_origin_data)) {
-            document.querySelector('#waste_origin_graph > .no-data').remove();
+            removeNoDataClass("#waste_origin_graph > .no-data");
             Plotly.newPlot('waste_origin_graph', waste_origin_data.data, waste_origin_data.layout, waste_origin_data.config);
         }
+        if (isNotEmpty(waste_origin_map_data)) {
+            removeNoDataClass("#waste_origin_map_graph > .no-data");
+            Plotly.newPlot('waste_origin_map_graph', waste_origin_map_data.data, waste_origin_map_data.layout, waste_origin_map_data.config);
+        }
         
-        Plotly.newPlot('waste_origin_map_graph', waste_origin_map_data.data, waste_origin_map_data.layout, waste_origin_map_data.config);
+        
     </script>
 {% endblock %}

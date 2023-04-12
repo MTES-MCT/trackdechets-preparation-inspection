@@ -379,10 +379,8 @@ class WasteOriginProcessor:
             or self.preprocessed_serie.isna().all()
             or len(self.preprocessed_serie) == 0
         ):
-            self.is_component_empty = True
             return True
 
-        self.is_component_empty = False
         return False
 
     def _create_figure(self) -> None:
@@ -514,10 +512,8 @@ class WasteOriginsMapProcessor:
             or (len(self.preprocessed_df) == 0)
             or (self.preprocessed_df["quantity_received"] == 0).all()
         ):
-            self.is_component_empty = True
             return True
 
-        self.is_component_empty = False
         return False
 
     def _create_figure(self) -> None:
@@ -576,6 +572,10 @@ class WasteOriginsMapProcessor:
 
     def build(self):
         self._preprocess_data()
-        self._create_figure()
 
-        return self.figure.to_json()
+        figure = {}
+        if not self._check_data_empty():
+            self._create_figure()
+            figure = self.figure.to_json()
+
+        return figure

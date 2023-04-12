@@ -135,9 +135,13 @@ class BsdQuantitiesGraph:
 
     def build(self):
         self._preprocess_data()
-        self._create_figure()
 
-        return self.figure.to_json()
+        figure = {}
+        if not self._check_data_empty():
+            self._create_figure()
+            figure = self.figure.to_json()
+
+        return figure
 
 
 class BsdTrackedAndRevisedProcessor:
@@ -301,10 +305,13 @@ class BsdTrackedAndRevisedProcessor:
         self._preprocess_bs_data()
         if self.bs_revised_data is not None:
             self._preprocess_bs_revised_data()
-        self._create_figure()
 
-        # return self.figure.to_image(format="png")
-        return self.figure.to_json()
+        figure = {}
+        if not self._check_data_empty():
+            self._create_figure()
+            figure = self.figure.to_json()
+
+        return figure
 
 
 class WasteOriginProcessor:

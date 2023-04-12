@@ -196,24 +196,33 @@ class SheetProcessor:
                 if len(revised_df) > 0:
                     revised_bsds_dfs[bsd_type] = revised_df
         # prepare plotly graph as json from each precompute dataframes
+        all_bsd_data_empty = True
         for bsd_type, df in bsds_dfs.items():
             if not len(df):
                 continue
             created_rectified_graph = BsdTrackedAndRevisedProcessor(
                 self.siret, df, revised_bsds_dfs.get(bsd_type, None)
             )
+            if not created_rectified_graph:
+                all_bsd_data_empty = False
             setattr(
                 self.computed,
                 f"{bsd_type}_created_rectified_data",
                 created_rectified_graph.build(),
             )
             stock_graph = BsdQuantitiesGraph(self.siret, df)
+            if not stock_graph:
+                all_bsd_data_empty = False
             setattr(self.computed, f"{bsd_type}_stock_data", stock_graph.build())
 
             stats_graph = BsdStatsProcessor(
                 self.siret, df, revised_bsds_dfs.get(bsd_type, None)
             )
+            if not stats_graph:
+                all_bsd_data_empty = False
             setattr(self.computed, f"{bsd_type}_stats_data", stats_graph.build())
+
+        self.computed.all_bsd_data_empty = all_bsd_data_empty
 
         icpe_data = get_icpe_data(self.computed.org_id)
 

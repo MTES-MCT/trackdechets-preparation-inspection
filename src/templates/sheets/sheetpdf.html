@@ -47,7 +47,10 @@
                     </ul>
                 </div>
             </div>
-            <h3 class="section-title">Données des bordereaux de suivi dématérialisés issues de Trackdéchets</h3>
+            <h2 class="section-title">Données des bordereaux de suivi dématérialisés issues de Trackdéchets</h2>
+            {% if sheet.all_bsd_data_empty %}
+                <div class="no-data-section">PAS DE DONNÉES À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
+            {% endif %}
             {#  bsdd #}
             <div class="row">
                 {% if sheet.bsdd_created_rectified_data %}
@@ -119,7 +122,9 @@
                         <img src="data:image/png;base64,{{ bsff_stock_graph }}" class="cell__img">
                     </div>
                     <div class="cell cell--bordered cell--third">
-                        <p class="cell__title">BS Fluides sur l'année</p>
+                        <p class="cell__title">
+                            BS Fluides sur l'année
+                        </p>
                         {% stats_graph sheet "bsff" %}
                     </div>
                 </div>
@@ -194,9 +199,9 @@
             </div>
             {# end on site #}
             {# ICPE #}
-            <h3 class="section__title">
+            <h2 class="section__title">
                 Données installation classée pour la protection de l'Environnement (ICPE)
-            </h3>
+            </h2>
             <p>
                 Les données ICPE proviennent de la base Géorisque. Ces données ne sont pas à jour et synchronisées
                 pour le moment faute de lien entre Trackdéchets et Géorisque

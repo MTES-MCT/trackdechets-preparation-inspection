@@ -48,16 +48,22 @@
             </div>
         </div>
         {#  bsdd #}
-        <h2 class="section__title">Données des bordereaux de suivi dématérialisés issues de Trackdéchets</h2>
+        <h2 class="section__title" id="bs-section-title">
+            Données des bordereaux de suivi dématérialisés issues de Trackdéchets
+        </h2>
         {% if sheet.bsdd_created_rectified_data %}
             <div class="row">
                 <div class="cell cell--bordered cell--third">
                     <h3 class="cell__title">BSD Dangereux émis, reçus et corrigés</h3>
-                    <div id="bsdd_emitted_corrected_graph"></div>
+                    <div id="bsdd_emitted_corrected_graph">
+                        <div class="no-data">Pas de données à afficher.</div>
+                    </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
                     <h3 class="cell__title">Quantité de déchets dangereux en tonnes</h3>
-                    <div id="bsdd_quantity_graph"></div>
+                    <div id="bsdd_quantity_graph">
+                        <div class="no-data">Pas de données à afficher.</div>
+                    </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
                     <h3 class="cell__title">BSD dangereux sur l'année</h3>
@@ -71,11 +77,15 @@
             <div class="row">
                 <div class="cell cell--bordered cell--third">
                     <h3 class="cell__title">BSD Amiante émis, reçus et corrigés</h3>
-                    <div id="bsda_emitted_corrected_graph"></div>
+                    <div id="bsda_emitted_corrected_graph">
+                        <div class="no-data">Pas de données à afficher.</div>
+                    </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
                     <h3 class="cell__title">Quantité de déchets amiante en tonnes</h3>
-                    <div id="bsda_quantity_graph"></div>
+                    <div id="bsda_quantity_graph">
+                        <div class="no-data">Pas de données à afficher.</div>
+                    </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
                     <h3 class="cell__title">BS Amiante sur l'année</h3>
@@ -90,6 +100,9 @@
                 <div class="cell cell--bordered cell--third">
                     <h3 class="cell__title">BSD Dasri émis, reçus et corrigés</h3>
                     <div id="bsdasri_emitted_corrected_graph">
+                        <div class="no-data">
+                            Pas de données à afficher.
+                        </div>
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
@@ -97,6 +110,9 @@
                         Quantité de déchets Dasri en tonnes
                     </h3>
                     <div id="bsdasri_quantity_graph">
+                        <div class="no-data">
+                            Pas de données à afficher.
+                        </div>
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
@@ -116,6 +132,9 @@
                         BS Fluide émis, reçus et corrigés
                     </h3>
                     <div id="bsff_emitted_corrected_graph">
+                        <div class="no-data">
+                            Pas de données à afficher.
+                        </div>
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
@@ -123,6 +142,9 @@
                         Quantité de déchets Fluides en tonnes
                     </h3>
                     <div id="bsff_quantity_graph">
+                        <div class="no-data">
+                            Pas de données à afficher.
+                        </div>
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
@@ -142,6 +164,9 @@
                         BS VHU émis, reçus et corrigés
                     </h3>
                     <div id="bsvhu_emitted_corrected_graph">
+                        <div class="no-data">
+                            Pas de données à afficher.
+                        </div>
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
@@ -149,6 +174,9 @@
                         Quantité de VHU en tonnes
                     </h3>
                     <div id="bsvhu_quantity_graph">
+                        <div class="no-data">
+                            Pas de données à afficher.
+                        </div>
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
@@ -236,6 +264,7 @@
 {% block scripts %}
     <script>
         {% autoescape off %}
+            const siret = {{ sheet.org_id }};
             const bsdd_created_rectified_data = {{ sheet.bsdd_created_rectified_data }};
             const bsdd_stock_data = {{ sheet.bsdd_stock_data }};
             const bsda_created_rectified_data = {{ sheet.bsda_created_rectified_data }};
@@ -246,6 +275,7 @@
             const bsff_stock_data = {{ sheet.bsff_stock_data }};
             const bsvhu_created_rectified_data = {{ sheet.bsvhu_created_rectified_data }};
             const bsvhu_stock_data = {{ sheet.bsvhu_stock_data }};
+            const all_bsd_data_empty = {{ sheet.all_bsd_data_empty|yesno:"true,false,none" }}
             const waste_origin_data = {{ sheet.waste_origin_data }};
             const waste_origin_map_data = {{ sheet.waste_origin_map_data }};
 
@@ -260,8 +290,10 @@
             }
         }
           
-
         if (isNotEmpty(bsdd_created_rectified_data)) {
+            all_bs_data_empty = false;
+            removeNoDataClass("#bsdd_emitted_corrected_graph > .no-data");
+            removeNoDataClass("#bsdd_quantity_graph > .no-data");
             Plotly.newPlot(
                 'bsdd_emitted_corrected_graph',
                 bsdd_created_rectified_data.data,
@@ -271,21 +303,43 @@
             Plotly.newPlot('bsdd_quantity_graph', bsdd_stock_data.data, bsdd_stock_data.layout, bsdd_stock_data.config);
         }
         if (isNotEmpty(bsda_created_rectified_data)) {
+            all_bs_data_empty = false;
+            removeNoDataClass("#bsda_emitted_corrected_graph > .no-data");
+            removeNoDataClass("#bsda_quantity_graph > .no-data");
             Plotly.newPlot('bsda_emitted_corrected_graph', bsda_created_rectified_data.data, bsda_created_rectified_data.layout, bsda_created_rectified_data.config);
             Plotly.newPlot('bsda_quantity_graph', bsda_stock_data.data, bsda_stock_data.layout, bsda_stock_data.config);
         }
         if (isNotEmpty(bsdasri_created_rectified_data)) {
+            all_bs_data_empty = false;
+            removeNoDataClass("#bsdasri_emitted_corrected_graph > .no-data");
+            removeNoDataClass("#bsdasri_quantity_graph > .no-data");
             Plotly.newPlot('bsdasri_emitted_corrected_graph', bsdasri_created_rectified_data.data, bsdasri_created_rectified_data.layout, bsdasri_created_rectified_data.config);
             Plotly.newPlot('bsdasri_quantity_graph', bsdasri_stock_data.data, bsdasri_stock_data.layout, bsdasri_stock_data.config);
         }
         if (isNotEmpty(bsff_created_rectified_data)) {
+            all_bs_data_empty = false;
+            removeNoDataClass("#bsff_emitted_corrected_graph > .no-data");
+            removeNoDataClass("#bsff_quantity_graph > .no-data");
             Plotly.newPlot('bsff_emitted_corrected_graph', bsff_created_rectified_data.data, bsff_created_rectified_data.layout, bsff_created_rectified_data.config);
             Plotly.newPlot('bsff_quantity_graph', bsff_stock_data.data, bsff_stock_data.layout, bsff_stock_data.config);
         }
         if (isNotEmpty(bsvhu_created_rectified_data)) {
+            all_bs_data_empty = false;
+            removeNoDataClass("#bsvhu_emitted_corrected_graph > .no-data");
+            removeNoDataClass("#bsvhu_quantity_graph > .no-data");
             Plotly.newPlot('bsvhu_emitted_corrected_graph', bsvhu_created_rectified_data.data, bsvhu_created_rectified_data.layout, bsvhu_created_rectified_data.config);
             Plotly.newPlot('bsvhu_quantity_graph', bsvhu_stock_data.data, bsvhu_stock_data.layout, bsvhu_stock_data.config);
         }
+        if (all_bsd_data_empty) {
+            const sectionTitle = document.querySelector("#bs-section-title");
+
+            const newDiv = document.createElement('div');
+            newDiv.textContent = `PAS DE DONNÉES À AFFICHER POUR LE SIRET ${siret}.`;
+            newDiv.className = "no-data-section"
+
+            sectionTitle.insertAdjacentElement('afterend', newDiv);
+        }
+
         if (isNotEmpty(waste_origin_data)) {
             removeNoDataClass("#waste_origin_graph > .no-data");
             Plotly.newPlot('waste_origin_graph', waste_origin_data.data, waste_origin_data.layout, waste_origin_data.config);

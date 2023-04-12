@@ -259,14 +259,6 @@
               divElement.remove();
             }
         }
-
-        function addNoDataDiv(target_query) {
-            const parentDiv = document.querySelector('target_query');
-            const noDataDiv = document.createElement('div');
-            noDataDiv.classList.add('no-data');
-            noDataDiv.textContent = 'Pas de données à afficher.';
-            parentDiv.appendChild(noDataDiv);
-        }
           
 
         if (isNotEmpty(bsdd_created_rectified_data)) {
@@ -302,7 +294,6 @@
             removeNoDataClass("#waste_origin_map_graph > .no-data");
             Plotly.newPlot('waste_origin_map_graph', waste_origin_map_data.data, waste_origin_map_data.layout, waste_origin_map_data.config);
         }
-        
-        
+               
     </script>
 {% endblock %}

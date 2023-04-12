@@ -63,7 +63,7 @@ def build_query(
     return df
 
 
-def build_bsdd_query(siret, date_params=None):
+def build_bsdd_query(siret):
     df = build_query(
         sql_bsdd_query_str,
         query_params={"siret": siret},
@@ -74,39 +74,35 @@ def build_bsdd_query(siret, date_params=None):
     return df
 
 
-def build_revised_bsdd_query(company_id, date_params=None):
+def build_revised_bsdd_query(company_id):
     df = build_query(
         sql_revised_bsdd_query_str,
         query_params={"company_id": company_id},
         date_columns=bsd_date_params,
-        # dtypes=bs_dtypes,
     )
 
     return df
 
 
-def build_bsda_query(siret, date_params=None):
-    date_params = ["created_at", "sent_at", "received_at", "processed_at"]
+def build_bsda_query(siret):
     return build_query(
         sql_bsda_query_str,
         query_params={"siret": siret},
-        date_columns=date_params,
+        date_columns=bsd_date_params,
     )
 
 
-def build_revised_bsda_query(company_id, date_params=None):
+def build_revised_bsda_query(company_id):
     df = build_query(
         sql_revised_bsda_query_str,
         query_params={"company_id": company_id},
-        date_columns=["created_at"],
-        # dtypes=bs_dtypes,
+        date_columns=bsd_date_params,
     )
 
     return df
 
 
-def build_bsdasri_query(siret, date_params=None):
-    date_params = ["sent_at", "received_at", "processed_at"]
+def build_bsdasri_query(siret):
     return build_query(
         sql_bsdasri_query_str,
         query_params={"siret": siret},
@@ -114,8 +110,7 @@ def build_bsdasri_query(siret, date_params=None):
     )
 
 
-def build_bsff_query(siret, date_params=None):
-    date_params = ["sent_at", "received_at", "processed_at"]
+def build_bsff_query(siret):
     return build_query(
         sql_bsff_query_str,
         query_params={"siret": siret},
@@ -123,9 +118,10 @@ def build_bsff_query(siret, date_params=None):
     )
 
 
-def build_bsvhu_query(siret, date_params=None):
-    date_params = ["sent_at", "received_at", "processed_at"]
-    return build_query(sql_bsvhu_query_str, query_params={"siret": siret})
+def build_bsvhu_query(siret):
+    return build_query(
+        sql_bsvhu_query_str, query_params={"siret": siret}, date_columns=bsd_date_params
+    )
 
 
 def build_query_company(siret, date_params=None):

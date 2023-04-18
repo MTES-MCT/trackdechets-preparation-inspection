@@ -71,6 +71,7 @@ where
     and is_deleted = false
     and created_at >= current_date - interval '1 year'
     and status::text not in ('DRAFT', 'INITIAL', 'SIGNED_BY_WORKER')
+    and not is_draft
 order by
     created_at asc"""
 
@@ -98,6 +99,7 @@ where
     and is_deleted = false
     and created_at >= current_date - interval '1 year'
     and status::text not in ('DRAFT', 'INITIAL', 'SIGNED_BY_WORKER')
+    and not is_draft
 order by
     created_at asc"""
 
@@ -124,6 +126,7 @@ where
     and is_deleted = false
     and created_at >= current_date - interval '1 year'
     and status::text not in ('DRAFT', 'INITIAL', 'SIGNED_BY_WORKER')
+    and not is_draft
 order by
     created_at asc"""
 
@@ -150,6 +153,7 @@ where
     and is_deleted = false
     and created_at >= current_date - interval '1 year'
     and  status::text not in ('DRAFT', 'INITIAL', 'SIGNED_BY_WORKER')
+    and not is_draft
 order by
     created_at asc
 """

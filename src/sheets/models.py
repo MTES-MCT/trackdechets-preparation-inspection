@@ -70,6 +70,8 @@ class ComputedInspectionData(models.Model):
     bsvhu_stock_data = models.JSONField(default=dict)
     bsvhu_stats_data = models.JSONField(default=dict, encoder=CustomJSONEncoder)
 
+    all_bsd_data_empty = models.BooleanField(default=True)
+
     storage_data = models.JSONField(default=dict)
 
     waste_origin_data = models.JSONField(default=dict)

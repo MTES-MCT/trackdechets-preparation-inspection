@@ -24,8 +24,9 @@ body {
 /* print */
 @page {
   counter-increment: page;
+
   @top-right {
-    content: "Page " counter(page) " sur " counter(pages);
+    content: "Page "counter(page) " sur "counter(pages);
     font-size: 10pt;
     color: #444;
   }
@@ -51,10 +52,14 @@ body {
   page: horizontal;
 }
 
-.pagebreak { page-break-before: always; }
+.pagebreak {
+  page-break-before: always;
+}
 
 /*reset*/
-ul { padding-left: 2rem;}
+ul {
+  padding-left: 2rem;
+}
 
 /* typo utilities */
 .bold {
@@ -120,7 +125,7 @@ ul { padding-left: 2rem;}
   margin-left: 3mm;
 }
 
-.cell > * {
+.cell>* {
   margin-top: 0;
 }
 
@@ -142,6 +147,10 @@ ul { padding-left: 2rem;}
   font-weight: 500;
 }
 
+/* Sections */
+.no-data-section {
+  text-align: center;
+}
 
 /* Tables*/
 .pdf-table {

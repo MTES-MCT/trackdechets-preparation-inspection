@@ -28,7 +28,8 @@
 .cell {
 
   vertical-align: top;
-  padding: 1rem 0.5rem;}
+  padding: 1rem 0.5rem;
+}
 
 .cell--third {
   flex-basis: 33%;
@@ -58,6 +59,10 @@
   margin-top: 2rem;
   margin-bottom: 0.5rem;
   font-size: 2rem;
+}
+
+.no-data-section {
+  text-align: center;
 }
 
 /* tables */

@@ -47,26 +47,31 @@
                     </ul>
                 </div>
             </div>
-            <h3 class="section-title">Données des bordereaux de suivi dématérialisés issues de Trackdéchets</h3>
+            <h2 class="section-title">Données des bordereaux de suivi dématérialisés issues de Trackdéchets</h2>
+            {% if sheet.all_bsd_data_empty %}
+                <div class="no-data-section">PAS DE DONNÉES À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
+            {% endif %}
             {#  bsdd #}
             <div class="row">
-                <div class="cell cell--bordered cell--third">
-                    <p class="cell__title">BSD Dangereux émis, reçus et corrigés</p>
-                    <img src="data:image/png;base64,{{ bsdd_created_rectified_graph }}"
-                         class="cell__img">
+                {% if sheet.bsdd_created_rectified_data %}
+                    <div class="cell cell--bordered cell--third">
+                        <p class="cell__title">BSD Dangereux émis, reçus et corrigés</p>
+                        <img src="data:image/png;base64,{{ bsdd_created_rectified_graph }}"
+                             class="cell__img">
+                    </div>
+                    <div class="cell cell--bordered cell--third">
+                        <p class="cell__title">Quantité de déchets dangereux en tonnes</p>
+                        <img src="data:image/png;base64,{{ bsdd_stock_graph }}" class="cell__img">
+                    </div>
+                    <div class="cell cell--bordered cell--third">
+                        <p class="cell__title">BSD Dangereux sur l'année</p>
+                        {% stats_graph sheet "bsdd" %}
+                    </div>
                 </div>
-                <div class="cell cell--bordered cell--third">
-                    <p class="cell__title">Quantité de déchets dangereux en tonnes</p>
-                    <img src="data:image/png;base64,{{ bsdd_stock_graph }}" class="cell__img">
-                </div>
-                <div class="cell cell--bordered cell--third">
-                    <p class="cell__title">BSD Dangereux sur l'année</p>
-                    {% stats_graph sheet "bsdd" %}
-                </div>
-            </div>
+            {% endif %}
             {#  end bsdd #}
             {#  bsda #}
-            {% if bsda_created_rectified_graph %}
+            {% if sheet.bsda_created_rectified_data %}
                 <div class="row">
                     <div class="cell cell--bordered cell--third">
                         <p class="cell__title">BSD Amiante émis, reçus et corrigés</p>
@@ -85,7 +90,7 @@
             {% endif %}
             {#  end bsda #}
             {#  bsdasri #}
-            {% if bsdasri_created_rectified_graph %}
+            {% if sheet.bsdasri_created_rectified_data %}
                 <div class="row">
                     <div class="cell cell--bordered cell--third">
                         <p class="cell__title">BSD Dasri émis, reçus et corrigés</p>
@@ -105,7 +110,7 @@
             {% endif %}
             {#  end bsdasri #}
             {#  bsff #}
-            {% if bsff_created_rectified_graph %}
+            {% if sheet.bsff_created_rectified_data %}
                 <div class="row">
                     <div class="cell cell--bordered cell--third">
                         <p class="cell__title">BS Fluides émis, reçus et corrigés</p>
@@ -126,7 +131,7 @@
             {% endif %}
             {#  end bsff #}
             {#  bsvhu #}
-            {% if bsvhu_created_rectified_graph %}
+            {% if sheet.bsvhu_created_rectified_data %}
                 <div class="row">
                     <div class="cell cell--bordered cell--third">
                         <p class="cell__title">
@@ -167,24 +172,36 @@
                 </div>
                 <div class="cell cell--bordered cell--third">
                     <h3 class="cell__title">
-                        Origine des déchets
+                        Origine des déchets - Départements
                     </h3>
-                    <img src="data:image/png;base64,{{ waste_origin_graph }}"
-                         class="cell__img">
+                    {% if waste_origin_graph %}
+                        <img src="data:image/png;base64,{{ waste_origin_graph }}"
+                             class="cell__img">
+                    {% else %}
+                        <div class="no-data">
+                            Pas de données à afficher.
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="cell cell--bordered cell--third">
                     <h3 class="cell__title">
-                        Origine des déchets
+                        Origine des déchets - Régions
                     </h3>
-                    <img src="data:image/png;base64,{{ waste_origin_map_graph }}"
-                         class="cell__img">
+                    {% if waste_origin_map_graph %}
+                        <img src="data:image/png;base64,{{ waste_origin_map_graph }}"
+                             class="cell__img">
+                    {% else %}
+                        <div class="no-data">
+                            Pas de données à afficher.
+                        </div>
+                    {% endif %}
                 </div>
             </div>
             {# end on site #}
             {# ICPE #}
-            <h3 class="section__title">
+            <h2 class="section__title">
                 Données installation classée pour la protection de l'Environnement (ICPE)
-            </h3>
+            </h2>
             <p>
                 Les données ICPE proviennent de la base Géorisque. Ces données ne sont pas à jour et synchronisées
                 pour le moment faute de lien entre Trackdéchets et Géorisque

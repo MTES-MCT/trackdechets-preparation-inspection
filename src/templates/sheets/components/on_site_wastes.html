@@ -1,22 +1,26 @@
 <h3 class="cell__title">Déchets entreposés sur site actuellement</h3>
-<div>Ces données ne comprennent pas les stocks éventuels avant la période.</div>
-<div id="sc-content">
-    <div>
-        <span class="td-font-display">{{ storage_data.total_stock }}t</span>
-        de déchets dangereux
+{% if sheet.storage_data %}
+    <div>Ces données ne comprennent pas les stocks éventuels avant la période.</div>
+    <div id="sc-content">
+        <div>
+            <span class="td-font-display">{{ storage_data.total_stock }}t</span>
+            de déchets dangereux
+        </div>
+        <div class="fr-table">
+            <table>
+                <tbody>
+                    {% for row in storage_data.stored_waste %}
+                        <tr>
+                            <td style="white-space: nowrap">
+                                <span>{{ row.quantity_received }}&nbsp;t</span>
+                            </td>
+                            <td>{{ row.code }} - {{ row.description }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-    <div class="fr-table">
-        <table>
-            <tbody>
-                {% for row in storage_data.stored_waste %}
-                    <tr>
-                        <td style="white-space: nowrap">
-                            <span>{{ row.quantity_received }}&nbsp;t</span>
-                        </td>
-                        <td>{{ row.code }} - {{ row.description }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
+{% else %}
+    <div class="no-data">Pas de données à afficher.</div>
+{% endif %}

@@ -135,9 +135,13 @@ class BsdQuantitiesGraph:
 
     def build(self):
         self._preprocess_data()
-        self._create_figure()
 
-        return self.figure.to_json()
+        figure = {}
+        if not self._check_data_empty():
+            self._create_figure()
+            figure = self.figure.to_json()
+
+        return figure
 
 
 class BsdTrackedAndRevisedProcessor:
@@ -301,10 +305,13 @@ class BsdTrackedAndRevisedProcessor:
         self._preprocess_bs_data()
         if self.bs_revised_data is not None:
             self._preprocess_bs_revised_data()
-        self._create_figure()
 
-        # return self.figure.to_image(format="png")
-        return self.figure.to_json()
+        figure = {}
+        if not self._check_data_empty():
+            self._create_figure()
+            figure = self.figure.to_json()
+
+        return figure
 
 
 class WasteOriginProcessor:
@@ -367,6 +374,7 @@ class WasteOriginProcessor:
 
         final_serie = serie[:5]
         final_serie["Autres origines"] = serie[5:].sum()
+        final_serie = final_serie.astype(int)
         final_serie = final_serie.round(2)
         final_serie = final_serie[final_serie > 0]
 
@@ -378,10 +386,8 @@ class WasteOriginProcessor:
             or self.preprocessed_serie.isna().all()
             or len(self.preprocessed_serie) == 0
         ):
-            self.is_component_empty = True
             return True
 
-        self.is_component_empty = False
         return False
 
     def _create_figure(self) -> None:
@@ -435,9 +441,12 @@ class WasteOriginProcessor:
     def build(self):
         self._preprocess_data()
 
-        self._create_figure()
+        figure = {}
+        if not self._check_data_empty():
+            self._create_figure()
+            figure = self.figure.to_json()
 
-        return self.figure.to_json()
+        return figure
 
 
 class WasteOriginsMapProcessor:
@@ -510,10 +519,8 @@ class WasteOriginsMapProcessor:
             or (len(self.preprocessed_df) == 0)
             or (self.preprocessed_df["quantity_received"] == 0).all()
         ):
-            self.is_component_empty = True
             return True
 
-        self.is_component_empty = False
         return False
 
     def _create_figure(self) -> None:
@@ -572,6 +579,10 @@ class WasteOriginsMapProcessor:
 
     def build(self):
         self._preprocess_data()
-        self._create_figure()
 
-        return self.figure.to_json()
+        figure = {}
+        if not self._check_data_empty():
+            self._create_figure()
+            figure = self.figure.to_json()
+
+        return figure

@@ -317,10 +317,8 @@ class StorageStatsProcessor:
         if (len(self.stock_by_waste_code) == 0) or self.stock_by_waste_code[
             "quantity_received"
         ].isna().all():
-            self.is_component_empty = True
             return True
 
-        self.is_component_empty = False
         return False
 
     def _add_stats(self):
@@ -338,7 +336,11 @@ class StorageStatsProcessor:
 
     def build(self):
         self._preprocess_data()
-        return self._add_stats()
+
+        data = {}
+        if not self._check_data_empty():
+            data = self._add_stats()
+        return data
 
 
 class AdditionalInfoProcessor:

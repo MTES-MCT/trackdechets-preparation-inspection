@@ -205,10 +205,16 @@ class InputOutputWasteTableProcessor:
         df = df[
             (df.emitter_company_siret == siret) | (df.recipient_company_siret == siret)
         ]
-        df["incoming_or_outgoing"] = df.apply(
-            lambda x: "outgoing" if x["emitter_company_siret"] == siret else "incoming",
-            axis=1,
-        )
+        df["incoming_or_outgoing"] = pd.NA
+        df.loc[
+            (df.emitter_company_siret == siret) & ~df.sent_at.isna(),
+            "incoming_or_outgoing",
+        ] = "outgoing"
+        df.loc[
+            (df.recipient_company_siret == siret) & ~df.received_at.isna(),
+            "incoming_or_outgoing",
+        ] = "incoming"
+        df = df.dropna(subset="incoming_or_outgoing")
 
         df_grouped = (
             df.groupby(["waste_code", "incoming_or_outgoing"], as_index=False)[

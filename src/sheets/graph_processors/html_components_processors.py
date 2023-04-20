@@ -396,8 +396,8 @@ class StorageStatsProcessor:
         stock_by_waste_code.sort_values(ascending=False, inplace=True)
 
         stock_by_waste_code = stock_by_waste_code[stock_by_waste_code > 0]
-        total_stock = format_number_str(stock_by_waste_code.sum(), precision=0)
-        stock_by_waste_code = stock_by_waste_code.apply(format_number_str, precision=0)
+        total_stock = format_number_str(stock_by_waste_code.sum(), precision=1)
+        stock_by_waste_code = stock_by_waste_code.apply(format_number_str, precision=1)
         stock_by_waste_code = pd.merge(
             stock_by_waste_code,
             self.waste_codes_df,

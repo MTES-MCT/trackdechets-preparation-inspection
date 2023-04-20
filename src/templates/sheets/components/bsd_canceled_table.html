@@ -1,0 +1,57 @@
+{% if bsd_canceled_data %}
+    <h2 class="section__title">Liste des bordereaux annulés</h2>
+    <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+        <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+            <thead>
+                <tr>
+                    <th scope="col">Numéro de bordereau</th>
+                    <th scope="col">Date de l'annulation</th>
+                    <th scope="col">SIRET émetteur</th>
+                    <th scope="col">SIRET destinataire</th>
+                    <th scope="col">Code déchet</th>
+                    <th scope="col">Nom du déchet</th>
+                    <th scope="col">Quantité&nbsp;(t)</th>
+                    <th scope="col">Motif renseigné</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in bsd_canceled_data %}
+                    <tr>
+                        <td>
+                            {% if "readable_id" in row %}
+                                {{ row.readable_id }}
+                            {% else %}
+                                {{ row.id }}
+                            {% endif %}
+                        </td>
+                        <td>{{ row.updated_at }}</td>
+                        <td>
+                            {% if row.emitter_company_siret == company_siret %}
+                                <span class="fr-text--bold">{{ row.emitter_company_siret }}</span>
+                            {% else %}
+                                {{ row.emitter_company_siret }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.recipient_company_siret == company_siret %}
+                                <span class="fr-text--bold">{{ row.recipient_company_siret }}</span>
+                            {% else %}
+                                {{ row.recipient_company_siret }}
+                            {% endif %}
+                        </td>
+                        <td>{{ row.waste_code }}</td>
+                        <td>{{ row.waste_name }}</td>
+                        <td class="td--right">
+                            {% if row.quantity_received %}
+                                {{ row.quantity_received }}
+                            {% else %}
+                                <span class="fr-text--alt">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ row.comment }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}

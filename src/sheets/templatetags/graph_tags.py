@@ -25,6 +25,15 @@ def render_in_out_table(computed, graph_context="web"):
     }
 
 
+@register.inclusion_tag("sheets/components/bsd_canceled_table.html")
+def render_bsd_canceled_table(computed, graph_context="web"):
+    return {
+        "bsd_canceled_data": computed.bsd_canceled_data,
+        "company_siret": computed.org_id,
+        "graph_context": graph_context,
+    }
+
+
 @register.inclusion_tag("sheets/components/icpe.html")
 def render_icpe(computed):
     return {

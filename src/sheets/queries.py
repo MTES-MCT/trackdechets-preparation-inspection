@@ -1,6 +1,7 @@
 sql_bsdd_query_str = """
 select
     id,
+    readable_id,
     bsdd.created_at,
     bsdd.sent_at,
     bsdd.received_at,
@@ -11,6 +12,7 @@ select
     bsdd.waste_details_quantity,
     bsdd.quantity_received,
     bsdd.waste_details_code as waste_code,
+    bsdd.waste_details_name as waste_name,
     bsdd.processing_operation_done as processing_operation_code,
     bsdd.status,
     bsdd.transporter_transport_mode,
@@ -59,6 +61,7 @@ select
     weight_value as waste_details_quantity,
     destination_reception_weight as quantity_received,
     waste_code,
+    waste_material_name as waste_name,
     destination_operation_code as processing_operation_code,
     status,
     transporter_transport_mode,
@@ -161,7 +164,10 @@ order by
 sql_revised_bsdd_query_str = """
 select id,
     bsdd_id as bs_id,
-    created_at
+    created_at,
+    updated_at,
+    comment,
+    is_canceled
 from trusted_zone_trackdechets.bsdd_revision_request
 where authoring_company_id = :company_id
     and status='ACCEPTED'
@@ -171,7 +177,10 @@ where authoring_company_id = :company_id
 sql_revised_bsda_query_str = """
 select id,
     bsda_id as bs_id,
-    created_at
+    created_at,
+    updated_at,
+    comment,
+    is_canceled
 from trusted_zone_trackdechets.bsda_revision_request
 where authoring_company_id = :company_id
     and status='ACCEPTED'

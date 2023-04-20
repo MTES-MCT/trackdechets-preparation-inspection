@@ -289,7 +289,9 @@ class BsdCanceledTableProcessor:
 
         dfs = []
         for bs_type, revised_data_df in self.bs_revised_data.items():
-            cancellations = revised_data_df[revised_data_df.is_canceled]
+            cancellations = revised_data_df[
+                revised_data_df.is_canceled.notna() & revised_data_df.is_canceled
+            ]
             if len(cancellations):
                 bs_data = self.bs_data_dfs[bs_type]
 
@@ -316,6 +318,7 @@ class BsdCanceledTableProcessor:
 
                 temp_df = temp_df[columns_to_take]
                 temp_df.rename(columns={"id_y": "id"})
+
                 dfs.append(temp_df)
 
         if dfs:
@@ -627,11 +630,11 @@ class ICPEItemsProcessor:
 
         preprocessed_inputs_filtered = preprocessed_inputs[
             (preprocessed_inputs["rubrique"] == "2718")
-        ].set_index("processed_at")
+        ].set_index("received_at")
 
         preprocessed_outputs_filtered = preprocessed_outputs[
             (preprocessed_outputs["rubrique"] == "2718")
-        ].set_index("processed_at")
+        ].set_index("received_at")
         preprocessed_outputs_filtered["quantity_received"] *= -1
 
         preprocessed_inputs_outputs = pd.concat(

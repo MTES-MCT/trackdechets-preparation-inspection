@@ -23,6 +23,7 @@ from .database import (
 )
 from .graph_processors.html_components_processors import (
     AdditionalInfoProcessor,
+    BsdCanceledTableProcessor,
     BsdStatsProcessor,
     ICPEItemsProcessor,
     InputOutputWasteTableProcessor,
@@ -267,6 +268,11 @@ class SheetProcessor:
         self.computed.waste_is_dangerous_statements_data = (
             waste_is_dangerous_statements.build()
         )
+
+        bsd_canceled_table = BsdCanceledTableProcessor(
+            self.siret, bsds_dfs, revised_bsds_dfs
+        )
+        self.computed.bsd_canceled_data = bsd_canceled_table.build()
 
         self.computed.state = ComputedInspectionData.StateChoice.COMPUTED
         self.computed.save()

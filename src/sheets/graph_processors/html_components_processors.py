@@ -1,6 +1,7 @@
 import re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List
+import json
 
 import numpy as np
 import pandas as pd
@@ -252,6 +253,96 @@ class InputOutputWasteTableProcessor:
     def build(self):
         self._preprocess_data()
         return self.build_context()
+
+
+class BsdCanceledTableProcessor:
+    """Component that displays an exhaustive tables with the list of 'bordereaux' that have been canceled.
+
+    Parameters
+    ----------
+    component_title : str
+        Title of the component that will be displayed in the component layout.
+    company_siret: str
+        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
+    bs_data_dfs: dict
+        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
+    waste_codes_df: DataFrame
+        DataFrame containing list of waste codes with their descriptions.
+    """
+
+    def __init__(
+        self,
+        company_siret: str,
+        bs_data_dfs: Dict[str, pd.DataFrame],
+        bs_revised_data: Dict[str, pd.DataFrame],
+    ) -> None:
+        self.bs_data_dfs = bs_data_dfs
+        self.bs_revised_data = bs_revised_data
+        self.company_siret = company_siret
+        self.preprocessed_df = pd.DataFrame()
+
+    def _preprocess_data(self) -> None:
+        if not self.bs_revised_data:
+            return
+
+        siret = self.company_siret
+
+        dfs = []
+        for bs_type, revised_data_df in self.bs_revised_data.items():
+            cancellations = revised_data_df[
+                revised_data_df.is_canceled.notna() & revised_data_df.is_canceled
+            ]
+            if len(cancellations):
+                bs_data = self.bs_data_dfs[bs_type]
+
+                columns_to_take = [
+                    "id_y",
+                    "quantity_received",
+                    "emitter_company_siret",
+                    "recipient_company_siret",
+                    "waste_code",
+                    "waste_name",
+                    "updated_at",
+                    "comment",
+                ]
+
+                if "readable_id" in bs_data.columns:
+                    columns_to_take.append("readable_id")
+
+                temp_df = pd.merge(
+                    cancellations,
+                    bs_data,
+                    left_on="bs_id",
+                    right_on="id",
+                ).sort_values("updated_at")
+
+                temp_df = temp_df[columns_to_take]
+                temp_df.rename(columns={"id_y": "id"})
+
+                dfs.append(temp_df)
+
+        if dfs:
+            self.preprocessed_df = pd.concat(dfs)
+
+    def _check_empty_data(self) -> bool:
+        if len(self.preprocessed_df) == 0:
+            return True
+
+        return False
+
+    def build_context(self):
+        data = self.preprocessed_df
+        data["updated_at"] = data["updated_at"].dt.strftime("%d/%m/%Y %H:%M")
+        return json.loads(data.to_json(orient="records"))
+
+    def build(self):
+        self._preprocess_data()
+
+        data = {}
+        if not self._check_empty_data():
+            data = self.build_context()
+
+        return data
 
 
 class StorageStatsProcessor:
@@ -539,11 +630,11 @@ class ICPEItemsProcessor:
 
         preprocessed_inputs_filtered = preprocessed_inputs[
             (preprocessed_inputs["rubrique"] == "2718")
-        ].set_index("processed_at")
+        ].set_index("received_at")
 
         preprocessed_outputs_filtered = preprocessed_outputs[
             (preprocessed_outputs["rubrique"] == "2718")
-        ].set_index("processed_at")
+        ].set_index("received_at")
         preprocessed_outputs_filtered["quantity_received"] *= -1
 
         preprocessed_inputs_outputs = pd.concat(

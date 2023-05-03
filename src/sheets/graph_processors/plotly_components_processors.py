@@ -110,6 +110,7 @@ class BsdQuantitiesGraph:
             margin={"t": 20, "l": 35, "r": 5},
             legend={"orientation": "h", "y": -0.1, "x": 0.5},
             legend_font_size=11,
+            legend_bgcolor="rgba(0,0,0,0)",
             showlegend=True,
             paper_bgcolor="#fff",
             plot_bgcolor="rgba(0,0,0,0)",
@@ -287,7 +288,12 @@ class BsdTrackedAndRevisedProcessor:
 
         fig.update_layout(
             margin={"t": 20, "l": 35, "r": 5},
-            legend={"orientation": "h", "y": -0.05, "x": 0.5},
+            legend={
+                "orientation": "h",
+                "y": -0.07,
+                "x": 0.5,
+            },
+            legend_bgcolor="rgba(0,0,0,0)",
             showlegend=True,
             paper_bgcolor="#fff",
             plot_bgcolor="rgba(0,0,0,0)",
@@ -572,6 +578,7 @@ class WasteOriginsMapProcessor:
         fig.update_layout(
             margin={"b": 0, "t": 0, "r": 0, "l": 0},
             showlegend=False,
+            legend_bgcolor="rgba(0,0,0,0)",
             xaxis_fixedrange=True,
             yaxis_fixedrange=True,
             dragmode=False,

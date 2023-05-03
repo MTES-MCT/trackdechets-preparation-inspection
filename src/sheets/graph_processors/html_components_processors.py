@@ -1,7 +1,7 @@
+import json
 import re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List
-import json
 
 import numpy as np
 import pandas as pd
@@ -284,8 +284,6 @@ class BsdCanceledTableProcessor:
     def _preprocess_data(self) -> None:
         if not self.bs_revised_data:
             return
-
-        siret = self.company_siret
 
         dfs = []
         for bs_type, revised_data_df in self.bs_revised_data.items():

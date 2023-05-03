@@ -36,6 +36,7 @@ class BsdQuantitiesGraph:
         outgoing_data = bs_data[
             (bs_data["emitter_company_siret"] == self.company_siret)
             & (bs_data["sent_at"] >= one_year_ago)
+            & (bs_data["sent_at"] <= today_date)
         ]
 
         self.incoming_data_by_month = (
@@ -175,17 +176,26 @@ class BsdTrackedAndRevisedProcessor:
     def _preprocess_bs_data(self) -> None:
         """Preprocess raw 'bordereaux' data to prepare it for plotting."""
         bs_data = self.bs_data
-
+        one_year_ago = (
+            datetime.utcnow().replace(tzinfo=timezone.utc) - timedelta(days=365)
+        ).strftime("%Y-%m-01")
+        today_date = (
+            datetime.utcnow().replace(tzinfo=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+        )
         bs_emitted = bs_data[
-            bs_data["emitter_company_siret"] == self.company_siret
-        ].dropna(subset=["created_at"])
+            (bs_data["emitter_company_siret"] == self.company_siret)
+            & (bs_data["sent_at"] >= one_year_ago)
+            & (bs_data["sent_at"] <= today_date)
+        ].dropna(subset=["sent_at"])
 
         bs_emitted_by_month = bs_emitted.groupby(
-            pd.Grouper(key="created_at", freq="1M")
+            pd.Grouper(key="sent_at", freq="1M")
         ).id.count()
 
         bs_received = bs_data[
-            bs_data["recipient_company_siret"] == self.company_siret
+            (bs_data["recipient_company_siret"] == self.company_siret)
+            & (bs_data["received_at"] >= one_year_ago)
+            & (bs_data["received_at"] <= today_date)
         ].dropna(subset=["received_at"])
 
         bs_received_by_month = bs_received.groupby(

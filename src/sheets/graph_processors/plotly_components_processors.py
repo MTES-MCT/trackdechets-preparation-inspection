@@ -1,11 +1,12 @@
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from typing import Dict
 
 import geopandas as gpd
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+from django.utils import timezone as django_timezone
 
 from sheets.utils import format_number_str, get_code_departement
 
@@ -21,12 +22,10 @@ class BsdQuantitiesGraph:
 
     def _preprocess_data(self) -> None:
         bs_data = self.bs_data
-        one_year_ago = (
-            datetime.utcnow().replace(tzinfo=timezone.utc) - timedelta(days=365)
-        ).strftime("%Y-%m-01")
-        today_date = (
-            datetime.utcnow().replace(tzinfo=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
+            "%Y-%m-01"
         )
+        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
 
         incoming_data = bs_data[
             (bs_data["recipient_company_siret"] == self.company_siret)
@@ -36,6 +35,7 @@ class BsdQuantitiesGraph:
         outgoing_data = bs_data[
             (bs_data["emitter_company_siret"] == self.company_siret)
             & (bs_data["sent_at"] >= one_year_ago)
+            & (bs_data["sent_at"] <= today_date)
         ]
 
         self.incoming_data_by_month = (
@@ -109,6 +109,7 @@ class BsdQuantitiesGraph:
             margin={"t": 20, "l": 35, "r": 5},
             legend={"orientation": "h", "y": -0.1, "x": 0.5},
             legend_font_size=11,
+            legend_bgcolor="rgba(0,0,0,0)",
             showlegend=True,
             paper_bgcolor="#fff",
             plot_bgcolor="rgba(0,0,0,0)",
@@ -175,17 +176,23 @@ class BsdTrackedAndRevisedProcessor:
     def _preprocess_bs_data(self) -> None:
         """Preprocess raw 'bordereaux' data to prepare it for plotting."""
         bs_data = self.bs_data
+        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
+            "%Y-%m-01"
+        )
+        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
 
         bs_emitted = bs_data[
-            bs_data["emitter_company_siret"] == self.company_siret
-        ].dropna(subset=["created_at"])
+            (bs_data["emitter_company_siret"] == self.company_siret)
+            & bs_data["sent_at"].between(one_year_ago, today_date)
+        ].dropna(subset=["sent_at"])
 
         bs_emitted_by_month = bs_emitted.groupby(
-            pd.Grouper(key="created_at", freq="1M")
+            pd.Grouper(key="sent_at", freq="1M")
         ).id.count()
 
         bs_received = bs_data[
-            bs_data["recipient_company_siret"] == self.company_siret
+            (bs_data["recipient_company_siret"] == self.company_siret)
+            & bs_data["received_at"].between(one_year_ago, today_date)
         ].dropna(subset=["received_at"])
 
         bs_received_by_month = bs_received.groupby(
@@ -277,7 +284,12 @@ class BsdTrackedAndRevisedProcessor:
 
         fig.update_layout(
             margin={"t": 20, "l": 35, "r": 5},
-            legend={"orientation": "h", "y": -0.05, "x": 0.5},
+            legend={
+                "orientation": "h",
+                "y": -0.07,
+                "x": 0.5,
+            },
+            legend_bgcolor="rgba(0,0,0,0)",
             showlegend=True,
             paper_bgcolor="#fff",
             plot_bgcolor="rgba(0,0,0,0)",
@@ -345,7 +357,17 @@ class WasteOriginProcessor:
         if len(self.bs_data_dfs) == 0:
             return
 
-        concat_df = pd.concat(list(self.bs_data_dfs.values()))
+        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
+            "%Y-%m-01"
+        )
+        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        concat_df = pd.concat(
+            [
+                df[df["received_at"].between(one_year_ago, today_date)]
+                for df in self.bs_data_dfs.values()
+            ]
+        )
 
         concat_df["cp"] = concat_df["emitter_company_address"].str.extract(
             r"([0-9]{5})", expand=False
@@ -484,7 +506,17 @@ class WasteOriginsMapProcessor:
         if len(self.bs_data_dfs) == 0:
             return
 
-        concat_df = pd.concat(list(self.bs_data_dfs.values()))
+        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
+            "%Y-%m-01"
+        )
+        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        concat_df = pd.concat(
+            [
+                df[df["received_at"].between(one_year_ago, today_date)]
+                for df in self.bs_data_dfs.values()
+            ]
+        )
 
         concat_df["cp"] = concat_df["emitter_company_address"].str.extract(
             r"([0-9]{5})", expand=False
@@ -562,6 +594,7 @@ class WasteOriginsMapProcessor:
         fig.update_layout(
             margin={"b": 0, "t": 0, "r": 0, "l": 0},
             showlegend=False,
+            legend_bgcolor="rgba(0,0,0,0)",
             xaxis_fixedrange=True,
             yaxis_fixedrange=True,
             dragmode=False,

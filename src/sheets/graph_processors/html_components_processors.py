@@ -1,10 +1,11 @@
-import re
-from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List
 import json
+import re
+from datetime import datetime, timedelta
+from typing import Any, Dict, List
 
 import numpy as np
 import pandas as pd
+from django.utils import timezone as django_timezone
 
 from sheets.utils import format_number_str
 
@@ -66,14 +67,21 @@ class BsdStatsProcessor:
         return False
 
     def _preprocess_data(self) -> None:
-        one_year_ago = (
-            datetime.utcnow().replace(tzinfo=timezone.utc) - timedelta(days=365)
-        ).strftime("%Y-%m-01")
         siret = self.company_siret
+        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
+            "%Y-%m-01"
+        )
+        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
 
         bs_data = self.bs_data
-        bs_emitted_data = bs_data[bs_data["emitter_company_siret"] == siret]
-        bs_received_data = bs_data[bs_data["recipient_company_siret"] == siret]
+        bs_emitted_data = bs_data[
+            (bs_data["emitter_company_siret"] == self.company_siret)
+            & bs_data["sent_at"].between(one_year_ago, today_date)
+        ]
+        bs_received_data = bs_data[
+            (bs_data["recipient_company_siret"] == self.company_siret)
+            & bs_data["received_at"].between(one_year_ago, today_date)
+        ]
 
         bs_revised_data = self.bs_revised_data
 
@@ -83,14 +91,14 @@ class BsdStatsProcessor:
         self.emitted_bs_stats["archived"] = len(
             bs_emitted_data[
                 bs_emitted_data["status"].isin(
-                    ["PROCESSED", "REFUSED", "NO_TRACEABILITY"]
+                    ["PROCESSED", "REFUSED", "NO_TRACEABILITY", "FOLLOWED_WITH_PNTTD"]
                 )
             ]
         )
         self.received_bs_stats["archived"] = len(
             bs_received_data[
                 bs_received_data["status"].isin(
-                    ["PROCESSED", "REFUSED", "NO_TRACEABILITY"]
+                    ["PROCESSED", "REFUSED", "NO_TRACEABILITY", "FOLLOWED_WITH_PNTTD"]
                 )
             ]
         )
@@ -116,14 +124,8 @@ class BsdStatsProcessor:
             bs_revised_data["bs_id"].nunique() if bs_revised_data is not None else 0
         )
 
-        self.total_incoming_weight = bs_received_data.loc[
-            bs_received_data["received_at"] >= one_year_ago,
-            "quantity_received",
-        ].sum()
-        self.total_outgoing_weight = bs_emitted_data.loc[
-            bs_emitted_data["sent_at"] >= one_year_ago,
-            "quantity_received",
-        ].sum()
+        self.total_incoming_weight = bs_received_data["quantity_received"].sum()
+        self.total_outgoing_weight = bs_emitted_data["quantity_received"].sum()
 
         self.incoming_bar_size = 0
         self.outgoing_bar_size = 0
@@ -194,6 +196,10 @@ class InputOutputWasteTableProcessor:
 
     def _preprocess_data(self) -> None:
         siret = self.company_siret
+        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
+            "%Y-%m-01"
+        )
+        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
 
         dfs_to_concat = [df for df in self.bs_data_dfs.values()]
 
@@ -208,22 +214,20 @@ class InputOutputWasteTableProcessor:
         ]
         df["incoming_or_outgoing"] = pd.NA
         df.loc[
-            (df.emitter_company_siret == siret) & ~df.sent_at.isna(),
+            (df.emitter_company_siret == siret)
+            & df.sent_at.between(one_year_ago, today_date),
             "incoming_or_outgoing",
         ] = "outgoing"
         df.loc[
-            (df.recipient_company_siret == siret) & ~df.received_at.isna(),
+            (df.recipient_company_siret == siret)
+            & df.received_at.between(one_year_ago, today_date),
             "incoming_or_outgoing",
         ] = "incoming"
         df = df.dropna(subset="incoming_or_outgoing")
 
-        df_grouped = (
-            df.groupby(["waste_code", "incoming_or_outgoing"], as_index=False)[
-                "quantity_received"
-            ]
-            .sum()
-            .round(2)
-        )
+        df_grouped = df.groupby(["waste_code", "incoming_or_outgoing"], as_index=False)[
+            "quantity_received"
+        ].sum()
 
         final_df = pd.merge(
             df_grouped,
@@ -235,6 +239,9 @@ class InputOutputWasteTableProcessor:
         )
 
         final_df = final_df[final_df["quantity_received"] > 0]
+        final_df["quantity_received"] = final_df["quantity_received"].apply(
+            lambda x: format_number_str(x, 2)
+        )
         self.preprocessed_df = final_df[
             ["waste_code", "description", "incoming_or_outgoing", "quantity_received"]
         ].sort_values(by=["waste_code", "incoming_or_outgoing"])
@@ -285,12 +292,16 @@ class BsdCanceledTableProcessor:
         if not self.bs_revised_data:
             return
 
-        siret = self.company_siret
+        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
+            "%Y-%m-01"
+        )
+        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
 
         dfs = []
         for bs_type, revised_data_df in self.bs_revised_data.items():
             cancellations = revised_data_df[
-                revised_data_df.is_canceled.notna() & revised_data_df.is_canceled
+                revised_data_df.is_canceled
+                & revised_data_df.updated_at.between(one_year_ago, today_date)
             ]
             if len(cancellations):
                 bs_data = self.bs_data_dfs[bs_type]
@@ -377,6 +388,11 @@ class StorageStatsProcessor:
     def _preprocess_data(self) -> pd.Series:
         siret = self.company_siret
 
+        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
+            "%Y-%m-01"
+        )
+        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+
         dfs_to_concat = [df for df in self.bs_data_dfs.values()]
 
         if len(dfs_to_concat) == 0:
@@ -385,8 +401,13 @@ class StorageStatsProcessor:
 
         df = pd.concat(dfs_to_concat)
 
-        emitted_mask = (df.emitter_company_siret == siret) & ~df.sent_at.isna()
-        received_mask = (df.recipient_company_siret == siret) & ~df.received_at.isna()
+        emitted_mask = (df.emitter_company_siret == siret) & df.sent_at.between(
+            one_year_ago, today_date
+        )
+        received_mask = (df.recipient_company_siret == siret) & df.received_at.between(
+            one_year_ago, today_date
+        )
+
         emitted = df[emitted_mask].groupby("waste_code")["quantity_received"].sum()
         received = df[received_mask].groupby("waste_code")["quantity_received"].sum()
 
@@ -850,10 +871,16 @@ class WasteIsDangerousStatementsProcessor:
         if self.bsdd_data is None:
             return
 
+        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
+            "%Y-%m-01"
+        )
+        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+
         df_filtered = self.bsdd_data[
             self.bsdd_data["is_dangerous"]
             & (self.bsdd_data["emitter_company_siret"] == self.company_siret)
             & (~self.bsdd_data["waste_code"].str.contains(pat=r".*\*$"))
+            & (self.bsdd_data["sent_at"].between(one_year_ago, today_date))
         ]
 
         if len(df_filtered) == 0:

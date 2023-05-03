@@ -225,13 +225,9 @@ class InputOutputWasteTableProcessor:
         ] = "incoming"
         df = df.dropna(subset="incoming_or_outgoing")
 
-        df_grouped = (
-            df.groupby(["waste_code", "incoming_or_outgoing"], as_index=False)[
-                "quantity_received"
-            ]
-            .sum()
-            .round(2)
-        )
+        df_grouped = df.groupby(["waste_code", "incoming_or_outgoing"], as_index=False)[
+            "quantity_received"
+        ].sum()
 
         final_df = pd.merge(
             df_grouped,
@@ -243,6 +239,9 @@ class InputOutputWasteTableProcessor:
         )
 
         final_df = final_df[final_df["quantity_received"] > 0]
+        final_df["quantity_received"] = final_df["quantity_received"].apply(
+            lambda x: format_number_str(x, 2)
+        )
         self.preprocessed_df = final_df[
             ["waste_code", "description", "incoming_or_outgoing", "quantity_received"]
         ].sort_values(by=["waste_code", "incoming_or_outgoing"])

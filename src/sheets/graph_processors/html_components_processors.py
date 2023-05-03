@@ -266,8 +266,8 @@ class BsdCanceledTableProcessor:
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bs_data_dfs: dict
         Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
-    waste_codes_df: DataFrame
-        DataFrame containing list of waste codes with their descriptions.
+    bs_revised_data: DataFrame
+        Dict with key being the 'bordereau' type and values the DataFrame containing the associated revision data.
     """
 
     def __init__(
@@ -323,6 +323,75 @@ class BsdCanceledTableProcessor:
 
         if dfs:
             self.preprocessed_df = pd.concat(dfs)
+
+    def _check_empty_data(self) -> bool:
+        if len(self.preprocessed_df) == 0:
+            return True
+
+        return False
+
+    def build_context(self):
+        data = self.preprocessed_df
+        data["updated_at"] = data["updated_at"].dt.strftime("%d/%m/%Y %H:%M")
+        return json.loads(data.to_json(orient="records"))
+
+    def build(self):
+        self._preprocess_data()
+
+        data = {}
+        if not self._check_empty_data():
+            data = self.build_context()
+
+        return data
+
+
+class SameEmitterRecipientTableProcessor:
+    """Component that displays an exhaustive tables with the list of 'bordereaux' that have the same company
+    as emitter and recipient along with a worksite address.
+
+    Parameters
+    ----------
+    bs_data_dfs: dict
+        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
+    """
+
+    def __init__(
+        self,
+        bs_data_dfs: Dict[str, pd.DataFrame],
+    ) -> None:
+        self.bs_data_dfs = bs_data_dfs
+        self.preprocessed_df = pd.DataFrame()
+
+    def _preprocess_data(self) -> None:
+        dfs_to_process = [
+            df
+            for bs_type, df in self.bs_data_dfs.items()
+            if bs_type in ["BSDD", "BSDA"]
+        ]
+
+        columns_to_take = [
+            "id_y",
+            "quantity_received",
+            "emitter_company_siret",
+            "recipient_company_siret",
+            "waste_code",
+            "waste_name",
+            "updated_at",
+            "comment",
+        ]
+        dfs_processed = []
+        for df in dfs_to_process:
+            same_emitter_recipient_df = df[
+                (df["emitter_company_siret"] == df["recipient_company_siret"])
+                & df["worksite_address"].notna()
+                & df["received_at"].notna()
+            ]
+            same_emitter_recipient_df.rename(columns={""})
+            if same_emitter_recipient_df:
+                dfs_processed.append(same_emitter_recipient_df)
+
+        if dfs_processed:
+            self.preprocessed_df = pd.concat(dfs_processed)
 
     def _check_empty_data(self) -> bool:
         if len(self.preprocessed_df) == 0:

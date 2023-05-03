@@ -28,6 +28,7 @@ from .graph_processors.html_components_processors import (
     ICPEItemsProcessor,
     InputOutputWasteTableProcessor,
     ReceiptAgrementsProcessor,
+    SameEmitterRecipientTableProcessor,
     StorageStatsProcessor,
     TraceabilityInterruptionsProcessor,
     WasteIsDangerousStatementsProcessor,
@@ -273,6 +274,9 @@ class SheetProcessor:
             self.siret, bsds_dfs, revised_bsds_dfs
         )
         self.computed.bsd_canceled_data = bsd_canceled_table.build()
+
+        same_emitter_recipient_table = SameEmitterRecipientTableProcessor(bsds_dfs)
+        self.computed.same_emitter_recipient_data = same_emitter_recipient_table.build()
 
         self.computed.state = ComputedInspectionData.StateChoice.COMPUTED
         self.computed.save()

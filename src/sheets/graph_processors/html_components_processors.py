@@ -97,14 +97,14 @@ class BsdStatsProcessor:
         self.emitted_bs_stats["archived"] = len(
             bs_emitted_data[
                 bs_emitted_data["status"].isin(
-                    ["PROCESSED", "REFUSED", "NO_TRACEABILITY"]
+                    ["PROCESSED", "REFUSED", "NO_TRACEABILITY", "FOLLOWED_WITH_PNTTD"]
                 )
             ]
         )
         self.received_bs_stats["archived"] = len(
             bs_received_data[
                 bs_received_data["status"].isin(
-                    ["PROCESSED", "REFUSED", "NO_TRACEABILITY"]
+                    ["PROCESSED", "REFUSED", "NO_TRACEABILITY", "FOLLOWED_WITH_PNTTD"]
                 )
             ]
         )

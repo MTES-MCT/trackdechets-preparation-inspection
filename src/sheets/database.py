@@ -21,7 +21,7 @@ from .queries import (
     sql_revised_bsdd_query_str,
 )
 
-wh_engine = create_engine(settings.WAREHOUSE_URL)
+wh_engine = create_engine(settings.WAREHOUSE_URL, pool_pre_ping=True)
 
 bsd_date_params = ["created_at", "sent_at", "received_at", "processed_at"]
 bs_dtypes = {

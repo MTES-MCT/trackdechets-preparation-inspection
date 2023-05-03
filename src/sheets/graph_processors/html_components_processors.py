@@ -70,10 +70,24 @@ class BsdStatsProcessor:
             datetime.utcnow().replace(tzinfo=timezone.utc) - timedelta(days=365)
         ).strftime("%Y-%m-01")
         siret = self.company_siret
+        one_year_ago = (
+            datetime.utcnow().replace(tzinfo=timezone.utc) - timedelta(days=365)
+        ).strftime("%Y-%m-01")
+        today_date = (
+            datetime.utcnow().replace(tzinfo=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+        )
 
         bs_data = self.bs_data
-        bs_emitted_data = bs_data[bs_data["emitter_company_siret"] == siret]
-        bs_received_data = bs_data[bs_data["recipient_company_siret"] == siret]
+        bs_emitted_data = bs_data[
+            (bs_data["emitter_company_siret"] == self.company_siret)
+            & (bs_data["sent_at"] >= one_year_ago)
+            & (bs_data["sent_at"] <= today_date)
+        ]
+        bs_received_data = bs_data[
+            (bs_data["recipient_company_siret"] == self.company_siret)
+            & (bs_data["received_at"] >= one_year_ago)
+            & (bs_data["received_at"] <= today_date)
+        ]
 
         bs_revised_data = self.bs_revised_data
 
@@ -116,14 +130,8 @@ class BsdStatsProcessor:
             bs_revised_data["bs_id"].nunique() if bs_revised_data is not None else 0
         )
 
-        self.total_incoming_weight = bs_received_data.loc[
-            bs_received_data["received_at"] >= one_year_ago,
-            "quantity_received",
-        ].sum()
-        self.total_outgoing_weight = bs_emitted_data.loc[
-            bs_emitted_data["sent_at"] >= one_year_ago,
-            "quantity_received",
-        ].sum()
+        self.total_incoming_weight = bs_received_data["quantity_received"].sum()
+        self.total_outgoing_weight = bs_emitted_data["quantity_received"].sum()
 
         self.incoming_bar_size = 0
         self.outgoing_bar_size = 0

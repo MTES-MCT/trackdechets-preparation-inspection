@@ -34,8 +34,8 @@ from .graph_processors.html_components_processors import (
     WasteIsDangerousStatementsProcessor,
 )
 from .graph_processors.plotly_components_processors import (
-    BsdTrackedAndRevisedProcessor,
     BsdQuantitiesGraph,
+    BsdTrackedAndRevisedProcessor,
     WasteOriginProcessor,
     WasteOriginsMapProcessor,
 )

@@ -1,0 +1,59 @@
+{% if same_emitter_recipient_data %}
+    <h2 class="section__title">
+        Liste des bordereaux pour lesquels l'établissement s'est positionné en tant qu'émetteur et destinataire
+    </h2>
+    <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+        <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+            <thead>
+                <tr>
+                    <th scope="col">Numéro de bordereau</th>
+                    <th scope="col">Date de l'envoi</th>
+                    <th scope="col">Date de la réception</th>
+                    <th scope="col">Nom de l'entreprise de travaux</th>
+                    <th scope="col">Adresse du chantier</th>
+                    <th scope="col">Code déchet</th>
+                    <th scope="col">Nom du déchet</th>
+                    <th scope="col">Quantité&nbsp;(t)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in same_emitter_recipient_data %}
+                    <tr>
+                        <td>
+                            {% if row.readable_id %}
+                                {{ row.readable_id }}
+                            {% else %}
+                                {{ row.id }}
+                            {% endif %}
+                        </td>
+                        <td>{{ row.sent_at }}</td>
+                        <td>
+                            {% if row.received_at %}
+                                {{ row.received_at }}
+                            {% else %}
+                                <span class="fr-text--alt">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.worksite_name %}
+                                {{ row.worksite_name }}
+                            {% else %}
+                                <span class="fr-text--alt">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ row.worksite_address }}</td>
+                        <td>{{ row.waste_code }}</td>
+                        <td>{{ row.waste_name }}</td>
+                        <td class="td--right">
+                            {% if row.quantity_received %}
+                                {{ row.quantity_received }}
+                            {% else %}
+                                <span class="fr-text--alt">N/A</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}

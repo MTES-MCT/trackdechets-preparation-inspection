@@ -2,23 +2,25 @@ sql_bsdd_query_str = """
 select
     id,
     readable_id,
-    bsdd.created_at,
-    bsdd.sent_at,
-    bsdd.received_at,
-    bsdd.processed_at,
-    bsdd.emitter_company_siret,
-    bsdd.emitter_company_address,
-    bsdd.recipient_company_siret,
-    bsdd.waste_details_quantity,
-    bsdd.quantity_received,
-    bsdd.waste_details_code as waste_code,
-    bsdd.waste_details_name as waste_name,
-    bsdd.processing_operation_done as processing_operation_code,
-    bsdd.status,
-    bsdd.transporter_transport_mode,
-    bsdd.no_traceability,
-    bsdd.waste_details_pop as waste_pop,
-    bsdd.waste_details_is_dangerous as is_dangerous
+    created_at,
+    sent_at,
+    received_at,
+    processed_at,
+    emitter_company_siret,
+    emitter_company_address,
+    recipient_company_siret,
+    waste_details_quantity,
+    quantity_received,
+    waste_details_code as waste_code,
+    waste_details_name as waste_name,
+    processing_operation_done as processing_operation_code,
+    status,
+    transporter_transport_mode,
+    no_traceability,
+    waste_details_pop as waste_pop,
+    waste_details_is_dangerous as is_dangerous,
+    emitter_worksite_name as worksite_name,
+    emitter_worksite_address as worksite_address
  from
     trusted_zone_trackdechets.bsdd
 where
@@ -26,7 +28,7 @@ where
     or recipient_company_siret = :siret)
     and is_deleted = false
     and created_at >= current_date - INTERVAL '1 year'
-    and status::text not in ('DRAFT', 'INITIAL', 'SIGNED_BY_WORKER')
+    and status::text not in ('DRAFT', 'INITIAL')
 order by
     created_at ASC;
 """
@@ -65,7 +67,9 @@ select
     destination_operation_code as processing_operation_code,
     status,
     transporter_transport_mode,
-    waste_pop
+    waste_pop,
+    emitter_pickup_site_name as worksite_name,
+    emitter_pickup_site_address as worksite_address
 from
     trusted_zone_trackdechets.bsda
 where
@@ -73,7 +77,7 @@ where
         or destination_company_siret = :siret)
     and is_deleted = false
     and created_at >= current_date - interval '1 year'
-    and status::text not in ('DRAFT', 'INITIAL', 'SIGNED_BY_WORKER')
+    and status::text not in ('DRAFT', 'INITIAL')
     and not is_draft
 order by
     created_at asc"""
@@ -101,7 +105,7 @@ where
         or destination_company_siret = :siret)
     and is_deleted = false
     and created_at >= current_date - interval '1 year'
-    and status::text not in ('DRAFT', 'INITIAL', 'SIGNED_BY_WORKER')
+    and status::text not in ('DRAFT', 'INITIAL')
     and not is_draft
 order by
     created_at asc"""
@@ -128,7 +132,7 @@ where
         or destination_company_siret = :siret)
     and is_deleted = false
     and created_at >= current_date - interval '1 year'
-    and status::text not in ('DRAFT', 'INITIAL', 'SIGNED_BY_WORKER')
+    and status::text not in ('DRAFT', 'INITIAL')
     and not is_draft
 order by
     created_at asc"""
@@ -155,7 +159,7 @@ where
         or destination_company_siret = :siret)
     and is_deleted = false
     and created_at >= current_date - interval '1 year'
-    and  status::text not in ('DRAFT', 'INITIAL', 'SIGNED_BY_WORKER')
+    and  status::text not in ('DRAFT', 'INITIAL')
     and not is_draft
 order by
     created_at asc

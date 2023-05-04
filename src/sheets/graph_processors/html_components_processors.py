@@ -272,8 +272,8 @@ class BsdCanceledTableProcessor:
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bs_data_dfs: dict
         Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
-    waste_codes_df: DataFrame
-        DataFrame containing list of waste codes with their descriptions.
+    bs_revised_data: DataFrame
+        Dict with key being the 'bordereau' type and values the DataFrame containing the associated revision data.
     """
 
     def __init__(
@@ -343,6 +343,84 @@ class BsdCanceledTableProcessor:
     def build_context(self):
         data = self.preprocessed_df
         data["updated_at"] = data["updated_at"].dt.strftime("%d/%m/%Y %H:%M")
+        return json.loads(data.to_json(orient="records"))
+
+    def build(self):
+        self._preprocess_data()
+
+        data = {}
+        if not self._check_empty_data():
+            data = self.build_context()
+
+        return data
+
+
+class SameEmitterRecipientTableProcessor:
+    """Component that displays an exhaustive tables with the list of 'bordereaux' that have the same company
+    as emitter and recipient along with a worksite address.
+
+    Parameters
+    ----------
+    bs_data_dfs: dict
+        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
+    """
+
+    def __init__(
+        self,
+        bs_data_dfs: Dict[str, pd.DataFrame],
+    ) -> None:
+        self.bs_data_dfs = bs_data_dfs
+        self.preprocessed_df = pd.DataFrame()
+
+    def _preprocess_data(self) -> None:
+        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
+            "%Y-%m-01"
+        )
+        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        dfs_to_process = [
+            df
+            for bs_type, df in self.bs_data_dfs.items()
+            if bs_type in ["bsdd", "bsda"]
+        ]
+
+        columns_to_take = [
+            "id",
+            "readable_id",
+            "sent_at",
+            "received_at",
+            "quantity_received",
+            "waste_code",
+            "waste_name",
+            "worksite_name",
+            "worksite_address",
+        ]
+        dfs_processed = []
+        for df in dfs_to_process:
+            same_emitter_recipient_df = df[
+                (df["emitter_company_siret"] == df["recipient_company_siret"])
+                & df["worksite_address"].notna()
+                & df["sent_at"].between(one_year_ago, today_date)
+            ].reindex(columns_to_take, axis=1)
+            if len(same_emitter_recipient_df):
+                dfs_processed.append(same_emitter_recipient_df)
+
+        if dfs_processed:
+            self.preprocessed_df = pd.concat(dfs_processed)
+
+    def _check_empty_data(self) -> bool:
+        if len(self.preprocessed_df) == 0:
+            return True
+
+        return False
+
+    def build_context(self):
+        data = self.preprocessed_df
+        data["sent_at"] = pd.to_datetime(data["sent_at"]).dt.strftime("%d/%m/%Y %H:%M")
+        data["received_at"] = pd.to_datetime(data["received_at"]).dt.strftime(
+            "%d/%m/%Y %H:%M"
+        )
+
         return json.loads(data.to_json(orient="records"))
 
     def build(self):

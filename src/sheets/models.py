@@ -85,6 +85,7 @@ class ComputedInspectionData(models.Model):
     traceability_interruptions_data = models.JSONField(default=dict)
     waste_is_dangerous_statements_data = models.JSONField(default=dict)
     bsd_canceled_data = models.JSONField(default=dict)
+    same_emitter_recipient_data = models.JSONField(default=dict)
 
     # Prerendered plotly viz
 

@@ -152,6 +152,8 @@ class SheetProcessor:
         self.computed = ComputedInspectionData.objects.get(pk=computed_pk)
         self.force_recompute = force_recompute
         self.siret = self.computed.org_id
+        self.bsds_dfs = {}
+        self.revised_bsds_dfs = {}
 
     def _process_company_data(self):
         company_data_df = build_query_company(
@@ -169,16 +171,40 @@ class SheetProcessor:
 
         self.computed.save()
 
+    def _prepare_plotly_graph(self):
+        for bsd_type, df in self.bsds_dfs.items():
+            if not len(df):
+                continue
+            created_rectified_graph = BsdTrackedAndRevisedProcessor(
+                self.siret, df, self.revised_bsds_dfs.get(bsd_type, None)
+            )
+            if not created_rectified_graph:
+                self.all_bsd_data_empty = False
+            setattr(
+                self.computed,
+                f"{bsd_type}_created_rectified_data",
+                created_rectified_graph.build(),
+            )
+            stock_graph = BsdQuantitiesGraph(self.siret, df)
+            if not stock_graph:
+                self.all_bsd_data_empty = False
+            setattr(self.computed, f"{bsd_type}_stock_data", stock_graph.build())
+
+            stats_graph = BsdStatsProcessor(
+                self.siret, df, self.revised_bsds_dfs.get(bsd_type, None)
+            )
+            if not stats_graph:
+                self.all_bsd_data_empty = False
+            setattr(self.computed, f"{bsd_type}_stats_data", stats_graph.build())
+
     def _process_bsds(self):
-        bsds_dfs = {}
-        revised_bsds_dfs = {}
         additional_data = {"date_outliers": {}, "quantity_outliers": {}}
 
         for bsd_config in bsds_config:
             bsd_type = bsd_config["bsd_type"]
             # compute and store df in a dict
             df = bsd_config["bs_data"](siret=self.computed.org_id)
-            bsds_dfs[bsd_type] = df
+            self.bsds_dfs[bsd_type] = df
             quantity_outliers = get_quantity_outliers(df, bsd_type)
             if len(quantity_outliers) > 0:
                 additional_data["quantity_outliers"][
@@ -196,14 +222,15 @@ class SheetProcessor:
                     company_id=self.company_id,
                 )
                 if len(revised_df) > 0:
-                    revised_bsds_dfs[bsd_type] = revised_df
+                    self.revised_bsds_dfs[bsd_type] = revised_df
+
         # prepare plotly graph as json from each precompute dataframes
         all_bsd_data_empty = True
-        for bsd_type, df in bsds_dfs.items():
+        for bsd_type, df in self.bsds_dfs.items():
             if not len(df):
                 continue
             created_rectified_graph = BsdTrackedAndRevisedProcessor(
-                self.siret, df, revised_bsds_dfs.get(bsd_type, None)
+                self.siret, df, self.revised_bsds_dfs.get(bsd_type, None)
             )
             created_rectified_graph_data = created_rectified_graph.build()
             if created_rectified_graph_data:
@@ -221,7 +248,7 @@ class SheetProcessor:
             setattr(self.computed, f"{bsd_type}_stock_data", stock_graph_data)
 
             stats_graph = BsdStatsProcessor(
-                self.siret, df, revised_bsds_dfs.get(bsd_type, None)
+                self.siret, df, self.revised_bsds_dfs.get(bsd_type, None)
             )
             stats_graph_data = stats_graph.build()
             if stats_graph_data:
@@ -230,29 +257,36 @@ class SheetProcessor:
 
         self.computed.all_bsd_data_empty = all_bsd_data_empty
 
+        self._prepare_plotly_graph()
+
+        # self._process_icpe_data()
         icpe_data = get_icpe_data(self.computed.org_id)
 
         icpe_processor = ICPEItemsProcessor(
             self.computed.org_id,
             icpe_data,
-            bsds_dfs,
+            self.bsds_dfs,
             PROCESSING_OPERATION_CODE_RUBRIQUE_MAPPING,
         )
         self.computed.icpe_data = icpe_processor.build()
 
-        table = InputOutputWasteTableProcessor(self.siret, bsds_dfs, WASTE_CODES_DATA)
+        table = InputOutputWasteTableProcessor(
+            self.siret, self.bsds_dfs, WASTE_CODES_DATA
+        )
         self.computed.input_output_waste_data = table.build()
 
-        storage_stats = StorageStatsProcessor(self.siret, bsds_dfs, WASTE_CODES_DATA)
+        storage_stats = StorageStatsProcessor(
+            self.siret, self.bsds_dfs, WASTE_CODES_DATA
+        )
         self.computed.storage_data = storage_stats.build()
 
         waste_origin = WasteOriginProcessor(
-            self.siret, bsds_dfs, DEPARTEMENTS_REGION_DATA
+            self.siret, self.bsds_dfs, DEPARTEMENTS_REGION_DATA
         )
         self.computed.waste_origin_data = waste_origin.build()
 
         waste_origin_map = WasteOriginsMapProcessor(
-            self.siret, bsds_dfs, DEPARTEMENTS_REGION_DATA, REGIONS_GEODATA
+            self.siret, self.bsds_dfs, DEPARTEMENTS_REGION_DATA, REGIONS_GEODATA
         )
         self.computed.waste_origin_map_data = waste_origin_map.build()
 
@@ -261,21 +295,21 @@ class SheetProcessor:
         self.computed.outliers_data = outliers_data.build()
 
         traceability_interruptions = TraceabilityInterruptionsProcessor(
-            self.siret, bsds_dfs[BSDD], WASTE_CODES_DATA
+            self.siret, self.bsds_dfs[BSDD], WASTE_CODES_DATA
         )
         self.computed.traceability_interruptions_data = (
             traceability_interruptions.build()
         )
 
         waste_is_dangerous_statements = WasteIsDangerousStatementsProcessor(
-            self.siret, bsds_dfs[BSDD], WASTE_CODES_DATA
+            self.siret, self.bsds_dfs[BSDD], WASTE_CODES_DATA
         )
         self.computed.waste_is_dangerous_statements_data = (
             waste_is_dangerous_statements.build()
         )
 
         bsd_canceled_table = BsdCanceledTableProcessor(
-            self.siret, bsds_dfs, revised_bsds_dfs
+            self.siret, self.bsds_dfs, self.revised_bsds_dfs
         )
         self.computed.bsd_canceled_data = bsd_canceled_table.build()
 

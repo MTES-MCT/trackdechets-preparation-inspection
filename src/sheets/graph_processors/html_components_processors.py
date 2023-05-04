@@ -67,7 +67,6 @@ class BsdStatsProcessor:
         return False
 
     def _preprocess_data(self) -> None:
-        siret = self.company_siret
         one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
             "%Y-%m-01"
         )

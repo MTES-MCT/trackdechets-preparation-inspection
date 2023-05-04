@@ -47,9 +47,7 @@ def build_query(
     dtypes: dict[str, Any] = None,
 ):
     query = text(query_str)
-    date_params = None
-    if date_columns is not None:
-        date_params = {e: {"utc": True} for e in date_columns}
+
     # todo: use utc
     engine = wh_engine
     df = pd.read_sql_query(

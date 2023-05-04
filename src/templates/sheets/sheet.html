@@ -299,7 +299,7 @@
               divElement.remove();
             }
         }
-          
+        let all_bs_data_empty = true;
         if (isNotEmpty(bsdd_created_rectified_data)) {
             all_bs_data_empty = false;
             removeNoDataClass("#bsdd_emitted_corrected_graph > .no-data");
@@ -340,7 +340,7 @@
             Plotly.newPlot('bsvhu_emitted_corrected_graph', bsvhu_created_rectified_data.data, bsvhu_created_rectified_data.layout, bsvhu_created_rectified_data.config);
             Plotly.newPlot('bsvhu_quantity_graph', bsvhu_stock_data.data, bsvhu_stock_data.layout, bsvhu_stock_data.config);
         }
-        if (all_bsd_data_empty) {
+        if (all_bs_data_empty) {
             const sectionTitle = document.querySelector("#bs-section-title");
 
             const newDiv = document.createElement('div');

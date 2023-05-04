@@ -374,31 +374,36 @@ class SameEmitterRecipientTableProcessor:
         self.preprocessed_df = pd.DataFrame()
 
     def _preprocess_data(self) -> None:
+        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
+            "%Y-%m-01"
+        )
+        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+
         dfs_to_process = [
             df
             for bs_type, df in self.bs_data_dfs.items()
-            if bs_type in ["BSDD", "BSDA"]
+            if bs_type in ["bsdd", "bsda"]
         ]
 
         columns_to_take = [
-            "id_y",
+            "id",
+            "readable_id",
+            "sent_at",
+            "received_at",
             "quantity_received",
-            "emitter_company_siret",
-            "recipient_company_siret",
             "waste_code",
             "waste_name",
-            "updated_at",
-            "comment",
+            "worksite_name",
+            "worksite_address",
         ]
         dfs_processed = []
         for df in dfs_to_process:
             same_emitter_recipient_df = df[
                 (df["emitter_company_siret"] == df["recipient_company_siret"])
                 & df["worksite_address"].notna()
-                & df["received_at"].notna()
-            ]
-            same_emitter_recipient_df.rename(columns={""})
-            if same_emitter_recipient_df:
+                & df["sent_at"].between(one_year_ago, today_date)
+            ].reindex(columns_to_take, axis=1)
+            if len(same_emitter_recipient_df):
                 dfs_processed.append(same_emitter_recipient_df)
 
         if dfs_processed:
@@ -412,7 +417,11 @@ class SameEmitterRecipientTableProcessor:
 
     def build_context(self):
         data = self.preprocessed_df
-        data["updated_at"] = data["updated_at"].dt.strftime("%d/%m/%Y %H:%M")
+        data["sent_at"] = pd.to_datetime(data["sent_at"]).dt.strftime("%d/%m/%Y %H:%M")
+        data["received_at"] = pd.to_datetime(data["received_at"]).dt.strftime(
+            "%d/%m/%Y %H:%M"
+        )
+
         return json.loads(data.to_json(orient="records"))
 
     def build(self):

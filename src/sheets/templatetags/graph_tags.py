@@ -34,6 +34,14 @@ def render_bsd_canceled_table(computed, graph_context="web"):
     }
 
 
+@register.inclusion_tag("sheets/components/same_emitter_recipient_table.html")
+def render_same_emitter_recipient_table(computed, graph_context="web"):
+    return {
+        "same_emitter_recipient_data": computed.same_emitter_recipient_data,
+        "graph_context": graph_context,
+    }
+
+
 @register.inclusion_tag("sheets/components/icpe.html")
 def render_icpe(computed):
     return {

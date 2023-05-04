@@ -205,24 +205,28 @@ class SheetProcessor:
             created_rectified_graph = BsdTrackedAndRevisedProcessor(
                 self.siret, df, revised_bsds_dfs.get(bsd_type, None)
             )
-            if not created_rectified_graph:
+            created_rectified_graph_data = created_rectified_graph.build()
+            if created_rectified_graph_data:
                 all_bsd_data_empty = False
             setattr(
                 self.computed,
                 f"{bsd_type}_created_rectified_data",
-                created_rectified_graph.build(),
+                created_rectified_graph_data,
             )
+
             stock_graph = BsdQuantitiesGraph(self.siret, df)
-            if not stock_graph:
+            stock_graph_data = stock_graph.build()
+            if stock_graph_data:
                 all_bsd_data_empty = False
-            setattr(self.computed, f"{bsd_type}_stock_data", stock_graph.build())
+            setattr(self.computed, f"{bsd_type}_stock_data", stock_graph_data)
 
             stats_graph = BsdStatsProcessor(
                 self.siret, df, revised_bsds_dfs.get(bsd_type, None)
             )
-            if not stats_graph:
+            stats_graph_data = stats_graph.build()
+            if stats_graph_data:
                 all_bsd_data_empty = False
-            setattr(self.computed, f"{bsd_type}_stats_data", stats_graph.build())
+            setattr(self.computed, f"{bsd_type}_stats_data", stats_graph_data)
 
         self.computed.all_bsd_data_empty = all_bsd_data_empty
 

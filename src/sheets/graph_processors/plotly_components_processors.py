@@ -59,18 +59,14 @@ class BsdQuantitiesGraph:
         outgoing_data_by_month = self.outgoing_data_by_month
 
         if len(incoming_data_by_month) == len(outgoing_data_by_month) == 0:
-            self.is_component_empty = True
             return True
 
         if incoming_data_by_month.isna().all() and outgoing_data_by_month.isna().all():
-            self.is_component_empty = True
             return True
 
         if (incoming_data_by_month == 0).all() and (outgoing_data_by_month == 0).all():
-            self.is_component_empty = True
             return True
 
-        self.is_component_empty = False
         return False
 
     def _create_figure(self) -> None:
@@ -221,10 +217,8 @@ class BsdTrackedAndRevisedProcessor:
             len(bs_emitted_by_month) == len(bs_received_by_month) == 0
             and bs_revised_by_month is None
         ):
-            self.is_component_empty = True
             return True
 
-        self.is_component_empty = False
         return False
 
     def _create_figure(self) -> None:

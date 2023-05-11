@@ -25,7 +25,7 @@ def test_form_view_post(logged_in_user):
         url, data={"was_useful": 2, "did_save_time": 4, "was_clear": 1}, follow=True
     )
 
-    assert reverse("feedback_done") in res.redirect_chain[-1][0]
+    assert reverse("home") in res.redirect_chain[-1][0]
     result = FeedbackResult.objects.first()
 
     assert "Cette fiche vous a-t-elle été utile ? Ne se prononce pas" in result.content

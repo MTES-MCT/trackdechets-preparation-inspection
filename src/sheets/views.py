@@ -13,6 +13,8 @@ from .forms import SiretForm
 from .models import ComputedInspectionData
 from .task import prepare_sheet, render_pdf
 
+# test
+
 
 class HomeView(TemplateView):
     template_name = "home.html"

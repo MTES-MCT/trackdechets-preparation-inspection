@@ -60,6 +60,6 @@ jobs:
           pipenv run pytest
         env:
           DJANGO_SETTINGS_MODULE: core.settings.test
-          DATABASE_URL:postgresql://admin:postgres@localhost/inspection_test
-          WAREHOUSE_URL:postgresql://admin:postgres@localhost/tdwarehouse_test
-          ADMIN_SLUG:admin
+          DATABASE_URL:postgresql: //admin:postgres@localhost/inspection_test
+          WAREHOUSE_URL:postgresql: //admin:postgres@localhost/tdwarehouse_test
+          ADMIN_SLUG: admin

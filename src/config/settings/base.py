@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "defender",
     "request",  # webstats module
     "accounts",
+    "content",
     "sheets",
 ]
 
@@ -159,3 +160,4 @@ PASSWORD_RESET_TIMEOUT = 3600 * 12  # 12 hours
 GRAPPELLI_ADMIN_TITLE = "Trackdéchets - Inspection"
 
 DEFAULT_FROM_EMAIL = "sender@test.fr"
+MESSAGE_RECIPIENTS = env.list("MESSAGE_RECIPIENTS")

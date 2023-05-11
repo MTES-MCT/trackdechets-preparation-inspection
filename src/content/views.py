@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.mail import EmailMessage
 from django.urls import reverse_lazy
-from django.views.generic import FormView, TemplateView
+from django.views.generic import FormView
 
 from .forms import FeedbackForm
 from .models import FeedbackResult

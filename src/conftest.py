@@ -19,4 +19,17 @@ def logged_in_user(db):
     user = UserFactory()
     client = Client()
     client.login(email=user.email, password=DEFAULT_PASSWORD)
+    setattr(client, "user", user)
+    return client
+
+
+@pytest.fixture()
+def logged_in_staff(db):
+    """A Django test client logged in as a staff user."""
+    from django.test.client import Client
+
+    user = UserFactory(is_staff=True)
+    client = Client()
+    client.login(email=user.email, password=DEFAULT_PASSWORD)
+    setattr(client, "user", user)
     return client

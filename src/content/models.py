@@ -12,3 +12,7 @@ class FeedbackResult(models.Model):
         verbose_name_plural = _("Résultats")
         ordering = ("-created",)
         app_label = "content"
+
+        indexes = [
+            models.Index(fields=["created", "author"]),
+        ]

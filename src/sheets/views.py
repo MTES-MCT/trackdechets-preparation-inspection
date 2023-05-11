@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.views.generic import DetailView, FormView, TemplateView
 
 from config.celery_app import app
+from content.models import FeedbackResult
 
 from .forms import SiretForm
 from .models import ComputedInspectionData
@@ -21,6 +22,15 @@ class HomeView(TemplateView):
         if not request.user.is_authenticated:
             return HttpResponseRedirect(reverse("login"))
         return super().get(request, *args, **kwargs)
+
+    def has_filled_survey(self):
+        return FeedbackResult.objects.filter(author=self.request.user.email).exists()
+
+    def get_context_data(self, **kwargs):
+        # display survey links until user fills it
+        return super().get_context_data(
+            **kwargs, has_filled_survey=self.has_filled_survey()
+        )
 
 
 CHECK_INSPECTION = False

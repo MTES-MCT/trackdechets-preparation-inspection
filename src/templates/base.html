@@ -109,6 +109,15 @@
                 </div>
             {% endif %}
         </header>
+        {% if messages %}
+            <div class="fr-container">
+                {% for message in messages %}
+                    <div class="fr-alert fr-alert--{{ message.tags }} fr-alert--sm fr-my-4v">
+                        <p>{{ message }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
         {% block main %}{% endblock %}
         <script src="{% static "js/plotly-2.18.1.min.js" %}" charset="utf-8"></script>
         <script src="{% static "js/htmx.1.8.5.min.js" %}"></script>

@@ -22,6 +22,7 @@ urlpatterns = [
     path(f"{settings.ADMIN_SLUG}/", admin.site.urls),
     path("", HomeView.as_view(), name="home"),
     path("accounts/", include("accounts.urls")),
+    path("content/", include("content.urls")),
     path("sheets/", include("sheets.urls")),
 ]
 

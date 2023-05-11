@@ -14,3 +14,5 @@ DATABASES = {
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]  # faster hashes
 
 SECRET_KEY = "xyz12345"
+
+CELERY_ALWAYS_EAGER = True

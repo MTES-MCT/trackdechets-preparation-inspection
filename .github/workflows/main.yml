@@ -2,10 +2,6 @@ name: TD Inspection CI
 
 on: pull_request
 
-env:
-  DATABASE_URL:postgresql://admin:postgres@localhost/inspection_test
-  WAREHOUSE_URL:postgresql://admin:postgres@localhost/tdwarehouse_test
-  ADMIN_SLUG:admin
 
 defaults:
   run:
@@ -23,44 +19,47 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: admin
           POSTGRES_DB: inspection_test
-        ports: ['5432:5432']
+        ports: [ '5432:5432' ]
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
 
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
 
-    - name: Install pipenv
-      run: |
-        python -m pip install --upgrade pipenv wheel
+      - name: Install pipenv
+        run: |
+          python -m pip install --upgrade pipenv wheel
 
-    - id: cache-pipenv
-      uses: actions/cache@v2
-      with:
-        path: ~/.local/share/virtualenvs
-        key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+      - id: cache-pipenv
+        uses: actions/cache@v2
+        with:
+          path: ~/.local/share/virtualenvs
+          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
 
-    - name: Install python dependencies
-      if: steps.cache-pipenv.outputs.cache-hit != 'true'
-      run: |
-        pipenv install --deploy --dev
+      - name: Install python dependencies
+        if: steps.cache-pipenv.outputs.cache-hit != 'true'
+        run: |
+          pipenv install --deploy --dev
 
-    - name: Lint
-      run: pipenv run flake8
+      - name: Lint
+        run: pipenv run flake8
 
-    - name: Black
-      run: pipenv run black --check .
+      - name: Black
+        run: pipenv run black --check .
 
-    - name: Run Tests
-      run: |
-        pipenv run pytest
-      env:
-        DJANGO_SETTINGS_MODULE: core.settings.test
+      - name: Run Tests
+        run: |
+          pipenv run pytest
+        env:
+          DJANGO_SETTINGS_MODULE: core.settings.test
+          DATABASE_URL:postgresql://admin:postgres@localhost/inspection_test
+          WAREHOUSE_URL:postgresql://admin:postgres@localhost/tdwarehouse_test
+          ADMIN_SLUG:admin

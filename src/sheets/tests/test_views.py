@@ -17,8 +17,11 @@ def test_home(logged_in_user):
     res = logged_in_user.get(url)
     assert res.status_code == 200
     assert "Préparer une fiche" in res.content.decode()
-    assert "Aidez-nous à améliorer cet outil" in res.content.decode()
+
     assert "Interface d'administration équipe" not in res.content.decode()
+
+    # User did not fill survey
+    assert "Aidez-nous à améliorer cet outil" in res.content.decode()
 
 
 def test_home_for_staff(logged_in_staff):

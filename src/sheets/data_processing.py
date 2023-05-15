@@ -255,7 +255,8 @@ class SheetProcessor:
                 all_bsd_data_empty = False
             setattr(self.computed, f"{bsd_type}_stats_data", stats_graph_data)
 
-        self.computed.all_bsd_data_empty = all_bsd_data_empty
+        self.computed.all_bsd_data_empty = self.all_bsd_data_empty
+
 
         self._prepare_plotly_graph()
 

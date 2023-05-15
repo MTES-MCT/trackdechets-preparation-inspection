@@ -12,6 +12,7 @@ et le projet suit un schéma de versionning inspiré de [Calendar Versioning](ht
 ## 04/05/2023
 - Ajout d'un composant permettant de lister les bordereaux (BSDD et BSDA) pour lesquels l'établissement se positionne en tant qu'émetteur et destinataire et qui ont une adresse travaux renseignée.
 
+
 ## 03/05/2023
 
 - Ajout de filtre de dates sur tous les data processors pour être sûr que les données soient 

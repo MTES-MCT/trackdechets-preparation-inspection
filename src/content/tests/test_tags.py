@@ -1,17 +1,13 @@
 import pytest
 from django.template import Context, Template
 from django.test import RequestFactory
-from django.urls import reverse
 
 from accounts.factories import UserFactory
 from content.factories import FeedbackResultFactory
 
-from ..templatetags.survey_tags import survey_callout
-
 pytestmark = pytest.mark.django_db
 
 
-# test tags
 def test_survey_callout_tag_displays_callout():
     t = Template("{% load survey_tags %}{% survey_callout %}")
     factory = RequestFactory()

@@ -284,6 +284,7 @@ class SheetProcessor:
         )
         self.computed.bsd_canceled_data = bsd_canceled_table.build()
 
+        # TODO : DELETE ME
         same_emitter_recipient_table = SameEmitterRecipientTableProcessor(self.bsds_dfs)
         self.computed.same_emitter_recipient_data = same_emitter_recipient_table.build()
 

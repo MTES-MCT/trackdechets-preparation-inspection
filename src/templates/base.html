@@ -98,6 +98,11 @@
                                        class="fr-nav__link">Interface d'administration équipe</a>
                                 </li>
                             {% endif %}
+                               <li class="fr-nav__item">
+                                <a href="{% url "user_manual" %}"
+                                   aria-controls="modal-header__menu"
+                                   class="fr-nav__link">Guide d'utilisation</a>
+                            </li>
                             <li class="fr-nav__item">
                                 <a href="{% url "logout" %}"
                                    target="_self"

@@ -40,3 +40,9 @@ def test_form_view_post(logged_in_user):
     message = mail.outbox[0]
     assert message.subject == "Un utilisateur a rempli un formulaire de feedback"
     assert message.to == ["lorem@ipsum.lol"]
+
+
+def user_manual_view_get(logged_in_user):
+    url = reverse("user_manual")
+    res = logged_in_user.get(url)
+    assert res.status_code == 200

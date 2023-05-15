@@ -1,3 +1,4 @@
+from itertools import chain
 import json
 import re
 from datetime import datetime, timedelta
@@ -60,10 +61,16 @@ class BsdStatsProcessor:
         if (len(bs_emitted_data) == len(bs_received_data) == 0) and (
             (bs_revised_data is None) or (len(bs_revised_data) == 0)
         ):
-            self.is_component_empty = True
             return True
 
-        self.is_component_empty = False
+        if all(
+            e == 0
+            for e in chain(
+                self.emitted_bs_stats.values(), self.received_bs_stats.values()
+            )
+        ):
+            return True
+
         return False
 
     def _preprocess_data(self) -> None:
@@ -164,7 +171,11 @@ class BsdStatsProcessor:
 
     def build(self):
         self._preprocess_data()
-        return self.build_context()
+
+        data = {}
+        if not self._check_data_empty():
+            data = self.build_context()
+        return data
 
 
 class InputOutputWasteTableProcessor:

@@ -7,6 +7,8 @@ register = template.Library()
 def stats_graph(computed, bsd_type):
     if bsd_type == "bsdd":
         return computed.bsdd_stats_data
+    if bsd_type == "bsdd_non_dangerous":
+        return computed.bsdd_non_dangerous_stats_data
     if bsd_type == "bsda":
         return computed.bsda_stats_data
     if bsd_type == "bsdasri":

@@ -12,6 +12,7 @@ COMPANY_TYPES = {
 }
 
 BSDD = "bsdd"
+BSDD_NON_DANGEROUS = "bsdd_non_dangerous"
 BSDA = "bsda"
 BSDASRI = "bsdasri"
 BSFF = "bsff"

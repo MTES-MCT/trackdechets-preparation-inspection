@@ -54,6 +54,12 @@ class ComputedInspectionData(models.Model):
     bsdd_stock_data = models.JSONField(default=dict)
     bsdd_stats_data = models.JSONField(default=dict, encoder=CustomJSONEncoder)
 
+    bsdd_non_dangerous_created_rectified_data = models.JSONField(default=dict)
+    bsdd_non_dangerous_stock_data = models.JSONField(default=dict)
+    bsdd_non_dangerous_stats_data = models.JSONField(
+        default=dict, encoder=CustomJSONEncoder
+    )
+
     bsda_created_rectified_data = models.JSONField(default=dict)
     bsda_stock_data = models.JSONField(default=dict)
     bsda_stats_data = models.JSONField(default=dict, encoder=CustomJSONEncoder)

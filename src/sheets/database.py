@@ -19,6 +19,7 @@ from .queries import (
     sql_get_vhu_agrement_data,
     sql_revised_bsda_query_str,
     sql_revised_bsdd_query_str,
+    sql_bsdd_non_dangerous_query_str,
 )
 
 wh_engine = create_engine(settings.WAREHOUSE_URL, pool_pre_ping=True)
@@ -64,6 +65,17 @@ def build_query(
 def build_bsdd_query(siret):
     df = build_query(
         sql_bsdd_query_str,
+        query_params={"siret": siret},
+        date_columns=bsd_date_params,
+        dtypes=bs_dtypes,
+    )
+
+    return df
+
+
+def build_bsdd_non_dangerous_query(siret):
+    df = build_query(
+        sql_bsdd_non_dangerous_query_str,
         query_params={"siret": siret},
         date_columns=bsd_date_params,
         dtypes=bs_dtypes,

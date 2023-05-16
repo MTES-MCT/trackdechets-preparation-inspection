@@ -3,6 +3,7 @@ import json
 import re
 from datetime import datetime, timedelta
 from typing import Any, Dict, List
+import numbers
 
 import numpy as np
 import pandas as pd
@@ -40,7 +41,12 @@ class BsdStatsProcessor:
         self.bs_data = bs_data
         self.bs_revised_data = bs_revised_data
 
-        keys = ["total", "archived", "more_than_one_month"]
+        keys = [
+            "total",
+            "archived",
+            "processed_in_more_than_one_month_count",
+            "processed_in_more_than_one_month_avg_processing_time",
+        ]
         self.emitted_bs_stats = {key: None for key in keys}
         self.received_bs_stats = {key: None for key in keys}
 
@@ -91,40 +97,47 @@ class BsdStatsProcessor:
 
         bs_revised_data = self.bs_revised_data
 
-        self.emitted_bs_stats["total"] = len(bs_emitted_data)
-        self.received_bs_stats["total"] = len(bs_received_data)
+        for target, to_process in [
+            (self.emitted_bs_stats, bs_emitted_data),
+            (self.received_bs_stats, bs_received_data),
+        ]:
+            target["total"] = len(to_process)
+            target["archived"] = len(
+                to_process[
+                    to_process["status"].isin(
+                        [
+                            "PROCESSED",
+                            "REFUSED",
+                            "NO_TRACEABILITY",
+                            "FOLLOWED_WITH_PNTTD",
+                        ]
+                    )
+                ]
+            )
 
-        self.emitted_bs_stats["archived"] = len(
-            bs_emitted_data[
-                bs_emitted_data["status"].isin(
-                    ["PROCESSED", "REFUSED", "NO_TRACEABILITY", "FOLLOWED_WITH_PNTTD"]
-                )
-            ]
-        )
-        self.received_bs_stats["archived"] = len(
-            bs_received_data[
-                bs_received_data["status"].isin(
-                    ["PROCESSED", "REFUSED", "NO_TRACEABILITY", "FOLLOWED_WITH_PNTTD"]
-                )
-            ]
-        )
-
-        self.emitted_bs_stats["more_than_one_month"] = len(
-            bs_emitted_data[
+            bs_emitted_processed_in_more_than_one_month = to_process[
                 (
-                    (bs_emitted_data["processed_at"] - bs_emitted_data["received_at"])
+                    (to_process["processed_at"] - to_process["received_at"])
                     > np.timedelta64(1, "M")
                 )
             ]
-        )
-        self.received_bs_stats["more_than_one_month"] = len(
-            bs_received_data[
-                (
-                    (bs_received_data["processed_at"] - bs_received_data["received_at"])
-                    > np.timedelta64(1, "M")
-                )
-            ]
-        )
+            processed_in_more_than_one_month_count = len(
+                bs_emitted_processed_in_more_than_one_month
+            )
+
+            target["processed_in_more_than_one_month_count"] = len(
+                bs_emitted_processed_in_more_than_one_month
+            )
+            if processed_in_more_than_one_month_count:
+                res = (
+                    (
+                        bs_emitted_processed_in_more_than_one_month["processed_at"]
+                        - bs_emitted_processed_in_more_than_one_month["received_at"]
+                    ).mean()
+                ).total_seconds() / (24 * 3600)
+                target[
+                    "processed_in_more_than_one_month_avg_processing_time"
+                ] = f"{res:.1f}j"
 
         self.revised_bs_count = (
             bs_revised_data["bs_id"].nunique() if bs_revised_data is not None else 0
@@ -151,10 +164,12 @@ class BsdStatsProcessor:
     def build_context(self):
         ctx = {
             "emitted_bs_stats": {
-                k: format_number_str(v, 0) for k, v in self.emitted_bs_stats.items()
+                k: (format_number_str(v, 0) if isinstance(v, numbers.Number) else v)
+                for k, v in self.emitted_bs_stats.items()
             },
             "received_bs_stats": {
-                k: format_number_str(v, 0) for k, v in self.received_bs_stats.items()
+                k: (format_number_str(v, 0) if isinstance(v, numbers.Number) else v)
+                for k, v in self.received_bs_stats.items()
             },
             "revised_bs_count": format_number_str(self.revised_bs_count, precision=0),
             "total_incoming_weight": format_number_str(

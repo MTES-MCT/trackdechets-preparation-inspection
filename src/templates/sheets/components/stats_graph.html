@@ -159,12 +159,15 @@
             <td>{{ received_bs_stats.archived }}</td>
           </tr>
           <tr>
-            <th scope="row">Traitements > 1 mois</th>
+            <th colspan="3">Traitement > 1 mois</th>
+          </tr>
+          <tr>
+            <th scope="row">Nombre</th>
             <td>{{ emitted_bs_stats.processed_in_more_than_one_month_count }}</td>
             <td>{{ received_bs_stats.processed_in_more_than_one_month_count }}</td>
           </tr>
           <tr>
-            <th scope="row">Temps moyen de traitement (pour les traitements > 1 mois)</th>
+            <th scope="row">Temps moyen de traitement</th>
             <td>
               {% if emitted_bs_stats.processed_in_more_than_one_month_avg_processing_time %}
                 {{ emitted_bs_stats.processed_in_more_than_one_month_avg_processing_time }}

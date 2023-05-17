@@ -1,4 +1,4 @@
-sql_bsdd_query_str = """
+sql_bsdd_query_str = r"""
 select
     id,
     readable_id,
@@ -34,7 +34,7 @@ order by
     created_at ASC;
 """
 
-sql_bsdd_non_dangerous_query_str = """
+sql_bsdd_non_dangerous_query_str = r"""
 select
     id,
     readable_id,

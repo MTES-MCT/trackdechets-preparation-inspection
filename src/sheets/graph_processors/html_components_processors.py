@@ -1,9 +1,9 @@
-from itertools import chain
 import json
+import numbers
 import re
 from datetime import datetime, timedelta
+from itertools import chain
 from typing import Any, Dict, List
-import numbers
 
 import numpy as np
 import pandas as pd

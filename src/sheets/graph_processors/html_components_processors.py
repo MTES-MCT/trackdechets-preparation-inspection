@@ -60,8 +60,10 @@ class BsdStatsProcessor:
     def _check_data_empty(self) -> bool:
         bs_data = self.bs_data
         siret = self.company_siret
+
         bs_emitted_data = bs_data[bs_data["emitter_company_siret"] == siret]
         bs_received_data = bs_data[bs_data["recipient_company_siret"] == siret]
+
         bs_revised_data = self.bs_revised_data
 
         if (len(bs_emitted_data) == len(bs_received_data) == 0) and (
@@ -96,6 +98,7 @@ class BsdStatsProcessor:
         ]
 
         bs_revised_data = self.bs_revised_data
+        bs_revised_data = bs_revised_data[bs_revised_data["bs_id"].isin(bs_data["id"])]
 
         for target, to_process in [
             (self.emitted_bs_stats, bs_emitted_data),

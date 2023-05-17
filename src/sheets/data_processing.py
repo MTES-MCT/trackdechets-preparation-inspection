@@ -158,6 +158,7 @@ class SheetProcessor:
         self.computed = ComputedInspectionData.objects.get(pk=computed_pk)
         self.force_recompute = force_recompute
         self.siret = self.computed.org_id
+        self.company_id = None
         self.bsds_dfs = {}
         self.revised_bsds_dfs = {}
 

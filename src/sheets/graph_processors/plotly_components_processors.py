@@ -202,6 +202,9 @@ class BsdTrackedAndRevisedProcessor:
         """Preprocess raw revised 'bordereaux' data to prepare it for plotting."""
         bs_revised_data = self.bs_revised_data
 
+        bs_revised_data = bs_revised_data[
+            bs_revised_data["bs_id"].isin(self.bs_data["id"])
+        ]
         bs_revised_by_month = bs_revised_data.groupby(
             pd.Grouper(key="created_at", freq="1M")
         ).bs_id.nunique()

@@ -70,6 +70,26 @@
                 </div>
             {% endif %}
             {#  end bsdd #}
+            {#  bsdd non dangereux #}
+            {% if sheet.bsdd_non_dangerous_created_rectified_data %}
+                <div class="row">
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">BSD de déchets non dangereux émis, reçus et corrigés</h3>
+                        <img src="data:image/png;base64,{{ bsdd_non_dangerous_created_rectified_graph }}"
+                             class="cell__img">
+                    </div>
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">Quantité de déchets non dangereux en tonnes</h3>
+                        <img src="data:image/png;base64,{{ bsdd_non_dangerous_stock_graph }}"
+                             class="cell__img">
+                    </div>
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">BSD de déchets non dangereux sur l'année</h3>
+                        {% stats_graph sheet "bsdd_non_dangerous" %}
+                    </div>
+                </div>
+            {% endif %}
+            {#  end bsdd non dangereux #}
             {#  bsda #}
             {% if sheet.bsda_created_rectified_data %}
                 <div class="row">
@@ -103,7 +123,9 @@
                              class="cell__img">
                     </div>
                     <div class="cell cell--bordered cell--third">
-                        <p class="cell__title">BS Dasri sur l'année</p>
+                        <p class="cell__title">
+                            BS Dasri sur l'année
+                        </p>
                         {% stats_graph sheet "bsdasri" %}
                     </div>
                 </div>
@@ -113,12 +135,16 @@
             {% if sheet.bsff_created_rectified_data %}
                 <div class="row">
                     <div class="cell cell--bordered cell--third">
-                        <p class="cell__title">BS Fluides émis, reçus et corrigés</p>
+                        <p class="cell__title">
+                            BS Fluides émis, reçus et corrigés
+                        </p>
                         <img src="data:image/png;base64,{{ bsff_created_rectified_graph }}"
                              class="cell__img">
                     </div>
                     <div class="cell cell--bordered cell--third">
-                        <p class="cell__title">Quantité de déchets Fluides en tonnes</p>
+                        <p class="cell__title">
+                            Quantité de déchets Fluides en tonnes
+                        </p>
                         <img src="data:image/png;base64,{{ bsff_stock_graph }}" class="cell__img">
                     </div>
                     <div class="cell cell--bordered cell--third">

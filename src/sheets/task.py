@@ -10,7 +10,7 @@ from weasyprint.text.fonts import FontConfiguration
 from config.celery_app import app
 from sheets.models import ComputedInspectionData
 
-from .constants import ALLOWED_NAMES
+from .constants import PLOTLY_GRAPHS_TO_RENDER_IN_PDF
 from .data_processing import SheetProcessor
 from .rendering_helpers import render_pdf_graph_fn
 
@@ -26,7 +26,7 @@ def render_indiv_graph(computed_pk, name):
 @app.task
 def prepare_sheet(computed_pk):
     """
-     Pollable task to prepare html view.
+    Pollable task to prepare html view.
 
     :param computed_pk: ComputedInspectionData pk
     """
@@ -51,6 +51,8 @@ def render_pdf_sheet(computed_pk: str):
         "sheet": sheet,
         "bsdd_created_rectified_graph": sheet.bsdd_created_rectified_graph,
         "bsdd_stock_graph": sheet.bsdd_stock_graph,
+        "bsdd_non_dangerous_created_rectified_graph": sheet.bsdd_non_dangerous_created_rectified_graph,
+        "bsdd_non_dangerous_stock_graph": sheet.bsdd_non_dangerous_stock_graph,
         "bsda_created_rectified_graph": sheet.bsda_created_rectified_graph,
         "bsda_stock_graph": sheet.bsda_stock_graph,
         "bsdasri_created_rectified_graph": sheet.bsdasri_created_rectified_graph,
@@ -99,7 +101,10 @@ def render_pdf(computed_pk: str):
         return
 
     graph_rendering = group(
-        (render_indiv_graph.s(computed_pk, name) for name in ALLOWED_NAMES)
+        (
+            render_indiv_graph.s(computed_pk, name)
+            for name in PLOTLY_GRAPHS_TO_RENDER_IN_PDF
+        )
     )
 
     result = graph_rendering.delay()

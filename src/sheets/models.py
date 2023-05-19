@@ -98,15 +98,21 @@ class ComputedInspectionData(models.Model):
     bsdd_created_rectified_graph = models.TextField(blank=True)
     bsdd_stock_graph = models.TextField(blank=True)
 
+    bsdd_non_dangerous_created_rectified_graph = models.TextField(blank=True)
+    bsdd_non_dangerous_stock_graph = models.TextField(blank=True)
+
     bsda_created_rectified_graph = models.TextField(blank=True)
     bsda_stock_graph = models.TextField(blank=True)
 
     bsdasri_created_rectified_graph = models.TextField(blank=True)
     bsdasri_stock_graph = models.TextField(blank=True)
+
     bsff_created_rectified_graph = models.TextField(blank=True)
     bsff_stock_graph = models.TextField(blank=True)
+
     bsvhu_created_rectified_graph = models.TextField(blank=True)
     bsvhu_stock_graph = models.TextField(blank=True)
+
     waste_origin_graph = models.TextField(blank=True)
     waste_origin_map_graph = models.TextField(blank=True)
 

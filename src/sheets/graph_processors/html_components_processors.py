@@ -50,7 +50,7 @@ class BsdStatsProcessor:
         self.emitted_bs_stats = {key: None for key in keys}
         self.received_bs_stats = {key: None for key in keys}
 
-        self.revised_bs_count = None
+        self.revised_bs_count = 0
 
         self.total_incoming_weight = None
         self.total_outgoing_weight = None
@@ -97,9 +97,6 @@ class BsdStatsProcessor:
             & bs_data["received_at"].between(one_year_ago, today_date)
         ]
 
-        bs_revised_data = self.bs_revised_data
-        bs_revised_data = bs_revised_data[bs_revised_data["bs_id"].isin(bs_data["id"])]
-
         for target, to_process in [
             (self.emitted_bs_stats, bs_emitted_data),
             (self.received_bs_stats, bs_received_data),
@@ -142,9 +139,12 @@ class BsdStatsProcessor:
                     "processed_in_more_than_one_month_avg_processing_time"
                 ] = f"{res:.1f}j"
 
-        self.revised_bs_count = (
-            bs_revised_data["bs_id"].nunique() if bs_revised_data is not None else 0
-        )
+        bs_revised_data = self.bs_revised_data
+        if bs_revised_data is not None:
+            bs_revised_data = bs_revised_data[
+                bs_revised_data["bs_id"].isin(bs_data["id"])
+            ]
+            self.revised_bs_count = bs_revised_data["bs_id"].nunique()
 
         self.total_incoming_weight = bs_received_data["quantity_received"].sum()
         self.total_outgoing_weight = bs_emitted_data["quantity_received"].sum()

@@ -348,7 +348,7 @@
 
             Plotly.newPlot('bsdd_quantity_graph', bsdd_stock_data.data, bsdd_stock_data.layout, bsdd_stock_data.config);
         }
-        if (isNotEmpty(bsdd_created_rectified_data)) {
+        if (isNotEmpty(bsdd_non_dangerous_created_rectified_data)) {
             removeNoDataClass("#bsdd_non_dangerous_emitted_corrected_graph > .no-data");
             removeNoDataClass("#bsdd_non_dangerous_quantity_graph > .no-data");
             Plotly.newPlot(

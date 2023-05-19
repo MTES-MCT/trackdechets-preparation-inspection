@@ -18,9 +18,12 @@ BSDASRI = "bsdasri"
 BSFF = "bsff"
 BSVHU = "bsvhu"
 
-ALLOWED_NAMES = [  # todo: find a better name
+
+PLOTLY_GRAPHS_TO_RENDER_IN_PDF = [
     "bsdd_created_rectified",
     "bsdd_stock",
+    "bsdd_non_dangerous_created_rectified",
+    "bsdd_non_dangerous_stock",
     "bsda_created_rectified",
     "bsda_stock",
     "bsdasri_created_rectified",

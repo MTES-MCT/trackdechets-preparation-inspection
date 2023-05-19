@@ -195,6 +195,8 @@ class SheetPdfHtml(LoginRequiredMixin, DetailView):
             {
                 "bsdd_created_rectified_graph": self.object.bsdd_created_rectified_graph,
                 "bsdd_stock_graph": self.object.bsdd_stock_graph,
+                "bsdd_non_dangerous_created_rectified_graph": self.object.bsdd_non_dangerous_created_rectified_graph,
+                "bsdd_non_dangerous_stock_graph": self.object.bsdd_non_dangerous_stock_graph,
                 "bsda_created_rectified_graph": self.object.bsda_created_rectified_graph,
                 "bsda_stock_graph": self.object.bsda_stock_graph,
                 "bsdasri_created_rectified_graph": self.object.bsdasri_created_rectified_graph,

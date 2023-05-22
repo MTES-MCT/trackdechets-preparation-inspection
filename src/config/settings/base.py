@@ -75,7 +75,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {"default": env.db()}
 WAREHOUSE_URL = env("WAREHOUSE_URL")
-
+WAREHOUSE_TEST_URL = env("WAREHOUSE_TEST_URL")
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 

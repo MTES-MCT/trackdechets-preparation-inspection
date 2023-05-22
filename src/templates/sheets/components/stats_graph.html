@@ -191,8 +191,12 @@
     </div>
     <div>
       <p class="sc-number">
-        <span class="td-font-display">{{ total_incoming_weight }}</span>tonnes
-        entrantes
+        <span class="td-font-display">{{ total_incoming_quantity }}</span>
+        {% if bsd_type == "bsdasri" %}
+          m³ entrants
+        {% else %}
+          tonnes entrantes
+        {% endif %}
       </p>
     </div>
     <div>
@@ -213,7 +217,12 @@
     </div>
     <div>
       <p class="sc-number">
-        <span class="td-font-display">{{ total_outgoing_weight }}</span>tonnes sortantes
+        <span class="td-font-display">{{ total_outgoing_quantity }}</span>
+        {% if bsd_type == "bsdasri" %}
+          m³ sortants
+        {% else %}
+          tonnes sortantes
+        {% endif %}
       </p>
     </div>
   </div>

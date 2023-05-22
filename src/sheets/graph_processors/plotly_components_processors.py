@@ -14,12 +14,25 @@ from sheets.utils import format_number_str, get_code_departement
 
 
 class BsdQuantitiesGraph:
+    """Component with a Line Figure showing incoming and outgoing quantities of waste..
+
+    Parameters
+    ----------
+    company_siret: str
+        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
+    bs_data: DataFrame
+        DataFrame containing data for a given 'bordereau' type.
+    variable_name: str
+        The name of the variable to use to compute quantity statistics.
+    """
+
     def __init__(self, company_siret, bs_data, variable_name="quantity_received"):
         self.bs_data = bs_data
-        self.incoming_data_by_month = None
-        self.outgoing_data_by_month = None
         self.company_siret = company_siret
         self.variable_name = variable_name
+
+        self.incoming_data_by_month = None
+        self.outgoing_data_by_month = None
 
     def _preprocess_data(self) -> None:
         bs_data = self.bs_data
@@ -81,9 +94,9 @@ class BsdQuantitiesGraph:
 
         if self.variable_name == "volume":
             incoming_line_name = "Volume entrant"
-            incoming_hover_text = "{} - <b>{}</b> litres entrants"
+            incoming_hover_text = "{} - <b>{}</b> m³ entrants"
             outgoing_line_name = "Volume sortant"
-            outgoing_hover_text = "{} - <b>{}</b> litres sortants"
+            outgoing_hover_text = "{} - <b>{}</b> m³ sortants"
 
         incoming_line = go.Scatter(
             x=incoming_data_by_month.index,
@@ -159,8 +172,6 @@ class BsdTrackedAndRevisedProcessor:
 
     Parameters
     ----------
-    component_title : str
-        Title of the component that will be displayed in the component layout.
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bs_data: DataFrame
@@ -340,9 +351,6 @@ class WasteOriginProcessor:
     """Component with a bar figure representing the quantity of waste received by départements (only TOP 6).
 
     Parameters
-    ----------
-    component_title : str
-        Title of the component that will be displayed in the component layout.
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bs_data_dfs: dict
@@ -486,8 +494,6 @@ class WasteOriginsMapProcessor:
 
     Parameters
     ----------
-    component_title : str
-        Title of the component that will be displayed in the component layout.
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bs_data_dfs: dict

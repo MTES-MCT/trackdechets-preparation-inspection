@@ -1,8 +1,8 @@
 <h3 class="cell__title">Déclaration de déchets dangereux avec code déchet non dangereux</h3>
 {% if waste_is_dangerous_statements_data %}
     <p>L'établissement a déclaré des déchets comme étant dangereux pour les codes déchets non dangereux suivants :</p>
-    <div class="fr-table">
-        <table>
+    <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+        <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
             <thead>
                 <tr>
                     <th scope="col">Code déchet</th>

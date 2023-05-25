@@ -1,9 +1,9 @@
-from itertools import chain
 import json
+import numbers
 import re
 from datetime import datetime, timedelta
+from itertools import chain
 from typing import Any, Dict, List
-import numbers
 
 import numpy as np
 import pandas as pd
@@ -50,7 +50,7 @@ class BsdStatsProcessor:
         self.emitted_bs_stats = {key: None for key in keys}
         self.received_bs_stats = {key: None for key in keys}
 
-        self.revised_bs_count = None
+        self.revised_bs_count = 0
 
         self.total_incoming_weight = None
         self.total_outgoing_weight = None
@@ -60,8 +60,10 @@ class BsdStatsProcessor:
     def _check_data_empty(self) -> bool:
         bs_data = self.bs_data
         siret = self.company_siret
+
         bs_emitted_data = bs_data[bs_data["emitter_company_siret"] == siret]
         bs_received_data = bs_data[bs_data["recipient_company_siret"] == siret]
+
         bs_revised_data = self.bs_revised_data
 
         if (len(bs_emitted_data) == len(bs_received_data) == 0) and (
@@ -94,8 +96,6 @@ class BsdStatsProcessor:
             (bs_data["recipient_company_siret"] == self.company_siret)
             & bs_data["received_at"].between(one_year_ago, today_date)
         ]
-
-        bs_revised_data = self.bs_revised_data
 
         for target, to_process in [
             (self.emitted_bs_stats, bs_emitted_data),
@@ -139,9 +139,12 @@ class BsdStatsProcessor:
                     "processed_in_more_than_one_month_avg_processing_time"
                 ] = f"{res:.1f}j"
 
-        self.revised_bs_count = (
-            bs_revised_data["bs_id"].nunique() if bs_revised_data is not None else 0
-        )
+        bs_revised_data = self.bs_revised_data
+        if bs_revised_data is not None:
+            bs_revised_data = bs_revised_data[
+                bs_revised_data["bs_id"].isin(bs_data["id"])
+            ]
+            self.revised_bs_count = bs_revised_data["bs_id"].nunique()
 
         self.total_incoming_weight = bs_received_data["quantity_received"].sum()
         self.total_outgoing_weight = bs_emitted_data["quantity_received"].sum()

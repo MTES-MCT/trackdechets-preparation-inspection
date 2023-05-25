@@ -8,6 +8,7 @@ from sqlalchemy.sql import text
 from .queries import (
     sql_bsda_query_str,
     sql_bsdasri_query_str,
+    sql_bsdd_non_dangerous_query_str,
     sql_bsdd_query_str,
     sql_bsff_query_str,
     sql_bsvhu_query_str,
@@ -64,6 +65,17 @@ def build_query(
 def build_bsdd_query(siret):
     df = build_query(
         sql_bsdd_query_str,
+        query_params={"siret": siret},
+        date_columns=bsd_date_params,
+        dtypes=bs_dtypes,
+    )
+
+    return df
+
+
+def build_bsdd_non_dangerous_query(siret):
+    df = build_query(
+        sql_bsdd_non_dangerous_query_str,
         query_params={"siret": siret},
         date_columns=bsd_date_params,
         dtypes=bs_dtypes,

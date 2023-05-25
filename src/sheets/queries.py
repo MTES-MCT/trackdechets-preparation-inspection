@@ -1,4 +1,4 @@
-sql_bsdd_query_str = """
+sql_bsdd_query_str = r"""
 select
     id,
     readable_id,
@@ -29,6 +29,43 @@ where
     and is_deleted = false
     and created_at >= current_date - INTERVAL '1 year'
     and status::text not in ('DRAFT', 'INITIAL')
+    and (waste_details_code ~* '.*\*$' or waste_details_pop or waste_details_is_dangerous)
+order by
+    created_at ASC;
+"""
+
+sql_bsdd_non_dangerous_query_str = r"""
+select
+    id,
+    readable_id,
+    created_at,
+    sent_at,
+    received_at,
+    processed_at,
+    emitter_company_siret,
+    emitter_company_address,
+    recipient_company_siret,
+    waste_details_quantity,
+    quantity_received,
+    waste_details_code as waste_code,
+    waste_details_name as waste_name,
+    processing_operation_done as processing_operation_code,
+    status,
+    transporter_transport_mode,
+    no_traceability,
+    waste_details_pop as waste_pop,
+    waste_details_is_dangerous as is_dangerous,
+    emitter_worksite_name as worksite_name,
+    emitter_worksite_address as worksite_address
+ from
+    trusted_zone_trackdechets.bsdd
+where
+    (emitter_company_siret = :siret
+    or recipient_company_siret = :siret)
+    and is_deleted = false
+    and created_at >= current_date - INTERVAL '1 year'
+    and status::text not in ('DRAFT', 'INITIAL')
+    and not (waste_details_code ~* '.*\*$' or waste_details_pop or waste_details_is_dangerous)
 order by
     created_at ASC;
 """

@@ -75,23 +75,55 @@
             </div>
         {% endif %}
         {#  end bsdd #}
+        {#  bsdd non dangereux #}
+        {% if sheet.bsdd_non_dangerous_created_rectified_data %}
+            <div class="row">
+                <div class="cell cell--bordered cell--third">
+                    <h3 class="cell__title">BSD de déchets non dangereux émis, reçus et corrigés</h3>
+                    <div id="bsdd_non_dangerous_emitted_corrected_graph">
+                        <div class="no-data">Pas de données à afficher.</div>
+                    </div>
+                </div>
+                <div class="cell cell--bordered cell--third">
+                    <h3 class="cell__title">Quantité de déchets non dangereux en tonnes</h3>
+                    <div id="bsdd_non_dangerous_quantity_graph">
+                        <div class="no-data">Pas de données à afficher.</div>
+                    </div>
+                </div>
+                <div class="cell cell--bordered cell--third">
+                    <h3 class="cell__title">BSD de déchets non dangereux sur l'année</h3>
+                    {% stats_graph sheet "bsdd_non_dangerous" %}
+                </div>
+            </div>
+        {% endif %}
+        {#  end bsdd non dangereux #}
         {#  bsda #}
         {% if sheet.bsda_created_rectified_data %}
             <div class="row">
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">BSD Amiante émis, reçus et corrigés</h3>
+                    <h3 class="cell__title">
+                        BSD Amiante émis, reçus et corrigés
+                    </h3>
                     <div id="bsda_emitted_corrected_graph">
-                        <div class="no-data">Pas de données à afficher.</div>
+                        <div class="no-data">
+                            Pas de données à afficher.
+                        </div>
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">Quantité de déchets amiante en tonnes</h3>
+                    <h3 class="cell__title">
+                        Quantité de déchets amiante en tonnes
+                    </h3>
                     <div id="bsda_quantity_graph">
-                        <div class="no-data">Pas de données à afficher.</div>
+                        <div class="no-data">
+                            Pas de données à afficher.
+                        </div>
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">BS Amiante sur l'année</h3>
+                    <h3 class="cell__title">
+                        BS Amiante sur l'année
+                    </h3>
                     {% stats_graph sheet "bsda" %}
                 </div>
             </div>
@@ -282,6 +314,8 @@
             const siret = {{ sheet.org_id }};
             const bsdd_created_rectified_data = {{ sheet.bsdd_created_rectified_data }};
             const bsdd_stock_data = {{ sheet.bsdd_stock_data }};
+            const bsdd_non_dangerous_created_rectified_data = {{ sheet.bsdd_non_dangerous_created_rectified_data }};
+            const bsdd_non_dangerous_stock_data = {{ sheet.bsdd_non_dangerous_stock_data }};
             const bsda_created_rectified_data = {{ sheet.bsda_created_rectified_data }};
             const bsda_stock_data = {{ sheet.bsda_stock_data }};
             const bsdasri_created_rectified_data = {{ sheet.bsdasri_created_rectified_data }};
@@ -313,6 +347,17 @@
                 bsdd_created_rectified_data.config)
 
             Plotly.newPlot('bsdd_quantity_graph', bsdd_stock_data.data, bsdd_stock_data.layout, bsdd_stock_data.config);
+        }
+        if (isNotEmpty(bsdd_non_dangerous_created_rectified_data)) {
+            removeNoDataClass("#bsdd_non_dangerous_emitted_corrected_graph > .no-data");
+            removeNoDataClass("#bsdd_non_dangerous_quantity_graph > .no-data");
+            Plotly.newPlot(
+                'bsdd_non_dangerous_emitted_corrected_graph',
+                bsdd_non_dangerous_created_rectified_data.data,
+                bsdd_non_dangerous_created_rectified_data.layout,
+                bsdd_non_dangerous_created_rectified_data.config)
+
+            Plotly.newPlot('bsdd_non_dangerous_quantity_graph', bsdd_non_dangerous_stock_data.data, bsdd_non_dangerous_stock_data.layout, bsdd_non_dangerous_stock_data.config);
         }
         if (isNotEmpty(bsda_created_rectified_data)) {
             removeNoDataClass("#bsda_emitted_corrected_graph > .no-data");

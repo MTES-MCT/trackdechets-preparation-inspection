@@ -2,7 +2,7 @@ from typing import Dict, List, Tuple
 
 import pandas as pd
 
-from .constants import BSDA, BSDASRI, BSDD, BSFF, BSVHU
+from .constants import BSDA, BSDASRI, BSDD, BSDD_NON_DANGEROUS, BSFF, BSVHU
 from .data_extract import (
     load_and_preprocess_regions_geographical_data,
     load_departements_regions_data,
@@ -12,6 +12,7 @@ from .data_extract import (
 from .database import (
     build_bsda_query,
     build_bsdasri_query,
+    build_bsdd_non_dangerous_query,
     build_bsdd_query,
     build_bsff_query,
     build_bsvhu_query,
@@ -68,7 +69,7 @@ def get_quantity_outliers(df: pd.DataFrame, bs_type: str) -> pd.DataFrame:
     """
 
     df = df.copy()
-    if bs_type in [BSDD, BSDA]:
+    if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA]:
         df_quantity_outliers = df[
             (df["quantity_received"] > 40)
             & (df["transporter_transport_mode"] == "ROAD")
@@ -137,6 +138,11 @@ bsds_config = [
         "bs_revised_data": build_revised_bsdd_query,
     },
     {
+        "bsd_type": BSDD_NON_DANGEROUS,
+        "bs_data": build_bsdd_non_dangerous_query,
+        "bs_revised_data": build_revised_bsdd_query,
+    },
+    {
         "bsd_type": BSDA,
         "bs_data": build_bsda_query,
         "bs_revised_data": build_revised_bsda_query,
@@ -152,6 +158,7 @@ class SheetProcessor:
         self.computed = ComputedInspectionData.objects.get(pk=computed_pk)
         self.force_recompute = force_recompute
         self.siret = self.computed.org_id
+        self.company_id = None
         self.bsds_dfs = {}
         self.revised_bsds_dfs = {}
 

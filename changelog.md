@@ -7,6 +7,7 @@ et le projet suit un schéma de versionning inspiré de [Calendar Versioning](ht
 
 ## 17/05/2023
 - Ajout des statistiques sur les déchets non dangereux suivis par BSDD.
+- Utilise les m3 comme unité pour les DASRIs.
 
 ## 16/05/2023
 - Ajout du temps de traitement moyen pour les bordereaux qui ont un traitement d'une durée supérieure à un mois.

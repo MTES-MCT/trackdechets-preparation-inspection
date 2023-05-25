@@ -190,8 +190,8 @@
             {#  end bsvhu #}
             {#  "waste is dangerous" statements #}
             {% if sheet.waste_is_dangerous_statements_data %}
-                <div class="cell cell--bordered cell--half">
-                    {% render_waste_is_dangerous_statements sheet %}
+                <div>
+                    {% render_waste_is_dangerous_statements sheet graph_context="pdf" %}
                 </div>
             {% endif %}
             {# end "waste is dangerous" statements #}
@@ -245,13 +245,10 @@
                     {# end ICPE #}
                 </div>
             </div>
-            <div class="row">
+            <div>
                 {# traceability #}
-                <div class="cell cell--bordered">
-                    {% render_traceabilty_break sheet %}
-                </div>
+                {% render_traceabilty_break sheet graph_context="pdf" %}
                 {# end traceability #}
-                {# input/output #}
             </div>
             {# bsd canceled table #}
             <div>
@@ -265,6 +262,7 @@
             {# end ame emitter recipient table #}
         </section>
         <section class="vertical">
+            {# input/output #}
             <div>
                 <h3 class="section__title">
                     Liste des déchets entrants/sortants

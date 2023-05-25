@@ -55,16 +55,18 @@ def render_icpe(computed):
 
 
 @register.inclusion_tag("sheets/components/traceabilty_break.html")
-def render_traceabilty_break(computed):
+def render_traceabilty_break(computed, graph_context="web"):
     return {
         "traceability_interruptions_data": computed.traceability_interruptions_data,
+        "graph_context": graph_context,
     }
 
 
 @register.inclusion_tag("sheets/components/waste_is_dangerous_statements.html")
-def render_waste_is_dangerous_statements(computed):
+def render_waste_is_dangerous_statements(computed, graph_context="web"):
     return {
         "waste_is_dangerous_statements_data": computed.waste_is_dangerous_statements_data,
+        "graph_context": graph_context,
     }
 
 

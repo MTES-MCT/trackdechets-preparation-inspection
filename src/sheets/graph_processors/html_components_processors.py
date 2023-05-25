@@ -20,12 +20,12 @@ class BsdStatsProcessor:
 
     Parameters
     ----------
-    component_title : str
-        Title of the component that will be displayed in the component layout.
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bs_data: DataFrame
         DataFrame containing data for a given 'bordereau' type.
+    quantity_variable_name: str
+        The name of the variable to use to compute quantity statistics.
     bs_revised_data: DataFrame
         DataFrame containing list of revised 'bordereaux' for a given 'bordereau' type.
     """
@@ -34,11 +34,13 @@ class BsdStatsProcessor:
         self,
         company_siret: str,
         bs_data: pd.DataFrame,
+        quantity_variable_name: str = "quantity_received",
         bs_revised_data: pd.DataFrame = None,
     ) -> None:
         self.company_siret = company_siret
 
         self.bs_data = bs_data
+        self.quantity_variable_name = quantity_variable_name
         self.bs_revised_data = bs_revised_data
 
         keys = [
@@ -52,8 +54,8 @@ class BsdStatsProcessor:
 
         self.revised_bs_count = 0
 
-        self.total_incoming_weight = None
-        self.total_outgoing_weight = None
+        self.total_incoming_quantity = None
+        self.total_outgoing_quantity = None
         self.incoming_bar_size = None
         self.outgoing_bar_size = None
 
@@ -146,21 +148,25 @@ class BsdStatsProcessor:
             ]
             self.revised_bs_count = bs_revised_data["bs_id"].nunique()
 
-        self.total_incoming_weight = bs_received_data["quantity_received"].sum()
-        self.total_outgoing_weight = bs_emitted_data["quantity_received"].sum()
+        self.total_incoming_quantity = bs_received_data[
+            self.quantity_variable_name
+        ].sum()
+        self.total_outgoing_quantity = bs_emitted_data[
+            self.quantity_variable_name
+        ].sum()
 
         self.incoming_bar_size = 0
         self.outgoing_bar_size = 0
 
-        if not (self.total_incoming_weight == self.total_outgoing_weight == 0):
-            if self.total_incoming_weight > self.total_outgoing_weight:
+        if not (self.total_incoming_quantity == self.total_outgoing_quantity == 0):
+            if self.total_incoming_quantity > self.total_outgoing_quantity:
                 self.incoming_bar_size = 100
                 self.outgoing_bar_size = int(
-                    100 * (self.total_outgoing_weight / self.total_incoming_weight)
+                    100 * (self.total_outgoing_quantity / self.total_incoming_quantity)
                 )
             else:
                 self.incoming_bar_size = int(
-                    100 * (self.total_incoming_weight / self.total_outgoing_weight)
+                    100 * (self.total_incoming_quantity / self.total_outgoing_quantity)
                 )
                 self.outgoing_bar_size = 100
 
@@ -175,11 +181,11 @@ class BsdStatsProcessor:
                 for k, v in self.received_bs_stats.items()
             },
             "revised_bs_count": format_number_str(self.revised_bs_count, precision=0),
-            "total_incoming_weight": format_number_str(
-                self.total_incoming_weight, precision=2
+            "total_incoming_quantity": format_number_str(
+                self.total_incoming_quantity, precision=2
             ),
-            "total_outgoing_weight": format_number_str(
-                self.total_outgoing_weight, precision=2
+            "total_outgoing_quantity": format_number_str(
+                self.total_outgoing_quantity, precision=2
             ),
             "incoming_bar_size": self.incoming_bar_size,
             "outgoing_bar_size": self.outgoing_bar_size,
@@ -201,8 +207,6 @@ class InputOutputWasteTableProcessor:
 
     Parameters
     ----------
-    component_title : str
-        Title of the component that will be displayed in the component layout.
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bs_data_dfs: dict
@@ -295,8 +299,6 @@ class BsdCanceledTableProcessor:
 
     Parameters
     ----------
-    component_title : str
-        Title of the component that will be displayed in the component layout.
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bs_data_dfs: dict
@@ -314,6 +316,7 @@ class BsdCanceledTableProcessor:
         self.bs_data_dfs = bs_data_dfs
         self.bs_revised_data = bs_revised_data
         self.company_siret = company_siret
+
         self.preprocessed_df = pd.DataFrame()
 
     def _preprocess_data(self) -> None:
@@ -467,8 +470,6 @@ class StorageStatsProcessor:
 
     Parameters
     ----------
-    component_title : str
-        Title of the component that will be displayed in the component layout.
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bs_data_dfs: dict
@@ -572,8 +573,6 @@ class AdditionalInfoProcessor:
 
     Parameters
     ----------
-    component_title : str
-        Title of the component that will be displayed in the component layout.
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     additional_data: dict
@@ -667,8 +666,6 @@ class ICPEItemsProcessor:
 
     Parameters
     ----------
-    component_title : str
-        Title of the component that will be displayed in the component layout.
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     icpe_data: DataFrame
@@ -860,14 +857,10 @@ class TraceabilityInterruptionsProcessor:
 
     Parameters
     ----------
-    component_title : str
-        Title of the component that will be displayed in the component layout.
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bsdd_data: DataFrame
         DataFrame containing bsdd data.
-
-
     """
 
     def __init__(
@@ -950,14 +943,10 @@ class WasteIsDangerousStatementsProcessor:
 
     Parameters
     ----------
-    component_title : str
-        Title of the component that will be displayed in the component layout.
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bsdd_data: DataFrame
         DataFrame containing bsdd data.
-
-
     """
 
     def __init__(

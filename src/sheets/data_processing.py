@@ -195,14 +195,23 @@ class SheetProcessor:
                 f"{bsd_type}_created_rectified_data",
                 created_rectified_graph_data,
             )
-            stock_graph = BsdQuantitiesGraph(self.siret, df)
+            stock_graph = BsdQuantitiesGraph(
+                self.siret,
+                df,
+                variable_name="quantity_received" if bsd_type != BSDASRI else "volume",
+            )
             stock_graph_data = stock_graph.build()
             if stock_graph_data:
                 all_bsd_data_empty = False
             setattr(self.computed, f"{bsd_type}_stock_data", stock_graph_data)
 
             stats_graph = BsdStatsProcessor(
-                self.siret, df, self.revised_bsds_dfs.get(bsd_type, None)
+                self.siret,
+                df,
+                quantity_variable_name="quantity_received"
+                if bsd_type != BSDASRI
+                else "volume",
+                bs_revised_data=self.revised_bsds_dfs.get(bsd_type, None),
             )
             stats_graph_data = stats_graph.build()
             if stats_graph_data:

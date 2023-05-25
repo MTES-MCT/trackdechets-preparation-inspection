@@ -131,6 +131,7 @@ select
     destination_company_siret as recipient_company_siret,
     emitter_waste_weight_value as waste_details_quantity,
     destination_reception_waste_weight_value as quantity_received,
+    destination_reception_waste_volume as volume,
     waste_code,
     destination_operation_code as processing_operation_code,
     status,

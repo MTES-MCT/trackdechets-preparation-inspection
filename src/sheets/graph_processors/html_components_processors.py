@@ -1134,7 +1134,9 @@ class PrivateindividualsCollectionsTableProcessor:
                 "worksite_address": e.worksite_address,
                 "waste_code": e.waste_code,
                 "waste_name": e.waste_name,
-                "quantity": e.quantity_received,
+                "quantity": e.quantity_received
+                if not pd.isna(e.quantity_received)
+                else None,
                 "sent_at": e.sent_at.strftime("%d/%m/%Y %H:%M")
                 if not pd.isna(e.sent_at)
                 else None,

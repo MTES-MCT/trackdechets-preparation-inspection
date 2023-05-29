@@ -28,6 +28,7 @@ from .graph_processors.html_components_processors import (
     BsdStatsProcessor,
     ICPEItemsProcessor,
     InputOutputWasteTableProcessor,
+    PrivateindividualsCollectionsTableProcessor,
     ReceiptAgrementsProcessor,
     SameEmitterRecipientTableProcessor,
     StorageStatsProcessor,
@@ -306,6 +307,13 @@ class SheetProcessor:
 
         same_emitter_recipient_table = SameEmitterRecipientTableProcessor(self.bsds_dfs)
         self.computed.same_emitter_recipient_data = same_emitter_recipient_table.build()
+
+        private_individuals_collections_table = (
+            PrivateindividualsCollectionsTableProcessor(self.siret, self.bsds_dfs[BSDA])
+        )
+        self.computed.private_individuals_collections_data = (
+            private_individuals_collections_table.build()
+        )
 
         self.computed.state = ComputedInspectionData.StateChoice.COMPUTED
         self.computed.save()

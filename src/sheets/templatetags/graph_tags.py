@@ -70,6 +70,15 @@ def render_waste_is_dangerous_statements(computed, graph_context="web"):
     }
 
 
+@register.inclusion_tag("sheets/components/private_individuals_collections_table.html")
+def render_private_individuals_collections_table(computed, graph_context="web"):
+    return {
+        "private_individuals_collections_data": computed.private_individuals_collections_data,
+        "company_siret": computed.org_id,
+        "graph_context": graph_context,
+    }
+
+
 @register.inclusion_tag("sheets/components/outliers.html")
 def render_outliers(computed):
     return {

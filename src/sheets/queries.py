@@ -95,6 +95,7 @@ select
     destination_reception_date as received_at,
     destination_operation_date as processed_at,
     emitter_company_siret,
+    emitter_company_name,
     emitter_company_address,
     destination_company_siret as recipient_company_siret,
     weight_value as waste_details_quantity,
@@ -106,12 +107,15 @@ select
     transporter_transport_mode,
     waste_pop,
     emitter_pickup_site_name as worksite_name,
-    emitter_pickup_site_address as worksite_address
+    emitter_pickup_site_address as worksite_address,
+    worker_company_siret,
+    emitter_is_private_individual
 from
     trusted_zone_trackdechets.bsda
 where
     (emitter_company_siret = :siret
-        or destination_company_siret = :siret)
+        or destination_company_siret = :siret
+        or worker_company_siret = :siret)
     and is_deleted = false
     and created_at >= current_date - interval '1 year'
     and status::text not in ('DRAFT', 'INITIAL')

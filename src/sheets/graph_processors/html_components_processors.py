@@ -1073,3 +1073,81 @@ class ReceiptAgrementsProcessor:
                 )
 
         return res
+
+
+class PrivateindividualsCollectionsTableProcessor:
+    """Component that displays a list of private individuals where waste have been picked up.
+
+    Parameters
+    ----------
+    company_siret: str
+        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
+    bsda_data_df: DataFrame
+        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
+
+
+    """
+
+    def __init__(
+        self,
+        company_siret: str,
+        bsda_data_df: pd.DataFrame,
+    ) -> None:
+        self.company_siret = company_siret
+
+        self.bsda_data_df = bsda_data_df
+
+        self.preprocessed_data = None
+
+    def _preprocess_data(self) -> None:
+        if self.bsda_data_df is None:
+            return
+
+        filtered_df = self.bsda_data_df[
+            (
+                (self.bsda_data_df["recipient_company_siret"] == self.company_siret)
+                | (self.bsda_data_df["worker_company_siret"] == self.company_siret)
+            )
+            & self.bsda_data_df["emitter_is_private_individual"]
+        ]
+
+        if len(filtered_df) > 0:
+            self.preprocessed_data = filtered_df
+
+    def _check_data_empty(self) -> bool:
+        if self.preprocessed_data is None:
+            return True
+
+        return False
+
+    def _add_stats(self) -> list:
+        stats = []
+
+        for e in self.preprocessed_data.sort_values("sent_at").itertuples():
+            row = {
+                "id": e.id,
+                "recipient_company_siret": e.recipient_company_siret,
+                "worker_company_siret": e.worker_company_siret,
+                "emitter_company_name": e.emitter_company_name,
+                "emitter_company_address": e.emitter_company_address,
+                "worksite_name": e.worksite_name,
+                "worksite_address": e.worksite_address,
+                "waste_code": e.waste_code,
+                "waste_name": e.waste_name,
+                "quantity": e.quantity_received,
+                "sent_at": e.sent_at.strftime("%d/%m/%Y %H:%M")
+                if not pd.isna(e.sent_at)
+                else None,
+                "received_at  ": e.received_at.strftime("%d/%m/%Y %H:%M")
+                if not pd.isna(e.received_at)
+                else None,
+            }
+            stats.append(row)
+        return stats
+
+    def build(self) -> list:
+        self._preprocess_data()
+
+        if not self._check_data_empty():
+            return self._add_stats()
+        return []

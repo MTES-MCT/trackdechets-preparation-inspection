@@ -123,12 +123,9 @@
                              class="cell__img">
                     </div>
                     <div class="cell cell--bordered cell--third">
-
-
                         <p class="cell__title">
                             BS DASRI sur l'année
                         </p>
-
                         {% stats_graph sheet "bsdasri" %}
                     </div>
                 </div>
@@ -138,20 +135,16 @@
             {% if sheet.bsff_created_rectified_data %}
                 <div class="row">
                     <div class="cell cell--bordered cell--third">
-
                         <p class="cell__title">
                             BS Fluides Frigorigènes émis, reçus et corrigés
                         </p>
-
                         <img src="data:image/png;base64,{{ bsff_created_rectified_graph }}"
                              class="cell__img">
                     </div>
                     <div class="cell cell--bordered cell--third">
-
                         <p class="cell__title">
                             Quantité de déchets Fluides Frigorigènes en tonnes
                         </p>
-
                         <img src="data:image/png;base64,{{ bsff_stock_graph }}" class="cell__img">
                     </div>
                     <div class="cell cell--bordered cell--third">

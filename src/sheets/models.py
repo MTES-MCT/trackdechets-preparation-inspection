@@ -2,7 +2,9 @@ import json
 import uuid
 
 import numpy as np
+from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
+from django.core.mail import EmailMessage
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -18,9 +20,21 @@ class CustomJSONEncoder(json.JSONEncoder):
         )
 
 
+def notify_admins(pk):
+    body = f"La fiche d'inspection {pk} est en erreur"
+    message = EmailMessage(
+        subject="Une fiche d'inspection est en erreur",
+        body=body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=settings.MESSAGE_RECIPIENTS,
+    )
+    message.send()
+
+
 class ComputedInspectionDataCustomManager(models.Manager):
     def mark_as_failed(self, pk):
         self.filter(pk=pk).update(state="COMPUTED_FAILED")
+        notify_admins(pk)
 
     def mark_as_graph_rendered(self, pk):
         self.filter(pk=pk).update(state="GRAPH_RENDERED")

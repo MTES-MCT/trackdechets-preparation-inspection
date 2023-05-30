@@ -788,7 +788,7 @@ class ICPEItemsProcessor:
         # 2760 preprocessing
         quantity = preprocessed_inputs.loc[
             (preprocessed_inputs["rubrique"] == "2760-1")
-            & (preprocessed_outputs["processed_at"].dt.year == actual_year),
+            & (preprocessed_inputs["processed_at"].dt.year == actual_year),
             "quantity_received",
         ].sum()
         if quantity > 0:

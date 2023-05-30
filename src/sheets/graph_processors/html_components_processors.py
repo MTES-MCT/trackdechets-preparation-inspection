@@ -1075,7 +1075,7 @@ class ReceiptAgrementsProcessor:
         return res
 
 
-class PrivateindividualsCollectionsTableProcessor:
+class PrivateIndividualsCollectionsTableProcessor:
     """Component that displays a list of private individuals where waste have been picked up.
 
     Parameters

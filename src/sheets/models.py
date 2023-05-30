@@ -93,6 +93,8 @@ class ComputedInspectionData(models.Model):
     bsd_canceled_data = models.JSONField(default=dict)
     same_emitter_recipient_data = models.JSONField(default=dict)
     private_individuals_collections_data = models.JSONField(default=dict)
+    quantity_outliers_data = models.JSONField(default=dict)
+
     # Prerendered plotly viz
 
     bsdd_created_rectified_graph = models.TextField(blank=True)

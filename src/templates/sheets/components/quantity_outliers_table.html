@@ -1,0 +1,62 @@
+{% if quantity_outliers_data %}
+    <h2 class="section__title">Liste des bordereaux avec des quantités aberrantes</h2>
+    <div>
+        Une quantité est dite aberrante si elle dépasse 40t pour un BSDD, BSDA, BSVHU ou 20t pour un BSDASRI ou un BSFF.
+    </div>
+    <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+        <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+            <thead>
+                <tr>
+                    <th scope="col">Type de bordereau</th>
+                    <th scope="col">Numéro de bordereau</th>
+                    <th scope="col">SIRET de l'émetteur</th>
+                    <th scope="col">SIRET du destinataire</th>
+                    <th scope="col">Date de l'envoi</th>
+                    <th scope="col">Date de la réception</th>
+                    <th scope="col">Code déchet</th>
+                    <th scope="col">Nom du déchet</th>
+                    <th scope="col">Quantité&nbsp;(t)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in quantity_outliers_data %}
+                    <tr>
+                        <td>{{ row.bs_type|upper }}</td>
+                        <td>{{ row.id }}</td>
+                        <td>
+                            {% if row.emitter_company_siret == company_siret %}
+                                <span class="fr-text--bold">{{ row.emitter_company_siret }}</span>
+                            {% else %}
+                                {{ row.emitter_company_siret }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.recipient_company_siret == company_siret %}
+                                <span class="fr-text--bold">{{ row.recipient_company_siret }}</span>
+                            {% else %}
+                                {{ row.recipient_company_siret }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.sent_at %}
+                                {{ row.sent_at }}
+                            {% else %}
+                                <span class="fr-text--alt">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.received_at %}
+                                {{ row.received_at }}
+                            {% else %}
+                                <span class="fr-text--alt">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ row.waste_code }}</td>
+                        <td>{{ row.waste_name }}</td>
+                        <td class="td--right">{{ row.quantity }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}

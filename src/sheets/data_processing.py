@@ -29,6 +29,7 @@ from .graph_processors.html_components_processors import (
     ICPEItemsProcessor,
     InputOutputWasteTableProcessor,
     PrivateIndividualsCollectionsTableProcessor,
+    QuantityOutliersTableProcessor,
     ReceiptAgrementsProcessor,
     SameEmitterRecipientTableProcessor,
     StorageStatsProcessor,
@@ -50,42 +51,6 @@ REGIONS_GEODATA = load_and_preprocess_regions_geographical_data()
 PROCESSING_OPERATION_CODE_RUBRIQUE_MAPPING = (
     load_mapping_rubrique_processing_operation_code()
 )
-
-
-def get_quantity_outliers(df: pd.DataFrame, bs_type: str) -> pd.DataFrame:
-    """Filter out lines from 'bordereau' DataFrame with inconsistent received quantity.
-    The rules to identify outliers in received quantity are business rules and may be tweaked in the future.
-
-    Parameters
-    ----------
-    df : DataFrame
-        DataFrame with 'bordereau' data.
-    bs_type : str
-        Name of the 'bordereau' (BSDD, BSDA, BSFF, BSVHU or BSDASRI).
-
-    Returns
-    -------
-    DataFrame
-        DataFrame with lines with received quantity outliers removed.
-    """
-
-    df = df.copy()
-    if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA]:
-        df_quantity_outliers = df[
-            (df["quantity_received"] > 40)
-            & (df["transporter_transport_mode"] == "ROAD")
-        ]
-    elif bs_type == BSDASRI:
-        df_quantity_outliers = df[
-            (df["quantity_received"] > 20)
-            & (df["transporter_transport_mode"] == "ROAD")
-        ]
-    elif bs_type == BSVHU:
-        df_quantity_outliers = df[(df["quantity_received"] > 40)]
-    elif bs_type == BSFF:
-        df_quantity_outliers = df[df["quantity_received"] > 20]
-
-    return df_quantity_outliers
 
 
 def get_outliers_datetimes_df(
@@ -229,11 +194,7 @@ class SheetProcessor:
             # compute and store df in a dict
             df = bsd_config["bs_data"](siret=self.computed.org_id)
             self.bsds_dfs[bsd_type] = df
-            quantity_outliers = get_quantity_outliers(df, bsd_type)
-            if len(quantity_outliers) > 0:
-                additional_data["quantity_outliers"][
-                    bsd_type.upper()
-                ] = quantity_outliers
+
             bs_data_df, date_outliers = get_outliers_datetimes_df(
                 df, date_columns=["sent_at", "received_at", "processed_at"]
             )
@@ -314,6 +275,8 @@ class SheetProcessor:
         self.computed.private_individuals_collections_data = (
             private_individuals_collections_table.build()
         )
+        quantity_outliers_table = QuantityOutliersTableProcessor(self.bsds_dfs)
+        self.computed.quantity_outliers_data = quantity_outliers_table.build()
 
         self.computed.state = ComputedInspectionData.StateChoice.COMPUTED
         self.computed.save()

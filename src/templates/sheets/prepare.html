@@ -1,8 +1,7 @@
 {% extends "base.html" %}
-{% load survey_tags %}
 {% block main %}
     <div class="fr-container fr-mt-1v">
-        {%  survey_callout %}
+        {% include "content/_survey_callout.html" %}
         <div class="fr-col-6">
             <h3>
                 Préparer une fiche d'inspection

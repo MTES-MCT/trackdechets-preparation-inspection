@@ -22,24 +22,26 @@
                 {% for row in private_individuals_collections_data %}
                     <tr>
                         <td>{{ row.id }}</td>
-                        <td>
-                            {% if row.recipient_company_siret == company_siret %}
-                                <span class="fr-text--bold">{{ row.recipient_company_siret }}</span>
-                            {% else %}
-                                {{ row.recipient_company_siret }}
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if row.worker_company_siret %}
-                                {% if row.worker_company_siret == company_siret %}
-                                    <span class="fr-text--bold">{{ row.worker_company_siret }}</span>
+                        {% if graph_context == "web" %}
+                            <td>
+                                {% if row.recipient_company_siret == company_siret %}
+                                    <span class="fr-text--bold">{{ row.recipient_company_siret }}</span>
                                 {% else %}
-                                    {{ row.worker_company_siret }}
+                                    {{ row.recipient_company_siret }}
                                 {% endif %}
-                            {% else %}
-                                <span class="fr-text--alt">N/A</span>
-                            {% endif %}
-                        </td>
+                            </td>
+                            <td>
+                                {% if row.worker_company_siret %}
+                                    {% if row.worker_company_siret == company_siret %}
+                                        <span class="fr-text--bold">{{ row.worker_company_siret }}</span>
+                                    {% else %}
+                                        {{ row.worker_company_siret }}
+                                    {% endif %}
+                                {% else %}
+                                    <span class="fr-text--alt">N/A</span>
+                                {% endif %}
+                            </td>
+                        {% endif %}
                         <td>
                             {% if row.sent_at %}
                                 {{ row.sent_at }}

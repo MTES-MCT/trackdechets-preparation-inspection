@@ -1,10 +1,9 @@
 {% extends "base.html" %}
-{% load static survey_tags %}
 {% block main %}
     <div class="fr-container">
         {% if user.is_authenticated %}
             <p>Bonjour, {{ user.username }}</p>
-            {%  survey_callout %}
+            {% include "content/_survey_callout.html" %}
             <p>
                 <a href="{% url "prepare" %}">Préparer une fiche</a>
             </p>

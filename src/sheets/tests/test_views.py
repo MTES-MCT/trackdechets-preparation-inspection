@@ -20,7 +20,6 @@ def test_home(logged_in_user):
 
     assert "Interface d'administration équipe" not in res.content.decode()
 
-    # User did not fill survey
     assert "Aidez-nous à améliorer cet outil" in res.content.decode()
 
 
@@ -39,4 +38,4 @@ def test_home_when_user_has_filled_survey(logged_in_user):
 
     res = logged_in_user.get(url)
     assert res.status_code == 200
-    assert "Aidez-nous à améliorer cet outil" not in res.content.decode()
+    assert "Aidez-nous à améliorer cet outil" in res.content.decode()

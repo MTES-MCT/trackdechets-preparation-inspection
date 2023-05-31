@@ -79,6 +79,15 @@ def render_private_individuals_collections_table(computed, graph_context="web"):
     }
 
 
+@register.inclusion_tag("sheets/components/quantity_outliers_table.html")
+def render_quantity_outliers_table(computed, graph_context="web"):
+    return {
+        "quantity_outliers_data": computed.quantity_outliers_data,
+        "company_siret": computed.org_id,
+        "graph_context": graph_context,
+    }
+
+
 @register.inclusion_tag("sheets/components/outliers.html")
 def render_outliers(computed):
     return {

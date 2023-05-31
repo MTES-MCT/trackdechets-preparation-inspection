@@ -10,6 +10,7 @@ import pandas as pd
 from django.utils import timezone as django_timezone
 
 from sheets.utils import format_number_str
+from ..constants import BSDA, BSDASRI, BSDD, BSDD_NON_DANGEROUS, BSFF, BSVHU
 
 # classes returning a context to be rendered in a non-plotly template
 
@@ -787,7 +788,7 @@ class ICPEItemsProcessor:
         # 2760 preprocessing
         quantity = preprocessed_inputs.loc[
             (preprocessed_inputs["rubrique"] == "2760-1")
-            & (preprocessed_outputs["processed_at"].dt.year == actual_year),
+            & (preprocessed_inputs["processed_at"].dt.year == actual_year),
             "quantity_received",
         ].sum()
         if quantity > 0:
@@ -1135,6 +1136,115 @@ class PrivateIndividualsCollectionsTableProcessor:
                 "waste_code": e.waste_code,
                 "waste_name": e.waste_name,
                 "quantity": e.quantity_received
+                if not pd.isna(e.quantity_received)
+                else None,
+                "sent_at": e.sent_at.strftime("%d/%m/%Y %H:%M")
+                if not pd.isna(e.sent_at)
+                else None,
+                "received_at  ": e.received_at.strftime("%d/%m/%Y %H:%M")
+                if not pd.isna(e.received_at)
+                else None,
+            }
+            stats.append(row)
+        return stats
+
+    def build(self) -> list:
+        self._preprocess_data()
+
+        if not self._check_data_empty():
+            return self._add_stats()
+        return []
+
+
+class QuantityOutliersTableProcessor:
+    """Component that displays a list of bordereaux with outliers values on quantity.
+
+    Parameters
+    ----------
+    bs_data_dfs: dict
+        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
+
+
+    """
+
+    def __init__(
+        self,
+        bs_data_dfs: Dict[str, pd.DataFrame],
+    ) -> None:
+        self.bs_data_dfs = bs_data_dfs
+
+        self.preprocessed_data = None
+
+    @staticmethod
+    def get_quantity_outliers(df: pd.DataFrame, bs_type: str) -> pd.DataFrame:
+        """Get lines from 'bordereau' DataFrame with inconsistent received quantity.
+        The rules to identify outliers in received quantity are business rules and may be tweaked in the future.
+
+        Parameters
+        ----------
+        df : DataFrame
+            DataFrame with 'bordereau' data.
+        bs_type : str
+            Name of the 'bordereau' (BSDD, BSDD_NON_DANGEROUS, BSDA, BSFF, BSVHU or BSDASRI).
+
+        Returns
+        -------
+        DataFrame
+            DataFrame with lines with received quantity outliers removed.
+        """
+
+        if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA]:
+            df_quantity_outliers = df[
+                (df["quantity_received"] > 40)
+                & (df["transporter_transport_mode"] == "ROAD")
+            ]
+        elif bs_type == BSDASRI:
+            df_quantity_outliers = df[
+                (df["quantity_received"] > 20)
+                & (df["transporter_transport_mode"] == "ROAD")
+            ]
+        elif bs_type == BSVHU:
+            df_quantity_outliers = df[(df["quantity_received"] > 40)]
+        elif bs_type == BSFF:
+            df_quantity_outliers = df[df["quantity_received"] > 20]
+
+        df_quantity_outliers["bs_type"] = (
+            bs_type if bs_type != BSDD_NON_DANGEROUS else "bsdd"
+        )
+        return df_quantity_outliers
+
+    def _preprocess_data(self) -> None:
+        outliers_dfs = []
+        for bs_type, df in self.bs_data_dfs.items():
+            df_outliers = self.get_quantity_outliers(df, bs_type)
+
+            if len(df_outliers) != 0:
+                if bs_type in [BSDD, BSDD_NON_DANGEROUS]:
+                    df_outliers["id"] = df_outliers["readable_id"]
+
+                outliers_dfs.append(df_outliers)
+
+        if outliers_dfs:
+            self.preprocessed_data = pd.concat(outliers_dfs)
+
+    def _check_data_empty(self) -> bool:
+        if self.preprocessed_data is None:
+            return True
+
+        return False
+
+    def _add_stats(self) -> list:
+        stats = []
+
+        for e in self.preprocessed_data.sort_values("sent_at").itertuples():
+            row = {
+                "id": e.id,
+                "bs_type": e.bs_type,
+                "emitter_company_siret": e.emitter_company_siret,
+                "recipient_company_siret": e.recipient_company_siret,
+                "waste_code": e.waste_code,
+                "waste_name": e.waste_name,
+                "quantity": format_number_str(e.quantity_received, 1)
                 if not pd.isna(e.quantity_received)
                 else None,
                 "sent_at": e.sent_at.strftime("%d/%m/%Y %H:%M")

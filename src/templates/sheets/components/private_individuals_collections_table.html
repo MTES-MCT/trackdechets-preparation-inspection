@@ -1,0 +1,101 @@
+{% if private_individuals_collections_data %}
+    <h2 class="section__title">Liste des collectes chez les particuliers</h2>
+    <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+        <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+            <thead>
+                <tr>
+                    <th scope="col">Numéro de bordereau</th>
+                    <th scope="col">SIRET du destinataire</th>
+                    <th scope="col">SIRET de l'entreprise de travaux</th>
+                    <th scope="col">Date de l'envoi</th>
+                    <th scope="col">Date de la réception</th>
+                    <th scope="col">Nom de l'émetteur</th>
+                    <th scope="col">Adresse de l'émetteur</th>
+                    <th scope="col">Nom du chantier</th>
+                    <th scope="col">Adresse du chantier</th>
+                    <th scope="col">Code déchet</th>
+                    <th scope="col">Nom du déchet</th>
+                    <th scope="col">Quantité&nbsp;(t)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in private_individuals_collections_data %}
+                    <tr>
+                        <td>{{ row.id }}</td>
+                        {% if graph_context == "web" %}
+                            <td>
+                                {% if row.recipient_company_siret == company_siret %}
+                                    <span class="fr-text--bold">{{ row.recipient_company_siret }}</span>
+                                {% else %}
+                                    {{ row.recipient_company_siret }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if row.worker_company_siret %}
+                                    {% if row.worker_company_siret == company_siret %}
+                                        <span class="fr-text--bold">{{ row.worker_company_siret }}</span>
+                                    {% else %}
+                                        {{ row.worker_company_siret }}
+                                    {% endif %}
+                                {% else %}
+                                    <span class="fr-text--alt">N/A</span>
+                                {% endif %}
+                            </td>
+                        {% endif %}
+                        <td>
+                            {% if row.sent_at %}
+                                {{ row.sent_at }}
+                            {% else %}
+                                <span class="fr-text--alt">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.received_at %}
+                                {{ row.received_at }}
+                            {% else %}
+                                <span class="fr-text--alt">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.emitter_company_name %}
+                                {{ row.emitter_company_name }}
+                            {% else %}
+                                <span class="fr-text--alt">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.emitter_company_address %}
+                                {{ row.emitter_company_address }}
+                            {% else %}
+                                <span class="fr-text--alt">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.worksite_name %}
+                                {{ row.worksite_name }}
+                            {% else %}
+                                <span class="fr-text--alt">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.worksite_address %}
+                                {{ row.worksite_address }}
+                            {% else %}
+                                <span class="fr-text--alt">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ row.waste_code }}</td>
+                        <td>{{ row.waste_name }}</td>
+                        <td class="td--right">
+                            {% if row.quantity %}
+                                {{ row.quantity }}
+                            {% else %}
+                                <span class="fr-text--alt">N/A</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}

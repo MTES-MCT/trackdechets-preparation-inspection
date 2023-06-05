@@ -75,7 +75,7 @@ class BsdStatsProcessor:
             return True
 
         if all(
-            e == 0
+            (e == 0) or (e is None)
             for e in chain(
                 self.emitted_bs_stats.values(), self.received_bs_stats.values()
             )
@@ -258,33 +258,37 @@ class InputOutputWasteTableProcessor:
         ] = "incoming"
         df = df.dropna(subset="incoming_or_outgoing")
 
-        df_grouped = df.groupby(["waste_code", "incoming_or_outgoing"], as_index=False)[
-            "quantity_received"
-        ].sum()
+        if len(df) > 0:
+            df_grouped = df.groupby(
+                ["waste_code", "incoming_or_outgoing"], as_index=False
+            )["quantity_received"].sum()
 
-        final_df = pd.merge(
-            df_grouped,
-            self.waste_codes_df,
-            left_on="waste_code",
-            right_index=True,
-            how="left",
-            validate="many_to_one",
-        )
+            final_df = pd.merge(
+                df_grouped,
+                self.waste_codes_df,
+                left_on="waste_code",
+                right_index=True,
+                how="left",
+                validate="many_to_one",
+            )
 
-        final_df = final_df[final_df["quantity_received"] > 0]
-        final_df["quantity_received"] = final_df["quantity_received"].apply(
-            lambda x: format_number_str(x, 2)
-        )
-        self.preprocessed_df = final_df[
-            ["waste_code", "description", "incoming_or_outgoing", "quantity_received"]
-        ].sort_values(by=["waste_code", "incoming_or_outgoing"])
+            final_df = final_df[final_df["quantity_received"] > 0]
+            final_df["quantity_received"] = final_df["quantity_received"].apply(
+                lambda x: format_number_str(x, 2)
+            )
+            self.preprocessed_df = final_df[
+                [
+                    "waste_code",
+                    "description",
+                    "incoming_or_outgoing",
+                    "quantity_received",
+                ]
+            ].sort_values(by=["waste_code", "incoming_or_outgoing"])
 
     def _check_empty_data(self) -> bool:
-        if len(self.preprocessed_df) == 0:
-            self.is_component_empty = True
+        if self.preprocessed_df is None:
             return True
 
-        self.is_component_empty = False
         return False
 
     def build_context(self):
@@ -292,7 +296,12 @@ class InputOutputWasteTableProcessor:
 
     def build(self):
         self._preprocess_data()
-        return self.build_context()
+
+        res = {}
+
+        if not self._check_empty_data():
+            res = self.build_context()
+        return res
 
 
 class BsdCanceledTableProcessor:

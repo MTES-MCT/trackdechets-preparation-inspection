@@ -759,7 +759,7 @@ class ICPEItemsProcessor:
 
         preprocessed_outputs_filtered = preprocessed_outputs[
             (preprocessed_outputs["rubrique"] == "2718")
-        ].set_index("received_at")
+        ].set_index("sent_at")
         preprocessed_outputs_filtered["quantity_received"] *= -1
 
         preprocessed_inputs_outputs = pd.concat(

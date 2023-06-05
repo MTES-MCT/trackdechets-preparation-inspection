@@ -24,9 +24,13 @@ body {
 /* print */
 @page {
   counter-increment: page;
-
+  @top-center {
+    content: "Cette fiche peut comporter des données à caractère confidentiel - diffusion restreinte";
+    font-size: 10pt;
+    color: #444;
+  }
   @top-right {
-    content: "Page "counter(page) " sur "counter(pages);
+    content: "Page " counter(page) " sur " counter(pages);
     font-size: 10pt;
     color: #444;
   }
@@ -125,7 +129,7 @@ ul {
   margin-left: 3mm;
 }
 
-.cell>* {
+.cell > * {
   margin-top: 0;
 }
 

@@ -30,6 +30,8 @@ class BsdStatsProcessor:
         The name of the variable to use to compute quantity statistics.
     bs_revised_data: DataFrame
         DataFrame containing list of revised 'bordereaux' for a given 'bordereau' type.
+    packagings_data:
+        For BSFF data, packagings dataset to be able to compute stats at packaging level.
     """
 
     def __init__(
@@ -38,12 +40,14 @@ class BsdStatsProcessor:
         bs_data: pd.DataFrame,
         quantity_variable_name: str = "quantity_received",
         bs_revised_data: pd.DataFrame = None,
+        packagings_data: pd.DataFrame = None,
     ) -> None:
         self.company_siret = company_siret
 
         self.bs_data = bs_data
         self.quantity_variable_name = quantity_variable_name
         self.bs_revised_data = bs_revised_data
+        self.packagings_data = packagings_data
 
         keys = [
             "total",
@@ -51,6 +55,14 @@ class BsdStatsProcessor:
             "processed_in_more_than_one_month_count",
             "processed_in_more_than_one_month_avg_processing_time",
         ]
+        if self.packagings_data is not None:
+            keys.extend(
+                [
+                    "total_packagings",
+                    "processed_in_more_than_one_month_packagings_count",
+                ]
+            )
+
         self.emitted_bs_stats = {key: None for key in keys}
         self.received_bs_stats = {key: None for key in keys}
 
@@ -101,9 +113,9 @@ class BsdStatsProcessor:
             & bs_data["received_at"].between(one_year_ago, today_date)
         ]
 
-        for target, to_process in [
-            (self.emitted_bs_stats, bs_emitted_data),
-            (self.received_bs_stats, bs_received_data),
+        for target, to_process, to_process_packagings in [
+            (self.emitted_bs_stats, bs_emitted_data, self.packagings_data),
+            (self.received_bs_stats, bs_received_data, self.packagings_data),
         ]:
             target["total"] = len(to_process)
             target["archived"] = len(
@@ -125,6 +137,7 @@ class BsdStatsProcessor:
                     > np.timedelta64(1, "M")
                 )
             ]
+
             processed_in_more_than_one_month_count = len(
                 bs_emitted_processed_in_more_than_one_month
             )
@@ -143,6 +156,30 @@ class BsdStatsProcessor:
                     "processed_in_more_than_one_month_avg_processing_time"
                 ] = f"{res:.1f}j"
 
+            if to_process_packagings is not None:
+                target["total_packagings"] = len(
+                    to_process_packagings[
+                        (to_process_packagings["bsff_id"].isin(to_process["id"]))
+                        & (~to_process_packagings["operation_date"].isnull())
+                    ]
+                )
+
+                bs_data_with_packagings = to_process.merge(
+                    to_process_packagings,
+                    left_on="id",
+                    right_on="bsff_id",
+                    validate="one_to_many",
+                )
+                target["processed_in_more_than_one_month_packagings_count"] = len(
+                    bs_data_with_packagings[
+                        (
+                            bs_data_with_packagings["operation_date"]
+                            - bs_data_with_packagings["received_at"]
+                        )
+                        > np.timedelta64(1, "M")
+                    ]
+                )
+
         bs_revised_data = self.bs_revised_data
         if bs_revised_data is not None:
             bs_revised_data = bs_revised_data[
@@ -156,6 +193,13 @@ class BsdStatsProcessor:
         self.total_outgoing_quantity = bs_emitted_data[
             self.quantity_variable_name
         ].sum()
+        if self.packagings_data is not None:
+            self.total_incoming_quantity = bs_received_data.merge(
+                self.packagings_data, left_on="id", right_on="bsff_id"
+            )["acceptation_weight"].sum()
+            self.total_outgoing_quantity = bs_emitted_data.merge(
+                self.packagings_data, left_on="id", right_on="bsff_id"
+            )["acceptation_weight"].sum()
 
         self.incoming_bar_size = 0
         self.outgoing_bar_size = 0

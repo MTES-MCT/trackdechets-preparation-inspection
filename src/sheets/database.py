@@ -10,6 +10,7 @@ from .queries import (
     sql_bsdasri_query_str,
     sql_bsdd_non_dangerous_query_str,
     sql_bsdd_query_str,
+    sql_bsff_packagings_query_str,
     sql_bsff_query_str,
     sql_bsvhu_query_str,
     sql_company_query_str,
@@ -125,6 +126,14 @@ def build_bsff_query(siret):
         sql_bsff_query_str,
         query_params={"siret": siret},
         date_columns=bsd_date_params,
+    )
+
+
+def build_bsff_packagings_query(siret):
+    return build_query(
+        sql_bsff_packagings_query_str,
+        query_params={"siret": siret},
+        date_columns=["operation_date", "acceptation_date"],
     )
 
 

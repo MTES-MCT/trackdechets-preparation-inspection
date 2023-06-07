@@ -14,6 +14,7 @@ from .database import (
     build_bsdasri_query,
     build_bsdd_non_dangerous_query,
     build_bsdd_query,
+    build_bsff_packagings_query,
     build_bsff_query,
     build_bsvhu_query,
     build_query_company,
@@ -114,7 +115,11 @@ bsds_config = [
         "bs_revised_data": build_revised_bsda_query,
     },
     {"bsd_type": BSDASRI, "bs_data": build_bsdasri_query},
-    {"bsd_type": BSFF, "bs_data": build_bsff_query},
+    {
+        "bsd_type": BSFF,
+        "bs_data": build_bsff_query,
+        "packagings_data": build_bsff_packagings_query,
+    },
     {"bsd_type": BSVHU, "bs_data": build_bsvhu_query},
 ]
 
@@ -127,6 +132,7 @@ class SheetProcessor:
         self.company_id = None
         self.bsds_dfs = {}
         self.revised_bsds_dfs = {}
+        self.bsff_packagings_df = None
 
     def _process_company_data(self):
         company_data_df = build_query_company(
@@ -161,12 +167,18 @@ class SheetProcessor:
                 f"{bsd_type}_created_rectified_data",
                 created_rectified_graph_data,
             )
+
+            quantity_variables = ["quantity_received"]
+            if bsd_type == BSDASRI:
+                quantity_variables = ["quantity_received", "volume"]
+            if bsd_type == BSFF:
+                quantity_variables = ["acceptation_weight"]
+
             stock_graph = BsdQuantitiesGraph(
                 self.siret,
                 df,
-                quantities_variables_names=["quantity_received"]
-                if bsd_type != BSDASRI
-                else ["quantity_received", "volume"],
+                quantities_variables_names=quantity_variables,
+                packagings_data=self.bsff_packagings_df if bsd_type == BSFF else None,
             )
             stock_graph_data = stock_graph.build()
             if stock_graph_data:
@@ -176,10 +188,9 @@ class SheetProcessor:
             stats_graph = BsdStatsProcessor(
                 self.siret,
                 df,
-                quantity_variables=["quantity_received"]
-                if bsd_type != BSDASRI
-                else ["quantity_received", "volume"],
+                quantity_variables=quantity_variables,
                 bs_revised_data=self.revised_bsds_dfs.get(bsd_type, None),
+                packagings_data=self.bsff_packagings_df if bsd_type == BSFF else None,
             )
             stats_graph_data = stats_graph.build()
             if stats_graph_data:
@@ -210,6 +221,13 @@ class SheetProcessor:
                 )
                 if len(revised_df) > 0:
                     self.revised_bsds_dfs[bsd_type] = revised_df
+
+            if bsd_type == BSFF:
+                bsff_packagings_data = bsd_config.get("packagings_data")(
+                    siret=self.computed.org_id
+                )
+                if len(bsff_packagings_data) > 0:
+                    self.bsff_packagings_df = bsff_packagings_data
 
         # prepare plotly graph as json from each precompute dataframes
         self._prepare_plotly_graph()

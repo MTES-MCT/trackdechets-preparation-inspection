@@ -179,6 +179,35 @@ where
 order by
     created_at asc"""
 
+sql_bsff_packagings_query_str = """
+select
+    id,
+    bsff_id,
+    acceptation_date,
+    operation_date,
+    volume,
+    acceptation_weight,
+    weight
+from
+    trusted_zone_trackdechets.bsff_packaging bp
+where
+    bp.bsff_id in (
+    select
+        id
+    from
+        trusted_zone_trackdechets.bsff
+    where
+        (emitter_company_siret = :siret
+            or destination_company_siret = :siret)
+        and is_deleted = false
+        and created_at >= current_date - interval '1 year'
+        and status::text not in ('DRAFT', 'INITIAL')
+            and not is_draft
+        order by
+            created_at asc
+)
+"""
+
 sql_bsvhu_query_str = """
 select
     id,

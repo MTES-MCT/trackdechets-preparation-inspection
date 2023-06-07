@@ -24,6 +24,8 @@ class BsdQuantitiesGraph:
         DataFrame containing data for a given 'bordereau' type.
     quantities_variables_names: str
         The names of the variables to use to compute quantity statistics. Several variables can be used.
+    packagings_data : DataFrame
+        For BSFF data, packagings dataset to be able to compute the quantities.
     """
 
     def __init__(
@@ -31,13 +33,17 @@ class BsdQuantitiesGraph:
         company_siret: str,
         bs_data: pd.DataFrame,
         quantities_variables_names: list[str] = ["quantity_received"],
+        packagings_data: pd.DataFrame = None,
     ):
         self.bs_data = bs_data
+        self.packagings_data = packagings_data
         self.company_siret = company_siret
         self.quantities_variables_names = quantities_variables_names
 
         self.incoming_data_by_month_series = []
         self.outgoing_data_by_month_series = []
+
+        self.figure = None
 
         self.figure = None
 
@@ -60,21 +66,44 @@ class BsdQuantitiesGraph:
         ]
 
         for variable_name in self.quantities_variables_names:
-            self.incoming_data_by_month_series.append(
+            incoming_data_by_month = (
                 incoming_data.groupby(pd.Grouper(key="received_at", freq="1M"))[
                     variable_name
                 ]
                 .sum()
                 .replace(0, np.nan)
             )
-
-            self.outgoing_data_by_month_series.append(
+            outgoing_data_by_month = (
                 outgoing_data.groupby(pd.Grouper(key="sent_at", freq="1M"))[
                     variable_name
                 ]
                 .sum()
                 .replace(0, np.nan)
             )
+
+            if self.packagings_data is not None:
+                incoming_data_by_month = (
+                    incoming_data.merge(
+                        self.packagings_data, left_on="id", right_on="bsff_id"
+                    )
+                    .groupby(pd.Grouper(key="acceptation_date", freq="1M"))[
+                        variable_name
+                    ]
+                    .sum()
+                    .replace(0, np.nan)
+                )
+                outgoing_data_by_month = (
+                    outgoing_data.merge(
+                        self.packagings_data, left_on="id", right_on="bsff_id"
+                    )
+                    .groupby(pd.Grouper(key="sent_at", freq="1M"))[variable_name]
+                    .sum()
+                    .replace(0, np.nan)
+                )
+
+            self.incoming_data_by_month_series.append(incoming_data_by_month)
+
+            self.outgoing_data_by_month_series.append(outgoing_data_by_month)
 
     def _check_data_empty(self) -> bool:
         incoming_data_by_month_series = self.incoming_data_by_month_series
@@ -327,9 +356,14 @@ class BsdTrackedAndRevisedProcessor:
             marker_color="#E1000F",
         )
 
-        tick0_min = min(
-            bs_emitted_by_month.index.min(), bs_received_by_month.index.min()
-        )
+        if pd.isna(bs_emitted_by_month.index.min()):
+            tick0_min = bs_received_by_month.index.min()
+        elif pd.isna(bs_received_by_month.index.min()):
+            tick0_min = bs_emitted_by_month.index.min()
+        else:
+            tick0_min = min(
+                bs_emitted_by_month.index.min(), bs_received_by_month.index.min()
+            )
 
         max_y = max(bs_emitted_by_month.max(), bs_received_by_month.max())
 
@@ -367,16 +401,15 @@ class BsdTrackedAndRevisedProcessor:
         )
 
         ticklabelstep = 2
-        if max_points < 3:
+        if max_points <= 3:
             ticklabelstep = 1
 
         fig.update_xaxes(
-            dtick="M1",
+            dtick=f"M{ticklabelstep}",
             tickangle=0,
             tickformat="%b",
             tick0=tick0_min,
             ticks="outside",
-            ticklabelstep=ticklabelstep,
             gridcolor="#ccc",
         )
 

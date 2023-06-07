@@ -4,6 +4,9 @@ Les changements importants de Trackdéchets préparation inspection sont documen
 
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 et le projet suit un schéma de versionning inspiré de [Calendar Versioning](https://calver.org/).
+
+## 07/06/2023
+- Ajout des données de contenants pour les BSFF.
 ## 30/05/2023
 - Ajout d'une table listant les bordereaux présentant des quantités aberrantes.
 ## 29/05/2023

@@ -203,7 +203,7 @@ class SheetProcessor:
                 df,
                 quantity_variables=quantity_variables,
                 bs_revised_data=self.revised_bsds_dfs.get(bsd_type, None),
-                packagings_data=self.bsff_packagings_df if bsd_type == BSFF else None,
+                packagings_data=packaging_data,
             )
             stats_graph_data = stats_graph.build()
             if stats_graph_data:

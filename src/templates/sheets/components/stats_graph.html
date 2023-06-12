@@ -177,13 +177,6 @@
             <td>{{ emitted_bs_stats.processed_in_more_than_one_month_count }}</td>
             <td>{{ received_bs_stats.processed_in_more_than_one_month_count }}</td>
           </tr>
-          {% if bsd_type == "bsff" %}
-            <tr>
-              <th scope="row">Nombre de contenants</th>
-              <td>{{ emitted_bs_stats.processed_in_more_than_one_month_packagings_count }}</td>
-              <td>{{ received_bs_stats.processed_in_more_than_one_month_packagings_count }}</td>
-            </tr>
-          {% endif %}
           <tr>
             <th scope="row">Temps moyen de traitement</th>
             <td>
@@ -201,6 +194,30 @@
               {% endif %}
             </td>
           </tr>
+          {% if bsd_type == "bsff" %}
+            <tr>
+              <th scope="row">Nombre de contenants</th>
+              <td>{{ emitted_bs_stats.processed_in_more_than_one_month_packagings_count }}</td>
+              <td>{{ received_bs_stats.processed_in_more_than_one_month_packagings_count }}</td>
+            </tr>
+            <tr>
+              <th scope="row">Temps moyen de traitement - contenants</th>
+              <td>
+                {% if emitted_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time %}
+                  {{ emitted_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time }}
+                {% else %}
+                  N/A
+                {% endif %}
+              </td>
+              <td>
+                {% if received_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time %}
+                  {{ received_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time }}
+                {% else %}
+                  N/A
+                {% endif %}
+              </td>
+            </tr>
+          {% endif %}
         </tbody>
       </table>
     </div>

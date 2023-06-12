@@ -61,6 +61,7 @@ class BsdStatsProcessor:
                 [
                     "total_packagings",
                     "processed_in_more_than_one_month_packagings_count",
+                    "processed_in_more_than_one_month_packagings_avg_processing_time",
                 ]
             )
 
@@ -178,7 +179,7 @@ class BsdStatsProcessor:
                     right_on="bsff_id",
                     validate="one_to_many",
                 )
-                target["processed_in_more_than_one_month_packagings_count"] = len(
+                bs_data_with_packagings_processed_in_more_than_one_month = (
                     bs_data_with_packagings[
                         (
                             bs_data_with_packagings["operation_date"]
@@ -187,6 +188,23 @@ class BsdStatsProcessor:
                         > np.timedelta64(1, "M")
                     ]
                 )
+                target["processed_in_more_than_one_month_packagings_count"] = len(
+                    bs_data_with_packagings_processed_in_more_than_one_month
+                )
+
+                res = (
+                    (
+                        bs_data_with_packagings_processed_in_more_than_one_month[
+                            "operation_date"
+                        ]
+                        - bs_data_with_packagings_processed_in_more_than_one_month[
+                            "received_at"
+                        ]
+                    ).mean()
+                ).total_seconds() / (24 * 3600)
+                target[
+                    "processed_in_more_than_one_month_packagings_avg_processing_time"
+                ] = f"{res:.1f}j"
 
         bs_revised_data = self.bs_revised_data
         if bs_revised_data is not None:

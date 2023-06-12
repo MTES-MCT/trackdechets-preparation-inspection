@@ -171,7 +171,7 @@ class SheetProcessor:
                 self.siret,
                 df,
                 variable_name="quantity_received" if bsd_type != BSDASRI else "volume",
-                packagings_data=self.bsff_packagings_df,
+                packagings_data=self.bsff_packagings_df if bsd_type == BSFF else None,
             )
             stock_graph_data = stock_graph.build()
             if stock_graph_data:
@@ -185,7 +185,7 @@ class SheetProcessor:
                 if bsd_type != BSDASRI
                 else "volume",
                 bs_revised_data=self.revised_bsds_dfs.get(bsd_type, None),
-                packagings_data=self.bsff_packagings_df,
+                packagings_data=self.bsff_packagings_df if bsd_type == BSFF else None,
             )
             stats_graph_data = stats_graph.build()
             if stats_graph_data:

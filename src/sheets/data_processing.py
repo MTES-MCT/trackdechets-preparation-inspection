@@ -174,9 +174,9 @@ class SheetProcessor:
             stats_graph = BsdStatsProcessor(
                 self.siret,
                 df,
-                quantity_variable_name="quantity_received"
+                quantity_variables=["quantity_received"]
                 if bsd_type != BSDASRI
-                else "volume",
+                else ["quantity_received", "volume"],
                 bs_revised_data=self.revised_bsds_dfs.get(bsd_type, None),
             )
             stats_graph_data = stats_graph.build()

@@ -26,8 +26,9 @@ class BsdStatsProcessor:
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bs_data: DataFrame
         DataFrame containing data for a given 'bordereau' type.
-    quantity_variable_name: str
-        The name of the variable to use to compute quantity statistics.
+    quantity_variables: list of str
+        The names of the variables to use to compute quantity statistics.
+        For example : ["quantity_received","volume"] to compute statistics for both variables.
     bs_revised_data: DataFrame
         DataFrame containing list of revised 'bordereaux' for a given 'bordereau' type.
     """
@@ -36,13 +37,13 @@ class BsdStatsProcessor:
         self,
         company_siret: str,
         bs_data: pd.DataFrame,
-        quantity_variable_name: str = "quantity_received",
+        quantity_variables: list[str] = ["quantity_received"],
         bs_revised_data: pd.DataFrame = None,
     ) -> None:
         self.company_siret = company_siret
 
         self.bs_data = bs_data
-        self.quantity_variable_name = quantity_variable_name
+        self.quantity_variables_names = quantity_variables
         self.bs_revised_data = bs_revised_data
 
         keys = [
@@ -56,10 +57,15 @@ class BsdStatsProcessor:
 
         self.revised_bs_count = 0
 
-        self.total_incoming_quantity = None
-        self.total_outgoing_quantity = None
-        self.incoming_bar_size = None
-        self.outgoing_bar_size = None
+        self.quantities_stats = {
+            key: {
+                "total_quantity_incoming": None,
+                "total_quantity_outgoing": None,
+                "bar_size_incoming": None,
+                "bar_size_outgoing": None,
+            }
+            for key in self.quantity_variables_names
+        }
 
     def _check_data_empty(self) -> bool:
         bs_data = self.bs_data
@@ -150,27 +156,32 @@ class BsdStatsProcessor:
             ]
             self.revised_bs_count = bs_revised_data["bs_id"].nunique()
 
-        self.total_incoming_quantity = bs_received_data[
-            self.quantity_variable_name
-        ].sum()
-        self.total_outgoing_quantity = bs_emitted_data[
-            self.quantity_variable_name
-        ].sum()
+        for key in self.quantities_stats.keys():
+            total_quantity_incoming = bs_received_data[key].sum()
+            total_quantity_outgoing = bs_emitted_data[key].sum()
+            self.quantities_stats[key]["total_quantity_incoming"] = format_number_str(
+                total_quantity_incoming, precision=2
+            )
+            self.quantities_stats[key]["total_quantity_outgoing"] = format_number_str(
+                total_quantity_outgoing, precision=2
+            )
 
-        self.incoming_bar_size = 0
-        self.outgoing_bar_size = 0
+            incoming_bar_size = 0
+            outgoing_bar_size = 0
 
-        if not (self.total_incoming_quantity == self.total_outgoing_quantity == 0):
-            if self.total_incoming_quantity > self.total_outgoing_quantity:
-                self.incoming_bar_size = 100
-                self.outgoing_bar_size = int(
-                    100 * (self.total_outgoing_quantity / self.total_incoming_quantity)
-                )
-            else:
-                self.incoming_bar_size = int(
-                    100 * (self.total_incoming_quantity / self.total_outgoing_quantity)
-                )
-                self.outgoing_bar_size = 100
+            if not (total_quantity_incoming == total_quantity_outgoing == 0):
+                if total_quantity_incoming > total_quantity_outgoing:
+                    incoming_bar_size = 100
+                    outgoing_bar_size = int(
+                        100 * (total_quantity_outgoing / total_quantity_incoming)
+                    )
+                else:
+                    incoming_bar_size = int(
+                        100 * (total_quantity_incoming / total_quantity_outgoing)
+                    )
+                    outgoing_bar_size = 100
+            self.quantities_stats[key]["bar_size_incoming"] = incoming_bar_size
+            self.quantities_stats[key]["bar_size_outgoing"] = outgoing_bar_size
 
     def build_context(self):
         ctx = {
@@ -183,14 +194,7 @@ class BsdStatsProcessor:
                 for k, v in self.received_bs_stats.items()
             },
             "revised_bs_count": format_number_str(self.revised_bs_count, precision=0),
-            "total_incoming_quantity": format_number_str(
-                self.total_incoming_quantity, precision=2
-            ),
-            "total_outgoing_quantity": format_number_str(
-                self.total_outgoing_quantity, precision=2
-            ),
-            "incoming_bar_size": self.incoming_bar_size,
-            "outgoing_bar_size": self.outgoing_bar_size,
+            "quantities_stats": self.quantities_stats,
         }
 
         return ctx

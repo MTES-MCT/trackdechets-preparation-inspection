@@ -133,4 +133,4 @@ staticfiles/
 
 # custom
 public/
-.vscode/launch.json
+.vscode

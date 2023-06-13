@@ -185,6 +185,12 @@ class SheetProcessor:
                 all_bsd_data_empty = False
             setattr(self.computed, f"{bsd_type}_stock_data", stock_graph_data)
 
+            quantity_variables = ["quantity_received"]
+            if bsd_type == BSDASRI:
+                quantity_variables = ["quantity_received", "volume"]
+            if bsd_type == BSFF:
+                quantity_variables = ["acceptation_weight"]
+
             stats_graph = BsdStatsProcessor(
                 self.siret,
                 df,

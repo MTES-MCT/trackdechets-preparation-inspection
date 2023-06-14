@@ -212,7 +212,7 @@ class BsdStatsProcessor:
                 ok: {
                     k: (
                         format_number_str(v, 2)
-                        if k in ["total_quantity_incoming", "total_quantity_ongoing"]
+                        if k in ["total_quantity_incoming", "total_quantity_outgoing"]
                         else v
                     )
                     for k, v in ov.items()

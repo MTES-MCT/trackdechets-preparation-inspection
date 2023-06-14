@@ -22,7 +22,7 @@ class BsdQuantitiesGraph:
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bs_data: DataFrame
         DataFrame containing data for a given 'bordereau' type.
-    quantities_variables_names: str
+    quantities_variables_names: list of str
         The names of the variables to use to compute quantity statistics. Several variables can be used.
     packagings_data : DataFrame
         For BSFF data, packagings dataset to be able to compute the quantities.
@@ -73,6 +73,7 @@ class BsdQuantitiesGraph:
                 .sum()
                 .replace(0, np.nan)
             )
+
             outgoing_data_by_month = (
                 outgoing_data.groupby(pd.Grouper(key="sent_at", freq="1M"))[
                     variable_name
@@ -102,7 +103,6 @@ class BsdQuantitiesGraph:
                 )
 
             self.incoming_data_by_month_series.append(incoming_data_by_month)
-
             self.outgoing_data_by_month_series.append(outgoing_data_by_month)
 
     def _check_data_empty(self) -> bool:

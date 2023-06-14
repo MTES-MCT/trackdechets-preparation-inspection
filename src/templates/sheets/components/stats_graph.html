@@ -234,6 +234,11 @@
           </div>
         </div>
       {% endfor %}
+      {% if weight_volume_ratio %}
+        <div>
+          Ratio masse/volume : <span class="td-font-lead">{{ weight_volume_ratio }}</span> kg/m³
+        </div>
+      {% endif %}
     </div>
   </div>
 {% else %}

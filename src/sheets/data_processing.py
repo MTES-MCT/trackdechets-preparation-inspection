@@ -164,7 +164,9 @@ class SheetProcessor:
             stock_graph = BsdQuantitiesGraph(
                 self.siret,
                 df,
-                variable_name="quantity_received" if bsd_type != BSDASRI else "volume",
+                quantities_variables_names=["quantity_received"]
+                if bsd_type != BSDASRI
+                else ["quantity_received", "volume"],
             )
             stock_graph_data = stock_graph.build()
             if stock_graph_data:

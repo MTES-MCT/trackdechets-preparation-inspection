@@ -22,17 +22,24 @@ class BsdQuantitiesGraph:
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bs_data: DataFrame
         DataFrame containing data for a given 'bordereau' type.
-    variable_name: str
-        The name of the variable to use to compute quantity statistics.
+    quantities_variables_names: str
+        The names of the variables to use to compute quantity statistics. Several variables can be used.
     """
 
-    def __init__(self, company_siret, bs_data, variable_name="quantity_received"):
+    def __init__(
+        self,
+        company_siret: str,
+        bs_data: pd.DataFrame,
+        quantities_variables_names: list[str] = ["quantity_received"],
+    ):
         self.bs_data = bs_data
         self.company_siret = company_siret
-        self.variable_name = variable_name
+        self.quantities_variables_names = quantities_variables_names
 
-        self.incoming_data_by_month = None
-        self.outgoing_data_by_month = None
+        self.incoming_data_by_month_series = []
+        self.outgoing_data_by_month_series = []
+
+        self.figure = None
 
     def _preprocess_data(self) -> None:
         bs_data = self.bs_data
@@ -52,80 +59,127 @@ class BsdQuantitiesGraph:
             & (bs_data["sent_at"] <= today_date)
         ]
 
-        self.incoming_data_by_month = (
-            incoming_data.groupby(pd.Grouper(key="received_at", freq="1M"))[
-                self.variable_name
-            ]
-            .sum()
-            .replace(0, np.nan)
-        )
+        for variable_name in self.quantities_variables_names:
+            self.incoming_data_by_month_series.append(
+                incoming_data.groupby(pd.Grouper(key="received_at", freq="1M"))[
+                    variable_name
+                ]
+                .sum()
+                .replace(0, np.nan)
+            )
 
-        self.outgoing_data_by_month = (
-            outgoing_data.groupby(pd.Grouper(key="sent_at", freq="1M"))[
-                self.variable_name
-            ]
-            .sum()
-            .replace(0, np.nan)
-        )
+            self.outgoing_data_by_month_series.append(
+                outgoing_data.groupby(pd.Grouper(key="sent_at", freq="1M"))[
+                    variable_name
+                ]
+                .sum()
+                .replace(0, np.nan)
+            )
 
     def _check_data_empty(self) -> bool:
-        incoming_data_by_month = self.incoming_data_by_month
-        outgoing_data_by_month = self.outgoing_data_by_month
+        incoming_data_by_month_series = self.incoming_data_by_month_series
+        outgoing_data_by_month_series = self.outgoing_data_by_month_series
 
-        if len(incoming_data_by_month) == len(outgoing_data_by_month) == 0:
+        if all(
+            len(s) == len(z) == 0
+            for s, z in zip(
+                incoming_data_by_month_series, outgoing_data_by_month_series
+            )
+        ):
             return True
 
-        if incoming_data_by_month.isna().all() and outgoing_data_by_month.isna().all():
+        if all(
+            s.isna().all() and z.isna().all()
+            for s, z in zip(
+                incoming_data_by_month_series, outgoing_data_by_month_series
+            )
+        ):
             return True
 
-        if (incoming_data_by_month == 0).all() and (outgoing_data_by_month == 0).all():
+        if all(
+            (s == 0).all() and (z == 0).all()
+            for s, z in zip(
+                incoming_data_by_month_series, outgoing_data_by_month_series
+            )
+        ):
             return True
 
         return False
 
     def _create_figure(self) -> None:
-        incoming_data_by_month = self.incoming_data_by_month
-        outgoing_data_by_month = self.outgoing_data_by_month
+        fig = go.Figure()
 
-        incoming_line_name = "Quantité entrante"
-        incoming_hover_text = "{} - <b>{}</b> tonnes entrantes"
-        outgoing_line_name = "Quantité sortante"
-        outgoing_hover_text = "{} - <b>{}</b> tonnes sortantes"
+        lines = []
+        mins_x = []
+        numbers_of_data_points = []
+        for variable_name, incoming_data_by_month, outgoing_data_by_month in zip(
+            self.quantities_variables_names,
+            self.incoming_data_by_month_series,
+            self.outgoing_data_by_month_series,
+        ):
+            incoming_line_name = "Quantité entrante"
+            incoming_hover_text = "{} - <b>{}</b> tonnes entrantes"
+            outgoing_line_name = "Quantité sortante"
+            outgoing_hover_text = "{} - <b>{}</b> tonnes sortantes"
+            marker_line_style = "solid"
+            marker_symbol = "circle"
+            marker_size = 6
 
-        if self.variable_name == "volume":
-            incoming_line_name = "Volume entrant"
-            incoming_hover_text = "{} - <b>{}</b> m³ entrants"
-            outgoing_line_name = "Volume sortant"
-            outgoing_hover_text = "{} - <b>{}</b> m³ sortants"
+            if variable_name == "volume":
+                incoming_line_name = "Volume entrant"
+                incoming_hover_text = "{} - <b>{}</b> m³ entrants"
+                outgoing_line_name = "Volume sortant"
+                outgoing_hover_text = "{} - <b>{}</b> m³ sortants"
+                marker_line_style = "dash"
+                marker_symbol = "triangle-up"
+                marker_size = 10
 
-        incoming_line = go.Scatter(
-            x=incoming_data_by_month.index,
-            y=incoming_data_by_month,
-            name=incoming_line_name,
-            mode="lines+markers",
-            # todo: localize month names
-            hovertext=[
-                incoming_hover_text.format(index.month_name(), format_number_str(e))
-                for index, e in incoming_data_by_month.items()
-            ],
-            hoverinfo="text",
-            marker_color="#E1000F",
-        )
+            if len(incoming_data_by_month) > 0:
+                incoming_line = go.Scatter(
+                    x=incoming_data_by_month.index,
+                    y=incoming_data_by_month,
+                    name=incoming_line_name,
+                    mode="lines+markers",
+                    # todo: localize month names
+                    hovertext=[
+                        incoming_hover_text.format(
+                            index.month_name(locale="fr_FR"), format_number_str(e)
+                        )
+                        for index, e in incoming_data_by_month.items()
+                    ],
+                    hoverinfo="text",
+                    marker_color="#E1000F",
+                    marker_symbol=marker_symbol,
+                    marker_size=marker_size,
+                    line_dash=marker_line_style,
+                )
+                mins_x.append(incoming_data_by_month.index.min())
+                numbers_of_data_points.append(len(incoming_data_by_month))
+                lines.append(incoming_line)
 
-        outgoing_line = go.Scatter(
-            x=outgoing_data_by_month.index,
-            y=outgoing_data_by_month,
-            name=outgoing_line_name,
-            mode="lines+markers",
-            hovertext=[
-                outgoing_hover_text.format(index.month_name(), format_number_str(e))
-                for index, e in outgoing_data_by_month.items()
-            ],
-            hoverinfo="text",
-            marker_color="#6A6AF4",
-        )
+            if len(outgoing_data_by_month) > 0:
+                outgoing_line = go.Scatter(
+                    x=outgoing_data_by_month.index,
+                    y=outgoing_data_by_month,
+                    name=outgoing_line_name,
+                    mode="lines+markers",
+                    hovertext=[
+                        outgoing_hover_text.format(
+                            index.month_name(locale="fr_FR"), format_number_str(e)
+                        )
+                        for index, e in outgoing_data_by_month.items()
+                    ],
+                    hoverinfo="text",
+                    marker_color="#6A6AF4",
+                    marker_symbol=marker_symbol,
+                    marker_size=marker_size,
+                    line_dash=marker_line_style,
+                )
+                mins_x.append(outgoing_data_by_month.index.min())
+                numbers_of_data_points.append(len(outgoing_data_by_month))
+                lines.append(outgoing_line)
 
-        fig = go.Figure(data=[incoming_line, outgoing_line])
+        fig.add_traces(lines)
 
         fig.update_layout(
             margin={"t": 20, "l": 35, "r": 5},
@@ -136,21 +190,17 @@ class BsdQuantitiesGraph:
             paper_bgcolor="#fff",
             plot_bgcolor="rgba(0,0,0,0)",
         )
-        if pd.isna(incoming_data_by_month.index.min()):
-            min_x = outgoing_data_by_month.index.min()
-        elif pd.isna(outgoing_data_by_month.index.min()):
-            min_x = incoming_data_by_month.index.min()
-        else:
-            min_x = min(
-                incoming_data_by_month.index.min(), outgoing_data_by_month.index.min()
-            )
 
         dtick = "M2"
-        if max(len(incoming_data_by_month), len(outgoing_data_by_month)) < 3:
+        if not numbers_of_data_points or max(numbers_of_data_points) < 3:
             dtick = "M1"
 
         fig.update_xaxes(
-            tickangle=0, tickformat="%b", tick0=min_x, dtick=dtick, gridcolor="#ccc"
+            tickangle=0,
+            tickformat="%b",
+            tick0=min(mins_x) if mins_x else None,
+            dtick=dtick,
+            gridcolor="#ccc",
         )
         fig.update_yaxes(exponentformat="B", tickformat=".2s", gridcolor="#ccc")
 

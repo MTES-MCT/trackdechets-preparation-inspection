@@ -67,6 +67,8 @@ class BsdStatsProcessor:
             for key in self.quantity_variables_names
         }
 
+        self.weight_volume_ratio = None
+
     def _check_data_empty(self) -> bool:
         bs_data = self.bs_data
         siret = self.company_siret
@@ -159,12 +161,12 @@ class BsdStatsProcessor:
         for key in self.quantities_stats.keys():
             total_quantity_incoming = bs_received_data[key].sum()
             total_quantity_outgoing = bs_emitted_data[key].sum()
-            self.quantities_stats[key]["total_quantity_incoming"] = format_number_str(
-                total_quantity_incoming, precision=2
-            )
-            self.quantities_stats[key]["total_quantity_outgoing"] = format_number_str(
-                total_quantity_outgoing, precision=2
-            )
+            self.quantities_stats[key][
+                "total_quantity_incoming"
+            ] = total_quantity_incoming
+            self.quantities_stats[key][
+                "total_quantity_outgoing"
+            ] = total_quantity_outgoing
 
             incoming_bar_size = 0
             outgoing_bar_size = 0
@@ -183,6 +185,18 @@ class BsdStatsProcessor:
             self.quantities_stats[key]["bar_size_incoming"] = incoming_bar_size
             self.quantities_stats[key]["bar_size_outgoing"] = outgoing_bar_size
 
+        if all(
+            key in self.quantity_variables_names
+            for key in ["quantity_received", "volume"]
+        ):
+            if (self.quantities_stats["volume"]["total_quantity_incoming"]) > 0:
+                self.weight_volume_ratio = (
+                    self.quantities_stats["quantity_received"][
+                        "total_quantity_incoming"
+                    ]
+                    / self.quantities_stats["volume"]["total_quantity_incoming"]
+                )
+
     def build_context(self):
         ctx = {
             "emitted_bs_stats": {
@@ -194,7 +208,20 @@ class BsdStatsProcessor:
                 for k, v in self.received_bs_stats.items()
             },
             "revised_bs_count": format_number_str(self.revised_bs_count, precision=0),
-            "quantities_stats": self.quantities_stats,
+            "quantities_stats": {
+                ok: {
+                    k: (
+                        format_number_str(v, 2)
+                        if k in ["total_quantity_incoming", "total_quantity_ongoing"]
+                        else v
+                    )
+                    for k, v in ov.items()
+                }
+                for ok, ov in self.quantities_stats.items()
+            },
+            "weight_volume_ratio": format_number_str(self.weight_volume_ratio * 1000, 2)
+            if self.weight_volume_ratio is not None
+            else None,
         }
 
         return ctx

@@ -45,9 +45,6 @@ class BsdQuantitiesGraph:
 
         self.figure = None
 
-        self.figure = None
-
-        self.figure = None
 
     def _preprocess_data(self) -> None:
         bs_data = self.bs_data
@@ -112,24 +109,33 @@ class BsdQuantitiesGraph:
                 incoming_data.merge(
                     self.packagings_data, left_on="id", right_on="bsff_id"
                 )
-                .groupby(pd.Grouper(key="acceptation_date", freq="1M"))[
-                    "acceptation_weight"
-                ]
-                .sum()
-                .replace(0, np.nan)
-            )
-            outgoing_data_by_month = (
-                outgoing_data.merge(
-                    self.packagings_data, left_on="id", right_on="bsff_id"
+                outgoing_data_by_month = (
+                    outgoing_data.merge(
+                        self.packagings_data, left_on="id", right_on="bsff_id"
+                    )
+                    .groupby(pd.Grouper(key="sent_at", freq="1M"))[variable_name]
+                    .sum()
+                    .replace(0, np.nan)
                 )
-                .groupby(pd.Grouper(key="sent_at", freq="1M"))["acceptation_weight"]
-                .sum()
-                .replace(0, np.nan)
-            )
+            else:
+                incoming_data_by_month = (
+                    incoming_data.groupby(pd.Grouper(key="received_at", freq="1M"))[
+                        variable_name
+                    ]
+                    .sum()
+                    .replace(0, np.nan)
+                )
 
-        self.incoming_data_by_month = incoming_data_by_month
+                outgoing_data_by_month = (
+                    outgoing_data.groupby(pd.Grouper(key="sent_at", freq="1M"))[
+                        variable_name
+                    ]
+                    .sum()
+                    .replace(0, np.nan)
+                )
 
-        self.outgoing_data_by_month = outgoing_data_by_month
+            self.incoming_data_by_month_series.append(incoming_data_by_month)
+            self.outgoing_data_by_month_series.append(outgoing_data_by_month)
 
     def _check_data_empty(self) -> bool:
         incoming_data_by_month_series = self.incoming_data_by_month_series

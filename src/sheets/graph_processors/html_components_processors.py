@@ -207,6 +207,7 @@ class BsdStatsProcessor:
                         "processed_in_more_than_one_month_packagings_avg_processing_time"
                     ] = f"{res:.1f}j"
 
+
         bs_revised_data = self.bs_revised_data
         if bs_revised_data is not None:
             bs_revised_data = bs_revised_data[

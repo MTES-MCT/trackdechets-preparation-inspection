@@ -45,7 +45,6 @@ class BsdQuantitiesGraph:
 
         self.figure = None
 
-
     def _preprocess_data(self) -> None:
         bs_data = self.bs_data
         one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
@@ -75,39 +74,6 @@ class BsdQuantitiesGraph:
                     ]
                     .sum()
                     .replace(0, np.nan)
-                )
-                outgoing_data_by_month = (
-                    outgoing_data.merge(
-                        self.packagings_data, left_on="id", right_on="bsff_id"
-                    )
-                    .groupby(pd.Grouper(key="sent_at", freq="1M"))[variable_name]
-                    .sum()
-                    .replace(0, np.nan)
-                )
-            else:
-                incoming_data_by_month = (
-                    incoming_data.groupby(pd.Grouper(key="received_at", freq="1M"))[
-                        variable_name
-                    ]
-                    .sum()
-                    .replace(0, np.nan)
-                )
-
-                outgoing_data_by_month = (
-                    outgoing_data.groupby(pd.Grouper(key="sent_at", freq="1M"))[
-                        variable_name
-                    ]
-                    .sum()
-                    .replace(0, np.nan)
-                )
-
-            self.incoming_data_by_month_series.append(incoming_data_by_month)
-            self.outgoing_data_by_month_series.append(outgoing_data_by_month)
-
-        if self.packagings_data is not None:
-            incoming_data_by_month = (
-                incoming_data.merge(
-                    self.packagings_data, left_on="id", right_on="bsff_id"
                 )
                 outgoing_data_by_month = (
                     outgoing_data.merge(

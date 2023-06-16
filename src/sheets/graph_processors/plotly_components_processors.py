@@ -22,7 +22,7 @@ class BsdQuantitiesGraph:
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bs_data: DataFrame
         DataFrame containing data for a given 'bordereau' type.
-    quantities_variables_names: list of str
+    quantity_variables_names: list of str
         The names of the variables to use to compute quantity statistics. Several variables can be used.
     packagings_data : DataFrame
         For BSFF data, packagings dataset to be able to compute the quantities.
@@ -32,13 +32,13 @@ class BsdQuantitiesGraph:
         self,
         company_siret: str,
         bs_data: pd.DataFrame,
-        quantities_variables_names: list[str] = ["quantity_received"],
+        quantity_variables_names: list[str] = ["quantity_received"],
         packagings_data: pd.DataFrame = None,
     ):
         self.bs_data = bs_data
         self.packagings_data = packagings_data
         self.company_siret = company_siret
-        self.quantities_variables_names = quantities_variables_names
+        self.quantity_variables_names = quantity_variables_names
 
         self.incoming_data_by_month_series = []
         self.outgoing_data_by_month_series = []
@@ -65,7 +65,11 @@ class BsdQuantitiesGraph:
             & (bs_data["sent_at"] <= today_date)
         ]
 
-        for variable_name in self.quantities_variables_names:
+        # We iterate over the different variables chosen to compute the statistics
+        for variable_name in self.quantity_variables_names:
+            # If there is a packagings_data DataFrame, then it means that we are
+            # computing BSFF statistics, in this case we use the packagings data instead of
+            # 'bordereaux' data as quantity information is stored at packaging level
             if self.packagings_data is not None:
                 incoming_data_by_month = (
                     incoming_data.merge(
@@ -109,6 +113,7 @@ class BsdQuantitiesGraph:
         incoming_data_by_month_series = self.incoming_data_by_month_series
         outgoing_data_by_month_series = self.outgoing_data_by_month_series
 
+        # If DataFrames are empty then output is empty
         if all(
             len(s) == len(z) == 0
             for s, z in zip(
@@ -117,6 +122,7 @@ class BsdQuantitiesGraph:
         ):
             return True
 
+        # If preprocessed series are full of NA then output is empty
         if all(
             s.isna().all() and z.isna().all()
             for s, z in zip(
@@ -125,6 +131,7 @@ class BsdQuantitiesGraph:
         ):
             return True
 
+        # If preprocessed series are full of 0's then output is empty
         if all(
             (s == 0).all() and (z == 0).all()
             for s, z in zip(
@@ -138,11 +145,18 @@ class BsdQuantitiesGraph:
     def _create_figure(self) -> None:
         fig = go.Figure()
 
-        lines = []
+        lines = []  # Will store the lines graph objects
+
+        # We store the minimum date of each series to be able to configure
+        # the tick 0 of the figure
         mins_x = []
+
+        # This is used to configure the dticks in case of low number of data points.
         numbers_of_data_points = []
+
+        # We create two lines (for incoming and outgoing) for each quantity variable chosen
         for variable_name, incoming_data_by_month, outgoing_data_by_month in zip(
-            self.quantities_variables_names,
+            self.quantity_variables_names,
             self.incoming_data_by_month_series,
             self.outgoing_data_by_month_series,
         ):
@@ -154,6 +168,7 @@ class BsdQuantitiesGraph:
             marker_symbol = "circle"
             marker_size = 6
 
+            # To handle the case of volume
             if variable_name == "volume":
                 incoming_line_name = "Volume entrant"
                 incoming_hover_text = "{} - <b>{}</b> m³ entrants"
@@ -169,7 +184,6 @@ class BsdQuantitiesGraph:
                     y=incoming_data_by_month,
                     name=incoming_line_name,
                     mode="lines+markers",
-                    # todo: localize month names
                     hovertext=[
                         incoming_hover_text.format(
                             index.month_name(locale="fr_FR"), format_number_str(e)
@@ -361,6 +375,8 @@ class BsdTrackedAndRevisedProcessor:
                 bs_emitted_by_month.index.min(), bs_received_by_month.index.min()
             )
 
+        # Used to store the maximum value of each line
+        # to be able to configure the height of the plotting area of the figure.
         max_y = max(bs_emitted_by_month.max(), bs_received_by_month.max())
 
         fig = go.Figure([bs_emitted_bars, bs_received_bars])
@@ -409,6 +425,7 @@ class BsdTrackedAndRevisedProcessor:
             gridcolor="#ccc",
         )
 
+        # Range of the y axis is increased to increase the height of the plotting are of the figure
         fig.update_yaxes(range=[0, max_y * 1.1], gridcolor="#ccc")
 
         self.figure = fig
@@ -466,10 +483,13 @@ class WasteOriginProcessor:
             ]
         )
 
+        # The postal code is extracted from the address field using a simple regex
         concat_df["cp"] = concat_df["emitter_company_address"].str.extract(
             r"([0-9]{5})", expand=False
         )
         concat_df["code_dep"] = concat_df["cp"].apply(get_code_departement)
+
+        # 'Bordereau' data is merged with INSEE geographical data
         concat_df = pd.merge(
             concat_df,
             self.departements_regions_df,
@@ -479,9 +499,13 @@ class WasteOriginProcessor:
             validate="many_to_one",
         )
 
+        # We create the column `cp_formatted` that will hold the two first digit
+        # (three in the case of DOM/TOM) of the postal code
         concat_df.loc[~concat_df["code_dep"].isna(), "cp_formatted"] = (
             concat_df["LIBELLE_dep"] + " (" + concat_df["code_dep"] + ")"
         )
+
+        # We handle the case of failed postal code extraction
         concat_df.loc[concat_df["code_dep"].isna(), "cp_formatted"] = "Origine inconnue"
         serie = (
             concat_df[concat_df["recipient_company_siret"] == self.company_siret]
@@ -491,10 +515,13 @@ class WasteOriginProcessor:
 
         serie.sort_values(ascending=False, inplace=True)
 
+        # Only TOP 5 'départements' are kept
         final_serie = serie[:5]
+        # Remaining 'départements' are summed and displayed as "others"
         final_serie["Autres origines"] = serie[5:].sum()
         final_serie = final_serie.astype(int)
         final_serie = final_serie.round(2)
+
         final_serie = final_serie[final_serie > 0]
 
         self.preprocessed_serie = final_serie
@@ -510,12 +537,13 @@ class WasteOriginProcessor:
         return False
 
     def _create_figure(self) -> None:
-        # Prepare order for horizontal bar chart, preserving "Autre origines" has bottom bar
+        # Prepare order for horizontal bar chart, preserving "Autre origines" as bottom bar
         serie = pd.concat(
             (self.preprocessed_serie[-1:], self.preprocessed_serie[-2::-1])
         )
 
         # The bar chart has invisible bar (at *_annot positions) that will hold the labels
+        # Invisible bar is the bar with width 0 but with a label.
         y_cats = [tup_e for e in serie.index for tup_e in (e, e + "_annot")]
         values = [tup_e for _, e in serie.items() for tup_e in (e, 0)]
         texts = [
@@ -613,6 +641,7 @@ class WasteOriginsMapProcessor:
             ]
         )
 
+        # The postal code is extracted from the address field using a simple regex
         concat_df["cp"] = concat_df["emitter_company_address"].str.extract(
             r"([0-9]{5})", expand=False
         )
@@ -625,6 +654,8 @@ class WasteOriginsMapProcessor:
             how="left",
             validate="many_to_one",
         )
+
+        # The 'Region' label is kept after aggregation
         df_grouped = (
             concat_df[concat_df["recipient_company_siret"] == self.company_siret]
             .groupby("LIBELLE_reg")
@@ -653,6 +684,10 @@ class WasteOriginsMapProcessor:
     def _create_figure(self) -> None:
         gdf = self.preprocessed_df
         geojson = json.loads(gdf.to_json())
+
+        # The figure is built in two part.
+        # The first trace holds the 'region' geometries.
+        # This trace doesn't hold preprocessed data.
         trace = go.Choropleth(
             geojson=geojson,
             z=[0] * len(gdf["quantity_received"]),
@@ -667,6 +702,9 @@ class WasteOriginsMapProcessor:
         sizeref = 2.0 * max(gdf["quantity_received"]) / (12**2)
 
         gdf_nonzero = gdf[gdf["quantity_received"] != 0]
+
+        # This second trace will holds the circles that will be drawn on the map.
+        # It is build using preprocessed data (size are relative to the quantity received).
         trace_2 = go.Scattergeo(
             geojson=geojson,
             locations=gdf_nonzero.index,

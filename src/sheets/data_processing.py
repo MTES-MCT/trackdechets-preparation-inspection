@@ -179,7 +179,7 @@ class SheetProcessor:
             stock_graph = BsdQuantitiesGraph(
                 self.siret,
                 df,
-                quantities_variables_names=quantity_variables,
+                quantity_variables_names=quantity_variables,
                 packagings_data=packaging_data,
             )
             stock_graph_data = stock_graph.build()
@@ -190,7 +190,7 @@ class SheetProcessor:
             stock_graph = BsdQuantitiesGraph(
                 self.siret,
                 df,
-                quantities_variables_names=quantity_variables,
+                quantity_variables_names=quantity_variables,
                 packagings_data=packaging_data,
             )
             stock_graph_data = stock_graph.build()
@@ -201,7 +201,7 @@ class SheetProcessor:
             stats_graph = BsdStatsProcessor(
                 self.siret,
                 df,
-                quantity_variables=quantity_variables,
+                quantity_variables_names=quantity_variables,
                 bs_revised_data=self.revised_bsds_dfs.get(bsd_type, None),
                 packagings_data=packaging_data,
             )

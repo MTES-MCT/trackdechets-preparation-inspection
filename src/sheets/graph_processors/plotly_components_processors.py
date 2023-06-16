@@ -66,22 +66,6 @@ class BsdQuantitiesGraph:
         ]
 
         for variable_name in self.quantities_variables_names:
-            incoming_data_by_month = (
-                incoming_data.groupby(pd.Grouper(key="received_at", freq="1M"))[
-                    variable_name
-                ]
-                .sum()
-                .replace(0, np.nan)
-            )
-
-            outgoing_data_by_month = (
-                outgoing_data.groupby(pd.Grouper(key="sent_at", freq="1M"))[
-                    variable_name
-                ]
-                .sum()
-                .replace(0, np.nan)
-            )
-
             if self.packagings_data is not None:
                 incoming_data_by_month = (
                     incoming_data.merge(
@@ -98,6 +82,22 @@ class BsdQuantitiesGraph:
                         self.packagings_data, left_on="id", right_on="bsff_id"
                     )
                     .groupby(pd.Grouper(key="sent_at", freq="1M"))[variable_name]
+                    .sum()
+                    .replace(0, np.nan)
+                )
+            else:
+                incoming_data_by_month = (
+                    incoming_data.groupby(pd.Grouper(key="received_at", freq="1M"))[
+                        variable_name
+                    ]
+                    .sum()
+                    .replace(0, np.nan)
+                )
+
+                outgoing_data_by_month = (
+                    outgoing_data.groupby(pd.Grouper(key="sent_at", freq="1M"))[
+                        variable_name
+                    ]
                     .sum()
                     .replace(0, np.nan)
                 )
@@ -317,12 +317,8 @@ class BsdTrackedAndRevisedProcessor:
     def _check_data_empty(self) -> bool:
         bs_emitted_by_month = self.bs_emitted_by_month
         bs_received_by_month = self.bs_received_by_month
-        bs_revised_by_month = self.bs_revised_by_month
 
-        if (
-            len(bs_emitted_by_month) == len(bs_received_by_month) == 0
-            and bs_revised_by_month is None
-        ):
+        if len(bs_emitted_by_month) == len(bs_received_by_month) == 0:
             return True
 
         return False

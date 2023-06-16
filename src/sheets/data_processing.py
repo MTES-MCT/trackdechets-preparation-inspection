@@ -169,16 +169,18 @@ class SheetProcessor:
             )
 
             quantity_variables = ["quantity_received"]
+            packaging_data = None
             if bsd_type == BSDASRI:
                 quantity_variables = ["quantity_received", "volume"]
             if bsd_type == BSFF:
                 quantity_variables = ["acceptation_weight"]
+                packaging_data = self.bsff_packagings_df
 
             stock_graph = BsdQuantitiesGraph(
                 self.siret,
                 df,
                 quantities_variables_names=quantity_variables,
-                packagings_data=self.bsff_packagings_df if bsd_type == BSFF else None,
+                packagings_data=packaging_data,
             )
             stock_graph_data = stock_graph.build()
             if stock_graph_data:
@@ -189,6 +191,7 @@ class SheetProcessor:
                 self.siret,
                 df,
                 quantities_variables_names=quantity_variables,
+                packagings_data=packaging_data,
             )
             stock_graph_data = stock_graph.build()
             if stock_graph_data:

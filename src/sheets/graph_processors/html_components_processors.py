@@ -202,9 +202,10 @@ class BsdStatsProcessor:
                         ]
                     ).mean()
                 ).total_seconds() / (24 * 3600)
-                target[
-                    "processed_in_more_than_one_month_packagings_avg_processing_time"
-                ] = f"{res:.1f}j"
+                if not pd.isna(res):
+                    target[
+                        "processed_in_more_than_one_month_packagings_avg_processing_time"
+                    ] = f"{res:.1f}j"
 
         bs_revised_data = self.bs_revised_data
         if bs_revised_data is not None:
@@ -214,9 +215,6 @@ class BsdStatsProcessor:
             self.revised_bs_count = bs_revised_data["bs_id"].nunique()
 
         for key in self.quantities_stats.keys():
-            total_quantity_incoming = bs_received_data[key].sum()
-            total_quantity_outgoing = bs_emitted_data[key].sum()
-
             if self.packagings_data is not None:
                 total_quantity_incoming = bs_received_data.merge(
                     self.packagings_data, left_on="id", right_on="bsff_id"
@@ -224,6 +222,10 @@ class BsdStatsProcessor:
                 total_quantity_outgoing = bs_emitted_data.merge(
                     self.packagings_data, left_on="id", right_on="bsff_id"
                 )[key].sum()
+            else:
+                total_quantity_incoming = bs_received_data[key].sum()
+                total_quantity_outgoing = bs_emitted_data[key].sum()
+
             self.quantities_stats[key][
                 "total_quantity_incoming"
             ] = total_quantity_incoming

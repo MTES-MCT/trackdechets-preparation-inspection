@@ -111,22 +111,9 @@ class BsdStatsProcessor:
 
         return False
 
-    def _preprocess_data(self) -> None:
-        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
-            "%Y-%m-01"
-        )
-        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
-
-        bs_data = self.bs_data
-        bs_emitted_data = bs_data[
-            (bs_data["emitter_company_siret"] == self.company_siret)
-            & bs_data["sent_at"].between(one_year_ago, today_date)
-        ]
-        bs_received_data = bs_data[
-            (bs_data["recipient_company_siret"] == self.company_siret)
-            & bs_data["received_at"].between(one_year_ago, today_date)
-        ]
-
+    def _preprocess_general_statistics(
+        self, bs_emitted_data: pd.DataFrame, bs_received_data: pd.DataFrame
+    ) -> None:
         # For incoming and outgoing data, we compute different statistics
         # about the 'bordereaux'.
         # `target` is the destination in each result dictionary
@@ -244,11 +231,13 @@ class BsdStatsProcessor:
         # NOTE: only revision asked by the current organization are computed.
         bs_revised_data = self.bs_revised_data
         if bs_revised_data is not None:
-            bs_revised_data = bs_revised_data[
-                bs_revised_data["bs_id"].isin(bs_data["id"])
-            ]
+            bs_ids = pd.concat([bs_emitted_data["id"], bs_received_data["id"]])
+            bs_revised_data = bs_revised_data[bs_revised_data["bs_id"].isin(bs_ids)]
             self.revised_bs_count = bs_revised_data["bs_id"].nunique()
 
+    def _preprocess_quantities_stats(
+        self, bs_emitted_data: pd.DataFrame, bs_received_data: pd.DataFrame
+    ) -> None:
         # We iterate over the different variables chosen to compute the statistics
         for key in self.quantities_stats.keys():
             # If there is a packagings_data DataFrame, then it means that we are
@@ -305,6 +294,26 @@ class BsdStatsProcessor:
                     ]
                     / self.quantities_stats["volume"]["total_quantity_incoming"]
                 )
+
+    def _preprocess_data(self) -> None:
+        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
+            "%Y-%m-01"
+        )
+        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        bs_data = self.bs_data
+        bs_emitted_data = bs_data[
+            (bs_data["emitter_company_siret"] == self.company_siret)
+            & bs_data["sent_at"].between(one_year_ago, today_date)
+        ]
+        bs_received_data = bs_data[
+            (bs_data["recipient_company_siret"] == self.company_siret)
+            & bs_data["received_at"].between(one_year_ago, today_date)
+        ]
+
+        self._preprocess_general_statistics(bs_emitted_data, bs_received_data)
+
+        self._preprocess_quantities_stats(bs_emitted_data, bs_received_data)
 
     def build_context(self):
         # We use the format_number_str only on variables that holds

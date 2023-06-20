@@ -144,7 +144,7 @@
                 </div>
                 <div class="cell cell--bordered cell--third">
                     <h3 class="cell__title">
-                        Volume de déchets DASRI en m³
+                        Quantité de déchets DASRI en m³ et tonnes
                     </h3>
                     <div id="bsdasri_quantity_graph">
                         <div class="no-data">
@@ -347,62 +347,78 @@
               divElement.remove();
             }
         }
-        if (isNotEmpty(bsdd_created_rectified_data)) {
-            removeNoDataClass("#bsdd_emitted_corrected_graph > .no-data");
-            removeNoDataClass("#bsdd_quantity_graph > .no-data");
-            Plotly.newPlot(
-                'bsdd_emitted_corrected_graph',
-                bsdd_created_rectified_data.data,
-                bsdd_created_rectified_data.layout,
-                bsdd_created_rectified_data.config)
 
-            Plotly.newPlot('bsdd_quantity_graph', bsdd_stock_data.data, bsdd_stock_data.layout, bsdd_stock_data.config);
-        }
-        if (isNotEmpty(bsdd_non_dangerous_created_rectified_data)) {
-            removeNoDataClass("#bsdd_non_dangerous_emitted_corrected_graph > .no-data");
-            removeNoDataClass("#bsdd_non_dangerous_quantity_graph > .no-data");
-            Plotly.newPlot(
-                'bsdd_non_dangerous_emitted_corrected_graph',
-                bsdd_non_dangerous_created_rectified_data.data,
-                bsdd_non_dangerous_created_rectified_data.layout,
-                bsdd_non_dangerous_created_rectified_data.config)
+        plot_configs = [
+            {
+                "data":bsdd_created_rectified_data,
+                "target":"bsdd_emitted_corrected_graph"
+            },
+            {
+                "data":bsdd_stock_data,
+                "target":"bsdd_quantity_graph"
+            },
+            {
+                "data":bsdd_non_dangerous_created_rectified_data,
+                "target":"bsdd_non_dangerous_emitted_corrected_graph"
+            },
+            {
+                "data":bsdd_non_dangerous_stock_data,
+                "target":"bsdd_non_dangerous_quantity_graph"
+            },
+            {
+                "data":bsda_created_rectified_data,
+                "target":"bsda_emitted_corrected_graph"
+            },
+            {
+                "data":bsda_stock_data,
+                "target":"bsda_quantity_graph"
+            },
+            {
+                "data":bsdasri_created_rectified_data,
+                "target":"bsdasri_emitted_corrected_graph"
+            },
+            {
+                "data":bsdasri_stock_data,
+                "target":"bsdasri_quantity_graph"
+            },
+            {
+                "data":bsff_created_rectified_data,
+                "target":"bsff_emitted_corrected_graph"
+            },
+            {
+                "data":bsff_stock_data,
+                "target":"bsff_quantity_graph"
+            },
+            {
+                "data":bsvhu_created_rectified_data,
+                "target":"bsvhu_emitted_corrected_graph"
+            },
+            {
+                "data":bsvhu_stock_data,
+                "target":"bsvhu_quantity_graph"
+            },
+            {
+                "data":waste_origin_data,
+                "target":"waste_origin_graph"
+            },
+            {
+                "data":waste_origin_map_data,
+                "target":"waste_origin_map_graph"
+            }
+        ]
 
-            Plotly.newPlot('bsdd_non_dangerous_quantity_graph', bsdd_non_dangerous_stock_data.data, bsdd_non_dangerous_stock_data.layout, bsdd_non_dangerous_stock_data.config);
+        for (const config of plot_configs) {
+            if (isNotEmpty(config.data)) {
+                removeNoDataClass(`#${config.target} > .no-data`);
+                Plotly.newPlot(
+                    config.target,
+                    config.data.data,
+                    config.data.layout,
+                    config.data.config)
+    
+            }
         }
-        if (isNotEmpty(bsda_created_rectified_data)) {
-            removeNoDataClass("#bsda_emitted_corrected_graph > .no-data");
-            removeNoDataClass("#bsda_quantity_graph > .no-data");
-            Plotly.newPlot('bsda_emitted_corrected_graph', bsda_created_rectified_data.data, bsda_created_rectified_data.layout, bsda_created_rectified_data.config);
-            Plotly.newPlot('bsda_quantity_graph', bsda_stock_data.data, bsda_stock_data.layout, bsda_stock_data.config);
-        }
-        if (isNotEmpty(bsdasri_created_rectified_data)) {
-            removeNoDataClass("#bsdasri_emitted_corrected_graph > .no-data");
-            removeNoDataClass("#bsdasri_quantity_graph > .no-data");
-            Plotly.newPlot('bsdasri_emitted_corrected_graph', bsdasri_created_rectified_data.data, bsdasri_created_rectified_data.layout, bsdasri_created_rectified_data.config);
-            Plotly.newPlot('bsdasri_quantity_graph', bsdasri_stock_data.data, bsdasri_stock_data.layout, bsdasri_stock_data.config);
-        }
-        if (isNotEmpty(bsff_created_rectified_data)) {
-            removeNoDataClass("#bsff_emitted_corrected_graph > .no-data");
-            removeNoDataClass("#bsff_quantity_graph > .no-data");
-            Plotly.newPlot('bsff_emitted_corrected_graph', bsff_created_rectified_data.data, bsff_created_rectified_data.layout, bsff_created_rectified_data.config);
-            Plotly.newPlot('bsff_quantity_graph', bsff_stock_data.data, bsff_stock_data.layout, bsff_stock_data.config);
-        }
-        if (isNotEmpty(bsvhu_created_rectified_data)) {
-            removeNoDataClass("#bsvhu_emitted_corrected_graph > .no-data");
-            removeNoDataClass("#bsvhu_quantity_graph > .no-data");
-            Plotly.newPlot('bsvhu_emitted_corrected_graph', bsvhu_created_rectified_data.data, bsvhu_created_rectified_data.layout, bsvhu_created_rectified_data.config);
-            Plotly.newPlot('bsvhu_quantity_graph', bsvhu_stock_data.data, bsvhu_stock_data.layout, bsvhu_stock_data.config);
-        }
-
-
-        if (isNotEmpty(waste_origin_data)) {
-            removeNoDataClass("#waste_origin_graph > .no-data");
-            Plotly.newPlot('waste_origin_graph', waste_origin_data.data, waste_origin_data.layout, waste_origin_data.config);
-        }
-        if (isNotEmpty(waste_origin_map_data)) {
-            removeNoDataClass("#waste_origin_map_graph > .no-data");
-            Plotly.newPlot('waste_origin_map_graph', waste_origin_map_data.data, waste_origin_map_data.layout, waste_origin_map_data.config);
-        }
+        
                
     </script>
 {% endblock %}

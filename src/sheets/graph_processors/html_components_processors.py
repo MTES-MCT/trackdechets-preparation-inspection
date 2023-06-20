@@ -26,8 +26,9 @@ class BsdStatsProcessor:
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bs_data: DataFrame
         DataFrame containing data for a given 'bordereau' type.
-    quantity_variable_name: str
-        The name of the variable to use to compute quantity statistics.
+    quantity_variables_names: list of str
+        The names of the variables to use to compute quantity statistics.
+        For example : ["quantity_received","volume"] to compute statistics for both variables.
     bs_revised_data: DataFrame
         DataFrame containing list of revised 'bordereaux' for a given 'bordereau' type.
     packagings_data:
@@ -38,17 +39,18 @@ class BsdStatsProcessor:
         self,
         company_siret: str,
         bs_data: pd.DataFrame,
-        quantity_variable_name: str = "quantity_received",
+        quantity_variables_names: list[str] = ["quantity_received"],
         bs_revised_data: pd.DataFrame = None,
         packagings_data: pd.DataFrame = None,
     ) -> None:
         self.company_siret = company_siret
 
         self.bs_data = bs_data
-        self.quantity_variable_name = quantity_variable_name
+        self.quantity_variables_names = quantity_variables_names
         self.bs_revised_data = bs_revised_data
         self.packagings_data = packagings_data
 
+        # Initialization of dicts that will hold the different computed statistics
         keys = [
             "total",
             "archived",
@@ -69,10 +71,19 @@ class BsdStatsProcessor:
 
         self.revised_bs_count = 0
 
-        self.total_incoming_quantity = None
-        self.total_outgoing_quantity = None
-        self.incoming_bar_size = None
-        self.outgoing_bar_size = None
+        # Quantities stats is two level deep as it will store the statistics for each
+        # chosen quantity variables
+        self.quantities_stats = {
+            key: {
+                "total_quantity_incoming": None,
+                "total_quantity_outgoing": None,
+                "bar_size_incoming": None,
+                "bar_size_outgoing": None,
+            }
+            for key in self.quantity_variables_names
+        }
+
+        self.weight_volume_ratio = None
 
     def _check_data_empty(self) -> bool:
         bs_data = self.bs_data
@@ -83,11 +94,13 @@ class BsdStatsProcessor:
 
         bs_revised_data = self.bs_revised_data
 
+        # If all raw dataframes are empty, then output data will be empty
         if (len(bs_emitted_data) == len(bs_received_data) == 0) and (
             (bs_revised_data is None) or (len(bs_revised_data) == 0)
         ):
             return True
 
+        # If all values after preprocessing are empty, then output data will be empty
         if all(
             (e == 0) or (e is None)
             for e in chain(
@@ -97,6 +110,190 @@ class BsdStatsProcessor:
             return True
 
         return False
+
+    def _preprocess_general_statistics(
+        self, bs_emitted_data: pd.DataFrame, bs_received_data: pd.DataFrame
+    ) -> None:
+        # For incoming and outgoing data, we compute different statistics
+        # about the 'bordereaux'.
+        # `target` is the destination in each result dictionary
+        # were to store the computed value.
+        for target, to_process, to_process_packagings in [
+            (self.emitted_bs_stats, bs_emitted_data, self.packagings_data),
+            (self.received_bs_stats, bs_received_data, self.packagings_data),
+        ]:
+            # total number of 'bordereaux' emitted/received
+            target["total"] = len(to_process)
+
+            # total number of 'bordereaux' that are considered as 'archived' (end of traceability)
+            target["archived"] = len(
+                to_process[
+                    to_process["status"].isin(
+                        [
+                            "PROCESSED",
+                            "REFUSED",
+                            "NO_TRACEABILITY",
+                            "FOLLOWED_WITH_PNTTD",
+                        ]
+                    )
+                ]
+            )
+
+            # DataFrame holding all the 'bordereaux' that have been
+            # processed in more than one month.
+            bs_emitted_processed_in_more_than_one_month = to_process[
+                (
+                    (to_process["processed_at"] - to_process["received_at"])
+                    > np.timedelta64(1, "M")
+                )
+            ]
+
+            # Total number of bordereaux processed in more than one month
+            processed_in_more_than_one_month_count = len(
+                bs_emitted_processed_in_more_than_one_month
+            )
+
+            target[
+                "processed_in_more_than_one_month_count"
+            ] = processed_in_more_than_one_month_count
+
+            # If there is some 'bordereaux' processed in morte than one month,
+            # we compute the average processing time.
+            if processed_in_more_than_one_month_count:
+                res = (
+                    (
+                        bs_emitted_processed_in_more_than_one_month["processed_at"]
+                        - bs_emitted_processed_in_more_than_one_month["received_at"]
+                    ).mean()
+                ).total_seconds() / (
+                    24 * 3600
+                )  # Time in seconds is converted in days
+                target[
+                    "processed_in_more_than_one_month_avg_processing_time"
+                ] = f"{res:.1f}j"
+
+            # Handle the case of BSFF specific packagings statistics
+            if to_process_packagings is not None:
+                # Total number of packagings sent/received
+                target["total_packagings"] = len(
+                    to_process_packagings[
+                        (to_process_packagings["bsff_id"].isin(to_process["id"]))
+                        & (~to_process_packagings["operation_date"].isnull())
+                    ]
+                )
+
+                # Merging of BSFF 'bordereaux' data with associated packagings data
+                # as we will need the date of reception that is stored at the 'bordereau' level.
+                bs_data_with_packagings = to_process.merge(
+                    to_process_packagings,
+                    left_on="id",
+                    right_on="bsff_id",
+                    validate="one_to_many",
+                )
+
+                # DataFrame with all BSFF along with packagings data
+                # for packagings that have been processed in more than one month
+                bs_data_with_packagings_processed_in_more_than_one_month = (
+                    bs_data_with_packagings[
+                        (
+                            bs_data_with_packagings["operation_date"]
+                            - bs_data_with_packagings["received_at"]
+                        )
+                        > np.timedelta64(1, "M")
+                    ]
+                )
+
+                # Number of packagings processed in more than one month.
+                target["processed_in_more_than_one_month_packagings_count"] = len(
+                    bs_data_with_packagings_processed_in_more_than_one_month
+                )
+
+                # Average processing times for the packagings processed in more than one month
+                res = (
+                    (
+                        bs_data_with_packagings_processed_in_more_than_one_month[
+                            "operation_date"
+                        ]
+                        - bs_data_with_packagings_processed_in_more_than_one_month[
+                            "received_at"
+                        ]
+                    ).mean()
+                ).total_seconds() / (
+                    24 * 3600
+                )  # Conversion between number of seconds and days
+                if not pd.isna(res):
+                    target[
+                        "processed_in_more_than_one_month_packagings_avg_processing_time"
+                    ] = f"{res:.1f}j"
+
+        # In case there is any 'bordereaux' revision data, we compute
+        # the number of 'bordereaux' that have been revised.
+        # NOTE: only revision asked by the current organization are computed.
+        bs_revised_data = self.bs_revised_data
+        if bs_revised_data is not None:
+            bs_ids = pd.concat([bs_emitted_data["id"], bs_received_data["id"]])
+            bs_revised_data = bs_revised_data[bs_revised_data["bs_id"].isin(bs_ids)]
+            self.revised_bs_count = bs_revised_data["bs_id"].nunique()
+
+    def _preprocess_quantities_stats(
+        self, bs_emitted_data: pd.DataFrame, bs_received_data: pd.DataFrame
+    ) -> None:
+        # We iterate over the different variables chosen to compute the statistics
+        for key in self.quantities_stats.keys():
+            # If there is a packagings_data DataFrame, then it means that we are
+            # computing BSFF statistics, in this case we use the packagings data instead of
+            # 'bordereaux' data as quantity information is stored at packaging level
+            if self.packagings_data is not None:
+                total_quantity_incoming = bs_received_data.merge(
+                    self.packagings_data, left_on="id", right_on="bsff_id"
+                )[key].sum()
+                total_quantity_outgoing = bs_emitted_data.merge(
+                    self.packagings_data, left_on="id", right_on="bsff_id"
+                )[key].sum()
+            else:
+                total_quantity_incoming = bs_received_data[key].sum()
+                total_quantity_outgoing = bs_emitted_data[key].sum()
+
+            self.quantities_stats[key][
+                "total_quantity_incoming"
+            ] = total_quantity_incoming
+            self.quantities_stats[key][
+                "total_quantity_outgoing"
+            ] = total_quantity_outgoing
+
+            incoming_bar_size = 0
+            outgoing_bar_size = 0
+
+            if not (total_quantity_incoming == total_quantity_outgoing == 0):
+                # The bar sizes are relative to the largest quantity.
+                # Size is expressed as percentage of the component width.
+                if total_quantity_incoming > total_quantity_outgoing:
+                    incoming_bar_size = 100
+                    outgoing_bar_size = int(
+                        100 * (total_quantity_outgoing / total_quantity_incoming)
+                    )
+                else:
+                    incoming_bar_size = int(
+                        100 * (total_quantity_incoming / total_quantity_outgoing)
+                    )
+                    outgoing_bar_size = 100
+            self.quantities_stats[key]["bar_size_incoming"] = incoming_bar_size
+            self.quantities_stats[key]["bar_size_outgoing"] = outgoing_bar_size
+
+        # If both "quantity_received" and "volume" variables have been chosen,
+        # then it means that we are computing BSDASRI statistics.
+        # In this case we compute the ratio between volume and weight.
+        if all(
+            key in self.quantity_variables_names
+            for key in ["quantity_received", "volume"]
+        ):
+            if (self.quantities_stats["volume"]["total_quantity_incoming"]) > 0:
+                self.weight_volume_ratio = (
+                    self.quantities_stats["quantity_received"][
+                        "total_quantity_incoming"
+                    ]
+                    / self.quantities_stats["volume"]["total_quantity_incoming"]
+                )
 
     def _preprocess_data(self) -> None:
         one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
@@ -114,127 +311,13 @@ class BsdStatsProcessor:
             & bs_data["received_at"].between(one_year_ago, today_date)
         ]
 
-        for target, to_process, to_process_packagings in [
-            (self.emitted_bs_stats, bs_emitted_data, self.packagings_data),
-            (self.received_bs_stats, bs_received_data, self.packagings_data),
-        ]:
-            target["total"] = len(to_process)
-            target["archived"] = len(
-                to_process[
-                    to_process["status"].isin(
-                        [
-                            "PROCESSED",
-                            "REFUSED",
-                            "NO_TRACEABILITY",
-                            "FOLLOWED_WITH_PNTTD",
-                        ]
-                    )
-                ]
-            )
+        self._preprocess_general_statistics(bs_emitted_data, bs_received_data)
 
-            bs_emitted_processed_in_more_than_one_month = to_process[
-                (
-                    (to_process["processed_at"] - to_process["received_at"])
-                    > np.timedelta64(1, "M")
-                )
-            ]
-
-            processed_in_more_than_one_month_count = len(
-                bs_emitted_processed_in_more_than_one_month
-            )
-
-            target["processed_in_more_than_one_month_count"] = len(
-                bs_emitted_processed_in_more_than_one_month
-            )
-            if processed_in_more_than_one_month_count:
-                res = (
-                    (
-                        bs_emitted_processed_in_more_than_one_month["processed_at"]
-                        - bs_emitted_processed_in_more_than_one_month["received_at"]
-                    ).mean()
-                ).total_seconds() / (24 * 3600)
-                target[
-                    "processed_in_more_than_one_month_avg_processing_time"
-                ] = f"{res:.1f}j"
-
-            if to_process_packagings is not None:
-                target["total_packagings"] = len(
-                    to_process_packagings[
-                        (to_process_packagings["bsff_id"].isin(to_process["id"]))
-                        & (~to_process_packagings["operation_date"].isnull())
-                    ]
-                )
-
-                bs_data_with_packagings = to_process.merge(
-                    to_process_packagings,
-                    left_on="id",
-                    right_on="bsff_id",
-                    validate="one_to_many",
-                )
-                bs_data_with_packagings_processed_in_more_than_one_month = (
-                    bs_data_with_packagings[
-                        (
-                            bs_data_with_packagings["operation_date"]
-                            - bs_data_with_packagings["received_at"]
-                        )
-                        > np.timedelta64(1, "M")
-                    ]
-                )
-                target["processed_in_more_than_one_month_packagings_count"] = len(
-                    bs_data_with_packagings_processed_in_more_than_one_month
-                )
-
-                res = (
-                    (
-                        bs_data_with_packagings_processed_in_more_than_one_month[
-                            "operation_date"
-                        ]
-                        - bs_data_with_packagings_processed_in_more_than_one_month[
-                            "received_at"
-                        ]
-                    ).mean()
-                ).total_seconds() / (24 * 3600)
-                target[
-                    "processed_in_more_than_one_month_packagings_avg_processing_time"
-                ] = f"{res:.1f}j"
-
-        bs_revised_data = self.bs_revised_data
-        if bs_revised_data is not None:
-            bs_revised_data = bs_revised_data[
-                bs_revised_data["bs_id"].isin(bs_data["id"])
-            ]
-            self.revised_bs_count = bs_revised_data["bs_id"].nunique()
-
-        self.total_incoming_quantity = bs_received_data[
-            self.quantity_variable_name
-        ].sum()
-        self.total_outgoing_quantity = bs_emitted_data[
-            self.quantity_variable_name
-        ].sum()
-        if self.packagings_data is not None:
-            self.total_incoming_quantity = bs_received_data.merge(
-                self.packagings_data, left_on="id", right_on="bsff_id"
-            )["acceptation_weight"].sum()
-            self.total_outgoing_quantity = bs_emitted_data.merge(
-                self.packagings_data, left_on="id", right_on="bsff_id"
-            )["acceptation_weight"].sum()
-
-        self.incoming_bar_size = 0
-        self.outgoing_bar_size = 0
-
-        if not (self.total_incoming_quantity == self.total_outgoing_quantity == 0):
-            if self.total_incoming_quantity > self.total_outgoing_quantity:
-                self.incoming_bar_size = 100
-                self.outgoing_bar_size = int(
-                    100 * (self.total_outgoing_quantity / self.total_incoming_quantity)
-                )
-            else:
-                self.incoming_bar_size = int(
-                    100 * (self.total_incoming_quantity / self.total_outgoing_quantity)
-                )
-                self.outgoing_bar_size = 100
+        self._preprocess_quantities_stats(bs_emitted_data, bs_received_data)
 
     def build_context(self):
+        # We use the format_number_str only on variables that holds
+        # quantity values.
         ctx = {
             "emitted_bs_stats": {
                 k: (format_number_str(v, 0) if isinstance(v, numbers.Number) else v)
@@ -245,14 +328,23 @@ class BsdStatsProcessor:
                 for k, v in self.received_bs_stats.items()
             },
             "revised_bs_count": format_number_str(self.revised_bs_count, precision=0),
-            "total_incoming_quantity": format_number_str(
-                self.total_incoming_quantity, precision=2
-            ),
-            "total_outgoing_quantity": format_number_str(
-                self.total_outgoing_quantity, precision=2
-            ),
-            "incoming_bar_size": self.incoming_bar_size,
-            "outgoing_bar_size": self.outgoing_bar_size,
+            # quantities_stats is two level deep so we need to use a nested
+            # dict comprehension loop.
+            "quantities_stats": {
+                ok: {
+                    k: (
+                        format_number_str(v, 2)
+                        if k in ["total_quantity_incoming", "total_quantity_outgoing"]
+                        else v
+                    )
+                    for k, v in ov.items()
+                }
+                for ok, ov in self.quantities_stats.items()
+            },
+            # We multiply the weight to get kilograms instead of tons for the weight_volume_ratio
+            "weight_volume_ratio": format_number_str(self.weight_volume_ratio * 1000, 2)
+            if self.weight_volume_ratio is not None
+            else None,
         }
 
         return ctx
@@ -276,7 +368,7 @@ class InputOutputWasteTableProcessor:
     bs_data_dfs: dict
         Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
     waste_codes_df: DataFrame
-        DataFrame containing list of waste codes with their descriptions.
+        DataFrame containing list of waste codes with their descriptions. It is the waste nomenclature.
     """
 
     def __init__(
@@ -308,6 +400,9 @@ class InputOutputWasteTableProcessor:
         df = df[
             (df.emitter_company_siret == siret) | (df.recipient_company_siret == siret)
         ]
+
+        # We create a column to differentiate incoming waste from
+        # outgoing waste.
         df["incoming_or_outgoing"] = pd.NA
         df.loc[
             (df.emitter_company_siret == siret)
@@ -322,10 +417,12 @@ class InputOutputWasteTableProcessor:
         df = df.dropna(subset="incoming_or_outgoing")
 
         if len(df) > 0:
+            # We compute the quantity by waste codes and incoming/outgoing categories
             df_grouped = df.groupby(
                 ["waste_code", "incoming_or_outgoing"], as_index=False
             )["quantity_received"].sum()
 
+            # We add the waste code description from the waste nomenclature
             final_df = pd.merge(
                 df_grouped,
                 self.waste_codes_df,
@@ -403,6 +500,7 @@ class BsdCanceledTableProcessor:
 
         dfs = []
         for bs_type, revised_data_df in self.bs_revised_data.items():
+            # Cancellation events are stored in revisions
             cancellations = revised_data_df[
                 revised_data_df.is_canceled
                 & revised_data_df.updated_at.between(one_year_ago, today_date)
@@ -410,8 +508,9 @@ class BsdCanceledTableProcessor:
             if len(cancellations):
                 bs_data = self.bs_data_dfs[bs_type]
 
+                # Columns that will be displayed in the output table
                 columns_to_take = [
-                    "id_y",
+                    "id_y",  # Will correspond to the 'bordereau' id after merge
                     "quantity_received",
                     "emitter_company_siret",
                     "recipient_company_siret",
@@ -421,6 +520,7 @@ class BsdCanceledTableProcessor:
                     "comment",
                 ]
 
+                # Human-friendly id is stored in the readable_id column in the case of BSDDs
                 if "readable_id" in bs_data.columns:
                     columns_to_take.append("readable_id")
 
@@ -461,7 +561,8 @@ class BsdCanceledTableProcessor:
 
 
 class SameEmitterRecipientTableProcessor:
-    """Component that displays an exhaustive tables with the list of 'bordereaux' that have the same company
+    """Component that displays an exhaustive tables with the
+    list of 'bordereaux' that have the same company
     as emitter and recipient along with a worksite address.
 
     Parameters
@@ -591,14 +692,20 @@ class StorageStatsProcessor:
         emitted = df[emitted_mask].groupby("waste_code")["quantity_received"].sum()
         received = df[received_mask].groupby("waste_code")["quantity_received"].sum()
 
+        # Index wise sum (index being the waste codes)
+        # to compute the theoretical stock of waste
+        # (difference between incoming and outgoing quantities)
         stock_by_waste_code: pd.Series = (
             (-emitted + received).fillna(-emitted).fillna(received)
         )
         stock_by_waste_code.sort_values(ascending=False, inplace=True)
 
+        # Only positive differences are kept
         stock_by_waste_code = stock_by_waste_code[stock_by_waste_code > 0]
         total_stock = format_number_str(stock_by_waste_code.sum(), precision=1)
         stock_by_waste_code = stock_by_waste_code.apply(format_number_str, precision=1)
+
+        # Data is enriched with waste description from the waste nomenclature
         stock_by_waste_code = pd.merge(
             stock_by_waste_code,
             self.waste_codes_df,
@@ -926,14 +1033,14 @@ class ICPEItemsProcessor:
 
 
 class TraceabilityInterruptionsProcessor:
-    """Component that displays list of ICPE authorized items.
+    """Component that displays list of declared traceability interruptions.
 
     Parameters
     ----------
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bsdd_data: DataFrame
-        DataFrame containing bsdd data.
+        DataFrame containing BSDD data.
     """
 
     def __init__(
@@ -961,11 +1068,13 @@ class TraceabilityInterruptionsProcessor:
         if len(df_filtered) == 0:
             return
 
+        # Quantity and count are computed by waste code
         df_grouped = df_filtered.groupby("waste_code", as_index=False).agg(
             quantity=pd.NamedAgg(column="quantity_received", aggfunc="sum"),
             count=pd.NamedAgg(column="id", aggfunc="count"),
         )
 
+        # Data is enriched with waste description from the waste nomenclature
         final_df = pd.merge(
             df_grouped,
             self.waste_codes_df,
@@ -1012,7 +1121,8 @@ class TraceabilityInterruptionsProcessor:
 
 
 class WasteIsDangerousStatementsProcessor:
-    """Component that displays list of wastes tracked without dangerous waste code but with the "waste_is_dangerous" option enabled.
+    """Component that displays list of wastes tracked
+    without dangerous waste code but with the "waste_is_dangerous" option enabled.
 
     Parameters
     ----------
@@ -1150,6 +1260,7 @@ class ReceiptAgrementsProcessor:
 
 class PrivateIndividualsCollectionsTableProcessor:
     """Component that displays a list of private individuals where waste have been picked up.
+    Only for BSDA data.
 
     Parameters
     ----------

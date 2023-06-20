@@ -167,11 +167,31 @@ class SheetProcessor:
                 f"{bsd_type}_created_rectified_data",
                 created_rectified_graph_data,
             )
+
+            quantity_variables = ["quantity_received"]
+            packaging_data = None
+            if bsd_type == BSDASRI:
+                quantity_variables = ["quantity_received", "volume"]
+            if bsd_type == BSFF:
+                quantity_variables = ["acceptation_weight"]
+                packaging_data = self.bsff_packagings_df
+
             stock_graph = BsdQuantitiesGraph(
                 self.siret,
                 df,
-                variable_name="quantity_received" if bsd_type != BSDASRI else "volume",
-                packagings_data=self.bsff_packagings_df if bsd_type == BSFF else None,
+                quantity_variables_names=quantity_variables,
+                packagings_data=packaging_data,
+            )
+            stock_graph_data = stock_graph.build()
+            if stock_graph_data:
+                all_bsd_data_empty = False
+            setattr(self.computed, f"{bsd_type}_stock_data", stock_graph_data)
+
+            stock_graph = BsdQuantitiesGraph(
+                self.siret,
+                df,
+                quantity_variables_names=quantity_variables,
+                packagings_data=packaging_data,
             )
             stock_graph_data = stock_graph.build()
             if stock_graph_data:
@@ -181,11 +201,9 @@ class SheetProcessor:
             stats_graph = BsdStatsProcessor(
                 self.siret,
                 df,
-                quantity_variable_name="quantity_received"
-                if bsd_type != BSDASRI
-                else "volume",
+                quantity_variables_names=quantity_variables,
                 bs_revised_data=self.revised_bsds_dfs.get(bsd_type, None),
-                packagings_data=self.bsff_packagings_df if bsd_type == BSFF else None,
+                packagings_data=packaging_data,
             )
             stats_graph_data = stats_graph.build()
             if stats_graph_data:

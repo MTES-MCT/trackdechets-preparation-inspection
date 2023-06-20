@@ -1426,7 +1426,7 @@ class QuantityOutliersTableProcessor:
                 "emitter_company_siret": e.emitter_company_siret,
                 "recipient_company_siret": e.recipient_company_siret,
                 "waste_code": e.waste_code,
-                "waste_name": e.waste_name,
+                "waste_name": e.waste_name if e.bs_type != "bsvhu" else None,
                 "quantity": format_number_str(e.quantity_received, 1)
                 if not pd.isna(e.quantity_received)
                 else None,

@@ -36,6 +36,7 @@ class CustomUserAdmin(UserAdmin):
     form = AdminCustomUserChangeForm
     model = User
     actions = [send_invitation_email]
+    search_fields = ("username", "email")
     list_display = [
         "email",
         "username",

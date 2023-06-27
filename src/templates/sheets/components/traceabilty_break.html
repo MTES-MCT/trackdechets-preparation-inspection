@@ -4,7 +4,7 @@
         L'établissement a indiqué sur les BSDs être autorisé à la rupture de traçabilité, par arrêté préfectoral pour
         les déchets suivants:
     </p>
-    <div{% if graph_context == "web" %}class="fr-table "{% endif %}>
+    <div {% if graph_context == "web" %} class="fr-table "{% endif %}>
         <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
             <tbody>
                 {% for row in traceability_interruptions_data %}

@@ -17,7 +17,10 @@ def sample_bs_data():
     ]
     sent_at_datetimes = [e + timedelta(days=1) for e in created_at_datetimes]
     received_at_datetimes = [e + timedelta(days=1) for e in sent_at_datetimes]
-    processed_at_datetimes = [e + timedelta(days=1) for e in received_at_datetimes]
+    time_to_process = [60, 1, 1, 1, 60, 1]
+    processed_at_datetimes = [
+        e + timedelta(days=t) for e, t in zip(received_at_datetimes, time_to_process)
+    ]
     bs_data = pd.DataFrame(
         {
             "id": [i for i in range(1, 7)],
@@ -60,7 +63,8 @@ def sample_bs_data():
 def sample_bs_data_empty():
     # Create a sample DataFrame for bs_data that should generate empty component
     created_at_datetimes = [
-        datetime.now() - timedelta(days=3000),
+        datetime.now()
+        - timedelta(days=3000),  # More than one year ago, should be discarded
         datetime.now() - timedelta(days=65),
     ]
     sent_at_datetimes = [
@@ -120,6 +124,26 @@ def test_bsd_stats_processor(sample_bs_data):
 
     assert context["emitted_bs_stats"]["total"] == "3"
     assert context["received_bs_stats"]["total"] == "3"
+
+    assert context["emitted_bs_stats"]["archived"] == "1"
+    assert context["received_bs_stats"]["archived"] == "3"
+
+    assert context["emitted_bs_stats"]["processed_in_more_than_one_month_count"] == "1"
+    assert context["received_bs_stats"]["processed_in_more_than_one_month_count"] == "1"
+
+    assert (
+        context["emitted_bs_stats"][
+            "processed_in_more_than_one_month_avg_processing_time"
+        ]
+        == "60j"
+    )
+    assert (
+        context["received_bs_stats"][
+            "processed_in_more_than_one_month_avg_processing_time"
+        ]
+        == "60j"
+    )
+
     assert (
         context["quantities_stats"]["quantity_received"]["total_quantity_incoming"]
         == "34.7"
@@ -128,6 +152,41 @@ def test_bsd_stats_processor(sample_bs_data):
         context["quantities_stats"]["quantity_received"]["total_quantity_outgoing"]
         == "17.5"
     )
+
+
+def test_bsd_stats_processor_multiple_quantity_variables(sample_bs_data):
+    siret = "123456789"
+    bs_processor = BsdStatsProcessor(
+        siret, sample_bs_data, quantity_variables_names=["quantity_received", "volume"]
+    )
+
+    # Test initialization
+    assert bs_processor.company_siret == siret
+    assert isinstance(bs_processor.bs_data, pd.DataFrame)
+    assert bs_processor.quantity_variables_names == ["quantity_received", "volume"]
+    assert bs_processor.bs_revised_data is None
+    assert bs_processor.packagings_data is None
+
+    # Test preprocessing
+    bs_processor._preprocess_data()
+    assert bs_processor._check_data_empty() == False
+
+    # Test statistics computation
+    context = bs_processor.build_context()
+
+    assert context["emitted_bs_stats"]["total"] == "3"
+    assert context["received_bs_stats"]["total"] == "3"
+    assert (
+        context["quantities_stats"]["quantity_received"]["total_quantity_incoming"]
+        == "34.7"
+    )
+    assert context["quantities_stats"]["volume"]["total_quantity_incoming"] == "34.7"
+    assert (
+        context["quantities_stats"]["quantity_received"]["total_quantity_outgoing"]
+        == "17.5"
+    )
+    assert context["quantities_stats"]["volume"]["total_quantity_incoming"] == "34.7"
+    assert context["weight_volume_ratio"] == "1 000"
 
 
 def test_bsd_stats_processor_empty_data(sample_bs_data_empty):

@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
+    "anymail",
     "defender",
     "request",  # webstats module
     "accounts",
@@ -159,5 +160,6 @@ PASSWORD_RESET_TIMEOUT = 3600 * 12  # 12 hours
 
 GRAPPELLI_ADMIN_TITLE = "Trackdéchets - Inspection"
 
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "sender@test.fr"
 MESSAGE_RECIPIENTS = env.list("MESSAGE_RECIPIENTS", [])

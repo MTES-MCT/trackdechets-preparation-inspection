@@ -60,7 +60,6 @@ def build_query(
         parse_dates=date_columns,
     )
 
-
     return df
 
 
@@ -71,7 +70,7 @@ def build_bsdd_query(siret):
         date_columns=bsd_date_params,
         dtypes=bs_dtypes,
     )
-    breakpoint()
+
     return df
 
 

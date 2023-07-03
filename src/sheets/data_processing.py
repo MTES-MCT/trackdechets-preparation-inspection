@@ -150,7 +150,6 @@ class SheetProcessor:
 
         self.computed.save()
 
-
     def _prepare_plotly_graph(self):
         all_bsd_data_empty = True
 
@@ -220,9 +219,6 @@ class SheetProcessor:
             bsd_type = bsd_config["bsd_type"]
             # compute and store df in a dict
             df = bsd_config["bs_data"](siret=self.computed.org_id)
-
-            print(bsd_type,self.computed.org_id,  df)
-
             self.bsds_dfs[bsd_type] = df
 
             bs_data_df, date_outliers = get_outliers_datetimes_df(

@@ -20,12 +20,15 @@ sqlalchemy = "==1.4"
 celery = "*"
 redis = "*"
 geopandas = "*"
-django-defender = "*"
 django-request = "*"
 django-grappelli = "*"
 weasyprint = "*"
 sentry-sdk = {extras = ["django"], version = "*"}
 django-anymail = {extras = ["sendinblue"], version = "*"}
+django-sesame = "*"
+django-ratelimit = "*"
+django-simple-math-captcha = "*"
+django-ipware = "*"
 
 [dev-packages]
 black = "*"

@@ -30,7 +30,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sites",
     "anymail",
-    "defender",
+    "sesame",
+    "simplemathcaptcha",
     "request",  # webstats module
     "accounts",
     "content",
@@ -46,7 +47,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "defender.middleware.FailedLoginMiddleware",
+    "django_ratelimit.middleware.RatelimitMiddleware",
+    "accounts.middleware.reverse_proxy_middleware",
     "request.middleware.RequestMiddleware",
 ]
 
@@ -92,6 +94,10 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
+]
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "sesame.backends.ModelBackend",
 ]
 
 # Internationalization
@@ -145,12 +151,14 @@ REQUEST_IGNORE_PATHS = (
     r"favicon.ico",
 )
 
-# defender
-DEFENDER_REDIS_URL = env.str("DEFENDER_REDIS_URL", "redis://localhost:6379/0")
-DEFENDER_LOGIN_FAILURE_LIMIT_USERNAME = 3
-DEFENDER_LOGIN_FAILURE_LIMIT_IP = 3
-DEFENDER_LOCKOUT_TEMPLATE = "accounts/lockout.html"
-DEFENDER_LOCKOUT_COOLOFF_TIME = 5 * 60  # seconds
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",
+    }
+}
+
+RATELIMIT_VIEW = "accounts.views.lockout_view"
 
 BASE_URL = env.str("BASE_URL", "http://127.0.0.1:8000")
 LOGIN_URL = "login"
@@ -163,3 +171,5 @@ GRAPPELLI_ADMIN_TITLE = "Trackdéchets - Inspection"
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "sender@test.fr"
 MESSAGE_RECIPIENTS = env.list("MESSAGE_RECIPIENTS", [])
+
+SESAME_MAX_AGE = 600  # 10 minutes

@@ -199,7 +199,6 @@ def get_icpe_data(siret: str) -> Union[pd.DataFrame, None]:
     icpe_data = build_query(
         sql_get_icpe_data,
         query_params={"siret": siret},
-        date_columns=["date_debut_exploitation", "date_fin_validite"],
     )
 
     if len(icpe_data):

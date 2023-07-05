@@ -265,20 +265,16 @@ where authoring_company_id = :company_id
 
 sql_get_icpe_data = """
 select
-    code_s3ic,
-    id_nomenclature,
-    date_debut_exploitation,
-    date_fin_validite,
-    volume,
+    code_aiot as code_s3ic,
+    quantite_totale as volume,
     unite,
     rubrique,
     alinea,
-    libelle_court_activite
+    nature as libelle_court_activite
 from
-    refined_zone_icpe.icpe_siretise
-where siret_clean = :siret
-AND en_vigueur
-and id_regime in ('E','DC','D','A')
+    refined_zone_icpe.installations_rubriques
+where siret = :siret
+and id_lex_aiot_regime in ('E','DC','D','A')
 """
 
 sql_get_trader_receipt_id_data = """

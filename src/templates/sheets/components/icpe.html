@@ -5,9 +5,5 @@
         {{ row.rubrique }}
         {% if row.alinea %}- {{ row.alinea }}{% endif %}
         {{ row.libelle }}
-        {% if row.date_debut %}
-            (valide à partir
-            du {{ row.date_debut }})
-        {% endif %}
     </p>
 {% endfor %}

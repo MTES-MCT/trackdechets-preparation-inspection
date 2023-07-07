@@ -274,7 +274,7 @@ select
 from
     refined_zone_icpe.installations_rubriques
 where siret = :siret
-and id_lex_aiot_regime in ('E','DC','D','A')
+and regime in ('E','DC','D','A')
 """
 
 sql_get_trader_receipt_id_data = """

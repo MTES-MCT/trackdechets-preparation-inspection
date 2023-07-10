@@ -274,7 +274,7 @@ select
 from
     refined_zone_icpe.installations_rubriques
 where siret = :siret
-and regime in ('E','DC','D','A')
+and regime_rubrique in ('Enregistrement','Déclaration avec contrôle','Déclaration','Autorisation')
 """
 
 sql_get_trader_receipt_id_data = """

@@ -436,6 +436,7 @@ class InputOutputWasteTableProcessor:
             final_df["quantity_received"] = final_df["quantity_received"].apply(
                 lambda x: format_number_str(x, 2)
             )
+            final_df["description"] = final_df["description"].fillna("")
             self.preprocessed_df = final_df[
                 [
                     "waste_code",

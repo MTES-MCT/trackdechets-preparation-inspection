@@ -1431,7 +1431,7 @@ class QuantityOutliersTableProcessor:
                 "sent_at": e.sent_at.strftime("%d/%m/%Y %H:%M")
                 if not pd.isna(e.sent_at)
                 else None,
-                "received_at  ": e.received_at.strftime("%d/%m/%Y %H:%M")
+                "received_at": e.received_at.strftime("%d/%m/%Y %H:%M")
                 if not pd.isna(e.received_at)
                 else None,
             }

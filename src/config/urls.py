@@ -19,6 +19,7 @@ urlpatterns = [
         ),
     ),
     path("grappelli/", include("grappelli.urls")),  # grappelli URLS
+    path(f"{settings.ADMIN_SLUG}/login/", RedirectView.as_view(url="/")),
     path(f"{settings.ADMIN_SLUG}/", admin.site.urls),
     path("", HomeView.as_view(), name="home"),
     path("accounts/", include("accounts.urls")),

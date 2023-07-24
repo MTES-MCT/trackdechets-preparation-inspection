@@ -30,7 +30,7 @@ class EmailLoginView(FormView):
     template_name = "accounts/login.html"
     form_class = EmailLoginForm
 
-    @method_decorator(ratelimit(key="user_or_ip", rate="3/m"))
+    @method_decorator(ratelimit(key="user_or_ip", rate=settings.SESAME_RATE_LIMIT))
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
@@ -41,7 +41,7 @@ class EmailLoginView(FormView):
         email = form.cleaned_data["email"]
         user = None
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(email=email, is_active=True)
 
         except User.DoesNotExist:
             pass
@@ -74,7 +74,7 @@ class EmailLoginView(FormView):
 
 
 class MagicLinkView(SesameLoginView):
-    @method_decorator(ratelimit(key="user_or_ip", rate="3/m"))
+    @method_decorator(ratelimit(key="user_or_ip", rate=settings.SESAME_RATE_LIMIT))
     def get(self, request):
         return super().get(request)
 

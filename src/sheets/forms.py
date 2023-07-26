@@ -15,6 +15,8 @@ where
 
 class SiretForm(forms.Form):
     siret = forms.CharField(max_length=14)
+    start_date = forms.DateField()
+    end_date = forms.DateField()
 
     def clean_siret(self):
         siret = self.cleaned_data["siret"]

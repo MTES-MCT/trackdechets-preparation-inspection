@@ -1,5 +1,5 @@
 import json
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Dict
 
 import geopandas as gpd
@@ -32,12 +32,14 @@ class BsdQuantitiesGraph:
         self,
         company_siret: str,
         bs_data: pd.DataFrame,
+        data_date_interval: tuple[datetime, datetime],
         quantity_variables_names: list[str] = ["quantity_received"],
         packagings_data: pd.DataFrame = None,
     ):
         self.bs_data = bs_data
         self.packagings_data = packagings_data
         self.company_siret = company_siret
+        self.data_date_interval = data_date_interval
         self.quantity_variables_names = quantity_variables_names
 
         self.incoming_data_by_month_series = []
@@ -49,20 +51,14 @@ class BsdQuantitiesGraph:
 
     def _preprocess_data(self) -> None:
         bs_data = self.bs_data
-        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
-            "%Y-%m-01"
-        )
-        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
 
         incoming_data = bs_data[
             (bs_data["recipient_company_siret"] == self.company_siret)
-            & (bs_data["received_at"] >= one_year_ago)
-            & (bs_data["received_at"] <= today_date)
+            & bs_data["received_at"].between(*self.data_date_interval)
         ]
         outgoing_data = bs_data[
             (bs_data["emitter_company_siret"] == self.company_siret)
-            & (bs_data["sent_at"] >= one_year_ago)
-            & (bs_data["sent_at"] <= today_date)
+            & bs_data["sent_at"].between(*self.data_date_interval)
         ]
 
         # We iterate over the different variables chosen to compute the statistics
@@ -277,10 +273,12 @@ class BsdTrackedAndRevisedProcessor:
         self,
         company_siret: str,
         bs_data: pd.DataFrame,
+        data_date_interval: tuple[datetime, datetime],
         bs_revised_data: pd.DataFrame = None,
     ) -> None:
         self.company_siret = company_siret
         self.bs_data = bs_data
+        self.data_date_interval = data_date_interval
         self.bs_revised_data = bs_revised_data
         self.bs_emitted_by_month = None
         self.bs_received_by_month = None
@@ -289,14 +287,10 @@ class BsdTrackedAndRevisedProcessor:
     def _preprocess_bs_data(self) -> None:
         """Preprocess raw 'bordereaux' data to prepare it for plotting."""
         bs_data = self.bs_data
-        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
-            "%Y-%m-01"
-        )
-        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
 
         bs_emitted = bs_data[
             (bs_data["emitter_company_siret"] == self.company_siret)
-            & bs_data["sent_at"].between(one_year_ago, today_date)
+            & bs_data["sent_at"].between(*self.data_date_interval)
         ].dropna(subset=["sent_at"])
 
         bs_emitted_by_month = bs_emitted.groupby(
@@ -305,7 +299,7 @@ class BsdTrackedAndRevisedProcessor:
 
         bs_received = bs_data[
             (bs_data["recipient_company_siret"] == self.company_siret)
-            & bs_data["received_at"].between(one_year_ago, today_date)
+            & bs_data["received_at"].between(*self.data_date_interval)
         ].dropna(subset=["received_at"])
 
         bs_received_by_month = bs_received.groupby(
@@ -460,10 +454,12 @@ class WasteOriginProcessor:
         company_siret: str,
         bs_data_dfs: Dict[str, pd.DataFrame],
         departements_regions_df: pd.DataFrame,
+        data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
         self.bs_data_dfs = bs_data_dfs
         self.departements_regions_df = departements_regions_df
+        self.data_date_interval = data_date_interval
 
         self.preprocessed_serie = None
 
@@ -471,14 +467,9 @@ class WasteOriginProcessor:
         if len(self.bs_data_dfs) == 0:
             return
 
-        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
-            "%Y-%m-01"
-        )
-        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
-
         concat_df = pd.concat(
             [
-                df[df["received_at"].between(one_year_ago, today_date)]
+                df[df["received_at"].between(*self.data_date_interval)]
                 for df in self.bs_data_dfs.values()
             ]
         )
@@ -617,11 +608,13 @@ class WasteOriginsMapProcessor:
         bs_data_dfs: Dict[str, pd.DataFrame],
         departements_regions_df: pd.DataFrame,
         regions_geodata: gpd.GeoDataFrame,
+        data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
         self.bs_data_dfs = bs_data_dfs
         self.departements_regions_df = departements_regions_df
         self.regions_geodata = regions_geodata
+        self.data_date_interval = data_date_interval
 
         self.preprocessed_df = None
 
@@ -629,14 +622,9 @@ class WasteOriginsMapProcessor:
         if len(self.bs_data_dfs) == 0:
             return
 
-        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
-            "%Y-%m-01"
-        )
-        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
-
         concat_df = pd.concat(
             [
-                df[df["received_at"].between(one_year_ago, today_date)]
+                df[df["received_at"].between(*self.data_date_interval)]
                 for df in self.bs_data_dfs.values()
             ]
         )

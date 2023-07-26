@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Union
 
 import pandas as pd
@@ -63,10 +64,16 @@ def build_query(
     return df
 
 
-def build_bsdd_query(siret):
+def build_bsdd_query(
+    siret: str, data_start_date: datetime, data_end_date: datetime
+) -> pd.DataFrame:
     df = build_query(
         sql_bsdd_query_str,
-        query_params={"siret": siret},
+        query_params={
+            "siret": siret,
+            "data_start_date": data_start_date,
+            "data_end_date": data_end_date,
+        },
         date_columns=bsd_date_params,
         dtypes=bs_dtypes,
     )
@@ -74,10 +81,16 @@ def build_bsdd_query(siret):
     return df
 
 
-def build_bsdd_non_dangerous_query(siret):
+def build_bsdd_non_dangerous_query(
+    siret: str, data_start_date: datetime, data_end_date: datetime
+) -> pd.DataFrame:
     df = build_query(
         sql_bsdd_non_dangerous_query_str,
-        query_params={"siret": siret},
+        query_params={
+            "siret": siret,
+            "data_start_date": data_start_date,
+            "data_end_date": data_end_date,
+        },
         date_columns=bsd_date_params,
         dtypes=bs_dtypes,
     )
@@ -85,68 +98,114 @@ def build_bsdd_non_dangerous_query(siret):
     return df
 
 
-def build_revised_bsdd_query(company_id):
+def build_revised_bsdd_query(
+    company_id: str, data_start_date: datetime, data_end_date: datetime
+):
     df = build_query(
         sql_revised_bsdd_query_str,
-        query_params={"company_id": company_id},
+        query_params={
+            "company_id": company_id,
+            "data_start_date": data_start_date,
+            "data_end_date": data_end_date,
+        },
         date_columns=bsd_date_params,
     )
 
     return df
 
 
-def build_bsda_query(siret):
+def build_bsda_query(
+    siret: str, data_start_date: datetime, data_end_date: datetime
+) -> pd.DataFrame:
     return build_query(
         sql_bsda_query_str,
-        query_params={"siret": siret},
+        query_params={
+            "siret": siret,
+            "data_start_date": data_start_date,
+            "data_end_date": data_end_date,
+        },
         date_columns=bsd_date_params,
     )
 
 
-def build_revised_bsda_query(company_id):
+def build_revised_bsda_query(
+    company_id: str, data_start_date: datetime, data_end_date: datetime
+):
     df = build_query(
         sql_revised_bsda_query_str,
-        query_params={"company_id": company_id},
+        query_params={
+            "company_id": company_id,
+            "data_start_date": data_start_date,
+            "data_end_date": data_end_date,
+        },
         date_columns=bsd_date_params,
     )
 
     return df
 
 
-def build_bsdasri_query(siret):
+def build_bsdasri_query(
+    siret: str, data_start_date: datetime, data_end_date: datetime
+) -> pd.DataFrame:
     return build_query(
         sql_bsdasri_query_str,
-        query_params={"siret": siret},
+        query_params={
+            "siret": siret,
+            "data_start_date": data_start_date,
+            "data_end_date": data_end_date,
+        },
         date_columns=bsd_date_params,
     )
 
 
-def build_bsff_query(siret):
+def build_bsff_query(
+    siret: str, data_start_date: datetime, data_end_date: datetime
+) -> pd.DataFrame:
     return build_query(
         sql_bsff_query_str,
-        query_params={"siret": siret},
+        query_params={
+            "siret": siret,
+            "data_start_date": data_start_date,
+            "data_end_date": data_end_date,
+        },
         date_columns=bsd_date_params,
     )
 
 
-def build_bsff_packagings_query(siret):
+def build_bsff_packagings_query(
+    siret: str, data_start_date: datetime, data_end_date: datetime
+) -> pd.DataFrame:
     return build_query(
         sql_bsff_packagings_query_str,
-        query_params={"siret": siret},
+        query_params={
+            "siret": siret,
+            "data_start_date": data_start_date,
+            "data_end_date": data_end_date,
+        },
         date_columns=["operation_date", "acceptation_date"],
     )
 
 
-def build_bsvhu_query(siret):
+def build_bsvhu_query(
+    siret: str, data_start_date: datetime, data_end_date: datetime
+) -> pd.DataFrame:
     return build_query(
-        sql_bsvhu_query_str, query_params={"siret": siret}, date_columns=bsd_date_params
+        sql_bsvhu_query_str,
+        query_params={
+            "siret": siret,
+            "data_start_date": data_start_date,
+            "data_end_date": data_end_date,
+        },
+        date_columns=bsd_date_params,
     )
 
 
 def build_query_company(siret, date_params=None):
     return build_query(
         sql_company_query_str,
-        query_params={"siret": siret},
+        query_params={
+            "siret": siret,
+        },
         date_columns=date_params,
     )
 
@@ -198,7 +257,9 @@ def get_agreement_data(company_data_df: pd.DataFrame) -> dict:
 def get_icpe_data(siret: str) -> Union[pd.DataFrame, None]:
     icpe_data = build_query(
         sql_get_icpe_data,
-        query_params={"siret": siret},
+        query_params={
+            "siret": siret,
+        },
     )
 
     if len(icpe_data):

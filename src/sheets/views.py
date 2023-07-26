@@ -38,7 +38,7 @@ CHECK_INSPECTION = False
 
 class Prepare(LoginRequiredMixin, FormView):
     """
-    View to prepare an inspection shee:.
+    View to prepare an inspection sheet $:
         - render a form
         - launch an async task
         - redirect to a self refreshing waiting page

@@ -182,8 +182,13 @@ company_query_config = [
 
 def get_agreement_data(company_data_df: pd.DataFrame) -> dict:
     res = {}
+
     for config in company_query_config:
-        id_ = company_data_df[config["column"]].item()
+        try:
+            id_ = company_data_df[config["column"]].item()
+        except ValueError:
+            id_ = None
+
         if id_ is not None:
             df = build_query(
                 config["sql"],

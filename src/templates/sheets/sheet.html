@@ -410,11 +410,13 @@
         for (const config of plot_configs) {
             if (isNotEmpty(config.data)) {
                 removeNoDataClass(`#${config.target} > .no-data`);
+                let newConfig = {...config.data.config, locale:'fr'}
+                
                 Plotly.newPlot(
                     config.target,
                     config.data.data,
                     config.data.layout,
-                    config.data.config)
+                    newConfig)
     
             }
         }

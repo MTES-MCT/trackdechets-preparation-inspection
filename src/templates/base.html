@@ -70,9 +70,7 @@
                                         <a target="_blank"
                                            href="https://trackdechets.beta.gouv.fr/"
                                            title="Trackdéchets - nouvelle fenêtre"
-                                           class="fr-btn fr-icon-chat-3-line">
-                                            Trackdéchets
-                                        </a>
+                                           class="fr-btn fr-icon-chat-3-line">Trackdéchets</a>
                                     </li>
                                 </ul>
                             </div>
@@ -126,6 +124,7 @@
         {% endif %}
         {% block main %}{% endblock %}
         <script src="{% static "js/plotly-2.18.1.min.js" %}" charset="utf-8"></script>
+        <script src="https://cdn.plot.ly/plotly-locale-fr-latest.js"></script>
         <script src="{% static "js/htmx.1.8.5.min.js" %}"></script>
         {% block scripts %}{% endblock %}
     </body>

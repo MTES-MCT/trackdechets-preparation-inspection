@@ -1,16 +1,18 @@
 import json
-from datetime import datetime, timedelta
+import locale
+from datetime import datetime
 from typing import Dict
 
 import geopandas as gpd
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-from django.utils import timezone as django_timezone
 
 from sheets.utils import format_number_str, get_code_departement
 
 # classes returning a serialized (json) plotly visualization to be consumed by a plotly script
+
+locale.setlocale(locale.LC_ALL, "fr_FR")
 
 
 class BsdQuantitiesGraph:
@@ -182,7 +184,7 @@ class BsdQuantitiesGraph:
                     mode="lines+markers",
                     hovertext=[
                         incoming_hover_text.format(
-                            index.month_name(locale="fr_FR"), format_number_str(e)
+                            index.strftime("%B %y").capitalize(), format_number_str(e)
                         )
                         for index, e in incoming_data_by_month.items()
                     ],
@@ -204,7 +206,7 @@ class BsdQuantitiesGraph:
                     mode="lines+markers",
                     hovertext=[
                         outgoing_hover_text.format(
-                            index.month_name(locale="fr_FR"), format_number_str(e)
+                            index.strftime("%B %y").capitalize(), format_number_str(e)
                         )
                         for index, e in outgoing_data_by_month.items()
                     ],
@@ -236,7 +238,7 @@ class BsdQuantitiesGraph:
 
         fig.update_xaxes(
             tickangle=0,
-            tickformat="%b",
+            tickformat="%b %y",
             tick0=min(mins_x) if mins_x else None,
             dtick=dtick,
             gridcolor="#ccc",
@@ -342,7 +344,13 @@ class BsdTrackedAndRevisedProcessor:
             x=bs_emitted_by_month.index,
             y=bs_emitted_by_month,
             name="Bordereaux émis",
-            text=bs_emitted_by_month,
+            hovertext=[
+                "{} - <b>{}</b> bordereau(x) émis".format(
+                    index.strftime("%B %y").capitalize(), e
+                )
+                for index, e in bs_emitted_by_month.items()
+            ],
+            hoverinfo="text",
             textfont_size=text_size,
             textposition="outside",
             constraintext="none",
@@ -353,7 +361,13 @@ class BsdTrackedAndRevisedProcessor:
             x=bs_received_by_month.index,
             y=bs_received_by_month,
             name="Bordereaux reçus",
-            text=bs_received_by_month,
+            hovertext=[
+                "{} - <b>{}</b> bordereau(x) reçus".format(
+                    index.strftime("%B %y").capitalize(), e
+                )
+                for index, e in bs_received_by_month.items()
+            ],
+            hoverinfo="text",
             textfont_size=text_size,
             textposition="outside",
             constraintext="none",
@@ -382,7 +396,13 @@ class BsdTrackedAndRevisedProcessor:
                     x=bs_revised_by_month.index,
                     y=bs_revised_by_month,
                     name="BSDD corrigés",
-                    text=bs_revised_by_month,
+                    hovertext=[
+                        "{} - <b>{}</b> bordereau(x) révisés".format(
+                            index.strftime("%B %y").capitalize(), e
+                        )
+                        for index, e in bs_revised_by_month.items()
+                    ],
+                    hoverinfo="text",
                     textfont_size=text_size,
                     textposition="outside",
                     constraintext="none",
@@ -413,7 +433,7 @@ class BsdTrackedAndRevisedProcessor:
         fig.update_xaxes(
             dtick=f"M{ticklabelstep}",
             tickangle=0,
-            tickformat="%b",
+            tickformat="%b %y",
             tick0=tick0_min,
             ticks="outside",
             gridcolor="#ccc",

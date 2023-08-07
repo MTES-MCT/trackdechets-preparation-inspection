@@ -1,13 +1,12 @@
 import json
 import numbers
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 from itertools import chain
 from typing import Any, Dict, List
 
 import numpy as np
 import pandas as pd
-from django.utils import timezone as django_timezone
 
 from sheets.utils import format_number_str
 

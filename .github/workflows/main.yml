@@ -39,6 +39,7 @@ jobs:
 
       - name: Set Locales
         run: |
+          sudo apt-get update && sudo apt-get install tzdata locales -y
           sudo locale-gen fr_FR
           sudo update-locale 
 
@@ -56,6 +57,12 @@ jobs:
       - name: Install pipenv
         run: |
           python -m pip install --upgrade pipenv wheel
+
+      - name: Set Locales
+        run: |
+          sudo apt-get update && sudo apt-get install tzdata locales -y
+          sudo locale-gen fr_FR
+          sudo update-locale
 
       - id: cache-pipenv
         uses: actions/cache@v2

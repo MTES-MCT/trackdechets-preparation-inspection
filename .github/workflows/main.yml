@@ -7,6 +7,11 @@ defaults:
   run:
     working-directory: src
 
+env:
+  LANG: "fr_FR.UTF-8"
+  LANGUAGE: "fr_FR:en"
+  LC_ALL: "fr_FR.UTF-8"
+  
 jobs:
   test:
 

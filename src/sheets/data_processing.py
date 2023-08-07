@@ -130,8 +130,8 @@ class SheetProcessor:
         self.computed = ComputedInspectionData.objects.get(pk=computed_pk)
         self.force_recompute = force_recompute
         self.siret = self.computed.org_id
-        self.data_start_date = datetime(2022, 1, 1)
-        self.data_end_date = datetime.utcnow()
+        self.data_start_date = self.computed.data_start_date.replace(tzinfo=None)
+        self.data_end_date = self.computed.data_end_date.replace(tzinfo=None)
         self.company_id = None
         self.bsds_dfs = {}
         self.revised_bsds_dfs = {}

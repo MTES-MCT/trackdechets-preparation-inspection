@@ -27,8 +27,8 @@
                 </ul>
                 <p>{{ sheet.company_address }}</p>
                 <p>
-                    Période du {{ sheet.period_start|date:"SHORT_DATE_FORMAT" }}
-                    au {{ sheet.period_end|date:"SHORT_DATE_FORMAT" }}
+                    Période du {{ sheet.data_start_date|date:"SHORT_DATE_FORMAT" }}
+                    au {{ sheet.data_end_date|date:"SHORT_DATE_FORMAT" }}
                 </p>
             </div>
             <div class="cell cell--bordered cell--third">

@@ -8,9 +8,9 @@ defaults:
     working-directory: src
 
 env:
-  LANG: "fr_FR.UTF-8"
-  LANGUAGE: "fr_FR:en"
-  LC_ALL: "fr_FR.UTF-8"
+  LANG: "fr_FR"
+  LANGUAGE: "fr_FR:fr"
+  LC_ALL: "fr_FR"
   
 jobs:
   test:
@@ -36,6 +36,12 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
+
+      - name: Set Locales
+        run: |
+          sudo locale-gen fr_FR
+          sudo update-locale 
+
       - uses: actions/checkout@v2
 
       - name: Set up Python 3.9

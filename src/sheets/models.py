@@ -154,11 +154,11 @@ class ComputedInspectionData(models.Model):
 
     @property
     def period_start(self):
-        return self.created.replace(year=self.created.year - 1)
+        return self.data_start_date
 
     @property
     def period_end(self):
-        return self.created
+        return self.data_end_date
 
     @property
     def is_initial(self):

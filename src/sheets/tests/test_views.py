@@ -1,3 +1,5 @@
+import datetime as dt
+
 import pytest
 from django.urls import reverse
 
@@ -39,3 +41,24 @@ def test_home_when_user_has_filled_survey(logged_in_user):
     res = logged_in_user.get(url)
     assert res.status_code == 200
     assert "Aidez-nous à améliorer cet outil" in res.content.decode()
+
+
+def test_sheet_prepare_deny_anon(anon_client):
+    url = reverse("prepare")
+    res = anon_client.get(url)
+    assert res.status_code == 302
+
+
+def test_sheet_prepare(logged_in_staff):
+    url = reverse("prepare")
+    res = logged_in_staff.get(url)
+    assert res.status_code == 200
+    form = res.context["form"]
+    today = dt.date.today()
+    assert form.initial == {
+        "start_date": (today - dt.timedelta(days=365)).isoformat(),
+        "end_date": today.isoformat(),
+    }
+
+    assert form.fields["start_date"].widget.attrs == {"max": today.isoformat()}
+    assert form.fields["end_date"].widget.attrs == {"max": today.isoformat()}

@@ -1,6 +1,6 @@
-from datetime import timedelta
 import json
 import uuid
+from datetime import timedelta
 
 import numpy as np
 from django.conf import settings

@@ -11,21 +11,21 @@ register = template.Library()
 
 @register.filter
 def is_checkbox(field):
-    """Is the given field a checkbox input?."""
+    """Is the given field a checkbox input?"""
 
     return isinstance(field.field.widget, CheckboxInput)
 
 
 @register.filter
 def is_checkbox_multiple(field):
-    """Is the given field a multiple checkbox input?."""
+    """Is the given field a multiple checkbox input?"""
 
     return isinstance(field.field.widget, CheckboxSelectMultiple)
 
 
 @register.filter
 def is_radio(field):
-    """Is the given field a radio select?."""
+    """Is the given field a radio select?"""
 
     return isinstance(field.field.widget, RadioSelect)
 

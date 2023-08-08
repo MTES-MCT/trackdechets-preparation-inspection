@@ -82,3 +82,10 @@ table .td--right {
   text-align: center;
   background-color: #ef9657;
 }
+
+
+.fr-input[type=date] {
+  /* DSFR date field fix: prevent native and dsfr date input icon overlap */
+  background-image: none;
+  width: 170px;
+}

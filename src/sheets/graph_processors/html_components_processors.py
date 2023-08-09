@@ -118,7 +118,7 @@ class BsdStatsProcessor:
         # For incoming and outgoing data, we compute different statistics
         # about the 'bordereaux'.
         # `target` is the destination in each result dictionary
-        # were to store the computed value.
+        # where to store the computed value.
         for target, to_process, to_process_packagings in [
             (self.emitted_bs_stats, bs_emitted_data, self.packagings_data),
             (self.received_bs_stats, bs_received_data, self.packagings_data),
@@ -872,6 +872,7 @@ class ICPEItemsProcessor:
         df = self.icpe_data
 
         df["rubrique_alinea"] = df["rubrique"] + ("-" + df["alinea"]).fillna("")
+        df["quantite"] = df["quantite"].apply(format_number_str, precision=3)
 
         df = df.sort_values(["rubrique", "alinea"])
 
@@ -879,6 +880,9 @@ class ICPEItemsProcessor:
 
     def build_context(self):
         data = self.preprocessed_df
+
+        # Handle "nan" textual values not being converted to JSON null
+        data["quantite"] = data["quantite"].replace("nan", pd.NA)
         return json.loads(data.to_json(orient="records"))
 
     def _check_empty_data(self) -> bool:

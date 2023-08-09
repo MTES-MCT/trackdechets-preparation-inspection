@@ -4,10 +4,10 @@
     <div>
         <section class="horizontal">
             <div class="header">
-                <img src="{% static "img/mtes.png" %}" style="height: 2.5cm;"/>
-                <img src="{% static "img/trackdechets.png" %}" style="height: 2cm;"/>
+                <img src="{% static "img/mtes.png" %}" style="height: 2.5cm;" />
+                <img src="{% static "img/trackdechets.png" %}" style="height: 2cm;" />
                 <div class="header__text">
-                    <h1 class="header__title">Fiche inspection</h1>
+                    <h1 class="header__title">Fiche Inspection</h1>
                     <h2 class="header__title">{{ sheet.company_name }}</h2>
                 </div>
             </div>
@@ -23,11 +23,11 @@
                     <p class="pdf-text bold mb-0">Adresse :</p>
                     <p class="pdf-text mt-0">{{ sheet.company_address }}</p>
                     <p class="pdf-text">
-                        <span class="bold">Période :</span>{{ sheet.period_start|date:"SHORT_DATE_FORMAT" }}
-                        - {{ sheet.period_end|date:"SHORT_DATE_FORMAT" }}
+                        <span class="bold">Période :</span> {{ sheet.data_start_date|date:"SHORT_DATE_FORMAT" }}
+                        - {{ sheet.data_end_date|date:"SHORT_DATE_FORMAT" }}
                     </p>
                     <p class="pdf-text">
-                        <span class="bold">Fiche éditée le :</span>{{ sheet.created|date:"DATETIME_FORMAT" }}
+                        <span class="bold">Fiche éditée le :</span> {{ sheet.created|date:"DATETIME_FORMAT" }}
                     </p>
                 </div>
                 <div class="cell cell--bordered cell--third">
@@ -123,9 +123,7 @@
                              class="cell__img">
                     </div>
                     <div class="cell cell--bordered cell--third">
-                        <p class="cell__title">
-                            BS DASRI sur l'année
-                        </p>
+                        <p class="cell__title">BS DASRI sur l'année</p>
                         {% stats_graph sheet "bsdasri" %}
                     </div>
                 </div>
@@ -135,22 +133,16 @@
             {% if sheet.bsff_created_rectified_data %}
                 <div class="row">
                     <div class="cell cell--bordered cell--third">
-                        <p class="cell__title">
-                            BS Fluides Frigorigènes émis, reçus et corrigés
-                        </p>
+                        <p class="cell__title">BS Fluides Frigorigènes émis, reçus et corrigés</p>
                         <img src="data:image/png;base64,{{ bsff_created_rectified_graph }}"
                              class="cell__img">
                     </div>
                     <div class="cell cell--bordered cell--third">
-                        <p class="cell__title">
-                            Quantité de déchets Fluides Frigorigènes en tonnes
-                        </p>
+                        <p class="cell__title">Quantité de déchets Fluides Frigorigènes en tonnes</p>
                         <img src="data:image/png;base64,{{ bsff_stock_graph }}" class="cell__img">
                     </div>
                     <div class="cell cell--bordered cell--third">
-                        <p class="cell__title">
-                            BS Fluides Frigorigènes sur l'année
-                        </p>
+                        <p class="cell__title">BS Fluides Frigorigènes sur l'année</p>
                         {% stats_graph sheet "bsff" %}
                     </div>
                 </div>
@@ -160,22 +152,16 @@
             {% if sheet.bsvhu_created_rectified_data %}
                 <div class="row">
                     <div class="cell cell--bordered cell--third">
-                        <p class="cell__title">
-                            BS VHU émis, reçus et corrigés
-                        </p>
+                        <p class="cell__title">BS VHU émis, reçus et corrigés</p>
                         <img src="data:image/png;base64,{{ bsvhu_created_rectified_graph }}"
                              class="cell__img">
                     </div>
                     <div class="cell cell--bordered cell--third">
-                        <p class="cell__title">
-                            Quantité de déchets VHU en tonnes
-                        </p>
+                        <p class="cell__title">Quantité de déchets VHU en tonnes</p>
                         <img src="data:image/png;base64,{{ bsvhustock_graph }}" class="cell__img">
                     </div>
                     <div class="cell cell--bordered cell--third">
-                        <p class="cell__title">
-                            BS VHU sur l'année
-                        </p>
+                        <p class="cell__title">BS VHU sur l'année</p>
                         {% stats_graph sheet "bsvhu" %}
                     </div>
                 </div>
@@ -183,51 +169,37 @@
             {#  end bsvhu #}
             {#  "waste is dangerous" statements #}
             {% if sheet.waste_is_dangerous_statements_data %}
-                <div>
-                    {% render_waste_is_dangerous_statements sheet graph_context="pdf" %}
-                </div>
+                <div>{% render_waste_is_dangerous_statements sheet graph_context="pdf" %}</div>
             {% endif %}
             {# end "waste is dangerous" statements #}
             {#  on site #}
-            <h2 class="section__title">
-                Déchets sur site (théorique)
-            </h2>
+            <h2 class="section__title">Déchets sur site (théorique)</h2>
             <div class="row">
                 <div class="cell cell--bordered cell--third">
                     {% include "sheets/components/on_site_wastes.html" with storage_data=sheet.storage_data %}
                 </div>
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        Origine des déchets - Départements
-                    </h3>
+                    <h3 class="cell__title">Origine des déchets - Départements</h3>
                     {% if waste_origin_graph %}
                         <img src="data:image/png;base64,{{ waste_origin_graph }}"
                              class="cell__img">
                     {% else %}
-                        <div class="no-data">
-                            Pas de données à afficher.
-                        </div>
+                        <div class="no-data">Pas de données à afficher.</div>
                     {% endif %}
                 </div>
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        Origine des déchets - Régions
-                    </h3>
+                    <h3 class="cell__title">Origine des déchets - Régions</h3>
                     {% if waste_origin_map_graph %}
                         <img src="data:image/png;base64,{{ waste_origin_map_graph }}"
                              class="cell__img">
                     {% else %}
-                        <div class="no-data">
-                            Pas de données à afficher.
-                        </div>
+                        <div class="no-data">Pas de données à afficher.</div>
                     {% endif %}
                 </div>
             </div>
             {# end on site #}
             {# ICPE #}
-            <h2 class="section__title">
-                Données installation classée pour la protection de l'Environnement (ICPE)
-            </h2>
+            <h2 class="section__title">Données installation classée pour la protection de l'Environnement (ICPE)</h2>
             <p>
                 Les données ICPE proviennent de la base Géorisque. Ces données ne sont pas à jour et synchronisées
                 pour le moment faute de lien entre Trackdéchets et Géorisque
@@ -244,32 +216,22 @@
                 {# end traceability #}
             </div>
             {# bsd canceled table #}
-            <div>
-                {% render_bsd_canceled_table sheet graph_context="pdf" %}
-            </div>
+            <div>{% render_bsd_canceled_table sheet graph_context="pdf" %}</div>
             {# end bsd canceled table #}
             {# same emitter recipient table #}
-            <div>
-                {% render_same_emitter_recipient_table sheet graph_context="pdf" %}
-            </div>
+            <div>{% render_same_emitter_recipient_table sheet graph_context="pdf" %}</div>
             {# end same emitter recipient table #}
             {#  private indivudals collections table #}
-            <div >
-                {% render_private_individuals_collections_table sheet graph_context="pdf" %}
-            </div>
+            <div>{% render_private_individuals_collections_table sheet graph_context="pdf" %}</div>
             {#  end private indivudals collections table #}
             {#  quantity outliers table #}
-            <div>
-                {% render_quantity_outliers_table sheet graph_context="pdf" %}
-            </div>
+            <div>{% render_quantity_outliers_table sheet graph_context="pdf" %}</div>
             {# end quantity outliers table #}
         </section>
         <section class="vertical">
             {# input/output #}
             <div>
-                <h3 class="section__title">
-                    Liste des déchets entrants/sortants
-                </h3>
+                <h3 class="section__title">Liste des déchets entrants/sortants</h3>
                 {% render_in_out_table sheet graph_context="pdf" %}
             </div>
             {# endinput/output #}

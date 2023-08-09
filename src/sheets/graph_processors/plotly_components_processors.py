@@ -1,16 +1,17 @@
 import json
-from datetime import timedelta
+import locale
+from datetime import datetime
 from typing import Dict
 
 import geopandas as gpd
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-from django.utils import timezone as django_timezone
 
 from sheets.utils import format_number_str, get_code_departement
 
 # classes returning a serialized (json) plotly visualization to be consumed by a plotly script
+locale.setlocale(locale.LC_ALL, "fr_FR")
 
 
 class BsdQuantitiesGraph:
@@ -32,12 +33,14 @@ class BsdQuantitiesGraph:
         self,
         company_siret: str,
         bs_data: pd.DataFrame,
+        data_date_interval: tuple[datetime, datetime],
         quantity_variables_names: list[str] = ["quantity_received"],
         packagings_data: pd.DataFrame = None,
     ):
         self.bs_data = bs_data
         self.packagings_data = packagings_data
         self.company_siret = company_siret
+        self.data_date_interval = data_date_interval
         self.quantity_variables_names = quantity_variables_names
 
         self.incoming_data_by_month_series = []
@@ -49,20 +52,14 @@ class BsdQuantitiesGraph:
 
     def _preprocess_data(self) -> None:
         bs_data = self.bs_data
-        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
-            "%Y-%m-01"
-        )
-        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
 
         incoming_data = bs_data[
             (bs_data["recipient_company_siret"] == self.company_siret)
-            & (bs_data["received_at"] >= one_year_ago)
-            & (bs_data["received_at"] <= today_date)
+            & bs_data["received_at"].between(*self.data_date_interval)
         ]
         outgoing_data = bs_data[
             (bs_data["emitter_company_siret"] == self.company_siret)
-            & (bs_data["sent_at"] >= one_year_ago)
-            & (bs_data["sent_at"] <= today_date)
+            & bs_data["sent_at"].between(*self.data_date_interval)
         ]
 
         # We iterate over the different variables chosen to compute the statistics
@@ -186,7 +183,7 @@ class BsdQuantitiesGraph:
                     mode="lines+markers",
                     hovertext=[
                         incoming_hover_text.format(
-                            index.month_name(locale="fr_FR"), format_number_str(e)
+                            index.strftime("%B %y").capitalize(), format_number_str(e)
                         )
                         for index, e in incoming_data_by_month.items()
                     ],
@@ -208,7 +205,7 @@ class BsdQuantitiesGraph:
                     mode="lines+markers",
                     hovertext=[
                         outgoing_hover_text.format(
-                            index.month_name(locale="fr_FR"), format_number_str(e)
+                            index.strftime("%B %y").capitalize(), format_number_str(e)
                         )
                         for index, e in outgoing_data_by_month.items()
                     ],
@@ -224,9 +221,19 @@ class BsdQuantitiesGraph:
 
         fig.add_traces(lines)
 
+        dtick = "M2"
+        if not numbers_of_data_points or max(numbers_of_data_points) < 3:
+            dtick = "M1"
+
+        tickangle = 0
+        y_legend = -0.07
+        if numbers_of_data_points and max(numbers_of_data_points) >= 15:
+            tickangle = -90
+            y_legend = -0.12
+
         fig.update_layout(
             margin={"t": 20, "l": 35, "r": 5},
-            legend={"orientation": "h", "y": -0.1, "x": 0.5},
+            legend={"orientation": "h", "y": y_legend, "x": 0},
             legend_font_size=11,
             legend_bgcolor="rgba(0,0,0,0)",
             showlegend=True,
@@ -234,13 +241,9 @@ class BsdQuantitiesGraph:
             plot_bgcolor="rgba(0,0,0,0)",
         )
 
-        dtick = "M2"
-        if not numbers_of_data_points or max(numbers_of_data_points) < 3:
-            dtick = "M1"
-
         fig.update_xaxes(
-            tickangle=0,
-            tickformat="%b",
+            tickangle=tickangle,
+            tickformat="%b %y",
             tick0=min(mins_x) if mins_x else None,
             dtick=dtick,
             gridcolor="#ccc",
@@ -277,10 +280,12 @@ class BsdTrackedAndRevisedProcessor:
         self,
         company_siret: str,
         bs_data: pd.DataFrame,
+        data_date_interval: tuple[datetime, datetime],
         bs_revised_data: pd.DataFrame = None,
     ) -> None:
         self.company_siret = company_siret
         self.bs_data = bs_data
+        self.data_date_interval = data_date_interval
         self.bs_revised_data = bs_revised_data
         self.bs_emitted_by_month = None
         self.bs_received_by_month = None
@@ -289,14 +294,10 @@ class BsdTrackedAndRevisedProcessor:
     def _preprocess_bs_data(self) -> None:
         """Preprocess raw 'bordereaux' data to prepare it for plotting."""
         bs_data = self.bs_data
-        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
-            "%Y-%m-01"
-        )
-        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
 
         bs_emitted = bs_data[
             (bs_data["emitter_company_siret"] == self.company_siret)
-            & bs_data["sent_at"].between(one_year_ago, today_date)
+            & bs_data["sent_at"].between(*self.data_date_interval)
         ].dropna(subset=["sent_at"])
 
         bs_emitted_by_month = bs_emitted.groupby(
@@ -305,7 +306,7 @@ class BsdTrackedAndRevisedProcessor:
 
         bs_received = bs_data[
             (bs_data["recipient_company_siret"] == self.company_siret)
-            & bs_data["received_at"].between(one_year_ago, today_date)
+            & bs_data["received_at"].between(*self.data_date_interval)
         ].dropna(subset=["received_at"])
 
         bs_received_by_month = bs_received.groupby(
@@ -348,7 +349,13 @@ class BsdTrackedAndRevisedProcessor:
             x=bs_emitted_by_month.index,
             y=bs_emitted_by_month,
             name="Bordereaux émis",
-            text=bs_emitted_by_month,
+            hovertext=[
+                "{} - <b>{}</b> bordereau(x) émis".format(
+                    index.strftime("%B %y").capitalize(), e
+                )
+                for index, e in bs_emitted_by_month.items()
+            ],
+            hoverinfo="text",
             textfont_size=text_size,
             textposition="outside",
             constraintext="none",
@@ -359,7 +366,13 @@ class BsdTrackedAndRevisedProcessor:
             x=bs_received_by_month.index,
             y=bs_received_by_month,
             name="Bordereaux reçus",
-            text=bs_received_by_month,
+            hovertext=[
+                "{} - <b>{}</b> bordereau(x) reçus".format(
+                    index.strftime("%B %y").capitalize(), e
+                )
+                for index, e in bs_received_by_month.items()
+            ],
+            hoverinfo="text",
             textfont_size=text_size,
             textposition="outside",
             constraintext="none",
@@ -382,13 +395,26 @@ class BsdTrackedAndRevisedProcessor:
         fig = go.Figure([bs_emitted_bars, bs_received_bars])
 
         max_points = max(len(bs_emitted_by_month), len(bs_received_by_month))
+
+        tickangle = 0
+        y_legend = -0.07
+        if max_points >= 15:
+            tickangle = -90
+            y_legend = -0.15
+
         if bs_revised_by_month is not None:
             fig.add_trace(
                 go.Bar(
                     x=bs_revised_by_month.index,
                     y=bs_revised_by_month,
-                    name="BSDD corrigés",
-                    text=bs_revised_by_month,
+                    name="Bordereaux corrigés",
+                    hovertext=[
+                        "{} - <b>{}</b> bordereau(x) révisés".format(
+                            index.strftime("%B %y").capitalize(), e
+                        )
+                        for index, e in bs_revised_by_month.items()
+                    ],
+                    hoverinfo="text",
                     textfont_size=text_size,
                     textposition="outside",
                     constraintext="none",
@@ -403,8 +429,8 @@ class BsdTrackedAndRevisedProcessor:
             margin={"t": 20, "l": 35, "r": 5},
             legend={
                 "orientation": "h",
-                "y": -0.07,
-                "x": 0.5,
+                "y": y_legend,
+                "x": -0.1,
             },
             legend_bgcolor="rgba(0,0,0,0)",
             showlegend=True,
@@ -418,8 +444,8 @@ class BsdTrackedAndRevisedProcessor:
 
         fig.update_xaxes(
             dtick=f"M{ticklabelstep}",
-            tickangle=0,
-            tickformat="%b",
+            tickangle=tickangle,
+            tickformat="%b %y",
             tick0=tick0_min,
             ticks="outside",
             gridcolor="#ccc",
@@ -460,10 +486,12 @@ class WasteOriginProcessor:
         company_siret: str,
         bs_data_dfs: Dict[str, pd.DataFrame],
         departements_regions_df: pd.DataFrame,
+        data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
         self.bs_data_dfs = bs_data_dfs
         self.departements_regions_df = departements_regions_df
+        self.data_date_interval = data_date_interval
 
         self.preprocessed_serie = None
 
@@ -471,14 +499,9 @@ class WasteOriginProcessor:
         if len(self.bs_data_dfs) == 0:
             return
 
-        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
-            "%Y-%m-01"
-        )
-        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
-
         concat_df = pd.concat(
             [
-                df[df["received_at"].between(one_year_ago, today_date)]
+                df[df["received_at"].between(*self.data_date_interval)]
                 for df in self.bs_data_dfs.values()
             ]
         )
@@ -617,11 +640,13 @@ class WasteOriginsMapProcessor:
         bs_data_dfs: Dict[str, pd.DataFrame],
         departements_regions_df: pd.DataFrame,
         regions_geodata: gpd.GeoDataFrame,
+        data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
         self.bs_data_dfs = bs_data_dfs
         self.departements_regions_df = departements_regions_df
         self.regions_geodata = regions_geodata
+        self.data_date_interval = data_date_interval
 
         self.preprocessed_df = None
 
@@ -629,14 +654,9 @@ class WasteOriginsMapProcessor:
         if len(self.bs_data_dfs) == 0:
             return
 
-        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
-            "%Y-%m-01"
-        )
-        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
-
         concat_df = pd.concat(
             [
-                df[df["received_at"].between(one_year_ago, today_date)]
+                df[df["received_at"].between(*self.data_date_interval)]
                 for df in self.bs_data_dfs.values()
             ]
         )

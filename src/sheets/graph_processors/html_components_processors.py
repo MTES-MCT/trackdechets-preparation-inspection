@@ -1,13 +1,12 @@
 import json
 import numbers
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 from itertools import chain
 from typing import Any, Dict, List
 
 import numpy as np
 import pandas as pd
-from django.utils import timezone as django_timezone
 
 from sheets.utils import format_number_str
 
@@ -39,6 +38,7 @@ class BsdStatsProcessor:
         self,
         company_siret: str,
         bs_data: pd.DataFrame,
+        data_date_interval: tuple[datetime, datetime],
         quantity_variables_names: list[str] = ["quantity_received"],
         bs_revised_data: pd.DataFrame = None,
         packagings_data: pd.DataFrame = None,
@@ -46,6 +46,7 @@ class BsdStatsProcessor:
         self.company_siret = company_siret
 
         self.bs_data = bs_data
+        self.data_date_interval = data_date_interval
         self.quantity_variables_names = quantity_variables_names
         self.bs_revised_data = bs_revised_data
         self.packagings_data = packagings_data
@@ -296,19 +297,14 @@ class BsdStatsProcessor:
                 )
 
     def _preprocess_data(self) -> None:
-        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
-            "%Y-%m-01"
-        )
-        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
-
         bs_data = self.bs_data
         bs_emitted_data = bs_data[
             (bs_data["emitter_company_siret"] == self.company_siret)
-            & bs_data["sent_at"].between(one_year_ago, today_date)
+            & bs_data["sent_at"].between(*self.data_date_interval)
         ]
         bs_received_data = bs_data[
             (bs_data["recipient_company_siret"] == self.company_siret)
-            & bs_data["received_at"].between(one_year_ago, today_date)
+            & bs_data["received_at"].between(*self.data_date_interval)
         ]
 
         self._preprocess_general_statistics(bs_emitted_data, bs_received_data)
@@ -375,19 +371,18 @@ class InputOutputWasteTableProcessor:
         self,
         company_siret: str,
         bs_data_dfs: Dict[str, pd.DataFrame],
+        data_date_interval: tuple[datetime, datetime],
         waste_codes_df: pd.DataFrame,
     ) -> None:
         self.bs_data_dfs = bs_data_dfs
+        self.data_date_interval = data_date_interval
         self.waste_codes_df = waste_codes_df
         self.company_siret = company_siret
+
         self.preprocessed_df = None
 
     def _preprocess_data(self) -> None:
         siret = self.company_siret
-        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
-            "%Y-%m-01"
-        )
-        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
 
         dfs_to_concat = [df for df in self.bs_data_dfs.values()]
 
@@ -406,12 +401,12 @@ class InputOutputWasteTableProcessor:
         df["incoming_or_outgoing"] = pd.NA
         df.loc[
             (df.emitter_company_siret == siret)
-            & df.sent_at.between(one_year_ago, today_date),
+            & df.sent_at.between(*self.data_date_interval),
             "incoming_or_outgoing",
         ] = "outgoing"
         df.loc[
             (df.recipient_company_siret == siret)
-            & df.received_at.between(one_year_ago, today_date),
+            & df.received_at.between(*self.data_date_interval),
             "incoming_or_outgoing",
         ] = "incoming"
         df = df.dropna(subset="incoming_or_outgoing")
@@ -483,8 +478,10 @@ class BsdCanceledTableProcessor:
         company_siret: str,
         bs_data_dfs: Dict[str, pd.DataFrame],
         bs_revised_data: Dict[str, pd.DataFrame],
+        data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.bs_data_dfs = bs_data_dfs
+        self.data_date_interval = data_date_interval
         self.bs_revised_data = bs_revised_data
         self.company_siret = company_siret
 
@@ -494,17 +491,12 @@ class BsdCanceledTableProcessor:
         if not self.bs_revised_data:
             return
 
-        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
-            "%Y-%m-01"
-        )
-        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
-
         dfs = []
         for bs_type, revised_data_df in self.bs_revised_data.items():
             # Cancellation events are stored in revisions
             cancellations = revised_data_df[
                 revised_data_df.is_canceled
-                & revised_data_df.updated_at.between(one_year_ago, today_date)
+                & revised_data_df.updated_at.between(*self.data_date_interval)
             ]
             if len(cancellations):
                 bs_data = self.bs_data_dfs[bs_type]
@@ -575,16 +567,14 @@ class SameEmitterRecipientTableProcessor:
     def __init__(
         self,
         bs_data_dfs: Dict[str, pd.DataFrame],
+        data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.bs_data_dfs = bs_data_dfs
+        self.data_date_interval = data_date_interval
+
         self.preprocessed_df = pd.DataFrame()
 
     def _preprocess_data(self) -> None:
-        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
-            "%Y-%m-01"
-        )
-        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
-
         dfs_to_process = [
             df
             for bs_type, df in self.bs_data_dfs.items()
@@ -607,7 +597,7 @@ class SameEmitterRecipientTableProcessor:
             same_emitter_recipient_df = df[
                 (df["emitter_company_siret"] == df["recipient_company_siret"])
                 & df["worksite_address"].notna()
-                & df["sent_at"].between(one_year_ago, today_date)
+                & df["sent_at"].between(*self.data_date_interval)
             ].reindex(columns_to_take, axis=1)
             if len(same_emitter_recipient_df):
                 dfs_processed.append(same_emitter_recipient_df)
@@ -658,22 +648,19 @@ class StorageStatsProcessor:
         company_siret: str,
         bs_data_dfs: Dict[str, pd.DataFrame],
         waste_codes_df: pd.DataFrame,
+        data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
 
         self.bs_data_dfs = bs_data_dfs
         self.waste_codes_df = waste_codes_df
+        self.data_date_interval = data_date_interval
 
         self.stock_by_waste_code = None
         self.total_stock = None
 
     def _preprocess_data(self) -> pd.Series:
         siret = self.company_siret
-
-        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
-            "%Y-%m-01"
-        )
-        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
 
         dfs_to_concat = [df for df in self.bs_data_dfs.values()]
 
@@ -684,10 +671,10 @@ class StorageStatsProcessor:
         df = pd.concat(dfs_to_concat)
 
         emitted_mask = (df.emitter_company_siret == siret) & df.sent_at.between(
-            one_year_ago, today_date
+            *self.data_date_interval
         )
         received_mask = (df.recipient_company_siret == siret) & df.received_at.between(
-            one_year_ago, today_date
+            *self.data_date_interval
         )
 
         emitted = df[emitted_mask].groupby("waste_code")["quantity_received"].sum()
@@ -1046,13 +1033,15 @@ class TraceabilityInterruptionsProcessor:
         company_siret: str,
         bsdd_data: pd.DataFrame,
         waste_codes_df: pd.DataFrame,
+        data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
 
-        self.preprocessed_data = None
-
         self.bsdd_data = bsdd_data
         self.waste_codes_df = waste_codes_df
+        self.data_date_interval = data_date_interval
+
+        self.preprocessed_data = None
 
     def _preprocess_data(self) -> None:
         if self.bsdd_data is None:
@@ -1061,6 +1050,7 @@ class TraceabilityInterruptionsProcessor:
         df_filtered = self.bsdd_data[
             self.bsdd_data["no_traceability"]
             & (self.bsdd_data["recipient_company_siret"] == self.company_siret)
+            & self.bsdd_data["received_at"].between(*self.data_date_interval)
         ]
 
         if len(df_filtered) == 0:
@@ -1090,7 +1080,6 @@ class TraceabilityInterruptionsProcessor:
 
     def _check_data_empty(self) -> bool:
         if (self.preprocessed_data is None) or (len(self.preprocessed_data) == 0):
-            self.is_component_empty = True
             return True
 
         return False
@@ -1135,28 +1124,25 @@ class WasteIsDangerousStatementsProcessor:
         company_siret: str,
         bsdd_data: pd.DataFrame,
         waste_codes_df: pd.DataFrame,
+        data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
 
-        self.preprocessed_data = None
-
         self.bsdd_data = bsdd_data
         self.waste_codes_df = waste_codes_df
+        self.data_date_interval = data_date_interval
+
+        self.preprocessed_data = None
 
     def _preprocess_data(self) -> None:
         if self.bsdd_data is None:
             return
 
-        one_year_ago = (django_timezone.now() - timedelta(days=365)).strftime(
-            "%Y-%m-01"
-        )
-        today_date = django_timezone.now().strftime("%Y-%m-%d %H:%M:%S")
-
         df_filtered = self.bsdd_data[
             self.bsdd_data["is_dangerous"]
             & (self.bsdd_data["emitter_company_siret"] == self.company_siret)
             & (~self.bsdd_data["waste_code"].str.contains(pat=r".*\*$"))
-            & (self.bsdd_data["sent_at"].between(one_year_ago, today_date))
+            & (self.bsdd_data["sent_at"].between(*self.data_date_interval))
         ]
 
         if len(df_filtered) == 0:
@@ -1184,7 +1170,6 @@ class WasteIsDangerousStatementsProcessor:
 
     def _check_data_empty(self) -> bool:
         if (self.preprocessed_data is None) or (len(self.preprocessed_data) == 0):
-            self.is_component_empty = True
             return True
 
         return False
@@ -1274,10 +1259,12 @@ class PrivateIndividualsCollectionsTableProcessor:
         self,
         company_siret: str,
         bsda_data_df: pd.DataFrame,
+        data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
 
         self.bsda_data_df = bsda_data_df
+        self.data_date_interval = data_date_interval
 
         self.preprocessed_data = None
 
@@ -1291,6 +1278,7 @@ class PrivateIndividualsCollectionsTableProcessor:
                 | (self.bsda_data_df["worker_company_siret"] == self.company_siret)
             )
             & self.bsda_data_df["emitter_is_private_individual"]
+            & self.bsda_data_df["sent_at"].between(*self.data_date_interval)
         ]
 
         if len(filtered_df) > 0:

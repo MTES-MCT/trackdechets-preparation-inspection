@@ -2,14 +2,8 @@ name: TD Inspection CI
 
 on: pull_request
 
-
-defaults:
-  run:
-    working-directory: src
-
 jobs:
   test:
-
     runs-on: ubuntu-latest
 
     services:
@@ -31,6 +25,10 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
+      - name: Set locales
+        run: sudo apt-get install -y tzdata locales && sudo locale-gen fr_FR && sudo dpkg-reconfigure --frontend=noninteractive locales
+
+
       - uses: actions/checkout@v2
 
       - name: Set up Python 3.9
@@ -64,6 +62,7 @@ jobs:
         run: pipenv run black --check .
 
       - name: Run Tests
+        working-directory: src
         run: |
           pipenv run pytest
         env:

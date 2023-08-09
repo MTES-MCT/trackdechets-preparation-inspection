@@ -27,7 +27,7 @@ where
     (emitter_company_siret = :siret
     or recipient_company_siret = :siret)
     and is_deleted = false
-    and created_at >= current_date - INTERVAL '1 year'
+    and created_at BETWEEN :data_start_date AND :data_end_date
     and status::text not in ('DRAFT', 'INITIAL')
     and (waste_details_code ~* '.*\*$' or waste_details_pop or waste_details_is_dangerous)
 order by
@@ -63,7 +63,7 @@ where
     (emitter_company_siret = :siret
     or recipient_company_siret = :siret)
     and is_deleted = false
-    and created_at >= current_date - INTERVAL '1 year'
+    and created_at BETWEEN :data_start_date AND :data_end_date
     and status::text not in ('DRAFT', 'INITIAL')
     and not (waste_details_code ~* '.*\*$' or waste_details_pop or waste_details_is_dangerous)
 order by
@@ -117,7 +117,7 @@ where
         or destination_company_siret = :siret
         or worker_company_siret = :siret)
     and is_deleted = false
-    and created_at >= current_date - interval '1 year'
+    and created_at BETWEEN :data_start_date AND :data_end_date
     and status::text not in ('DRAFT', 'INITIAL')
     and not is_draft
 order by
@@ -146,7 +146,7 @@ where
     (emitter_company_siret = :siret
         or destination_company_siret = :siret)
     and is_deleted = false
-    and created_at >= current_date - interval '1 year'
+    and created_at BETWEEN :data_start_date AND :data_end_date
     and status::text not in ('DRAFT', 'INITIAL')
     and not is_draft
 order by
@@ -173,7 +173,7 @@ where
     (emitter_company_siret = :siret
         or destination_company_siret = :siret)
     and is_deleted = false
-    and created_at >= current_date - interval '1 year'
+    and created_at BETWEEN :data_start_date AND :data_end_date
     and status::text not in ('DRAFT', 'INITIAL')
     and not is_draft
 order by
@@ -200,7 +200,7 @@ where
         (emitter_company_siret = :siret
             or destination_company_siret = :siret)
         and is_deleted = false
-        and created_at >= current_date - interval '1 year'
+        and created_at BETWEEN :data_start_date AND :data_end_date
         and status::text not in ('DRAFT', 'INITIAL')
             and not is_draft
         order by
@@ -229,7 +229,7 @@ where
     (emitter_company_siret = :siret
         or destination_company_siret = :siret)
     and is_deleted = false
-    and created_at >= current_date - interval '1 year'
+    and created_at BETWEEN :data_start_date AND :data_end_date
     and  status::text not in ('DRAFT', 'INITIAL')
     and not is_draft
 order by
@@ -246,7 +246,7 @@ select id,
 from trusted_zone_trackdechets.bsdd_revision_request
 where authoring_company_id = :company_id
     and status='ACCEPTED'
-    and created_at >= current_date - INTERVAL '1 year'
+    and created_at BETWEEN :data_start_date AND :data_end_date
 """
 
 sql_revised_bsda_query_str = """
@@ -259,7 +259,7 @@ select id,
 from trusted_zone_trackdechets.bsda_revision_request
 where authoring_company_id = :company_id
     and status='ACCEPTED'
-    and created_at >= current_date - INTERVAL '1 year'
+    and created_at BETWEEN :data_start_date AND :data_end_date
 """
 
 

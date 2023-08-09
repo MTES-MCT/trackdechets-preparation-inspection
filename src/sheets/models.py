@@ -1,5 +1,6 @@
 import json
 import uuid
+from datetime import timedelta
 
 import numpy as np
 from django.conf import settings
@@ -55,6 +56,10 @@ class ComputedInspectionData(models.Model):
         default=StateChoice.INITIAL,
     )
     org_id = models.CharField(_("Organization ID"), max_length=20)
+    data_start_date = models.DateTimeField(
+        _("Data Start Date"), default=timezone.now() - timedelta(days=365)
+    )
+    data_end_date = models.DateTimeField(_("Data End Date"), default=timezone.now)
     company_name = models.CharField(_("Company Name"), max_length=255, blank=True)
     company_profiles = ArrayField(
         models.CharField(_("Company profiles"), max_length=255),
@@ -149,11 +154,11 @@ class ComputedInspectionData(models.Model):
 
     @property
     def period_start(self):
-        return self.created.replace(year=self.created.year - 1)
+        return self.data_start_date
 
     @property
     def period_end(self):
-        return self.created
+        return self.data_end_date
 
     @property
     def is_initial(self):

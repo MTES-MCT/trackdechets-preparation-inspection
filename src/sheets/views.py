@@ -38,7 +38,7 @@ CHECK_INSPECTION = False
 
 class Prepare(LoginRequiredMixin, FormView):
     """
-    View to prepare an inspection shee:.
+    View to prepare an inspection sheet $:
         - render a form
         - launch an async task
         - redirect to a self refreshing waiting page
@@ -63,12 +63,17 @@ class Prepare(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         siret = form.cleaned_data["siret"]
+        data_start_date = form.cleaned_data["start_date"]
+        data_end_date = form.cleaned_data["end_date"]
 
         if self.existing_inspection:
             return super().form_valid(form)
 
         self.new_inspection = ComputedInspectionData.objects.create(
-            org_id=siret, created_by=self.request.user.email
+            org_id=siret,
+            data_start_date=data_start_date,
+            data_end_date=data_end_date,
+            created_by=self.request.user.email,
         )
         self.task_id = prepare_sheet.delay(self.new_inspection.pk)
 

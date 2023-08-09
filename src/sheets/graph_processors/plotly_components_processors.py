@@ -11,7 +11,6 @@ import plotly.graph_objects as go
 from sheets.utils import format_number_str, get_code_departement
 
 # classes returning a serialized (json) plotly visualization to be consumed by a plotly script
-
 locale.setlocale(locale.LC_ALL, "fr_FR")
 
 

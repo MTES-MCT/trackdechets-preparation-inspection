@@ -314,3 +314,16 @@ FROM
 WHERE
     id = :id
 """
+
+# TODO: Change columns names when model will evolve
+sql_get_icpe_2770_data = """
+SELECT
+    day_of_processing,
+    quantite_traitee AS processed_quantity,
+    quantite_autorisee AS authorized_quantity
+FROM
+    refined_zone_icpe.installations_history
+WHERE
+    siret = :siret
+    and rubrique = '2770'
+"""

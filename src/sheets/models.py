@@ -137,6 +137,8 @@ class ComputedInspectionData(models.Model):
     waste_origin_graph = models.TextField(blank=True)
     waste_origin_map_graph = models.TextField(blank=True)
 
+    icpe_2770_graph_data = models.TextField(blank=True)
+
     pdf = models.TextField(blank=True)
 
     created_by = models.EmailField(verbose_name=_("Created by"), blank=True)

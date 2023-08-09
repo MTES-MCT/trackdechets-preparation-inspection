@@ -185,17 +185,6 @@
             </div>
         {% endif %}
         {# end bsff #}
-        {# outliers #}
-        {#    Todo: fix outliers#}
-        {#        <div class="row">#}
-        {#            <div class="cell cell--bordered cell--third">#}
-        {#                 <h3 class="cell__title">#}
-        {#                       Informations complémentaires#}
-        {#                    </h3>#}
-        {#                {% render_outliers sheet %}#}
-        {#            </div>#}
-        {#        </div>#}
-        {# end outliers #}
         {#  "waste is dangerous" statements #}
         {% if sheet.waste_is_dangerous_statements_data %}
             <div class="cell cell--bordered cell--half">{% render_waste_is_dangerous_statements sheet %}</div>
@@ -222,9 +211,17 @@
         {# ICPE #}
         <h2 class="section__title">Données installation classée pour la protection de l'Environnement (ICPE)</h2>
         <p>
-            Les données ICPE proviennent de la base Géorisque. Ces données ne sont pas à jour et synchronisées pour
+            Les données ICPE proviennent de la base Géorisques. Ces données ne sont pas à jour et synchronisées pour
             le moment faute de lien entre Trackdéchets et Géorisque.
         </p>
+        <div class="row">
+            <div class="cell cell--bordered cell--third">
+                <h3 class="cell__title">Données relatives à la rubrique 2770</h3>
+                <div id="icpe_2770_graph">
+                    <div class="no-data">Pas de données à afficher.</div>
+                </div>
+            </div>
+        </div>
         <div>
             {# Rubriques list #}
             {% render_icpe sheet %}
@@ -252,88 +249,24 @@
 {% endblock %}
 {% block scripts %}
     <script>
-        {
-            % autoescape off %
-        }
-        const siret = {
-            {
-                sheet.org_id
-            }
-        };
-        const bsdd_created_rectified_data = {
-            {
-                sheet.bsdd_created_rectified_data
-            }
-        };
-        const bsdd_stock_data = {
-            {
-                sheet.bsdd_stock_data
-            }
-        };
-        const bsdd_non_dangerous_created_rectified_data = {
-            {
-                sheet.bsdd_non_dangerous_created_rectified_data
-            }
-        };
-        const bsdd_non_dangerous_stock_data = {
-            {
-                sheet.bsdd_non_dangerous_stock_data
-            }
-        };
-        const bsda_created_rectified_data = {
-            {
-                sheet.bsda_created_rectified_data
-            }
-        };
-        const bsda_stock_data = {
-            {
-                sheet.bsda_stock_data
-            }
-        };
-        const bsdasri_created_rectified_data = {
-            {
-                sheet.bsdasri_created_rectified_data
-            }
-        };
-        const bsdasri_stock_data = {
-            {
-                sheet.bsdasri_stock_data
-            }
-        };
-        const bsff_created_rectified_data = {
-            {
-                sheet.bsff_created_rectified_data
-            }
-        };
-        const bsff_stock_data = {
-            {
-                sheet.bsff_stock_data
-            }
-        };
-        const bsvhu_created_rectified_data = {
-            {
-                sheet.bsvhu_created_rectified_data
-            }
-        };
-        const bsvhu_stock_data = {
-            {
-                sheet.bsvhu_stock_data
-            }
-        };
-        const waste_origin_data = {
-            {
-                sheet.waste_origin_data
-            }
-        };
-        const waste_origin_map_data = {
-            {
-                sheet.waste_origin_map_data
-            }
-        };
-
-        {
-            % endautoescape %
-        }
+        {% autoescape off %}
+        const siret = {{ sheet.org_id }};
+        const bsdd_created_rectified_data = {{ sheet.bsdd_created_rectified_data }};
+        const bsdd_stock_data = {{ sheet.bsdd_stock_data }};
+        const bsdd_non_dangerous_created_rectified_data = {{ sheet.bsdd_non_dangerous_created_rectified_data }};
+        const bsdd_non_dangerous_stock_data = {{ sheet.bsdd_non_dangerous_stock_data }};
+        const bsda_created_rectified_data = {{ sheet.bsda_created_rectified_data }};
+        const bsda_stock_data = {{ sheet.bsda_stock_data }};
+        const bsdasri_created_rectified_data = {{ sheet.bsdasri_created_rectified_data }};
+        const bsdasri_stock_data = {{ sheet.bsdasri_stock_data }};
+        const bsff_created_rectified_data = {{ sheet.bsff_created_rectified_data }};
+        const bsff_stock_data = {{ sheet.bsff_stock_data }};
+        const bsvhu_created_rectified_data = {{ sheet.bsvhu_created_rectified_data }};
+        const bsvhu_stock_data = {{ sheet.bsvhu_stock_data }};
+        const waste_origin_data = {{ sheet.waste_origin_data }};
+        const waste_origin_map_data = {{ sheet.waste_origin_map_data }};
+        const icpe_2770_data = {{ sheet.icpe_2770_graph_data }};
+        {% endautoescape %}
     </script>
     <script>
         const isNotEmpty = (obj) => (Object.keys(obj).length !== 0);
@@ -341,9 +274,7 @@
         function removeNoDataClass(query) {
             const divElement = document.querySelector(query);
             if (divElement !== null) {
-                divElement.remove();
-            }
-        }
+                divElement.remove();}}
 
         plot_configs = [{
             "data": bsdd_created_rectified_data,
@@ -387,6 +318,9 @@
         }, {
             "data": waste_origin_map_data,
             "target": "waste_origin_map_graph"
+        }, {
+            "data": icpe_2770_data,
+            "target": "icpe_2770_graph"
         }]
 
         for (const config of plot_configs) {
@@ -402,8 +336,6 @@
                     config.data.data,
                     config.data.layout,
                     newConfig)
-
-            }
-        }
+}}
     </script>
 {% endblock %}

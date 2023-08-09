@@ -772,3 +772,86 @@ class WasteOriginsMapProcessor:
             figure = self.figure.to_json()
 
         return figure
+
+
+class ICPEDailyItemProcessor:
+    """Component with a figure representing the quantity of waste processed by day for a particular ICPE "rubrique".
+
+
+    Parameters:
+    -----------
+    icpe_item_daily_data: DataFrame
+        DataFrame containing the waste processed data for a given ICPE "rubrique".
+    """
+
+    def __init__(
+        self,
+        icpe_item_daily_data: pd.DataFrame,
+    ) -> None:
+        self.icpe_item_daily_data = icpe_item_daily_data
+
+        self.preprocessed_df = None
+        self.authorized_quantity = None
+
+        self.figure = None
+
+    def _preprocess_data(self) -> None:
+        if len(self.icpe_item_daily_data) == 0:
+            return
+
+        df = self.icpe_item_daily_data[["day_of_processing", "processed_quantity"]]
+        df = df.sort_values("day_of_processing")
+
+        series = df.set_index("day_of_processing").squeeze()
+        final_df = series.resample("1d").max().fillna(0).reset_index()
+
+        self.preprocessed_df = final_df
+        self.authorized_quantity = self.icpe_item_daily_data[
+            "authorized_quantity"
+        ].max()
+
+    def _check_data_empty(self) -> bool:
+        if (self.preprocessed_df is None) or len(self.preprocessed_df) == 0:
+            return True
+
+        return False
+
+    def _create_figure(self) -> None:
+        df = self.preprocessed_df
+        trace = go.Scatter(
+            x=df["day_of_processing"],
+            y=df["processed_quantity"],
+            hovertemplate="Le %{x:%d-%m-%Y} : %{y:.2f}t traitées",
+        )
+
+        fig = go.Figure([trace])
+
+        fig.update_layout(
+            margin={"t": 20, "l": 35, "r": 5},
+            legend_bgcolor="rgba(0,0,0,0)",
+            showlegend=False,
+            paper_bgcolor="#fff",
+            plot_bgcolor="rgba(0,0,0,0)",
+        )
+
+        if not pd.isna(self.authorized_quantity):
+            fig.add_hline(
+                y=self.authorized_quantity,
+                line_dash="dot",
+                annotation_text=f"Quantité maximale autorisée : {format_number_str(self.authorized_quantity,2)}t",
+                annotation_position="top right",
+                line_color="red",
+                line_width=3,
+            )
+
+        self.figure = fig
+
+    def build(self):
+        self._preprocess_data()
+
+        figure = {}
+        if not self._check_data_empty():
+            self._create_figure()
+            figure = self.figure.to_json()
+
+        return figure

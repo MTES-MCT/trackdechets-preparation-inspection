@@ -221,9 +221,19 @@ class BsdQuantitiesGraph:
 
         fig.add_traces(lines)
 
+        dtick = "M2"
+        if not numbers_of_data_points or max(numbers_of_data_points) < 3:
+            dtick = "M1"
+
+        tickangle = 0
+        y_legend = -0.07
+        if numbers_of_data_points and max(numbers_of_data_points) >= 15:
+            tickangle = -90
+            y_legend = -0.12
+
         fig.update_layout(
             margin={"t": 20, "l": 35, "r": 5},
-            legend={"orientation": "h", "y": -0.1, "x": 0.5},
+            legend={"orientation": "h", "y": y_legend, "x": 0},
             legend_font_size=11,
             legend_bgcolor="rgba(0,0,0,0)",
             showlegend=True,
@@ -231,12 +241,8 @@ class BsdQuantitiesGraph:
             plot_bgcolor="rgba(0,0,0,0)",
         )
 
-        dtick = "M2"
-        if not numbers_of_data_points or max(numbers_of_data_points) < 3:
-            dtick = "M1"
-
         fig.update_xaxes(
-            tickangle=0,
+            tickangle=tickangle,
             tickformat="%b %y",
             tick0=min(mins_x) if mins_x else None,
             dtick=dtick,
@@ -389,12 +395,19 @@ class BsdTrackedAndRevisedProcessor:
         fig = go.Figure([bs_emitted_bars, bs_received_bars])
 
         max_points = max(len(bs_emitted_by_month), len(bs_received_by_month))
+
+        tickangle = 0
+        y_legend = -0.07
+        if max_points >= 15:
+            tickangle = -90
+            y_legend = -0.15
+
         if bs_revised_by_month is not None:
             fig.add_trace(
                 go.Bar(
                     x=bs_revised_by_month.index,
                     y=bs_revised_by_month,
-                    name="BSDD corrigés",
+                    name="Bordereaux corrigés",
                     hovertext=[
                         "{} - <b>{}</b> bordereau(x) révisés".format(
                             index.strftime("%B %y").capitalize(), e
@@ -416,8 +429,8 @@ class BsdTrackedAndRevisedProcessor:
             margin={"t": 20, "l": 35, "r": 5},
             legend={
                 "orientation": "h",
-                "y": -0.07,
-                "x": 0.5,
+                "y": y_legend,
+                "x": -0.1,
             },
             legend_bgcolor="rgba(0,0,0,0)",
             showlegend=True,
@@ -431,7 +444,7 @@ class BsdTrackedAndRevisedProcessor:
 
         fig.update_xaxes(
             dtick=f"M{ticklabelstep}",
-            tickangle=0,
+            tickangle=tickangle,
             tickformat="%b %y",
             tick0=tick0_min,
             ticks="outside",

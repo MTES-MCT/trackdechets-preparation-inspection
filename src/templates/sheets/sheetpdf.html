@@ -204,12 +204,12 @@
                 Les données ICPE proviennent de la base Géorisque. Ces données ne sont pas à jour et synchronisées
                 pour le moment faute de lien entre Trackdéchets et Géorisque
             </p>
-            <div class="row">
-                <div class="cell cell--bordered">
-                    {% render_icpe sheet %}
-                    {# end ICPE #}
-                </div>
+            <div>
+                {# Rubriques list #}
+                {% render_icpe sheet graph_context="pdf" %}
+                {# end Rubriques list #}
             </div>
+            {# end ICPE #}
             <div>
                 {# traceability #}
                 {% render_traceabilty_break sheet graph_context="pdf" %}

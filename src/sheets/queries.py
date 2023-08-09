@@ -265,12 +265,12 @@ where authoring_company_id = :company_id
 
 sql_get_icpe_data = """
 select
-    code_aiot as code_s3ic,
-    quantite_totale as volume,
-    unite,
+    code_aiot,
     rubrique,
     alinea,
-    nature as libelle_court_activite
+    quantite_totale as quantite,
+    unite,
+    nature
 from
     refined_zone_icpe.installations_rubriques
 where siret = :siret

@@ -1,9 +1,45 @@
-<h3 class="cell__title">Rubriques ICPE autorisées</h3>
-{% if not icpe_data %}<p>Aucune donnée ICPE</p>{% endif %}
-{% for row in icpe_data %}
-    <p>
-        {{ row.rubrique }}
-        {% if row.alinea %}- {{ row.alinea }}{% endif %}
-        {{ row.libelle }}
-    </p>
-{% endfor %}
+<h3 class="cell__title">Listes des rubriques des installations associées à l'établissement</h3>
+{% if  icpe_data %}
+    <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+        <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+            <thead>
+                <tr>
+                    <th scope="col">Rubrique</th>
+                    <th scope="col">Nature</th>
+                    <th scope="col">Quantité autorisée</th>
+                    <th scope="col">Unité</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in icpe_data %}
+                    <tr>
+                        <td>{{ row.rubrique_alinea }}</td>
+                        <td>
+                            {% if row.nature %}
+                                {{ row.nature }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.quantite %}
+                                {{ row.quantite }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.unite %}
+                                {{ row.unite }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p>Aucune donnée</p>
+{% endif %}

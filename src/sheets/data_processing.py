@@ -270,8 +270,6 @@ class SheetProcessor:
         icpe_processor = ICPEItemsProcessor(
             self.computed.org_id,
             icpe_data,
-            self.bsds_dfs,
-            PROCESSING_OPERATION_CODE_RUBRIQUE_MAPPING,
         )
         self.computed.icpe_data = icpe_processor.build()
 

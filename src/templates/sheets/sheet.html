@@ -101,29 +101,19 @@
         {% if sheet.bsda_created_rectified_data %}
             <div class="row">
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        BSD Amiante émis, reçus et corrigés
-                    </h3>
+                    <h3 class="cell__title">BSD Amiante émis, reçus et corrigés</h3>
                     <div id="bsda_emitted_corrected_graph">
-                        <div class="no-data">
-                            Pas de données à afficher.
-                        </div>
+                        <div class="no-data">Pas de données à afficher.</div>
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        Quantité de déchets amiante en tonnes
-                    </h3>
+                    <h3 class="cell__title">Quantité de déchets amiante en tonnes</h3>
                     <div id="bsda_quantity_graph">
-                        <div class="no-data">
-                            Pas de données à afficher.
-                        </div>
+                        <div class="no-data">Pas de données à afficher.</div>
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        BSD Amiante sur l'année
-                    </h3>
+                    <h3 class="cell__title">BSD Amiante sur l'année</h3>
                     {% stats_graph sheet "bsda" %}
                 </div>
             </div>
@@ -133,29 +123,19 @@
         {% if sheet.bsdasri_created_rectified_data %}
             <div class="row">
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        BS DASRI émis, reçus et corrigés
-                    </h3>
+                    <h3 class="cell__title">BS DASRI émis, reçus et corrigés</h3>
                     <div id="bsdasri_emitted_corrected_graph">
-                        <div class="no-data">
-                            Pas de données à afficher.
-                        </div>
+                        <div class="no-data">Pas de données à afficher.</div>
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        Quantité de déchets DASRI en m³ et tonnes
-                    </h3>
+                    <h3 class="cell__title">Quantité de déchets DASRI en m³ et tonnes</h3>
                     <div id="bsdasri_quantity_graph">
-                        <div class="no-data">
-                            Pas de données à afficher.
-                        </div>
+                        <div class="no-data">Pas de données à afficher.</div>
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        BS DASRI sur l'année
-                    </h3>
+                    <h3 class="cell__title">BS DASRI sur l'année</h3>
                     {% stats_graph sheet "bsdasri" %}
                 </div>
             </div>
@@ -165,29 +145,19 @@
         {% if sheet.bsff_created_rectified_data %}
             <div class="row">
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        BS Fluides Frigorigènes émis, reçus et corrigés
-                    </h3>
+                    <h3 class="cell__title">BS Fluides Frigorigènes émis, reçus et corrigés</h3>
                     <div id="bsff_emitted_corrected_graph">
-                        <div class="no-data">
-                            Pas de données à afficher.
-                        </div>
+                        <div class="no-data">Pas de données à afficher.</div>
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        Quantité de déchets Fluides Frigorigènes en tonnes
-                    </h3>
+                    <h3 class="cell__title">Quantité de déchets Fluides Frigorigènes en tonnes</h3>
                     <div id="bsff_quantity_graph">
-                        <div class="no-data">
-                            Pas de données à afficher.
-                        </div>
+                        <div class="no-data">Pas de données à afficher.</div>
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        BS Fluides Frigorigènes sur l'année
-                    </h3>
+                    <h3 class="cell__title">BS Fluides Frigorigènes sur l'année</h3>
                     {% stats_graph sheet "bsff" %}
                 </div>
             </div>
@@ -197,29 +167,19 @@
         {% if sheet.bsvhu_created_rectified_data %}
             <div class="row">
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        BS VHU émis, reçus et corrigés
-                    </h3>
+                    <h3 class="cell__title">BS VHU émis, reçus et corrigés</h3>
                     <div id="bsvhu_emitted_corrected_graph">
-                        <div class="no-data">
-                            Pas de données à afficher.
-                        </div>
+                        <div class="no-data">Pas de données à afficher.</div>
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        Quantité de VHU en tonnes
-                    </h3>
+                    <h3 class="cell__title">Quantité de VHU en tonnes</h3>
                     <div id="bsvhu_quantity_graph">
-                        <div class="no-data">
-                            Pas de données à afficher.
-                        </div>
+                        <div class="no-data">Pas de données à afficher.</div>
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">
-                        BS VHU sur l'année
-                    </h3>
+                    <h3 class="cell__title">BS VHU sur l'année</h3>
                     {% stats_graph sheet "bsvhu" %}
                 </div>
             </div>
@@ -238,189 +198,212 @@
         {# end outliers #}
         {#  "waste is dangerous" statements #}
         {% if sheet.waste_is_dangerous_statements_data %}
-            <div class="cell cell--bordered cell--half">
-                {% render_waste_is_dangerous_statements sheet %}
-            </div>
+            <div class="cell cell--bordered cell--half">{% render_waste_is_dangerous_statements sheet %}</div>
         {% endif %}
         {# end "waste is dangerous" statements #}
-        <h2 class="section__title">
-            Déchets sur site (théorique)
-        </h2>
+        <h2 class="section__title">Déchets sur site (théorique)</h2>
         <div class="row">
             <div class="cell cell--bordered cell--third">
                 {% include "sheets/components/on_site_wastes.html" with storage_data=sheet.storage_data %}
             </div>
             <div class="cell cell--bordered cell--third">
-                <h3 class="cell__title">
-                    Origine des déchets - Départements
-                </h3>
+                <h3 class="cell__title">Origine des déchets - Départements</h3>
                 <div id="waste_origin_graph">
-                    <div class="no-data">
-                        Pas de données à afficher.
-                    </div>
+                    <div class="no-data">Pas de données à afficher.</div>
                 </div>
             </div>
             <div class="cell cell--bordered cell--third">
-                <h3 class="cell__title">
-                    Origine des déchets - Régions
-                </h3>
+                <h3 class="cell__title">Origine des déchets - Régions</h3>
                 <div id="waste_origin_map_graph">
-                    <div class="no-data">
-                        Pas de données à afficher.
-                    </div>
+                    <div class="no-data">Pas de données à afficher.</div>
                 </div>
             </div>
         </div>
         {# ICPE #}
-        <h2 class="section__title">
-            Données installation classée pour la protection de l'Environnement (ICPE)
-        </h2>
+        <h2 class="section__title">Données installation classée pour la protection de l'Environnement (ICPE)</h2>
         <p>
             Les données ICPE proviennent de la base Géorisque. Ces données ne sont pas à jour et synchronisées pour
             le moment faute de lien entre Trackdéchets et Géorisque.
         </p>
-        <div class="row">
-            <div class="cell cell--bordered cell--half">
-                {% render_icpe sheet %}
-            </div>
-            {# end ICPE #}
-            <div class="cell cell--bordered cell--half">
-                {% render_traceabilty_break sheet %}
-            </div>
-        </div>
-        {# bsd canceled table #}
         <div>
-            {% render_bsd_canceled_table sheet %}
+            {# Rubriques list #}
+            {% render_icpe sheet %}
+            {# end Rubriques list #}
         </div>
+        <div>{% render_traceabilty_break sheet %}</div>
+        {# end ICPE #}
+        {# bsd canceled table #}
+        <div>{% render_bsd_canceled_table sheet %}</div>
         {# end bsd canceled table #}
         {# same emitter recipient table #}
-        <div>
-            {% render_same_emitter_recipient_table sheet %}
-        </div>
+        <div>{% render_same_emitter_recipient_table sheet %}</div>
         {# end same emitter recipient table #}
         {#  private individuals collections table #}
-        <div>
-            {% render_private_individuals_collections_table sheet %}
-        </div>
+        <div>{% render_private_individuals_collections_table sheet %}</div>
         {# end private individuals collections table #}
         {#  quantity outliers table #}
-        <div>
-            {% render_quantity_outliers_table sheet %}
-        </div>
+        <div>{% render_quantity_outliers_table sheet %}</div>
         {# end quantity outliers table #}
         {# input/output #}
-        <h2 class="section__title">
-            Liste des déchets entrants/sortants
-        </h2>
-        <div>
-            {% render_in_out_table sheet %}
-        </div>
+        <h2 class="section__title">Liste des déchets entrants/sortants</h2>
+        <div>{% render_in_out_table sheet %}</div>
         {# end input/output #}
     </div>
 {% endblock %}
 {% block scripts %}
     <script>
-        {% autoescape off %}
-            const siret = {{ sheet.org_id }};
-            const bsdd_created_rectified_data = {{ sheet.bsdd_created_rectified_data }};
-            const bsdd_stock_data = {{ sheet.bsdd_stock_data }};
-            const bsdd_non_dangerous_created_rectified_data = {{ sheet.bsdd_non_dangerous_created_rectified_data }};
-            const bsdd_non_dangerous_stock_data = {{ sheet.bsdd_non_dangerous_stock_data }};
-            const bsda_created_rectified_data = {{ sheet.bsda_created_rectified_data }};
-            const bsda_stock_data = {{ sheet.bsda_stock_data }};
-            const bsdasri_created_rectified_data = {{ sheet.bsdasri_created_rectified_data }};
-            const bsdasri_stock_data = {{ sheet.bsdasri_stock_data }};
-            const bsff_created_rectified_data = {{ sheet.bsff_created_rectified_data }};
-            const bsff_stock_data = {{ sheet.bsff_stock_data }};
-            const bsvhu_created_rectified_data = {{ sheet.bsvhu_created_rectified_data }};
-            const bsvhu_stock_data = {{ sheet.bsvhu_stock_data }};
-            const waste_origin_data = {{ sheet.waste_origin_data }};
-            const waste_origin_map_data = {{ sheet.waste_origin_map_data }};
+        {
+            % autoescape off %
+        }
+        const siret = {
+            {
+                sheet.org_id
+            }
+        };
+        const bsdd_created_rectified_data = {
+            {
+                sheet.bsdd_created_rectified_data
+            }
+        };
+        const bsdd_stock_data = {
+            {
+                sheet.bsdd_stock_data
+            }
+        };
+        const bsdd_non_dangerous_created_rectified_data = {
+            {
+                sheet.bsdd_non_dangerous_created_rectified_data
+            }
+        };
+        const bsdd_non_dangerous_stock_data = {
+            {
+                sheet.bsdd_non_dangerous_stock_data
+            }
+        };
+        const bsda_created_rectified_data = {
+            {
+                sheet.bsda_created_rectified_data
+            }
+        };
+        const bsda_stock_data = {
+            {
+                sheet.bsda_stock_data
+            }
+        };
+        const bsdasri_created_rectified_data = {
+            {
+                sheet.bsdasri_created_rectified_data
+            }
+        };
+        const bsdasri_stock_data = {
+            {
+                sheet.bsdasri_stock_data
+            }
+        };
+        const bsff_created_rectified_data = {
+            {
+                sheet.bsff_created_rectified_data
+            }
+        };
+        const bsff_stock_data = {
+            {
+                sheet.bsff_stock_data
+            }
+        };
+        const bsvhu_created_rectified_data = {
+            {
+                sheet.bsvhu_created_rectified_data
+            }
+        };
+        const bsvhu_stock_data = {
+            {
+                sheet.bsvhu_stock_data
+            }
+        };
+        const waste_origin_data = {
+            {
+                sheet.waste_origin_data
+            }
+        };
+        const waste_origin_map_data = {
+            {
+                sheet.waste_origin_map_data
+            }
+        };
 
-        {% endautoescape %}
+        {
+            % endautoescape %
+        }
     </script>
     <script>
         const isNotEmpty = (obj) => (Object.keys(obj).length !== 0);
+
         function removeNoDataClass(query) {
             const divElement = document.querySelector(query);
             if (divElement !== null) {
-              divElement.remove();
+                divElement.remove();
             }
         }
 
-        plot_configs = [
-            {
-                "data":bsdd_created_rectified_data,
-                "target":"bsdd_emitted_corrected_graph"
-            },
-            {
-                "data":bsdd_stock_data,
-                "target":"bsdd_quantity_graph"
-            },
-            {
-                "data":bsdd_non_dangerous_created_rectified_data,
-                "target":"bsdd_non_dangerous_emitted_corrected_graph"
-            },
-            {
-                "data":bsdd_non_dangerous_stock_data,
-                "target":"bsdd_non_dangerous_quantity_graph"
-            },
-            {
-                "data":bsda_created_rectified_data,
-                "target":"bsda_emitted_corrected_graph"
-            },
-            {
-                "data":bsda_stock_data,
-                "target":"bsda_quantity_graph"
-            },
-            {
-                "data":bsdasri_created_rectified_data,
-                "target":"bsdasri_emitted_corrected_graph"
-            },
-            {
-                "data":bsdasri_stock_data,
-                "target":"bsdasri_quantity_graph"
-            },
-            {
-                "data":bsff_created_rectified_data,
-                "target":"bsff_emitted_corrected_graph"
-            },
-            {
-                "data":bsff_stock_data,
-                "target":"bsff_quantity_graph"
-            },
-            {
-                "data":bsvhu_created_rectified_data,
-                "target":"bsvhu_emitted_corrected_graph"
-            },
-            {
-                "data":bsvhu_stock_data,
-                "target":"bsvhu_quantity_graph"
-            },
-            {
-                "data":waste_origin_data,
-                "target":"waste_origin_graph"
-            },
-            {
-                "data":waste_origin_map_data,
-                "target":"waste_origin_map_graph"
-            }
-        ]
+        plot_configs = [{
+            "data": bsdd_created_rectified_data,
+            "target": "bsdd_emitted_corrected_graph"
+        }, {
+            "data": bsdd_stock_data,
+            "target": "bsdd_quantity_graph"
+        }, {
+            "data": bsdd_non_dangerous_created_rectified_data,
+            "target": "bsdd_non_dangerous_emitted_corrected_graph"
+        }, {
+            "data": bsdd_non_dangerous_stock_data,
+            "target": "bsdd_non_dangerous_quantity_graph"
+        }, {
+            "data": bsda_created_rectified_data,
+            "target": "bsda_emitted_corrected_graph"
+        }, {
+            "data": bsda_stock_data,
+            "target": "bsda_quantity_graph"
+        }, {
+            "data": bsdasri_created_rectified_data,
+            "target": "bsdasri_emitted_corrected_graph"
+        }, {
+            "data": bsdasri_stock_data,
+            "target": "bsdasri_quantity_graph"
+        }, {
+            "data": bsff_created_rectified_data,
+            "target": "bsff_emitted_corrected_graph"
+        }, {
+            "data": bsff_stock_data,
+            "target": "bsff_quantity_graph"
+        }, {
+            "data": bsvhu_created_rectified_data,
+            "target": "bsvhu_emitted_corrected_graph"
+        }, {
+            "data": bsvhu_stock_data,
+            "target": "bsvhu_quantity_graph"
+        }, {
+            "data": waste_origin_data,
+            "target": "waste_origin_graph"
+        }, {
+            "data": waste_origin_map_data,
+            "target": "waste_origin_map_graph"
+        }]
 
         for (const config of plot_configs) {
             if (isNotEmpty(config.data)) {
                 removeNoDataClass(`#${config.target} > .no-data`);
-                let newConfig = {...config.data.config, locale:'fr'}
-                
+                let newConfig = {
+                    ...config.data.config,
+                    locale: 'fr'
+                }
+
                 Plotly.newPlot(
                     config.target,
                     config.data.data,
                     config.data.layout,
                     newConfig)
-    
+
             }
         }
-        
-               
     </script>
 {% endblock %}

@@ -21,7 +21,7 @@ from .database import (
     build_revised_bsda_query,
     build_revised_bsdd_query,
     get_agreement_data,
-    get_icpe_2770_data,
+    get_icpe_item_data,
     get_icpe_data,
 )
 from .graph_processors.html_components_processors import (
@@ -41,6 +41,7 @@ from .graph_processors.html_components_processors import (
 from .graph_processors.plotly_components_processors import (
     BsdQuantitiesGraph,
     BsdTrackedAndRevisedProcessor,
+    ICPEAnnualItemProcessor,
     ICPEDailyItemProcessor,
     WasteOriginProcessor,
     WasteOriginsMapProcessor,
@@ -212,13 +213,19 @@ class SheetProcessor:
 
         self.computed.all_bsd_data_empty = all_bsd_data_empty
 
-        icpe_2770_data = get_icpe_2770_data(siret=self.siret)
+        icpe_2770_data = get_icpe_item_data(siret=self.siret, rubrique="2770")
         icpe_2770_graph = ICPEDailyItemProcessor(
             icpe_2770_data,
         )
         icpe_2770_graph_data = icpe_2770_graph.build()
-
         setattr(self.computed, "icpe_2770_graph_data", icpe_2770_graph_data)
+
+        icpe_2760_data = get_icpe_item_data(siret=self.siret, rubrique="2760-1")
+        icpe_2760_graph = ICPEAnnualItemProcessor(
+            icpe_2760_data,
+        )
+        icpe_2760_graph_data = icpe_2760_graph.build()
+        setattr(self.computed, "icpe_2760_graph_data", icpe_2760_graph_data)
 
     def _process_bsds(self):
         additional_data = {"date_outliers": {}, "quantity_outliers": {}}

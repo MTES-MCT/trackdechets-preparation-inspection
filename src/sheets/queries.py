@@ -274,7 +274,7 @@ select
 from
     refined_zone_icpe.installations_rubriques
 where siret = :siret
-and regime_rubrique in ('Enregistrement','Déclaration avec contrôle','Déclaration','Autorisation')
+and (regime_rubrique in ('Enregistrement','Déclaration avec contrôle','Déclaration','Autorisation') or regime_rubrique is null)
 """
 
 sql_get_trader_receipt_id_data = """
@@ -316,7 +316,7 @@ WHERE
 """
 
 # TODO: Change columns names when model will evolve
-sql_get_icpe_2770_data = """
+sql_get_icpe_item_data = """
 SELECT
     day_of_processing,
     quantite_traitee AS processed_quantity,
@@ -325,6 +325,6 @@ FROM
     refined_zone_icpe.installations_history
 WHERE
     siret = :siret
-    and rubrique = '2770'
+    and rubrique = :rubrique
     and day_of_processing>='2022-01-01'
 """

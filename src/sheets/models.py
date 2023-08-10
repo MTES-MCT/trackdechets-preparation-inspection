@@ -1,6 +1,6 @@
 import json
 import uuid
-from datetime import timedelta
+from datetime import datetime
 
 import numpy as np
 from django.conf import settings
@@ -57,7 +57,7 @@ class ComputedInspectionData(models.Model):
     )
     org_id = models.CharField(_("Organization ID"), max_length=20)
     data_start_date = models.DateTimeField(
-        _("Data Start Date"), default=timezone.now() - timedelta(days=365)
+        _("Data Start Date"), default=datetime(2022, 1, 1)
     )
     data_end_date = models.DateTimeField(_("Data End Date"), default=timezone.now)
     company_name = models.CharField(_("Company Name"), max_length=255, blank=True)
@@ -138,6 +138,7 @@ class ComputedInspectionData(models.Model):
     waste_origin_map_graph = models.TextField(blank=True)
 
     icpe_2770_graph_data = models.TextField(blank=True)
+    icpe_2760_graph_data = models.TextField(blank=True)
 
     pdf = models.TextField(blank=True)
 

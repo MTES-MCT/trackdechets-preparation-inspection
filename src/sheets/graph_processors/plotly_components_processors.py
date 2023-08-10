@@ -796,7 +796,7 @@ class ICPEDailyItemProcessor:
         self.figure = None
 
     def _preprocess_data(self) -> None:
-        if len(self.icpe_item_daily_data) == 0:
+        if (self.icpe_item_daily_data is None) or (len(self.icpe_item_daily_data) == 0):
             return
 
         df = self.icpe_item_daily_data[["day_of_processing", "processed_quantity"]]
@@ -861,6 +861,121 @@ class ICPEDailyItemProcessor:
 
         fig.update_yaxes(
             range=[0, max_y * 1.3], gridcolor="#ccc", title="Quantité traitée en tonnes"
+        )
+
+        fig.update_xaxes(
+            gridcolor="#ccc",
+            zeroline=True,
+            linewidth=1,
+            linecolor="black",
+            title="Date du traitement",
+        )
+
+        self.figure = fig
+
+    def build(self):
+        self._preprocess_data()
+
+        figure = {}
+        if not self._check_data_empty():
+            self._create_figure()
+            figure = self.figure.to_json()
+
+        return figure
+
+
+class ICPEAnnualItemProcessor:
+    """Component with a figure representing the cummulative quantity of waste processed by day for a particular ICPE "rubrique".
+
+
+    Parameters:
+    -----------
+    icpe_item_daily_data: DataFrame
+        DataFrame containing the waste processed data for a given ICPE "rubrique".
+    """
+
+    def __init__(
+        self,
+        icpe_item_daily_data: pd.DataFrame,
+    ) -> None:
+        self.icpe_item_daily_data = icpe_item_daily_data
+
+        self.preprocessed_df = None
+        self.authorized_quantity = None
+
+        self.figure = None
+
+    def _preprocess_data(self) -> None:
+        if (self.icpe_item_daily_data is None) or (len(self.icpe_item_daily_data) == 0):
+            return
+
+        df = self.icpe_item_daily_data[["day_of_processing", "processed_quantity"]]
+        df = df.sort_values("day_of_processing")
+
+        series = df.set_index("day_of_processing").squeeze()
+        final_df = series.resample("1d").max().fillna(0).reset_index()
+        final_df["quantity_cumsum"] = final_df.groupby(
+            final_df["day_of_processing"].dt.year
+        ).cumsum()
+
+        self.preprocessed_df = final_df
+        self.authorized_quantity = self.icpe_item_daily_data[
+            "authorized_quantity"
+        ].max()
+
+    def _check_data_empty(self) -> bool:
+        if (self.preprocessed_df is None) or len(self.preprocessed_df) == 0:
+            return True
+
+        return False
+
+    def _create_figure(self) -> None:
+        df = self.preprocessed_df
+        authorized_quantity = self.authorized_quantity
+        trace = go.Scatter(
+            x=df["day_of_processing"],
+            y=df["quantity_cumsum"],
+            hovertemplate="Le %{x|%d-%m-%Y} : <b>%{y:.2f}t</b> traitées au total sur l'année<extra></extra>",
+            line_width=2,
+        )
+
+        fig = go.Figure([trace])
+
+        fig.update_layout(
+            margin={"t": 30, "l": 35, "r": 70},
+            legend_bgcolor="rgba(0,0,0,0)",
+            showlegend=False,
+            paper_bgcolor="#fff",
+            plot_bgcolor="rgba(0,0,0,0)",
+        )
+
+        max_y = df["quantity_cumsum"].max()
+        if not pd.isna(authorized_quantity):
+            fig.add_hline(
+                y=authorized_quantity,
+                line_dash="dot",
+                line_color="red",
+                line_width=3,
+            )
+            fig.add_annotation(
+                xref="x domain",
+                yref="y",
+                x=1,
+                y=authorized_quantity,
+                text=f"Quantité maximale <br>autorisée :<b>{format_number_str(authorized_quantity,2)}</b> t/an",
+                font_color="red",
+                xanchor="left",
+                showarrow=False,
+                textangle=-90,
+                font_size=13,
+            )
+            if authorized_quantity > max_y:
+                max_y = authorized_quantity
+
+        fig.update_yaxes(
+            range=[0, max_y * 1.3],
+            gridcolor="#ccc",
+            title="Quantité traitée en tonnes<br>(somme cummulée annuellement)",
         )
 
         fig.update_xaxes(

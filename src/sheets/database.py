@@ -16,7 +16,7 @@ from .queries import (
     sql_bsvhu_query_str,
     sql_company_query_str,
     sql_get_broker_receipt_id_data,
-    sql_get_icpe_2770_data,
+    sql_get_icpe_item_data,
     sql_get_icpe_data,
     sql_get_trader_receipt_id_data,
     sql_get_transporter_receipt_id_data_str,
@@ -273,12 +273,10 @@ def get_icpe_data(siret: str) -> Union[pd.DataFrame, None]:
     return None
 
 
-def get_icpe_2770_data(siret: str) -> Union[pd.DataFrame, None]:
+def get_icpe_item_data(siret: str, rubrique: str) -> Union[pd.DataFrame, None]:
     icpe_data = build_query(
-        sql_get_icpe_2770_data,
-        query_params={
-            "siret": siret,
-        },
+        sql_get_icpe_item_data,
+        query_params={"siret": siret, "rubrique": rubrique},
     )
 
     if len(icpe_data):

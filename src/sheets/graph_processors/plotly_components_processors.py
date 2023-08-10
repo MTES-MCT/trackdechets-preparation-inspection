@@ -818,31 +818,58 @@ class ICPEDailyItemProcessor:
 
     def _create_figure(self) -> None:
         df = self.preprocessed_df
+        authorized_quantity = self.authorized_quantity
         trace = go.Scatter(
             x=df["day_of_processing"],
             y=df["processed_quantity"],
-            hovertemplate="Le %{x:%d-%m-%Y} : %{y:.2f}t traitées",
+            hovertemplate="Le %{x|%d-%m-%Y} : <b>%{y:.2f}t</b> traitées<extra></extra>",
+            line_width=1.5,
         )
 
         fig = go.Figure([trace])
 
         fig.update_layout(
-            margin={"t": 20, "l": 35, "r": 5},
+            margin={"t": 20, "l": 35, "r": 70},
             legend_bgcolor="rgba(0,0,0,0)",
             showlegend=False,
             paper_bgcolor="#fff",
             plot_bgcolor="rgba(0,0,0,0)",
         )
 
-        if not pd.isna(self.authorized_quantity):
+        max_y = df["processed_quantity"].max()
+        if not pd.isna(authorized_quantity):
             fig.add_hline(
-                y=self.authorized_quantity,
+                y=authorized_quantity,
                 line_dash="dot",
-                annotation_text=f"Quantité maximale autorisée : {format_number_str(self.authorized_quantity,2)}t",
-                annotation_position="top right",
                 line_color="red",
                 line_width=3,
             )
+            fig.add_annotation(
+                xref="x domain",
+                yref="y",
+                x=1,
+                y=authorized_quantity,
+                text=f"Quantité maximale <br>autorisée :<b>{format_number_str(authorized_quantity,2)}</b> t/jour",
+                font_color="red",
+                xanchor="left",
+                showarrow=False,
+                textangle=-90,
+                font_size=13,
+            )
+            if authorized_quantity > max_y:
+                max_y = authorized_quantity
+
+        fig.update_yaxes(
+            range=[0, max_y * 1.3], gridcolor="#ccc", title="Quantité traitée en tonnes"
+        )
+
+        fig.update_xaxes(
+            gridcolor="#ccc",
+            zeroline=True,
+            linewidth=1,
+            linecolor="black",
+            title="Date du traitement",
+        )
 
         self.figure = fig
 

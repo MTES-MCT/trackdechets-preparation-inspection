@@ -31,6 +31,10 @@
   padding: 1rem 0.5rem;
 }
 
+.cell--full {
+  width: 100%;
+}
+
 .cell--third {
   flex-basis: 33%;
 }

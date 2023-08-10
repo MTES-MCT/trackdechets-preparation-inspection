@@ -326,4 +326,5 @@ FROM
 WHERE
     siret = :siret
     and rubrique = '2770'
+    and day_of_processing>='2022-01-01'
 """

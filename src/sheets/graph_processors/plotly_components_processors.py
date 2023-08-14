@@ -792,6 +792,7 @@ class ICPEDailyItemProcessor:
 
         self.preprocessed_df = None
         self.authorized_quantity = None
+        self.mean_quantity = None
 
         self.figure = None
 
@@ -801,6 +802,8 @@ class ICPEDailyItemProcessor:
 
         df = self.icpe_item_daily_data[["day_of_processing", "processed_quantity"]]
         df = df.sort_values("day_of_processing")
+
+        self.mean_quantity = df["processed_quantity"].mean()
 
         series = df.set_index("day_of_processing").squeeze()
         final_df = series.resample("1d").max().fillna(0).reset_index()
@@ -829,11 +832,15 @@ class ICPEDailyItemProcessor:
         fig = go.Figure([trace])
 
         fig.update_layout(
-            margin={"t": 20, "l": 35, "r": 70},
+            margin={"t": 40, "l": 35, "r": 70},
             legend_bgcolor="rgba(0,0,0,0)",
             showlegend=False,
             paper_bgcolor="#fff",
             plot_bgcolor="rgba(0,0,0,0)",
+            title={
+                "text": f"Quantité moyenne traitée par jour : <b>{format_number_str(self.mean_quantity,2)}</b> t/j",
+                "font_size": 14,
+            },
         )
 
         max_y = df["processed_quantity"].max()

@@ -224,6 +224,14 @@
         </div>
         <div class="row">
             <div class="cell cell--bordered cell--full">
+                <h3 class="cell__title">Données relatives à la rubrique 2790</h3>
+                <div id="icpe_2790_graph">
+                    <div class="no-data">Pas de données à afficher.</div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="cell cell--bordered cell--full">
                 <h3 class="cell__title">Données relatives à la rubrique 2760-1</h3>
                 <div id="icpe_2760_graph">
                     <div class="no-data">Pas de données à afficher.</div>
@@ -274,6 +282,7 @@
         const waste_origin_data = {{ sheet.waste_origin_data }};
         const waste_origin_map_data = {{ sheet.waste_origin_map_data }};
         const icpe_2770_data = {{ sheet.icpe_2770_graph_data }};
+        const icpe_2790_data = {{ sheet.icpe_2790_graph_data }};
         const icpe_2760_data = {{ sheet.icpe_2760_graph_data }};
         {% endautoescape %}
     </script>
@@ -331,9 +340,13 @@
             "data": icpe_2770_data,
             "target": "icpe_2770_graph"
         }, {
+            "data": icpe_2790_data,
+            "target": "icpe_2790_graph"
+        },
+        {
             "data": icpe_2760_data,
             "target": "icpe_2760_graph"
-        }]
+        }];
 
         for (const config of plot_configs) {
             if (isNotEmpty(config.data)) {

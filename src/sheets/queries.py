@@ -322,7 +322,7 @@ SELECT
     quantite_traitee AS processed_quantity,
     quantite_autorisee AS authorized_quantity
 FROM
-    refined_zone_icpe.installations_annual_processed_wastes
+    refined_zone_icpe.installations_daily_processed_wastes
 WHERE
     siret = :siret
     and rubrique = :rubrique

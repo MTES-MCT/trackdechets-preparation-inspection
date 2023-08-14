@@ -1,6 +1,6 @@
 import json
 import locale
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict
 
 import geopandas as gpd
@@ -932,14 +932,31 @@ class ICPEAnnualItemProcessor:
     def _create_figure(self) -> None:
         df = self.preprocessed_df
         authorized_quantity = self.authorized_quantity
-        trace = go.Scatter(
-            x=df["day_of_processing"],
-            y=df["quantity_cumsum"],
-            hovertemplate="Le %{x|%d-%m-%Y} : <b>%{y:.2f}t</b> traitées au total sur l'année<extra></extra>",
-            line_width=2,
-        )
 
-        fig = go.Figure([trace])
+        traces = []
+        for _, temp_df in df.groupby(df["day_of_processing"].dt.year):
+            trace = go.Scatter(
+                x=temp_df["day_of_processing"],
+                y=temp_df["quantity_cumsum"],
+                hovertemplate="Le %{x|%d-%m-%Y} : <b>%{y:.2f}t</b> traitées au total sur l'année<extra></extra>",
+                line_width=2,
+            )
+            traces.append(trace)
+
+        fig = go.Figure(traces)
+
+        for trace in traces[1:]:
+            year = trace["x"][0].year
+            x = min(trace["x"])
+            fig.add_vline(
+                line_dash="dot",
+                line_color="black",
+                line_width=2,
+                x=x.timestamp()
+                * 1000,  # Due to this bug : https://github.com/plotly/plotly.py/issues/3065, we have to convert to epoch here
+                annotation_text=f"{year}",
+                annotation_position="top right",
+            )
 
         fig.update_layout(
             margin={"t": 30, "l": 35, "r": 70},

@@ -210,39 +210,48 @@
         </div>
         {# ICPE #}
         <h2 class="section__title">Données installation classée pour la protection de l'Environnement (ICPE)</h2>
-        <p>
-            Les données ICPE proviennent de la base Géorisques. Ces données ne sont pas à jour et synchronisées pour
-            le moment faute de lien entre Trackdéchets et Géorisque.
-        </p>
-        <div class="row">
-            <div class="cell cell--bordered cell--full">
-                <h3 class="cell__title">Données relatives à la rubrique 2770</h3>
-                <div id="icpe_2770_graph">
-                    <div class="no-data">Pas de données à afficher.</div>
+        {% if computed.icpe_data %}
+            <p>
+                Vous trouverez ci-aprés les données GUN/Géorisques telles qu'elles sont enregistrées dans GUN.
+                En cas de différence avec la réalité, merci de vérifier et mettre à jour GUN,
+                de façon à pouvoir vous proposer une analyse plus fine en lien avec les rubriques.
+            </p>
+            <div class="row">
+                <div class="cell cell--bordered cell--full">
+                    <h3 class="cell__title">Données relatives à la rubrique 2770</h3>
+                    <div id="icpe_2770_graph">
+                        <div class="no-data">Pas de données à afficher.</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="cell cell--bordered cell--full">
-                <h3 class="cell__title">Données relatives à la rubrique 2790</h3>
-                <div id="icpe_2790_graph">
-                    <div class="no-data">Pas de données à afficher.</div>
+            <div class="row">
+                <div class="cell cell--bordered cell--full">
+                    <h3 class="cell__title">Données relatives à la rubrique 2790</h3>
+                    <div id="icpe_2790_graph">
+                        <div class="no-data">Pas de données à afficher.</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="cell cell--bordered cell--full">
-                <h3 class="cell__title">Données relatives à la rubrique 2760-1</h3>
-                <div id="icpe_2760_graph">
-                    <div class="no-data">Pas de données à afficher.</div>
+            <div class="row">
+                <div class="cell cell--bordered cell--full">
+                    <h3 class="cell__title">Données relatives à la rubrique 2760-1</h3>
+                    <div id="icpe_2760_graph">
+                        <div class="no-data">Pas de données à afficher.</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div>
-            {# Rubriques list #}
-            {% render_icpe sheet %}
-            {# end Rubriques list #}
-        </div>
+            <div>
+                {# Rubriques list #}
+                {% render_icpe sheet %}
+                {# end Rubriques list #}
+            </div>
+        {% else %}
+            <div class="no-data-section">PAS DE DONNÉES ICPE.</div>
+            <p>
+                Les données GUN / Géorisques ne nous permettent pas de disposer des données ICPE et ainsi vous proposer une analyse plus fine en lien avec les rubriques.
+                Pour disposer de ces données, merci de vous assurer que le SIRET de l'établissement est complété dans GUN et qu'il est bien à jour (à corroborer avec l'exploitant).
+            </p>
+        {% endif %}
         <div>{% render_traceabilty_break sheet %}</div>
         {# end ICPE #}
         {# bsd canceled table #}

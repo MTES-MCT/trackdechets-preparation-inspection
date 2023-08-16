@@ -160,6 +160,7 @@ ul {
 /* Sections */
 .no-data-section {
   text-align: center;
+  margin-bottom: 10px;
 }
 
 /* Tables*/

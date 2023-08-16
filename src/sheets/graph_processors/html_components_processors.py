@@ -871,6 +871,9 @@ class ICPEItemsProcessor:
     def _preprocess_data(self) -> List[Dict[str, Any]]:
         df = self.icpe_data
 
+        if df is None:
+            return
+
         df["rubrique_alinea"] = df["rubrique"] + ("-" + df["alinea"]).fillna("")
         df["quantite"] = df["quantite"].apply(format_number_str, precision=3)
 

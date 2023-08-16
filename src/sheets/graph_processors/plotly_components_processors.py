@@ -1,6 +1,6 @@
 import json
 import locale
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict
 
 import geopandas as gpd

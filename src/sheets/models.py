@@ -114,6 +114,10 @@ class ComputedInspectionData(models.Model):
     private_individuals_collections_data = models.JSONField(default=dict)
     quantity_outliers_data = models.JSONField(default=dict)
 
+    icpe_2770_data = models.JSONField(default=dict)
+    icpe_2790_data = models.JSONField(default=dict)
+    icpe_2760_data = models.JSONField(default=dict)
+
     # Prerendered plotly viz
 
     bsdd_created_rectified_graph = models.TextField(blank=True)
@@ -137,9 +141,9 @@ class ComputedInspectionData(models.Model):
     waste_origin_graph = models.TextField(blank=True)
     waste_origin_map_graph = models.TextField(blank=True)
 
-    icpe_2770_graph_data = models.TextField(blank=True)
-    icpe_2790_graph_data = models.TextField(blank=True)
-    icpe_2760_graph_data = models.TextField(blank=True)
+    icpe_2770_graph = models.TextField(blank=True)
+    icpe_2790_graph = models.TextField(blank=True)
+    icpe_2760_graph = models.TextField(blank=True)
 
     pdf = models.TextField(blank=True)
 

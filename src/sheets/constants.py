@@ -34,4 +34,7 @@ PLOTLY_GRAPHS_TO_RENDER_IN_PDF = [
     "bsvhu_stock",
     "waste_origin",
     "waste_origin_map",
+    "icpe_2770",
+    "icpe_2790",
+    "icpe_2760",
 ]

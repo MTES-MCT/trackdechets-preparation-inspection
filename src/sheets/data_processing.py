@@ -218,21 +218,21 @@ class SheetProcessor:
             icpe_2770_data,
         )
         icpe_2770_graph_data = icpe_2770_graph.build()
-        setattr(self.computed, "icpe_2770_graph_data", icpe_2770_graph_data)
+        setattr(self.computed, "icpe_2770_data", icpe_2770_graph_data)
 
         icpe_2790_data = get_icpe_item_data(siret=self.siret, rubrique="2790")
         icpe_2790_graph = ICPEDailyItemProcessor(
             icpe_2790_data,
         )
         icpe_2790_graph_data = icpe_2790_graph.build()
-        setattr(self.computed, "icpe_2790_graph_data", icpe_2790_graph_data)
+        setattr(self.computed, "icpe_2790_data", icpe_2790_graph_data)
 
         icpe_2760_data = get_icpe_item_data(siret=self.siret, rubrique="2760-1")
         icpe_2760_graph = ICPEAnnualItemProcessor(
             icpe_2760_data,
         )
         icpe_2760_graph_data = icpe_2760_graph.build()
-        setattr(self.computed, "icpe_2760_graph_data", icpe_2760_graph_data)
+        setattr(self.computed, "icpe_2760_data", icpe_2760_graph_data)
 
     def _process_bsds(self):
         additional_data = {"date_outliers": {}, "quantity_outliers": {}}

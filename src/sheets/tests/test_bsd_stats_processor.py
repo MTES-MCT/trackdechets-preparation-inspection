@@ -145,6 +145,8 @@ def data_date_interval():
                         "bar_size_outgoing": 50,
                     }
                 },
+                "revised_bs_count": "0",
+                "weight_volume_ratio": None,
             },
         ),
         (
@@ -170,6 +172,8 @@ def data_date_interval():
                         "bar_size_outgoing": 100,
                     }
                 },
+                "revised_bs_count": "0",
+                "weight_volume_ratio": None,
             },
         ),
     ],
@@ -191,12 +195,7 @@ def test_bsd_stats_processor(siret, sample_bs_data, data_date_interval, expected
     # Test statistics computation
     context = bs_processor.build_context()
 
-    assert context["emitted_bs_stats"] == expected["emitted_bs_stats"]
-    assert context["received_bs_stats"] == expected["received_bs_stats"]
-    assert (
-        context["quantities_stats"]["quantity_received"]
-        == expected["quantities_stats"]["quantity_received"]
-    )
+    assert context == expected
 
 
 @pytest.mark.parametrize(

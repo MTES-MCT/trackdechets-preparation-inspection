@@ -1,3 +1,4 @@
+import random
 import pandas as pd
 import pytest
 from datetime import datetime, timedelta
@@ -104,9 +105,77 @@ def sample_bs_data_empty():
     return bs_data
 
 
-def test_bsd_stats_processor(sample_bs_data):
-    siret = "123456789"
-    bs_processor = BsdStatsProcessor(siret, sample_bs_data)
+@pytest.fixture
+def data_date_interval():
+    """
+    Generate a tuple with two random dates representing a date interval.
+    The first date is older than the second one.
+    """
+    today = datetime.today()
+    days_before = random.randint(
+        365, 500
+    )  # Generate a random number of days up to one year
+    start_date = today - timedelta(days=days_before)
+    return start_date, today
+
+
+@pytest.mark.parametrize(
+    "siret, expected",
+    [
+        (
+            "123456789",
+            {
+                "emitted_bs_stats": {
+                    "total": "3",
+                    "archived": "1",
+                    "processed_in_more_than_one_month_count": "1",
+                    "processed_in_more_than_one_month_avg_processing_time": "60j",
+                },
+                "received_bs_stats": {
+                    "total": "3",
+                    "archived": "3",
+                    "processed_in_more_than_one_month_count": "1",
+                    "processed_in_more_than_one_month_avg_processing_time": "60j",
+                },
+                "quantities_stats": {
+                    "quantity_received": {
+                        "total_quantity_incoming": "34.7",
+                        "total_quantity_outgoing": "17.5",
+                        "bar_size_incoming": 100,
+                        "bar_size_outgoing": 50,
+                    }
+                },
+            },
+        ),
+        (
+            "987654321",
+            {
+                "emitted_bs_stats": {
+                    "total": "3",
+                    "archived": "3",
+                    "processed_in_more_than_one_month_count": "1",
+                    "processed_in_more_than_one_month_avg_processing_time": "60j",
+                },
+                "received_bs_stats": {
+                    "total": "3",
+                    "archived": "1",
+                    "processed_in_more_than_one_month_count": "1",
+                    "processed_in_more_than_one_month_avg_processing_time": "60j",
+                },
+                "quantities_stats": {
+                    "quantity_received": {
+                        "total_quantity_incoming": "17.5",
+                        "total_quantity_outgoing": "34.7",
+                        "bar_size_incoming": 50,
+                        "bar_size_outgoing": 100,
+                    }
+                },
+            },
+        ),
+    ],
+)
+def test_bsd_stats_processor(siret, sample_bs_data, data_date_interval, expected):
+    bs_processor = BsdStatsProcessor(siret, sample_bs_data, data_date_interval)
 
     # Test initialization
     assert bs_processor.company_siret == siret
@@ -122,48 +191,67 @@ def test_bsd_stats_processor(sample_bs_data):
     # Test statistics computation
     context = bs_processor.build_context()
 
-    assert context["emitted_bs_stats"]["total"] == "3"
-    assert context["received_bs_stats"]["total"] == "3"
-
-    assert context["emitted_bs_stats"]["archived"] == "1"
-    assert context["received_bs_stats"]["archived"] == "3"
-
-    assert context["emitted_bs_stats"]["processed_in_more_than_one_month_count"] == "1"
-    assert context["received_bs_stats"]["processed_in_more_than_one_month_count"] == "1"
-
+    assert context["emitted_bs_stats"] == expected["emitted_bs_stats"]
+    assert context["received_bs_stats"] == expected["received_bs_stats"]
     assert (
-        context["emitted_bs_stats"][
-            "processed_in_more_than_one_month_avg_processing_time"
-        ]
-        == "60j"
-    )
-    assert (
-        context["received_bs_stats"][
-            "processed_in_more_than_one_month_avg_processing_time"
-        ]
-        == "60j"
-    )
-
-    assert (
-        context["quantities_stats"]["quantity_received"]["total_quantity_incoming"]
-        == "34.7"
-    )
-    assert (
-        context["quantities_stats"]["quantity_received"]["total_quantity_outgoing"]
-        == "17.5"
+        context["quantities_stats"]["quantity_received"]
+        == expected["quantities_stats"]["quantity_received"]
     )
 
 
-def test_bsd_stats_processor_multiple_quantity_variables(sample_bs_data):
-    siret = "123456789"
+@pytest.mark.parametrize(
+    "siret, quantity_variables_names, expected",
+    [
+        (
+            "123456789",
+            ["quantity_received", "volume"],
+            {
+                "emitted_bs_stats": {
+                    "total": "3",
+                    "archived": "1",
+                    "processed_in_more_than_one_month_count": "1",
+                    "processed_in_more_than_one_month_avg_processing_time": "60j",
+                },
+                "revised_bs_count": "0",
+                "received_bs_stats": {
+                    "total": "3",
+                    "archived": "3",
+                    "processed_in_more_than_one_month_count": "1",
+                    "processed_in_more_than_one_month_avg_processing_time": "60j",
+                },
+                "quantities_stats": {
+                    "quantity_received": {
+                        "total_quantity_incoming": "34.7",
+                        "total_quantity_outgoing": "17.5",
+                        "bar_size_incoming": 100,
+                        "bar_size_outgoing": 50,
+                    },
+                    "volume": {
+                        "total_quantity_incoming": "34.7",
+                        "total_quantity_outgoing": "17.5",
+                        "bar_size_incoming": 100,
+                        "bar_size_outgoing": 50,
+                    },
+                },
+                "weight_volume_ratio": "1 000",
+            },
+        ),
+    ],
+)
+def test_bsd_stats_processor_multiple_quantity_variables(
+    siret, quantity_variables_names, sample_bs_data, data_date_interval, expected
+):
     bs_processor = BsdStatsProcessor(
-        siret, sample_bs_data, quantity_variables_names=["quantity_received", "volume"]
+        siret,
+        sample_bs_data,
+        data_date_interval,
+        quantity_variables_names=quantity_variables_names,
     )
 
     # Test initialization
     assert bs_processor.company_siret == siret
     assert isinstance(bs_processor.bs_data, pd.DataFrame)
-    assert bs_processor.quantity_variables_names == ["quantity_received", "volume"]
+    assert bs_processor.quantity_variables_names == quantity_variables_names
     assert bs_processor.bs_revised_data is None
     assert bs_processor.packagings_data is None
 
@@ -174,28 +262,25 @@ def test_bsd_stats_processor_multiple_quantity_variables(sample_bs_data):
     # Test statistics computation
     context = bs_processor.build_context()
 
-    assert context["emitted_bs_stats"]["total"] == "3"
-    assert context["received_bs_stats"]["total"] == "3"
-    assert (
-        context["quantities_stats"]["quantity_received"]["total_quantity_incoming"]
-        == "34.7"
-    )
-    assert context["quantities_stats"]["volume"]["total_quantity_incoming"] == "34.7"
-    assert (
-        context["quantities_stats"]["quantity_received"]["total_quantity_outgoing"]
-        == "17.5"
-    )
-    assert context["quantities_stats"]["volume"]["total_quantity_incoming"] == "34.7"
-    assert context["weight_volume_ratio"] == "1 000"
+    assert context == expected
 
 
-def test_bsd_stats_processor_empty_data(sample_bs_data_empty):
+@pytest.mark.parametrize(
+    "siret, expected",
+    [
+        (
+            "123456789",
+            {},
+        ),
+    ],
+)
+def test_bsd_stats_processor_empty_data(
+    siret, sample_bs_data_empty, data_date_interval, expected
+):
     # Test when the input data is empty
-    siret = "123456789"
-    empty_bs_data = sample_bs_data_empty
-    bs_processor = BsdStatsProcessor(siret, empty_bs_data)
+    bs_processor = BsdStatsProcessor(siret, sample_bs_data_empty, data_date_interval)
     bs_processor._preprocess_data()
     assert bs_processor._check_data_empty() == True
 
     data = bs_processor.build()
-    assert data == {}
+    assert data == expected

@@ -190,7 +190,7 @@ def test_bsd_stats_processor(siret, sample_bs_data, data_date_interval, expected
 
     # Test preprocessing
     bs_processor._preprocess_data()
-    assert bs_processor._check_data_empty() == False
+    assert bs_processor._check_data_empty() is False
 
     # Test statistics computation
     context = bs_processor.build_context()
@@ -256,7 +256,7 @@ def test_bsd_stats_processor_multiple_quantity_variables(
 
     # Test preprocessing
     bs_processor._preprocess_data()
-    assert bs_processor._check_data_empty() == False
+    assert bs_processor._check_data_empty() is False
 
     # Test statistics computation
     context = bs_processor.build_context()
@@ -279,7 +279,7 @@ def test_bsd_stats_processor_empty_data(
     # Test when the input data is empty
     bs_processor = BsdStatsProcessor(siret, sample_bs_data_empty, data_date_interval)
     bs_processor._preprocess_data()
-    assert bs_processor._check_data_empty() == True
+    assert bs_processor._check_data_empty() is True
 
     data = bs_processor.build()
     assert data == expected

@@ -805,7 +805,9 @@ class ICPEDailyItemProcessor:
 
         self.mean_quantity = df["processed_quantity"].mean()
 
-        series = df.set_index("day_of_processing").squeeze()
+        series = df.set_index("day_of_processing")
+        if len(series) > 1:
+            series = series.squeeze()
         final_df = series.resample("1d").max().fillna(0).reset_index()
 
         self.preprocessed_df = final_df
@@ -941,6 +943,7 @@ class ICPEAnnualItemProcessor:
         authorized_quantity = self.authorized_quantity
 
         traces = []
+
         for _, temp_df in df.groupby(df["day_of_processing"].dt.year):
             trace = go.Scatter(
                 x=temp_df["day_of_processing"],
@@ -948,6 +951,7 @@ class ICPEAnnualItemProcessor:
                 hovertemplate="Le %{x|%d-%m-%Y} : <b>%{y:.2f}t</b> traitées au total sur l'année<extra></extra>",
                 line_width=2,
             )
+
             traces.append(trace)
 
         fig = go.Figure(traces)
@@ -1003,6 +1007,10 @@ class ICPEAnnualItemProcessor:
         )
 
         fig.update_xaxes(
+            range=[
+                df["day_of_processing"].min(),
+                df["day_of_processing"].max() + pd.Timedelta(value="7d"),
+            ],
             gridcolor="#ccc",
             zeroline=True,
             linewidth=1,

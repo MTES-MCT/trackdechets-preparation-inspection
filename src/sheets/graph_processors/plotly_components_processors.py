@@ -41,7 +41,9 @@ class BsdQuantitiesGraph:
         self.packagings_data = packagings_data
         self.company_siret = company_siret
         self.data_date_interval = data_date_interval
-        self.quantity_variables_names = quantity_variables_names
+        self.quantity_variables_names = self._validate_quantity_variables_names(
+            quantity_variables_names, packagings_data
+        )
 
         self.incoming_data_by_month_series = []
         self.outgoing_data_by_month_series = []
@@ -49,6 +51,27 @@ class BsdQuantitiesGraph:
         self.figure = None
 
         self.figure = None
+
+    @staticmethod
+    def _validate_quantity_variables_names(quantity_variables_names, packagings_data):
+        allowed_quantity_variables_names = [
+            "quantity_received",
+            "acceptation_weight",
+            "volume",
+        ]
+
+        clean_quantity_variables_names = [
+            e for e in quantity_variables_names if e in allowed_quantity_variables_names
+        ]
+
+        # Allows to handle the case when there is no packagings data but there is BSFF data
+        if packagings_data is None:
+            clean_quantity_variables_names = [
+                e if e != "acceptation_weight" else "quantity_received"
+                for e in clean_quantity_variables_names
+            ]
+
+        return list(set(clean_quantity_variables_names))
 
     def _preprocess_data(self) -> None:
         bs_data = self.bs_data

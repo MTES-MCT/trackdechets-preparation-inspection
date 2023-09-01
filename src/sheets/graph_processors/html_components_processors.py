@@ -47,7 +47,9 @@ class BsdStatsProcessor:
 
         self.bs_data = bs_data
         self.data_date_interval = data_date_interval
-        self.quantity_variables_names = quantity_variables_names
+        self.quantity_variables_names = self._validate_quantity_variables_names(
+            quantity_variables_names, packagings_data
+        )
         self.bs_revised_data = bs_revised_data
         self.packagings_data = packagings_data
 
@@ -85,6 +87,27 @@ class BsdStatsProcessor:
         }
 
         self.weight_volume_ratio = None
+
+    @staticmethod
+    def _validate_quantity_variables_names(quantity_variables_names, packagings_data):
+        allowed_quantity_variables_names = [
+            "quantity_received",
+            "acceptation_weight",
+            "volume",
+        ]
+
+        clean_quantity_variables_names = [
+            e for e in quantity_variables_names if e in allowed_quantity_variables_names
+        ]
+
+        # Allows to handle the case when there is no packagings data but there is BSFF data
+        if packagings_data is None:
+            clean_quantity_variables_names = [
+                e if e != "acceptation_weight" else "quantity_received"
+                for e in clean_quantity_variables_names
+            ]
+
+        return list(set(clean_quantity_variables_names))
 
     def _check_data_empty(self) -> bool:
         bs_data = self.bs_data

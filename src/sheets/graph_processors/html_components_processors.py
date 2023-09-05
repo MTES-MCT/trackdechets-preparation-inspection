@@ -1342,3 +1342,101 @@ class QuantityOutliersTableProcessor:
         if not self._check_data_empty():
             return self._add_stats()
         return []
+
+
+class WasteProcessingWithoutICPEProcessor:
+    """Component that detects when waste is processed without having a 'rubrique' in ICPE data.
+
+    Parameters
+    ----------
+    company_siret: str
+        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
+    bs_data_dfs: dict
+        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
+    icpe_data: pd.DataFrame
+        DataFrame containing the list of authorized 'rubriques'.
+    """
+
+    def __init__(
+        self,
+        company_siret: str,
+        bs_data_dfs: Dict[str, pd.DataFrame],
+        icpe_data: pd.DataFrame,
+        data_date_interval: tuple[datetime, datetime],
+    ) -> None:
+        self.siret = company_siret
+        self.bs_data_dfs = bs_data_dfs
+        self.icpe_data = icpe_data
+        self.data_date_interval = data_date_interval
+
+        self.process_bsdd_without_2760 = None
+        self.quantity_processed_bsdd_without_2760 = None
+        self.process_bsda_without_2760 = None
+        self.quantity_processed_bsda_without_2760 = None
+
+    def _preprocess_data(self) -> None:
+        bsdd_data = self.bs_data_dfs[BSDD]
+        bsdd_data_filtered = bsdd_data[
+            (bsdd_data["recipient_company_siret"] == self.siret)
+            & (bsdd_data["processing_operation_code"] == "D5")
+            & (bsdd_data["processed_at"].between(*self.data_date_interval))
+        ]
+
+        bsda_data = self.bs_data_dfs[BSDA]
+        bsda_data_filtered = bsda_data[
+            (bsda_data["recipient_company_siret"] == self.siret)
+            & (bsda_data["processing_operation_code"] == "D5")
+            & (bsdd_data["processed_at"].between(*self.data_date_interval))
+        ]
+
+        icpe_data = self.icpe_data
+
+        has_2760_1 = (
+            len(
+                icpe_data[
+                    (icpe_data["rubrique"] == "2760") & (icpe_data["alinea"] == 1)
+                ]
+            )
+            > 0
+        )
+        has_2760_2 = (
+            len(
+                icpe_data[
+                    (icpe_data["rubrique"] == "2760") & (icpe_data["alinea"] == 2)
+                ]
+            )
+            > 0
+        )
+
+        if len(bsdd_data_filtered) > 0 and not has_2760_1:
+            self.process_bsdd_without_2760 = True
+            self.quantity_processed_bsdd_without_2760 = bsdd_data_filtered[
+                bsdd_data_filtered["processed_at"].notna()
+            ]["quantity_received"].sum()
+
+        if len(bsda_data_filtered) > 0 and not (has_2760_1 or has_2760_2):
+            self.process_bsdd_without_2760 = True
+
+    def _check_data_empty(self) -> bool:
+        if (
+            self.process_bsdd_without_2760 is None
+            or self.process_bsda_without_2760 is None
+        ):
+            return True
+
+        return False
+
+    def _add_stats(self) -> list:
+        stats = {
+            "process_bsdd_without_2760": self.process_bsdd_without_2760,
+            "process_bsda_without_2760": self.process_bsda_without_2760,
+        }
+
+        return stats
+
+    def build(self) -> list:
+        self._preprocess_data()
+
+        if not self._check_data_empty():
+            return self._add_stats()
+        return {}

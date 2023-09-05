@@ -134,3 +134,4 @@ staticfiles/
 # custom
 public/
 .vscode
+.DS_Store

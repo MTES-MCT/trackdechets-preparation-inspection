@@ -114,10 +114,6 @@ class ComputedInspectionData(models.Model):
     private_individuals_collections_data = models.JSONField(default=dict)
     quantity_outliers_data = models.JSONField(default=dict)
 
-    icpe_2770_data = models.JSONField(default=dict)
-    icpe_2790_data = models.JSONField(default=dict)
-    icpe_2760_data = models.JSONField(default=dict)
-
     # Prerendered plotly viz
 
     bsdd_created_rectified_graph = models.TextField(blank=True)
@@ -144,6 +140,8 @@ class ComputedInspectionData(models.Model):
     icpe_2770_graph = models.TextField(blank=True)
     icpe_2790_graph = models.TextField(blank=True)
     icpe_2760_graph = models.TextField(blank=True)
+
+    waste_processing_without_icpe_data = models.JSONField(default=dict)
 
     pdf = models.TextField(blank=True)
 

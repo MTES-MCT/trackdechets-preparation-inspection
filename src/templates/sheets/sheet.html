@@ -251,6 +251,10 @@
                 Les données GUN / Géorisques ne nous permettent pas de disposer des données ICPE et ainsi vous proposer une analyse plus fine en lien avec les rubriques.
                 Pour disposer de ces données, merci de vous assurer que le SIRET de l'établissement est complété dans GUN et qu'il est bien à jour (à corroborer avec l'exploitant).
             </p>
+            <div class="cell cell--bordered cell--full">
+                <h3 class="cell__title">⚠️ L'établissement a traité des déchets dangereux mais les données ICPE sont manquantes</h3>
+                {% render_agreements sheet %}
+            </div>
         {% endif %}
         <div>{% render_traceabilty_break sheet %}</div>
         {# end ICPE #}

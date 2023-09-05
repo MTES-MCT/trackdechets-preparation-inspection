@@ -368,13 +368,11 @@ class SheetProcessor:
         quantity_outliers_table = QuantityOutliersTableProcessor(self.bsds_dfs)
         self.computed.quantity_outliers_data = quantity_outliers_table.build()
 
-        bs_processed_without_icpe_authorization_data = (
-            WasteProcessingWithoutICPEProcessor(
-                self.siret, self.bsds_dfs, icpe_data, data_date_interval
-            )
+        waste_processing_without_icpe_data = WasteProcessingWithoutICPEProcessor(
+            self.siret, self.bsds_dfs, icpe_data
         )
-        self.computed.bs_processed_without_icpe_authorization = (
-            bs_processed_without_icpe_authorization_data.build()
+        self.computed.waste_processing_without_icpe_data = (
+            waste_processing_without_icpe_data.build()
         )
 
         self.computed.state = ComputedInspectionData.StateChoice.COMPUTED

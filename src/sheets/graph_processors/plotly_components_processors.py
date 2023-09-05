@@ -1013,13 +1013,34 @@ class ICPEAnnualItemProcessor:
                 yref="y",
                 x=1,
                 y=authorized_quantity,
-                text=f"Quantité maximale <br>autorisée :<b>{format_number_str(authorized_quantity,2)}</b> t/an",
+                text=f"Quantité maximale <br>autorisée : <b>{format_number_str(authorized_quantity,2)}</b> t/an",
                 font_color="red",
                 xanchor="left",
                 showarrow=False,
                 textangle=-90,
                 font_size=13,
             )
+
+            # Target for 2025
+            fig.add_hline(
+                y=authorized_quantity / 2,
+                line_dash="dot",
+                line_color="black",
+                line_width=2,
+            )
+            fig.add_annotation(
+                xref="x domain",
+                yref="y",
+                x=1,
+                y=authorized_quantity / 2,
+                text=f"Objectif 50% pour 2025 : <b>{format_number_str(authorized_quantity/2,2)}</b> t/an",
+                font_color="black",
+                xanchor="left",
+                showarrow=False,
+                textangle=-90,
+                font_size=12,
+            )
+
             if authorized_quantity > max_y:
                 max_y = authorized_quantity
 

@@ -27,30 +27,12 @@
                             {% endif %}
                         </td>
                         <td>{{ row.sent_at }}</td>
-                        <td>
-                            {% if row.received_at %}
-                                {{ row.received_at }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if row.worksite_name %}
-                                {{ row.worksite_name }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
+                        <td>{{ row.received_at|default:"N/A" }}</td>
+                        <td>{{ row.worksite_name|default:"N/A" }}</td>
                         <td>{{ row.worksite_address }}</td>
                         <td>{{ row.waste_code }}</td>
                         <td>{{ row.waste_name }}</td>
-                        <td class="td--right">
-                            {% if row.quantity_received %}
-                                {{ row.quantity_received }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
+                        <td class="td--right">{{ row.quantity_received|default:"N/A" }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

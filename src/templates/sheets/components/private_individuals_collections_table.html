@@ -44,57 +44,15 @@
                                 {% endif %}
                             </td>
                         {% endif %}
-                        <td>
-                            {% if row.sent_at %}
-                                {{ row.sent_at }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if row.received_at %}
-                                {{ row.received_at }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if row.emitter_company_name %}
-                                {{ row.emitter_company_name }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if row.emitter_company_address %}
-                                {{ row.emitter_company_address }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if row.worksite_name %}
-                                {{ row.worksite_name }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if row.worksite_address %}
-                                {{ row.worksite_address }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
+                        <td>{{ row.sent_at|default:"N/A" }}</td>
+                        <td>{{ row.received_at|default:"N/A" }}</td>
+                        <td>{{ row.emitter_company_name|default:"N/A" }}</td>
+                        <td>{{ row.emitter_company_address|default:"N/A" }}</td>
+                        <td>{{ row.worksite_name|default:"N/A" }}</td>
+                        <td>{{ row.worksite_address|default:"N/A" }}</td>
                         <td>{{ row.waste_code }}</td>
                         <td>{{ row.waste_name }}</td>
-                        <td class="td--right">
-                            {% if row.quantity %}
-                                {{ row.quantity }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
+                        <td class="td--right">{{ row.quantity|default:"N/A" }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

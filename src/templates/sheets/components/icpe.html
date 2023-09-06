@@ -14,27 +14,9 @@
                 {% for row in icpe_data %}
                     <tr>
                         <td>{{ row.rubrique_alinea }}</td>
-                        <td>
-                            {% if row.nature %}
-                                {{ row.nature }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if row.quantite %}
-                                {{ row.quantite }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if row.unite %}
-                                {{ row.unite }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
+                        <td>{{ row.nature|default:"N/A" }}</td>
+                        <td>{{ row.quantite|default:"N/A" }}</td>
+                        <td>{{ row.unite|default:"N/A" }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

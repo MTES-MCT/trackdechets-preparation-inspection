@@ -5,6 +5,9 @@ Les changements importants de Trackdéchets préparation inspection sont documen
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 et le projet suit un schéma de versionning inspiré de [Calendar Versioning](https://calver.org/).
 
+## 06/09/2023
+- Ajout de nouveaux composants permettant de suivre les données ICPE de l'établissement.
+
 ## 07/08/2023
 - Ajout de la possibilité de choisir l'intervalle de dates pour lequel afficher les données.
 

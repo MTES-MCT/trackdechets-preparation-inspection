@@ -37,19 +37,9 @@
                                 {{ row.recipient_company_siret }}
                             {% endif %}
                         </td>
+                        <td>{{ row.sent_at|default:"N/A" }}</td>
                         <td>
-                            {% if row.sent_at %}
-                                {{ row.sent_at }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if row.received_at %}
-                                {{ row.received_at }}
-                            {% else %}
-                                N/A
-                            {% endif %}
+                            {{ row.received_at|default:"N/A" }}
                         </td>
                         <td>{{ row.waste_code }}</td>
                         <td>{{ row.waste_name }}</td>

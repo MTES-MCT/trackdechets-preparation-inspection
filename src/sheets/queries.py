@@ -265,16 +265,16 @@ where authoring_company_id = :company_id
 
 sql_get_icpe_data = """
 select
-    code_aiot as code_s3ic,
-    quantite_totale as volume,
-    unite,
+    code_aiot,
     rubrique,
     alinea,
-    nature as libelle_court_activite
+    quantite_totale as quantite,
+    unite,
+    nature
 from
     refined_zone_icpe.installations_rubriques
 where siret = :siret
-and regime_rubrique in ('Enregistrement','Déclaration avec contrôle','Déclaration','Autorisation')
+and (regime_rubrique in ('Enregistrement','Déclaration avec contrôle','Déclaration','Autorisation') or regime_rubrique is null)
 """
 
 sql_get_trader_receipt_id_data = """
@@ -313,4 +313,18 @@ FROM
     trusted_zone_trackdechets.vhu_agrement
 WHERE
     id = :id
+"""
+
+# TODO: Change columns names when model will evolve
+sql_get_icpe_item_data = """
+SELECT
+    day_of_processing,
+    quantite_traitee AS processed_quantity,
+    quantite_autorisee AS authorized_quantity
+FROM
+    refined_zone_icpe.installations_daily_processed_wastes
+WHERE
+    siret = :siret
+    and rubrique = :rubrique
+    and day_of_processing>='2022-01-01'
 """

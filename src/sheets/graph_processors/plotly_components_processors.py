@@ -41,7 +41,9 @@ class BsdQuantitiesGraph:
         self.packagings_data = packagings_data
         self.company_siret = company_siret
         self.data_date_interval = data_date_interval
-        self.quantity_variables_names = quantity_variables_names
+        self.quantity_variables_names = self._validate_quantity_variables_names(
+            quantity_variables_names, packagings_data
+        )
 
         self.incoming_data_by_month_series = []
         self.outgoing_data_by_month_series = []
@@ -49,6 +51,27 @@ class BsdQuantitiesGraph:
         self.figure = None
 
         self.figure = None
+
+    @staticmethod
+    def _validate_quantity_variables_names(quantity_variables_names, packagings_data):
+        allowed_quantity_variables_names = [
+            "quantity_received",
+            "acceptation_weight",
+            "volume",
+        ]
+
+        clean_quantity_variables_names = [
+            e for e in quantity_variables_names if e in allowed_quantity_variables_names
+        ]
+
+        # Allows to handle the case when there is no packagings data but there is BSFF data
+        if packagings_data is None:
+            clean_quantity_variables_names = [
+                e if e != "acceptation_weight" else "quantity_received"
+                for e in clean_quantity_variables_names
+            ]
+
+        return list(set(clean_quantity_variables_names))
 
     def _preprocess_data(self) -> None:
         bs_data = self.bs_data
@@ -762,6 +785,285 @@ class WasteOriginsMapProcessor:
         self.figure = fig
 
         self._preprocess_data()
+
+    def build(self):
+        self._preprocess_data()
+
+        figure = {}
+        if not self._check_data_empty():
+            self._create_figure()
+            figure = self.figure.to_json()
+
+        return figure
+
+
+class ICPEDailyItemProcessor:
+    """Component with a figure representing the quantity of waste processed by day for a particular ICPE "rubrique".
+
+
+    Parameters:
+    -----------
+    icpe_item_daily_data: DataFrame
+        DataFrame containing the waste processed data for a given ICPE "rubrique".
+    """
+
+    def __init__(
+        self,
+        icpe_item_daily_data: pd.DataFrame,
+    ) -> None:
+        self.icpe_item_daily_data = icpe_item_daily_data
+
+        self.preprocessed_df = None
+        self.authorized_quantity = None
+        self.mean_quantity = None
+
+        self.figure = None
+
+    def _preprocess_data(self) -> None:
+        if (self.icpe_item_daily_data is None) or (len(self.icpe_item_daily_data) == 0):
+            return
+
+        df = self.icpe_item_daily_data[["day_of_processing", "processed_quantity"]]
+        df = df.sort_values("day_of_processing")
+
+        self.mean_quantity = df["processed_quantity"].mean()
+
+        series = df.set_index("day_of_processing")
+        if len(series) > 1:
+            series = series.squeeze()
+        final_df = series.resample("1d").max().fillna(0).reset_index()
+
+        self.preprocessed_df = final_df
+        self.authorized_quantity = self.icpe_item_daily_data[
+            "authorized_quantity"
+        ].max()
+
+    def _check_data_empty(self) -> bool:
+        if (self.preprocessed_df is None) or len(self.preprocessed_df) == 0:
+            return True
+
+        return False
+
+    def _create_figure(self) -> None:
+        df = self.preprocessed_df
+        authorized_quantity = self.authorized_quantity
+        trace = go.Scatter(
+            x=df["day_of_processing"],
+            y=df["processed_quantity"],
+            hovertemplate="Le %{x|%d-%m-%Y} : <b>%{y:.2f}t</b> traitées<extra></extra>",
+            line_width=1.5,
+        )
+
+        fig = go.Figure([trace])
+
+        fig.update_layout(
+            margin={"t": 40, "l": 35, "r": 70},
+            legend_bgcolor="rgba(0,0,0,0)",
+            showlegend=False,
+            paper_bgcolor="#fff",
+            plot_bgcolor="rgba(0,0,0,0)",
+            title={
+                "text": f"Quantité moyenne traitée par jour : <b>{format_number_str(self.mean_quantity,2)}</b> t/j",
+                "font_size": 14,
+            },
+        )
+
+        max_y = df["processed_quantity"].max()
+        if not pd.isna(authorized_quantity):
+            fig.add_hline(
+                y=authorized_quantity,
+                line_dash="dot",
+                line_color="red",
+                line_width=3,
+            )
+            fig.add_annotation(
+                xref="x domain",
+                yref="y",
+                x=1,
+                y=authorized_quantity,
+                text=f"Quantité maximale <br>autorisée :<b>{format_number_str(authorized_quantity,2)}</b> t/jour",
+                font_color="red",
+                xanchor="left",
+                showarrow=False,
+                textangle=-90,
+                font_size=13,
+            )
+            if authorized_quantity > max_y:
+                max_y = authorized_quantity
+
+        fig.update_yaxes(
+            range=[0, max_y * 1.3], gridcolor="#ccc", title="Quantité traitée en tonnes"
+        )
+
+        fig.update_xaxes(
+            gridcolor="#ccc",
+            zeroline=True,
+            linewidth=1,
+            linecolor="black",
+            title="Date du traitement",
+        )
+
+        self.figure = fig
+
+    def build(self):
+        self._preprocess_data()
+
+        figure = {}
+        if not self._check_data_empty():
+            self._create_figure()
+            figure = self.figure.to_json()
+
+        return figure
+
+
+class ICPEAnnualItemProcessor:
+    """Component with a figure representing the cummulative quantity of waste processed by day for a particular ICPE "rubrique".
+
+
+    Parameters:
+    -----------
+    icpe_item_daily_data: DataFrame
+        DataFrame containing the waste processed data for a given ICPE "rubrique".
+    """
+
+    def __init__(
+        self,
+        icpe_item_daily_data: pd.DataFrame,
+    ) -> None:
+        self.icpe_item_daily_data = icpe_item_daily_data
+
+        self.preprocessed_df = None
+        self.authorized_quantity = None
+
+        self.figure = None
+
+    def _preprocess_data(self) -> None:
+        if (self.icpe_item_daily_data is None) or (len(self.icpe_item_daily_data) == 0):
+            return
+
+        df = self.icpe_item_daily_data[["day_of_processing", "processed_quantity"]]
+        df = df.sort_values("day_of_processing")
+
+        series = df.set_index("day_of_processing").squeeze()
+        final_df = series.resample("1d").max().fillna(0).reset_index()
+        final_df["quantity_cumsum"] = final_df.groupby(
+            final_df["day_of_processing"].dt.year
+        ).cumsum()
+
+        self.preprocessed_df = final_df
+        self.authorized_quantity = self.icpe_item_daily_data[
+            "authorized_quantity"
+        ].max()
+
+    def _check_data_empty(self) -> bool:
+        if (self.preprocessed_df is None) or len(self.preprocessed_df) == 0:
+            return True
+
+        return False
+
+    def _create_figure(self) -> None:
+        df = self.preprocessed_df
+        authorized_quantity = self.authorized_quantity
+
+        traces = []
+
+        for _, temp_df in df.groupby(df["day_of_processing"].dt.year):
+            trace = go.Scatter(
+                x=temp_df["day_of_processing"],
+                y=temp_df["quantity_cumsum"],
+                hovertemplate="Le %{x|%d-%m-%Y} : <b>%{y:.2f}t</b> traitées au total sur l'année<extra></extra>",
+                line_width=2,
+            )
+
+            traces.append(trace)
+
+        fig = go.Figure(traces)
+
+        for trace in traces[1:]:
+            year = trace["x"][0].year
+            x = min(trace["x"])
+            fig.add_vline(
+                line_dash="dot",
+                line_color="black",
+                line_width=2,
+                x=x.timestamp()
+                * 1000,  # Due to this bug : https://github.com/plotly/plotly.py/issues/3065, we have to convert to epoch here
+                annotation_text=f"{year}",
+                annotation_position="top right",
+            )
+
+        fig.update_layout(
+            margin={"t": 30, "l": 35, "r": 70},
+            legend_bgcolor="rgba(0,0,0,0)",
+            showlegend=False,
+            paper_bgcolor="#fff",
+            plot_bgcolor="rgba(0,0,0,0)",
+        )
+
+        max_y = df["quantity_cumsum"].max()
+        if not pd.isna(authorized_quantity):
+            fig.add_hline(
+                y=authorized_quantity,
+                line_dash="dot",
+                line_color="red",
+                line_width=3,
+            )
+            fig.add_annotation(
+                xref="x domain",
+                yref="y",
+                x=1,
+                y=authorized_quantity,
+                text=f"Quantité maximale <br>autorisée : <b>{format_number_str(authorized_quantity,2)}</b> t/an",
+                font_color="red",
+                xanchor="left",
+                showarrow=False,
+                textangle=-90,
+                font_size=13,
+            )
+
+            if authorized_quantity > 0:
+                # Target for 2025
+                fig.add_hline(
+                    y=authorized_quantity / 2,
+                    line_dash="dot",
+                    line_color="black",
+                    line_width=2,
+                )
+                fig.add_annotation(
+                    xref="x domain",
+                    yref="y",
+                    x=1,
+                    y=authorized_quantity / 2,
+                    text=f"Objectif 50% pour 2025 : <b>{format_number_str(authorized_quantity/2,2)}</b> t/an",
+                    font_color="black",
+                    xanchor="left",
+                    showarrow=False,
+                    textangle=-90,
+                    font_size=12,
+                )
+
+            if authorized_quantity > max_y:
+                max_y = authorized_quantity
+
+        fig.update_yaxes(
+            range=[0, max_y * 1.3],
+            gridcolor="#ccc",
+            title="Quantité traitée en tonnes<br>(somme cummulée annuellement)",
+        )
+
+        fig.update_xaxes(
+            range=[
+                df["day_of_processing"].min(),
+                df["day_of_processing"].max() + pd.Timedelta(value="7d"),
+            ],
+            gridcolor="#ccc",
+            zeroline=True,
+            linewidth=1,
+            linecolor="black",
+            title="Date du traitement",
+        )
+
+        self.figure = fig
 
     def build(self):
         self._preprocess_data()

@@ -21,6 +21,7 @@ from .database import (
     build_revised_bsda_query,
     build_revised_bsdd_query,
     get_agreement_data,
+    get_icpe_item_data,
     get_icpe_data,
 )
 from .graph_processors.html_components_processors import (
@@ -40,6 +41,8 @@ from .graph_processors.html_components_processors import (
 from .graph_processors.plotly_components_processors import (
     BsdQuantitiesGraph,
     BsdTrackedAndRevisedProcessor,
+    ICPEAnnualItemProcessor,
+    ICPEDailyItemProcessor,
     WasteOriginProcessor,
     WasteOriginsMapProcessor,
 )
@@ -195,18 +198,6 @@ class SheetProcessor:
                 all_bsd_data_empty = False
             setattr(self.computed, f"{bsd_type}_stock_data", stock_graph_data)
 
-            stock_graph = BsdQuantitiesGraph(
-                self.siret,
-                df,
-                data_date_interval,
-                quantity_variables_names=quantity_variables,
-                packagings_data=packaging_data,
-            )
-            stock_graph_data = stock_graph.build()
-            if stock_graph_data:
-                all_bsd_data_empty = False
-            setattr(self.computed, f"{bsd_type}_stock_data", stock_graph_data)
-
             stats_graph = BsdStatsProcessor(
                 self.siret,
                 df,
@@ -221,6 +212,27 @@ class SheetProcessor:
             setattr(self.computed, f"{bsd_type}_stats_data", stats_graph_data)
 
         self.computed.all_bsd_data_empty = all_bsd_data_empty
+
+        icpe_2770_data = get_icpe_item_data(siret=self.siret, rubrique="2770")
+        icpe_2770_graph = ICPEDailyItemProcessor(
+            icpe_2770_data,
+        )
+        icpe_2770_graph_data = icpe_2770_graph.build()
+        setattr(self.computed, "icpe_2770_data", icpe_2770_graph_data)
+
+        icpe_2790_data = get_icpe_item_data(siret=self.siret, rubrique="2790")
+        icpe_2790_graph = ICPEDailyItemProcessor(
+            icpe_2790_data,
+        )
+        icpe_2790_graph_data = icpe_2790_graph.build()
+        setattr(self.computed, "icpe_2790_data", icpe_2790_graph_data)
+
+        icpe_2760_data = get_icpe_item_data(siret=self.siret, rubrique="2760-1")
+        icpe_2760_graph = ICPEAnnualItemProcessor(
+            icpe_2760_data,
+        )
+        icpe_2760_graph_data = icpe_2760_graph.build()
+        setattr(self.computed, "icpe_2760_data", icpe_2760_graph_data)
 
     def _process_bsds(self):
         additional_data = {"date_outliers": {}, "quantity_outliers": {}}
@@ -270,8 +282,6 @@ class SheetProcessor:
         icpe_processor = ICPEItemsProcessor(
             self.computed.org_id,
             icpe_data,
-            self.bsds_dfs,
-            PROCESSING_OPERATION_CODE_RUBRIQUE_MAPPING,
         )
         self.computed.icpe_data = icpe_processor.build()
 

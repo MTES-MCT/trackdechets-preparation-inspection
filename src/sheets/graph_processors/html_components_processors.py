@@ -47,7 +47,9 @@ class BsdStatsProcessor:
 
         self.bs_data = bs_data
         self.data_date_interval = data_date_interval
-        self.quantity_variables_names = quantity_variables_names
+        self.quantity_variables_names = self._validate_quantity_variables_names(
+            quantity_variables_names, packagings_data
+        )
         self.bs_revised_data = bs_revised_data
         self.packagings_data = packagings_data
 
@@ -86,6 +88,27 @@ class BsdStatsProcessor:
 
         self.weight_volume_ratio = None
 
+    @staticmethod
+    def _validate_quantity_variables_names(quantity_variables_names, packagings_data):
+        allowed_quantity_variables_names = [
+            "quantity_received",
+            "acceptation_weight",
+            "volume",
+        ]
+
+        clean_quantity_variables_names = [
+            e for e in quantity_variables_names if e in allowed_quantity_variables_names
+        ]
+
+        # Allows to handle the case when there is no packagings data but there is BSFF data
+        if packagings_data is None:
+            clean_quantity_variables_names = [
+                e if e != "acceptation_weight" else "quantity_received"
+                for e in clean_quantity_variables_names
+            ]
+
+        return list(set(clean_quantity_variables_names))
+
     def _check_data_empty(self) -> bool:
         bs_data = self.bs_data
         siret = self.company_siret
@@ -118,7 +141,7 @@ class BsdStatsProcessor:
         # For incoming and outgoing data, we compute different statistics
         # about the 'bordereaux'.
         # `target` is the destination in each result dictionary
-        # were to store the computed value.
+        # where to store the computed value.
         for target, to_process, to_process_packagings in [
             (self.emitted_bs_stats, bs_emitted_data, self.packagings_data),
             (self.received_bs_stats, bs_received_data, self.packagings_data),
@@ -849,12 +872,9 @@ class ICPEItemsProcessor:
         self,
         company_siret: str,
         icpe_data: pd.DataFrame,
-        bs_data_dfs: Dict[str, pd.DataFrame],
-        mapping_processing_operation_code_rubrique: pd.DataFrame,
     ) -> None:
         self.company_siret = company_siret
         self.icpe_data = icpe_data
-        self.bs_data_dfs = bs_data_dfs
 
         self.unit_pattern = re.compile(
             r"""^t$
@@ -868,153 +888,43 @@ class ICPEItemsProcessor:
             """,
             re.X,
         )
-        self.mapping_processing_operation_code_rubrique = (
-            mapping_processing_operation_code_rubrique
-        )
 
-        self.on_site_2718_quantity = 0
-        self.max_2718_quantity = (0, None)
-
-        self.on_site_2760_quantity = 0
-
-        self.avg_daily_2770_quantity = 0
-        self.max_2770_quantity = (0, None)
+        self.preprocessed_df = None
 
     def _preprocess_data(self) -> List[Dict[str, Any]]:
-        preprocessed_inputs_dfs = []
-        preprocessed_output_dfs = []
-        actual_year = datetime.now().year
-        for df in self.bs_data_dfs.values():
-            df = df.dropna(subset=["processing_operation_code"])
+        df = self.icpe_data
 
-            if len(df) == 0:
-                continue
-
-            df["processing_operation_code"] = df[
-                "processing_operation_code"
-            ].str.replace(" ", "", regex=False)
-
-            df = pd.merge(
-                df,
-                self.mapping_processing_operation_code_rubrique,
-                left_on="processing_operation_code",
-                right_on="code_operation",
-                validate="many_to_many",
-                how="left",
-            )
-
-            preprocessed_inputs_dfs.append(
-                df[(df["recipient_company_siret"] == self.company_siret)]
-            )
-            preprocessed_output_dfs.append(
-                df[(df["emitter_company_siret"] == self.company_siret)]
-            )
-
-        if len(preprocessed_inputs_dfs) == 0:
+        if df is None:
             return
 
-        if all(len(df) == 0 for df in preprocessed_inputs_dfs):
-            return
+        df["rubrique_alinea"] = df["rubrique"] + ("-" + df["alinea"]).fillna("")
+        df["quantite"] = df["quantite"].apply(format_number_str, precision=3)
 
-        # 2718 preprocessing
-        preprocessed_inputs = pd.concat(preprocessed_inputs_dfs)
-        preprocessed_outputs = pd.concat(preprocessed_output_dfs)
+        df = df.sort_values(["rubrique", "alinea"])
 
-        preprocessed_inputs_filtered = preprocessed_inputs[
-            (preprocessed_inputs["rubrique"] == "2718")
-        ].set_index("received_at")
+        self.preprocessed_df = df
 
-        preprocessed_outputs_filtered = preprocessed_outputs[
-            (preprocessed_outputs["rubrique"] == "2718")
-        ].set_index("sent_at")
-        preprocessed_outputs_filtered["quantity_received"] *= -1
+    def build_context(self):
+        data = self.preprocessed_df
 
-        preprocessed_inputs_outputs = pd.concat(
-            (
-                preprocessed_inputs_filtered,
-                preprocessed_outputs_filtered,
-            ),
-        ).sort_index()
-        if len(preprocessed_inputs_outputs) > 0:
-            preprocessed_inputs_outputs["stock"] = (
-                preprocessed_inputs_outputs["quantity_received"].cumsum().sort_index()
-            )
-            max_stock = preprocessed_inputs_outputs.sort_values(
-                "stock", ascending=False
-            ).iloc[0]
-            actual_quantity = preprocessed_inputs_outputs.iloc[-1]
-            if actual_quantity["stock"] > 0:
-                self.on_site_2718_quantity = actual_quantity["stock"]
+        # Handle "nan" textual values not being converted to JSON null
+        data["quantite"] = data["quantite"].replace("nan", pd.NA)
+        return json.loads(data.to_json(orient="records"))
 
-            if max_stock["stock"] > 0:
-                self.max_2718_quantity = (
-                    max_stock["stock"],
-                    max_stock.name.date().strftime("%d-%m-%Y"),
-                )
+    def _check_empty_data(self) -> bool:
+        if self.preprocessed_df is None or len(self.preprocessed_df) == 0:
+            return True
 
-        # 2760 preprocessing
-        quantity = preprocessed_inputs.loc[
-            (preprocessed_inputs["rubrique"] == "2760-1")
-            & (preprocessed_inputs["processed_at"].dt.year == actual_year),
-            "quantity_received",
-        ].sum()
-        if quantity > 0:
-            self.on_site_2760_quantity = quantity
-
-        # 2770 preprocessing
-        quantity = (
-            preprocessed_inputs.loc[preprocessed_inputs["rubrique"] == "2770"]
-            .groupby(pd.Grouper(key="processed_at", freq="1D"))["quantity_received"]
-            .sum()
-        )
-        if len(quantity) > 0:
-            self.avg_daily_2770_quantity = quantity.mean()
-            max_quantity = quantity.sort_values(ascending=False)
-
-            self.max_2770_quantity = (
-                max_quantity[0],
-                max_quantity.index[0].date().strftime("%d-%m-%Y"),
-            )
-
-    def _add_items_list(self) -> List[Dict[str, Any]]:
-        icpe_data = pd.concat(
-            [
-                self.icpe_data.loc[
-                    self.icpe_data["rubrique"].isin(["2718", "2760", "2790", "2770"])
-                ],
-                self.icpe_data.loc[
-                    ~self.icpe_data["rubrique"].isin(["2718", "2760", "2790", "2770"])
-                ].sort_values("rubrique"),
-            ]
-        )
-
-        icpe_items = [
-            {
-                "rubrique": item.rubrique,
-                "alinea": item.alinea,
-                "libelle": item.libelle_court_activite,
-            }
-            for item in icpe_data.itertuples()
-        ]
-        return icpe_items
-
-    def _check_data_empty(self) -> bool:
-        if self.icpe_data is None or len(self.icpe_data) == 0:
-            self.is_component_empty = True
-            return self.is_component_empty
-
-        self.is_component_empty = False
         return False
 
-    def build(self) -> list:
-        if not self._check_data_empty():
-            self._preprocess_data()
-            icpe_items = self._add_items_list()
-            if icpe_items:
-                return icpe_items
-            return []
+    def build(self):
+        self._preprocess_data()
 
-        return []
+        data = {}
+        if not self._check_empty_data():
+            data = self.build_context()
+
+        return data
 
 
 class TraceabilityInterruptionsProcessor:

@@ -1439,7 +1439,7 @@ class WasteProcessingWithoutICPEProcessor:
                     & (df["processed_at"].between(*self.data_date_interval))
                 ]
                 if len(df_filtered) > 0:
-                    df_filtered["bs_type"] = bs_type
+                    df_filtered["bs_type"] = bs_type.upper()
                     bs_2770_dfs.append(df_filtered)
 
             if len(bs_2770_dfs):

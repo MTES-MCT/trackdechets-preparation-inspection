@@ -1369,10 +1369,7 @@ class WasteProcessingWithoutICPEProcessor:
         self.icpe_data = icpe_data
         self.data_date_interval = data_date_interval
 
-        self.process_bsdd_without_2760 = None
-        self.quantity_processed_bsdd_without_2760 = None
-        self.process_bsda_without_2760 = None
-        self.quantity_processed_bsda_without_2760 = None
+        self.processed_bs_without_2760 = None
 
     def _preprocess_data(self) -> None:
         bsdd_data = self.bs_data_dfs[BSDD]
@@ -1408,29 +1405,43 @@ class WasteProcessingWithoutICPEProcessor:
             > 0
         )
 
+        bs_2760 = pd.DataFrame()
         if len(bsdd_data_filtered) > 0 and not has_2760_1:
-            self.process_bsdd_without_2760 = True
-            self.quantity_processed_bsdd_without_2760 = bsdd_data_filtered[
-                bsdd_data_filtered["processed_at"].notna()
-            ]["quantity_received"].sum()
+            bsdd_data_filtered["_bs_type"] = "BSDD"
+            pd.concat((bs_2760, bsdd_data_filtered))
 
         if len(bsda_data_filtered) > 0 and not (has_2760_1 or has_2760_2):
-            self.process_bsdd_without_2760 = True
+            bsda_data_filtered["_bs_type"] = "BSDA"
+            pd.concat((bs_2760, bsda_data_filtered))
+
+        if len(bs_2760) > 0:
+            self.processed_bs_without_2760 = bs_2760
 
     def _check_data_empty(self) -> bool:
-        if (
-            self.process_bsdd_without_2760 is None
-            or self.process_bsda_without_2760 is None
+        if (self.processed_bs_without_2760 is None) or (
+            len(self.processed_bs_without_2760) == 0
         ):
             return True
 
         return False
 
     def _add_stats(self) -> list:
-        stats = {
-            "process_bsdd_without_2760": self.process_bsdd_without_2760,
-            "process_bsda_without_2760": self.process_bsda_without_2760,
-        }
+        stats = []
+
+        for e in self.processed_bs_without_2760.itertuples():
+            row = {
+                "id": e.id,
+                "bs_type": e.bs_type,
+                "waste_code": e.waste_code,
+                "waste_name": e.waste_name if e.bs_type != "bsvhu" else None,
+                "quantity": format_number_str(e.quantity_received, 1)
+                if not pd.isna(e.quantity_received)
+                else None,
+                "processed_at": e.processed_at.strftime("%d/%m/%Y %H:%M")
+                if not pd.isna(e.received_at)
+                else None,
+            }
+            stats.append(row)
 
         return stats
 

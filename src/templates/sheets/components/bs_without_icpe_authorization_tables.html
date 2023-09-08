@@ -1,0 +1,28 @@
+{% if bs_data_2760 %}
+    <p>
+        L'installation ne dispose pas à notre connaissance de la rubrique 2760-1 ou 2760-2,
+        pour autant, vous trouverez ci-aprés la liste des bordereaux dont l'entreprise, destinataire, à indiqué D5 comme traitement.
+    </p>
+    <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+        <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+            <thead>
+                <tr>
+                    <th scope="col">N° du bordereau</th>
+                    <th scope="col">Type de bordereau</th>
+                    <th scope="col">Date opération</th>
+                    <th scope="col">Quantité traitée (en tonnes)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in bs_data_2760 %}
+                    <tr>
+                        <td>{{ row.id }}</td>
+                        <td>{{ row.bs_type }}</td>
+                        <td>{{ row.processed_at|default:"N/A" }}</td>
+                        <td>{{ row.quantity|default:"N/A" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}

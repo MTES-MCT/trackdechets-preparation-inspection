@@ -137,11 +137,11 @@ class ComputedInspectionData(models.Model):
     waste_origin_graph = models.TextField(blank=True)
     waste_origin_map_graph = models.TextField(blank=True)
 
-    icpe_2770_graph = models.TextField(blank=True)
-    icpe_2790_graph = models.TextField(blank=True)
-    icpe_2760_graph = models.TextField(blank=True)
+    icpe_2770_data = models.TextField(blank=True)
+    icpe_2790_data = models.TextField(blank=True)
+    icpe_2760_data = models.TextField(blank=True)
 
-    waste_processing_without_icpe_data = models.JSONField(default=dict)
+    bs_processed_without_icpe_authorization = models.JSONField(default=dict)
 
     pdf = models.TextField(blank=True)
 

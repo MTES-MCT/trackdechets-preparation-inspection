@@ -1386,36 +1386,39 @@ class WasteProcessingWithoutICPEProcessor:
             & (bsdd_data["processed_at"].between(*self.data_date_interval))
         ]
 
+        has_2760_1 = False
+        has_2760_2 = False
         icpe_data = self.icpe_data
 
-        has_2760_1 = (
-            len(
-                icpe_data[
-                    (icpe_data["rubrique"] == "2760") & (icpe_data["alinea"] == 1)
-                ]
+        if icpe_data is not None:
+            has_2760_1 = (
+                len(
+                    icpe_data[
+                        (icpe_data["rubrique"] == "2760") & (icpe_data["alinea"] == 1)
+                    ]
+                )
+                > 0
             )
-            > 0
-        )
-        has_2760_2 = (
-            len(
-                icpe_data[
-                    (icpe_data["rubrique"] == "2760") & (icpe_data["alinea"] == 2)
-                ]
+            has_2760_2 = (
+                len(
+                    icpe_data[
+                        (icpe_data["rubrique"] == "2760") & (icpe_data["alinea"] == 2)
+                    ]
+                )
+                > 0
             )
-            > 0
-        )
 
-        bs_2760 = pd.DataFrame()
+        bs_2760_dfs = []
         if len(bsdd_data_filtered) > 0 and not has_2760_1:
-            bsdd_data_filtered["_bs_type"] = "BSDD"
-            pd.concat((bs_2760, bsdd_data_filtered))
+            bsdd_data_filtered["bs_type"] = "BSDD"
+            bs_2760_dfs.append(bsdd_data_filtered)
 
         if len(bsda_data_filtered) > 0 and not (has_2760_1 or has_2760_2):
-            bsda_data_filtered["_bs_type"] = "BSDA"
-            pd.concat((bs_2760, bsda_data_filtered))
+            bsda_data_filtered["bs_type"] = "BSDA"
+            bs_2760_dfs.append(bsda_data_filtered)
 
-        if len(bs_2760) > 0:
-            self.processed_bs_without_2760 = bs_2760
+        if len(bs_2760_dfs) > 0:
+            self.processed_bs_without_2760 = pd.concat(bs_2760_dfs)
 
     def _check_data_empty(self) -> bool:
         if (self.processed_bs_without_2760 is None) or (
@@ -1426,14 +1429,15 @@ class WasteProcessingWithoutICPEProcessor:
         return False
 
     def _add_stats(self) -> list:
-        stats = []
+        stats = {}
 
+        rows = []
         for e in self.processed_bs_without_2760.itertuples():
             row = {
-                "id": e.id,
+                "id": e.readable_id if e.bs_type == "BSDD" else e.id,
                 "bs_type": e.bs_type,
                 "waste_code": e.waste_code,
-                "waste_name": e.waste_name if e.bs_type != "bsvhu" else None,
+                "waste_name": e.waste_name if e.bs_type != "BSVHU" else None,
                 "quantity": format_number_str(e.quantity_received, 1)
                 if not pd.isna(e.quantity_received)
                 else None,
@@ -1441,7 +1445,8 @@ class WasteProcessingWithoutICPEProcessor:
                 if not pd.isna(e.received_at)
                 else None,
             }
-            stats.append(row)
+            rows.append(row)
+        stats["2760"] = rows
 
         return stats
 

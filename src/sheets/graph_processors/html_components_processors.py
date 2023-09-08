@@ -1370,22 +1370,9 @@ class WasteProcessingWithoutICPEProcessor:
         self.data_date_interval = data_date_interval
 
         self.processed_bs_without_2760 = None
+        self.processed_bs_without_2770 = None
 
-    def _preprocess_data(self) -> None:
-        bsdd_data = self.bs_data_dfs[BSDD]
-        bsdd_data_filtered = bsdd_data[
-            (bsdd_data["recipient_company_siret"] == self.siret)
-            & (bsdd_data["processing_operation_code"] == "D5")
-            & (bsdd_data["processed_at"].between(*self.data_date_interval))
-        ]
-
-        bsda_data = self.bs_data_dfs[BSDA]
-        bsda_data_filtered = bsda_data[
-            (bsda_data["recipient_company_siret"] == self.siret)
-            & (bsda_data["processing_operation_code"] == "D5")
-            & (bsdd_data["processed_at"].between(*self.data_date_interval))
-        ]
-
+    def _preprocess_data_2760(self) -> None:
         has_2760_1 = False
         has_2760_2 = False
         icpe_data = self.icpe_data
@@ -1408,21 +1395,64 @@ class WasteProcessingWithoutICPEProcessor:
                 > 0
             )
 
-        bs_2760_dfs = []
-        if len(bsdd_data_filtered) > 0 and not has_2760_1:
-            bsdd_data_filtered["bs_type"] = "BSDD"
-            bs_2760_dfs.append(bsdd_data_filtered)
+        if not has_2760_1:  # Means no authorization for ICPE 2760-1
+            bs_2760_dfs = []
+            bsdd_data = self.bs_data_dfs[BSDD]
+            bsdd_data_filtered = bsdd_data[
+                (bsdd_data["recipient_company_siret"] == self.siret)
+                & (bsdd_data["processing_operation_code"] == "D5")
+                & (bsdd_data["processed_at"].between(*self.data_date_interval))
+            ]
 
-        if len(bsda_data_filtered) > 0 and not (has_2760_1 or has_2760_2):
-            bsda_data_filtered["bs_type"] = "BSDA"
-            bs_2760_dfs.append(bsda_data_filtered)
+            if len(bsdd_data_filtered):
+                bsdd_data_filtered["bs_type"] = "BSDD"
+                bs_2760_dfs.append(bsdd_data_filtered)
 
-        if len(bs_2760_dfs) > 0:
-            self.processed_bs_without_2760 = pd.concat(bs_2760_dfs)
+            if not has_2760_2:  # Means no authorization for ICPE 2760-1 NEITHER 2760-2
+                bsda_data = self.bs_data_dfs[BSDA]
+                bsda_data_filtered = bsda_data[
+                    (bsda_data["recipient_company_siret"] == self.siret)
+                    & (bsda_data["processing_operation_code"] == "D5")
+                    & (bsdd_data["processed_at"].between(*self.data_date_interval))
+                ]
+                if len(bsda_data_filtered) > 0:
+                    bsda_data_filtered["bs_type"] = "BSDA"
+                    bs_2760_dfs.append(bsda_data_filtered)
+
+            if len(bs_2760_dfs) > 0:
+                self.processed_bs_without_2760 = pd.concat(bs_2760_dfs)
+
+    def _preprocess_data_2770(self) -> None:
+        has_2770 = False
+
+        icpe_data = self.icpe_data
+        if icpe_data is not None:
+            has_2770 = len(icpe_data[icpe_data["rubrique"] == "2770"]) > 0
+
+        if not has_2770:
+            bs_2770_dfs = []
+
+            for bs_type, df in self.bs_data_dfs.items():
+                df_filtered = df[
+                    (df["recipient_company_siret"] == self.siret)
+                    & (df["processing_operation_code"].isin(["D10", "R1"]))
+                    & (df["processed_at"].between(*self.data_date_interval))
+                ]
+                if len(df_filtered) > 0:
+                    df_filtered["bs_type"] = bs_type
+                    bs_2770_dfs.append(df_filtered)
+
+            if len(bs_2770_dfs):
+                self.processed_bs_without_2770 = pd.concat(bs_2770_dfs)
+
+    def _preprocess_data(self) -> None:
+        self._preprocess_data_2760()
+        self._preprocess_data_2770()
 
     def _check_data_empty(self) -> bool:
-        if (self.processed_bs_without_2760 is None) or (
-            len(self.processed_bs_without_2760) == 0
+        if all(
+            (e is None) or (len(e) == 0)
+            for e in [self.processed_bs_without_2760, self.processed_bs_without_2770]
         ):
             return True
 
@@ -1431,22 +1461,28 @@ class WasteProcessingWithoutICPEProcessor:
     def _add_stats(self) -> list:
         stats = {}
 
-        rows = []
-        for e in self.processed_bs_without_2760.itertuples():
-            row = {
-                "id": e.readable_id if e.bs_type == "BSDD" else e.id,
-                "bs_type": e.bs_type,
-                "waste_code": e.waste_code,
-                "waste_name": e.waste_name if e.bs_type != "BSVHU" else None,
-                "quantity": format_number_str(e.quantity_received, 1)
-                if not pd.isna(e.quantity_received)
-                else None,
-                "processed_at": e.processed_at.strftime("%d/%m/%Y %H:%M")
-                if not pd.isna(e.received_at)
-                else None,
-            }
-            rows.append(row)
-        stats["2760"] = rows
+        for rubrique, df in [
+            ("2760", self.processed_bs_without_2760),
+            ("2770", self.processed_bs_without_2770),
+        ]:
+            if df is not None:
+                rows = []
+                for e in df.itertuples():
+                    row = {
+                        "id": e.readable_id if e.bs_type == "BSDD" else e.id,
+                        "bs_type": e.bs_type,
+                        "waste_code": e.waste_code,
+                        "waste_name": e.waste_name if e.bs_type != "BSVHU" else None,
+                        "operation_code": e.processing_operation_code,
+                        "quantity": format_number_str(e.quantity_received, 1)
+                        if not pd.isna(e.quantity_received)
+                        else None,
+                        "processed_at": e.processed_at.strftime("%d/%m/%Y %H:%M")
+                        if not pd.isna(e.received_at)
+                        else None,
+                    }
+                    rows.append(row)
+                stats[rubrique] = rows
 
         return stats
 

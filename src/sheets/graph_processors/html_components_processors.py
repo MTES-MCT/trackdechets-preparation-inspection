@@ -1421,14 +1421,14 @@ class WasteProcessingWithoutICPEProcessor:
                     bs_2760_dfs.append(bsda_data_filtered)
 
             if len(bs_2760_dfs) > 0:
-                bs_df = pd.concat(bs_2760_dfs)
+                bs_df = pd.concat(bs_2760_dfs)  # Creates the list of bordereaux
                 self.preprocessed_data["2760"] = {
                     "bs_list": bs_df,
                     "stats": {
-                        "total_bs": len(bs_df),
+                        "total_bs": len(bs_df),  # Total number of bordereaux
                         "total_quantity": format_number_str(
                             bs_df["quantity_received"].sum(), 2
-                        ),
+                        ),  # Total quantity processed
                     },
                 }
 
@@ -1495,12 +1495,12 @@ class WasteProcessingWithoutICPEProcessor:
                 if len(bs_dfs):
                     bs_df = pd.concat(bs_dfs)
                     self.preprocessed_data[rubrique] = {
-                        "bs_list": bs_df,
+                        "bs_list": bs_df,  # Creates the list of bordereaux
                         "stats": {
-                            "total_bs": len(bs_df),
+                            "total_bs": len(bs_df),  # Total number of bordereaux
                             "total_quantity": format_number_str(
                                 bs_df["quantity_received"].sum(), 2
-                            ),
+                            ),  # Total quantity processed
                         },
                     }
 

@@ -1,60 +1,152 @@
-{% if bs_data_2760 %}
+{% if bs_data_2760.bs_list %}
     <h4>Rubrique 2760-1 ou 2760-2</h4>
-    <p>
-        L'installation ne dispose pas à notre connaissance de la rubrique 2760-1 ou 2760-2,
-        pour autant, vous trouverez ci-aprés la liste des bordereaux dont l'entreprise, destinataire, à indiqué D5 comme traitement.
-    </p>
-    <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
-        <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
-            <thead>
-                <tr>
-                    <th scope="col">N° du bordereau</th>
-                    <th scope="col">Type de bordereau</th>
-                    <th scope="col">Date opération</th>
-                    <th scope="col">Quantité traitée (en tonnes)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in bs_data_2760 %}
+    {% if bs_data_2760.stats.total_bs <= 30 %}
+        <p>
+            L'installation ne dispose pas à notre connaissance de la rubrique 2760-1 ou 2760-2,
+            pour autant, vous trouverez ci-aprés la liste de <b>{{ bs_data_2760.stats.total_bs }}</b> bordereau{{ bs_data_2760.stats.total_bs|pluralize:"x" }} dont l'entreprise, destinataire, a indiqué D5 comme traitement.
+        </p>
+        <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+            <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+                <thead>
                     <tr>
-                        <td>{{ row.id }}</td>
-                        <td>{{ row.bs_type|upper }}</td>
-                        <td>{{ row.processed_at|default:"N/A" }}</td>
-                        <td>{{ row.quantity|default:"N/A" }}</td>
+                        <th scope="col">N° du bordereau</th>
+                        <th scope="col">Type de bordereau</th>
+                        <th scope="col">Date opération</th>
+                        <th scope="col">Quantité traitée (en tonnes)</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    {% for row in bs_data_2760.bs_list %}
+                        <tr>
+                            <td>{{ row.id }}</td>
+                            <td>{{ row.bs_type|upper }}</td>
+                            <td>{{ row.processed_at|default:"N/A" }}</td>
+                            <td>{{ row.quantity|default:"N/A" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>
+            L'installation ne dispose pas à notre connaissance de la rubrique 2760-1 ou 2760-2,
+            pour autant, l'établissement a indiqué D5 comme traitement pour <b>{{ bs_data_2760.stats.total_bs }}</b> bordereau{{ bs_data_2760.stats.total_bs|pluralize:"x" }} soit un total de <b>{{ bs_data_2760.stats.total_quantity }}</b> tonnes traitées.
+        </p>
+    {% endif %}
 {% endif %}
-{% if bs_data_2770 %}
+{% if bs_data_2770.bs_list %}
     <h4>Rubrique 2770</h4>
-    <p>
-        L'installation ne dispose pas à notre connaissance de la rubrique 2770,
-        pour autant, vous trouverez ci-aprés la liste des bordereaux dont l'entreprise, destinataire, à indiqué R1 ou D10 comme traitement.
-    </p>
-    <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
-        <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
-            <thead>
-                <tr>
-                    <th scope="col">N° du bordereau</th>
-                    <th scope="col">Type de bordereau</th>
-                    <th scope="col">Code opération</th>
-                    <th scope="col">Date opération</th>
-                    <th scope="col">Quantité traitée (en tonnes)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in bs_data_2770 %}
+    {% if bs_data_2770.stats.total_bs <= 30 %}
+        <p>
+            L'installation ne dispose pas à notre connaissance de la rubrique 2770,
+            pour autant, vous trouverez ci-aprés la liste de <b>{{ bs_data_2770.stats.total_bs }}</b> bordereau{{ bs_data_2770.stats.total_bs|pluralize:"x" }} dont l'entreprise, destinataire, a indiqué R1 ou D10 comme traitement.
+        </p>
+        <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+            <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+                <thead>
                     <tr>
-                        <td>{{ row.id }}</td>
-                        <td>{{ row.bs_type|upper }}</td>
-                        <td>{{ row.operation_code }}</td>
-                        <td>{{ row.processed_at|default:"N/A" }}</td>
-                        <td>{{ row.quantity|default:"N/A" }}</td>
+                        <th scope="col">N° du bordereau</th>
+                        <th scope="col">Type de bordereau</th>
+                        <th scope="col">Code opération</th>
+                        <th scope="col">Date opération</th>
+                        <th scope="col">Quantité traitée (en tonnes)</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    {% for row in bs_data_2770.bs_list %}
+                        <tr>
+                            <td>{{ row.id }}</td>
+                            <td>{{ row.bs_type|upper }}</td>
+                            <td>{{ row.operation_code }}</td>
+                            <td>{{ row.processed_at|default:"N/A" }}</td>
+                            <td>{{ row.quantity|default:"N/A" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>
+            L'installation ne dispose pas à notre connaissance de la rubrique 2770,
+            pour autant, l'établissement a indiqué R1 ou D10 comme traitement pour <b>{{ bs_data_2770.stats.total_bs }}</b> bordereau{{ bs_data_2770.stats.total_bs|pluralize:"x" }} soit un total de <b>{{ bs_data_2770.stats.total_quantity }}</b> tonnes traitées.
+        </p>
+    {% endif %}
+{% endif %}
+{% if bs_data_2718.bs_list %}
+    <h4>Rubrique 2718</h4>
+    {% if bs_data_2718.stats.total_bs <= 30 %}
+        <p>
+            L'installation ne dispose pas à notre connaissance de la rubrique 2718,
+            pour autant, vous trouverez ci-aprés la liste de <b>{{ bs_data_2718.stats.total_bs }}</b> bordereau{{ bs_data_2718.stats.total_bs|pluralize:"x" }} dont l'entreprise, destinataire,
+            a indiqué D13, D14, D15, R12 ou R13 comme traitement.
+        </p>
+        <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+            <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+                <thead>
+                    <tr>
+                        <th scope="col">N° du bordereau</th>
+                        <th scope="col">Type de bordereau</th>
+                        <th scope="col">Code opération</th>
+                        <th scope="col">Date opération</th>
+                        <th scope="col">Quantité traitée (en tonnes)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in bs_data_2718.bs_list %}
+                        <tr>
+                            <td>{{ row.id }}</td>
+                            <td>{{ row.bs_type|upper }}</td>
+                            <td>{{ row.operation_code }}</td>
+                            <td>{{ row.processed_at|default:"N/A" }}</td>
+                            <td>{{ row.quantity|default:"N/A" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>
+            L'installation ne dispose pas à notre connaissance de la rubrique 2718,
+            pour autant, l'établissement a indiqué D13, D14, D15, R12 ou R13 comme traitement pour <b>{{ bs_data_2718.stats.total_bs }}</b> bordereau{{ bs_data_2718.stats.total_bs|pluralize:"x" }} soit un total de <b>{{ bs_data_2718.stats.total_quantity }}</b> tonnes traitées.
+        </p>
+    {% endif %}
+{% endif %}
+{% if bs_data_2790.bs_list %}
+    <h4>Rubrique 2790</h4>
+    {% if bs_data_2790.stats.total_bs <= 30 %}
+        <p>
+            L'installation ne dispose pas à notre connaissance de la rubrique 2790,
+            pour autant, vous trouverez ci-aprés la liste de <b>{{ bs_data_2790.stats.total_bs }}</b> bordereau{{ bs_data_2790.stats.total_bs|pluralize:"x" }} dont l'entreprise, destinataire,
+            a indiqué R2, R3, R4, R5, R6, R7, R9 ou D9 (final) comme traitement.
+        </p>
+        <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+            <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+                <thead>
+                    <tr>
+                        <th scope="col">N° du bordereau</th>
+                        <th scope="col">Type de bordereau</th>
+                        <th scope="col">Code opération</th>
+                        <th scope="col">Date opération</th>
+                        <th scope="col">Quantité traitée (en tonnes)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in bs_data_2790.bs_list %}
+                        <tr>
+                            <td>{{ row.id }}</td>
+                            <td>{{ row.bs_type|upper }}</td>
+                            <td>{{ row.operation_code }}</td>
+                            <td>{{ row.processed_at|default:"N/A" }}</td>
+                            <td>{{ row.quantity|default:"N/A" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>
+            L'installation ne dispose pas à notre connaissance de la rubrique 2790,
+            pour autant, l'établissement a indiqué R2, R3, R4, R5, R6, R7, R9 ou D9 (final) comme traitement pour <b>{{ bs_data_2790.stats.total_bs }}</b> bordereau{{ bs_data_2790.stats.total_bs|pluralize:"x" }} soit un total de <b>{{ bs_data_2790.stats.total_quantity }}</b> tonnes traitées.
+        </p>
+    {% endif %}
 {% endif %}

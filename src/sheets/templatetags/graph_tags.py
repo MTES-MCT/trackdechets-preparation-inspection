@@ -105,6 +105,12 @@ def render_bs_without_icpe_authorization_tables(computed, graph_context="web"):
         "bs_data_2770": computed.bs_processed_without_icpe_authorization.get(
             "2770", None
         ),
+        "bs_data_2718": computed.bs_processed_without_icpe_authorization.get(
+            "2718", None
+        ),
+        "bs_data_2790": computed.bs_processed_without_icpe_authorization.get(
+            "2790", None
+        ),
         "graph_context": graph_context,
     }
 

@@ -1369,10 +1369,9 @@ class WasteProcessingWithoutICPEProcessor:
         self.icpe_data = icpe_data
         self.data_date_interval = data_date_interval
 
-        self.processed_bs_without_2760 = None
-        self.processed_bs_without_2770 = None
+        self.preprocessed_data = {k: None for k in ["2760", "2770", "2790", "2718"]}
 
-    def _preprocess_data_2760(self) -> None:
+    def _preprocess_data_multi_rubriques(self) -> None:
         has_2760_1 = False
         has_2760_2 = False
         icpe_data = self.icpe_data
@@ -1408,7 +1407,9 @@ class WasteProcessingWithoutICPEProcessor:
                 bsdd_data_filtered["bs_type"] = "BSDD"
                 bs_2760_dfs.append(bsdd_data_filtered)
 
-            if not has_2760_2:  # Means no authorization for ICPE 2760-1 NEITHER 2760-2
+            if (
+                not has_2760_2
+            ):  # Means no authorization for ICPE 2760-1 NEITHER 2760-2 (BSDA case)
                 bsda_data = self.bs_data_dfs[BSDA]
                 bsda_data_filtered = bsda_data[
                     (bsda_data["recipient_company_siret"] == self.siret)
@@ -1420,40 +1421,95 @@ class WasteProcessingWithoutICPEProcessor:
                     bs_2760_dfs.append(bsda_data_filtered)
 
             if len(bs_2760_dfs) > 0:
-                self.processed_bs_without_2760 = pd.concat(bs_2760_dfs)
+                bs_df = pd.concat(bs_2760_dfs)
+                self.preprocessed_data["2760"] = {
+                    "bs_list": bs_df,
+                    "stats": {
+                        "total_bs": len(bs_df),
+                        "total_quantity": format_number_str(
+                            bs_df["quantity_received"].sum(), 2
+                        ),
+                    },
+                }
 
-    def _preprocess_data_2770(self) -> None:
-        has_2770 = False
+    def _preprocess_data_single_rubrique(self) -> None:
+        configs = [
+            {
+                "rubrique": "2770",
+                "bs_types": [BSDD, BSDA, BSFF, BSDASRI, BSVHU],
+                "processing_codes": ["D10", "R1"],
+            },
+            {
+                "rubrique": "2718",
+                "bs_types": [BSDD, BSDA, BSFF, BSDASRI],
+                "processing_codes": ["D13", "D14", "D15", "R12", "R13", "D9"],
+            },
+            {
+                "rubrique": "2790",
+                "bs_types": [BSDD, BSDA, BSFF, BSDASRI, BSVHU],
+                "processing_codes": [
+                    "D8",
+                    "D9F",
+                    "R2",
+                    "R3",
+                    "R4",
+                    "R5",
+                    "R6",
+                    "R7",
+                    "R9",
+                ],
+            },
+        ]
 
-        icpe_data = self.icpe_data
-        if icpe_data is not None:
-            has_2770 = len(icpe_data[icpe_data["rubrique"] == "2770"]) > 0
+        for config in configs:
+            rubrique = config["rubrique"]
 
-        if not has_2770:
-            bs_2770_dfs = []
+            has_rubrique = False
 
-            for bs_type, df in self.bs_data_dfs.items():
-                df_filtered = df[
-                    (df["recipient_company_siret"] == self.siret)
-                    & (df["processing_operation_code"].isin(["D10", "R1"]))
-                    & (df["processed_at"].between(*self.data_date_interval))
+            icpe_data = self.icpe_data
+            if icpe_data is not None:
+                has_rubrique = len(icpe_data[icpe_data["rubrique"] == rubrique]) > 0
+
+            if not has_rubrique:
+                bs_dfs = []
+
+                df_to_process = [
+                    (bs_type, df)
+                    for bs_type, df in self.bs_data_dfs.items()
+                    if bs_type in config["bs_types"]
                 ]
-                if len(df_filtered) > 0:
-                    df_filtered["bs_type"] = bs_type.upper()
-                    bs_2770_dfs.append(df_filtered)
+                for bs_type, df in df_to_process:
+                    df_filtered = df[
+                        (df["recipient_company_siret"] == self.siret)
+                        & (
+                            df["processing_operation_code"].isin(
+                                config["processing_codes"]
+                            )
+                        )
+                        & (df["processed_at"].between(*self.data_date_interval))
+                    ]
+                    if len(df_filtered) > 0:
+                        df_filtered["bs_type"] = bs_type.upper()
+                        bs_dfs.append(df_filtered)
 
-            if len(bs_2770_dfs):
-                self.processed_bs_without_2770 = pd.concat(bs_2770_dfs)
+                if len(bs_dfs):
+                    bs_df = pd.concat(bs_dfs)
+                    self.preprocessed_data[rubrique] = {
+                        "bs_list": bs_df,
+                        "stats": {
+                            "total_bs": len(bs_df),
+                            "total_quantity": format_number_str(
+                                bs_df["quantity_received"].sum(), 2
+                            ),
+                        },
+                    }
 
     def _preprocess_data(self) -> None:
-        self._preprocess_data_2760()
-        self._preprocess_data_2770()
+        self._preprocess_data_multi_rubriques()
+        self._preprocess_data_single_rubrique()
 
     def _check_data_empty(self) -> bool:
-        if all(
-            (e is None) or (len(e) == 0)
-            for e in [self.processed_bs_without_2760, self.processed_bs_without_2770]
-        ):
+        if all(e == {} for e in self.preprocessed_data.values()):
             return True
 
         return False
@@ -1461,10 +1517,10 @@ class WasteProcessingWithoutICPEProcessor:
     def _add_stats(self) -> list:
         stats = {}
 
-        for rubrique, df in [
-            ("2760", self.processed_bs_without_2760),
-            ("2770", self.processed_bs_without_2770),
-        ]:
+        for rubrique, item in self.preprocessed_data.items():
+            if not item:
+                continue
+            df = item["bs_list"]
             if df is not None:
                 rows = []
                 for e in df.itertuples():
@@ -1472,7 +1528,9 @@ class WasteProcessingWithoutICPEProcessor:
                         "id": e.readable_id if e.bs_type == "BSDD" else e.id,
                         "bs_type": e.bs_type,
                         "waste_code": e.waste_code,
-                        "waste_name": e.waste_name if e.bs_type != "BSVHU" else None,
+                        "waste_name": e.waste_name
+                        if (e.bs_type != "BSVHU" and not pd.isna(e.waste_name))
+                        else None,
                         "operation_code": e.processing_operation_code,
                         "quantity": format_number_str(e.quantity_received, 1)
                         if not pd.isna(e.quantity_received)
@@ -1482,7 +1540,7 @@ class WasteProcessingWithoutICPEProcessor:
                         else None,
                     }
                     rows.append(row)
-                stats[rubrique] = rows
+                stats[rubrique] = {"bs_list": rows, "stats": item["stats"]}
 
         return stats
 

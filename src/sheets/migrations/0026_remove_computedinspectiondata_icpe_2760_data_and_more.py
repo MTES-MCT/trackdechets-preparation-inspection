@@ -1,5 +1,4 @@
-from django.db import migrations
-
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
@@ -20,5 +19,9 @@ class Migration(migrations.Migration):
             model_name="computedinspectiondata",
             name="icpe_2790_data",
         ),
-
+        migrations.AddField(
+            model_name="computedinspectiondata",
+            name="waste_processing_without_icpe_data",
+            field=models.JSONField(default=dict),
+        ),
     ]

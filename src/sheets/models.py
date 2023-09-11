@@ -143,8 +143,6 @@ class ComputedInspectionData(models.Model):
 
     bs_processed_without_icpe_authorization = models.JSONField(default=dict)
 
-    waste_processing_without_icpe_data = models.JSONField(default=dict)
-
     pdf = models.TextField(blank=True)
 
     created_by = models.EmailField(verbose_name=_("Created by"), blank=True)

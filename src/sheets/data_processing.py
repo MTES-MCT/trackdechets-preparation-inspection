@@ -369,9 +369,9 @@ class SheetProcessor:
         self.computed.quantity_outliers_data = quantity_outliers_table.build()
 
         waste_processing_without_icpe_data = WasteProcessingWithoutICPEProcessor(
-            self.siret, self.bsds_dfs, icpe_data
+            self.siret, self.bsds_dfs, icpe_data, data_date_interval
         )
-        self.computed.waste_processing_without_icpe_data = (
+        self.computed.bs_processed_without_icpe_authorization = (
             waste_processing_without_icpe_data.build()
         )
 

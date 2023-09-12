@@ -21,8 +21,8 @@ from .database import (
     build_revised_bsda_query,
     build_revised_bsdd_query,
     get_agreement_data,
-    get_icpe_item_data,
     get_icpe_data,
+    get_icpe_item_data,
 )
 from .graph_processors.html_components_processors import (
     AdditionalInfoProcessor,

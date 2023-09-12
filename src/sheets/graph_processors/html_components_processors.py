@@ -194,7 +194,7 @@ class BsdStatsProcessor:
                 )  # Time in seconds is converted in days
                 target[
                     "processed_in_more_than_one_month_avg_processing_time"
-                ] = f"{res:.1f}j"
+                ] = f"{format_number_str(res,1)}j"
 
             # Handle the case of BSFF specific packagings statistics
             if to_process_packagings is not None:

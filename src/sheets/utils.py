@@ -28,7 +28,7 @@ def format_number_str(input_number: float, precision: int = 2) -> str:
 
     input_number = round(input_number, precision)
 
-    return re.sub(r"\.0$", "", "{:,}".format(input_number).replace(",", " "))
+    return re.sub(r"\.0*$", "", "{:,}".format(input_number).replace(",", " "))
 
 
 def to_verbose_company_types(db_company_types):

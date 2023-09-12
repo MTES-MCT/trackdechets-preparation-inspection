@@ -1342,3 +1342,211 @@ class QuantityOutliersTableProcessor:
         if not self._check_data_empty():
             return self._add_stats()
         return []
+
+
+class WasteProcessingWithoutICPEProcessor:
+    """Component that detects when waste is processed without having a 'rubrique' in ICPE data.
+
+    Parameters
+    ----------
+    company_siret: str
+        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
+    bs_data_dfs: dict
+        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
+    icpe_data: pd.DataFrame
+        DataFrame containing the list of authorized 'rubriques'.
+    """
+
+    def __init__(
+        self,
+        company_siret: str,
+        bs_data_dfs: Dict[str, pd.DataFrame],
+        icpe_data: pd.DataFrame,
+        data_date_interval: tuple[datetime, datetime],
+    ) -> None:
+        self.siret = company_siret
+        self.bs_data_dfs = bs_data_dfs
+        self.icpe_data = icpe_data
+        self.data_date_interval = data_date_interval
+
+        self.preprocessed_data = {k: None for k in ["2760", "2770", "2790", "2718"]}
+
+    def _preprocess_data_multi_rubriques(self) -> None:
+        has_2760_1 = False
+        has_2760_2 = False
+        icpe_data = self.icpe_data
+
+        if icpe_data is not None:
+            has_2760_1 = (
+                len(
+                    icpe_data[
+                        (icpe_data["rubrique"] == "2760") & (icpe_data["alinea"] == 1)
+                    ]
+                )
+                > 0
+            )
+            has_2760_2 = (
+                len(
+                    icpe_data[
+                        (icpe_data["rubrique"] == "2760") & (icpe_data["alinea"] == 2)
+                    ]
+                )
+                > 0
+            )
+
+        if not has_2760_1:  # Means no authorization for ICPE 2760-1
+            bs_2760_dfs = []
+            bsdd_data = self.bs_data_dfs[BSDD]
+            bsdd_data_filtered = bsdd_data[
+                (bsdd_data["recipient_company_siret"] == self.siret)
+                & (bsdd_data["processing_operation_code"] == "D5")
+                & (bsdd_data["processed_at"].between(*self.data_date_interval))
+            ]
+
+            if len(bsdd_data_filtered):
+                bsdd_data_filtered["bs_type"] = "BSDD"
+                bs_2760_dfs.append(bsdd_data_filtered)
+
+            if (
+                not has_2760_2
+            ):  # Means no authorization for ICPE 2760-1 NEITHER 2760-2 (BSDA case)
+                bsda_data = self.bs_data_dfs[BSDA]
+                bsda_data_filtered = bsda_data[
+                    (bsda_data["recipient_company_siret"] == self.siret)
+                    & (bsda_data["processing_operation_code"] == "D5")
+                    & (bsdd_data["processed_at"].between(*self.data_date_interval))
+                ]
+                if len(bsda_data_filtered) > 0:
+                    bsda_data_filtered["bs_type"] = "BSDA"
+                    bs_2760_dfs.append(bsda_data_filtered)
+
+            if len(bs_2760_dfs) > 0:
+                bs_df = pd.concat(bs_2760_dfs)  # Creates the list of bordereaux
+                self.preprocessed_data["2760"] = {
+                    "bs_list": bs_df,
+                    "stats": {
+                        "total_bs": len(bs_df),  # Total number of bordereaux
+                        "total_quantity": format_number_str(
+                            bs_df["quantity_received"].sum(), 2
+                        ),  # Total quantity processed
+                    },
+                }
+
+    def _preprocess_data_single_rubrique(self) -> None:
+        configs = [
+            {
+                "rubrique": "2770",
+                "bs_types": [BSDD, BSDA, BSFF, BSDASRI, BSVHU],
+                "processing_codes": ["D10", "R1"],
+            },
+            {
+                "rubrique": "2718",
+                "bs_types": [BSDD, BSDA, BSFF, BSDASRI],
+                "processing_codes": ["D13", "D14", "D15", "R12", "R13", "D9"],
+            },
+            {
+                "rubrique": "2790",
+                "bs_types": [BSDD, BSDA, BSFF, BSDASRI, BSVHU],
+                "processing_codes": [
+                    "D8",
+                    "D9F",
+                    "R2",
+                    "R3",
+                    "R4",
+                    "R5",
+                    "R6",
+                    "R7",
+                    "R9",
+                ],
+            },
+        ]
+
+        for config in configs:
+            rubrique = config["rubrique"]
+
+            has_rubrique = False
+
+            icpe_data = self.icpe_data
+            if icpe_data is not None:
+                has_rubrique = len(icpe_data[icpe_data["rubrique"] == rubrique]) > 0
+
+            if not has_rubrique:
+                bs_dfs = []
+
+                df_to_process = [
+                    (bs_type, df)
+                    for bs_type, df in self.bs_data_dfs.items()
+                    if bs_type in config["bs_types"]
+                ]
+                for bs_type, df in df_to_process:
+                    df_filtered = df[
+                        (df["recipient_company_siret"] == self.siret)
+                        & (
+                            df["processing_operation_code"].isin(
+                                config["processing_codes"]
+                            )
+                        )
+                        & (df["processed_at"].between(*self.data_date_interval))
+                    ]
+                    if len(df_filtered) > 0:
+                        df_filtered["bs_type"] = bs_type.upper()
+                        bs_dfs.append(df_filtered)
+
+                if len(bs_dfs):
+                    bs_df = pd.concat(bs_dfs)
+                    self.preprocessed_data[rubrique] = {
+                        "bs_list": bs_df,  # Creates the list of bordereaux
+                        "stats": {
+                            "total_bs": len(bs_df),  # Total number of bordereaux
+                            "total_quantity": format_number_str(
+                                bs_df["quantity_received"].sum(), 2
+                            ),  # Total quantity processed
+                        },
+                    }
+
+    def _preprocess_data(self) -> None:
+        self._preprocess_data_multi_rubriques()
+        self._preprocess_data_single_rubrique()
+
+    def _check_data_empty(self) -> bool:
+        if all(e == {} for e in self.preprocessed_data.values()):
+            return True
+
+        return False
+
+    def _add_stats(self) -> list:
+        stats = {}
+
+        for rubrique, item in self.preprocessed_data.items():
+            if not item:
+                continue
+            df = item["bs_list"]
+            if df is not None:
+                rows = []
+                for e in df.itertuples():
+                    row = {
+                        "id": e.readable_id if e.bs_type == "BSDD" else e.id,
+                        "bs_type": e.bs_type,
+                        "waste_code": e.waste_code,
+                        "waste_name": e.waste_name
+                        if (e.bs_type != "BSVHU" and not pd.isna(e.waste_name))
+                        else None,
+                        "operation_code": e.processing_operation_code,
+                        "quantity": format_number_str(e.quantity_received, 1)
+                        if not pd.isna(e.quantity_received)
+                        else None,
+                        "processed_at": e.processed_at.strftime("%d/%m/%Y %H:%M")
+                        if not pd.isna(e.received_at)
+                        else None,
+                    }
+                    rows.append(row)
+                stats[rubrique] = {"bs_list": rows, "stats": item["stats"]}
+
+        return stats
+
+    def build(self) -> list:
+        self._preprocess_data()
+
+        if not self._check_data_empty():
+            return self._add_stats()
+        return {}

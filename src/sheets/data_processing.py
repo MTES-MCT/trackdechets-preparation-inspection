@@ -21,8 +21,8 @@ from .database import (
     build_revised_bsda_query,
     build_revised_bsdd_query,
     get_agreement_data,
-    get_icpe_item_data,
     get_icpe_data,
+    get_icpe_item_data,
 )
 from .graph_processors.html_components_processors import (
     AdditionalInfoProcessor,
@@ -37,6 +37,7 @@ from .graph_processors.html_components_processors import (
     StorageStatsProcessor,
     TraceabilityInterruptionsProcessor,
     WasteIsDangerousStatementsProcessor,
+    WasteProcessingWithoutICPEProcessor,
 )
 from .graph_processors.plotly_components_processors import (
     BsdQuantitiesGraph,
@@ -363,8 +364,16 @@ class SheetProcessor:
         self.computed.private_individuals_collections_data = (
             private_individuals_collections_table.build()
         )
+
         quantity_outliers_table = QuantityOutliersTableProcessor(self.bsds_dfs)
         self.computed.quantity_outliers_data = quantity_outliers_table.build()
+
+        waste_processing_without_icpe_data = WasteProcessingWithoutICPEProcessor(
+            self.siret, self.bsds_dfs, icpe_data, data_date_interval
+        )
+        self.computed.bs_processed_without_icpe_authorization = (
+            waste_processing_without_icpe_data.build()
+        )
 
         self.computed.state = ComputedInspectionData.StateChoice.COMPUTED
         self.computed.save()

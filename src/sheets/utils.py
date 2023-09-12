@@ -23,10 +23,12 @@ def get_code_departement(postal_code: str) -> str:
 
 def format_number_str(input_number: float, precision: int = 2) -> str:
     """Format a float to a string with thousands separated by space and rounding it at the given precision."""
-    input_number = round(input_number, precision)
     if not input_number:
         return "0"
-    return re.sub(r"\.0$", "", "{:,}".format(input_number).replace(",", " "))
+
+    input_number = round(input_number, precision)
+
+    return re.sub(r"\.0*$", "", "{:,}".format(input_number).replace(",", " "))
 
 
 def to_verbose_company_types(db_company_types):

@@ -96,6 +96,25 @@ def render_outliers(computed):
     }
 
 
+@register.inclusion_tag("sheets/components/bs_without_icpe_authorization_tables.html")
+def render_bs_without_icpe_authorization_tables(computed, graph_context="web"):
+    return {
+        "bs_data_2760": computed.bs_processed_without_icpe_authorization.get(
+            "2760", None
+        ),
+        "bs_data_2770": computed.bs_processed_without_icpe_authorization.get(
+            "2770", None
+        ),
+        "bs_data_2718": computed.bs_processed_without_icpe_authorization.get(
+            "2718", None
+        ),
+        "bs_data_2790": computed.bs_processed_without_icpe_authorization.get(
+            "2790", None
+        ),
+        "graph_context": graph_context,
+    }
+
+
 @register.inclusion_tag("sheets/components/agreements.html")
 def render_agreements(computed):
     return {

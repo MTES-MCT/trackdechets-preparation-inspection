@@ -330,7 +330,7 @@ WHERE
 sql_get_linked_companies_data = """
 select
     siret,
-    created_at 
+    created_at
 from
     trusted_zone_trackdechets.company c
 where

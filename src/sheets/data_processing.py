@@ -23,6 +23,7 @@ from .database import (
     get_agreement_data,
     get_icpe_data,
     get_icpe_item_data,
+    get_linked_companies_data,
 )
 from .graph_processors.html_components_processors import (
     AdditionalInfoProcessor,
@@ -30,6 +31,7 @@ from .graph_processors.html_components_processors import (
     BsdStatsProcessor,
     ICPEItemsProcessor,
     InputOutputWasteTableProcessor,
+    LinkedCompaniesProcessor,
     PrivateIndividualsCollectionsTableProcessor,
     QuantityOutliersTableProcessor,
     ReceiptAgrementsProcessor,
@@ -151,8 +153,15 @@ class SheetProcessor:
         self.computed.company_profiles = to_verbose_company_types(
             company_values.get("company_types")
         )
+        self.computed.company_created_at = company_values.get("created_at")
         agreement_data = ReceiptAgrementsProcessor(get_agreement_data(company_data_df))
         self.computed.agreement_data = agreement_data.build()
+
+        linked_companies_data = LinkedCompaniesProcessor(
+            company_siret=self.siret,
+            linked_companies_data=get_linked_companies_data(self.siret),
+        )
+        self.computed.linked_companies_data = linked_companies_data.build()
 
         self.computed.save()
 

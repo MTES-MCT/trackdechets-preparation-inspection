@@ -120,3 +120,11 @@ def render_agreements(computed):
     return {
         "agreement_data": computed.agreement_data,
     }
+
+
+@register.inclusion_tag("sheets/components/linked_companies.html")
+def render_linked_companies_data(computed, graph_context="web"):
+    return {
+        "linked_companies_data": computed.linked_companies_data,
+        "graph_context": graph_context,
+    }

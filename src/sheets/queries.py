@@ -328,3 +328,13 @@ WHERE
     and rubrique = :rubrique
     and day_of_processing>='2022-01-01'
 """
+
+sql_get_linked_companies_data = """
+select
+    siret,
+    created_at 
+from
+    trusted_zone_trackdechets.company c
+where
+    substring(c.siret for 9) = substring(:siret for 9)
+"""

@@ -1,6 +1,5 @@
 import json
 import numbers
-import re
 from datetime import datetime
 from itertools import chain
 from typing import Any, Dict, List

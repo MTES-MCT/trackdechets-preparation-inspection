@@ -262,7 +262,6 @@ where authoring_company_id = :company_id
     and created_at BETWEEN :data_start_date AND :data_end_date
 """
 
-
 sql_get_icpe_data = """
 select
     code_aiot,
@@ -302,7 +301,6 @@ SELECT id,
 FROM trusted_zone_trackdechets.broker_receipt
 where id = :id
 """
-
 
 sql_get_vhu_agrement_data = """
 SELECT

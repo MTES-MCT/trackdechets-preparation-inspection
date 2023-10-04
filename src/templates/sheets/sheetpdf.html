@@ -16,6 +16,7 @@
                     <p>
                         <span class="bold">SIRET :</span> {{ sheet.org_id }}
                     </p>
+                    <p>Établissement inscrit depuis le {{ sheet.company_created_at|date:"d/m/Y" }}.</p>
                     <p class="pdf-text bold">Profils établissements renseignés sur Trackdéchets :</p>
                     <ul class="pdf-text">
                         {% for profile in sheet.company_profiles %}<li>{{ profile }}</li>{% endfor %}
@@ -278,6 +279,9 @@
             {#  quantity outliers table #}
             <div>{% render_quantity_outliers_table sheet graph_context="pdf" %}</div>
             {# end quantity outliers table #}
+            {#  linked companies table #}
+            <div>{% render_linked_companies_data sheet graph_context="pdf" %}</div>
+            {#  linked companies table #}
         </section>
         <section class="vertical">
             {# input/output #}

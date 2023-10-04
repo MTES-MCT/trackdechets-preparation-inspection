@@ -5,9 +5,13 @@ Les changements importants de Trackdéchets préparation inspection sont documen
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 et le projet suit un schéma de versionning inspiré de [Calendar Versioning](https://calver.org/).
 
+## 25/09/2023
+- Ajout d'un composant permettant d'avoir la liste des établissements reliés par le même SIREN.
+- Ajout de la date de création de l'établissement.
+
 ## 12/09/2023
 - Ajout d'un composant alertant lorsqu'un établissement traite des déchets dangereux 
-sans avoir les bonnes rubriques ICPE ou en l'absence de données ICPE
+sans avoir les bonnes rubriques ICPE ou en l'absence de données ICPE.
 
 ## 06/09/2023
 - Ajout de nouveaux composants permettant de suivre les données ICPE de l'établissement.

@@ -262,7 +262,6 @@ where authoring_company_id = :company_id
     and created_at BETWEEN :data_start_date AND :data_end_date
 """
 
-
 sql_get_icpe_data = """
 select
     code_aiot,
@@ -303,7 +302,6 @@ FROM trusted_zone_trackdechets.broker_receipt
 where id = :id
 """
 
-
 sql_get_vhu_agrement_data = """
 SELECT
     id,
@@ -327,4 +325,16 @@ WHERE
     siret = :siret
     and rubrique = :rubrique
     and day_of_processing>='2022-01-01'
+"""
+
+sql_get_linked_companies_data = """
+select
+    siret,
+    created_at,
+    name,
+    address
+from
+    trusted_zone_trackdechets.company c
+where
+    substring(c.siret for 9) = substring(:siret for 9)
 """

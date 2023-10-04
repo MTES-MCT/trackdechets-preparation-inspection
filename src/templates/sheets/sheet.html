@@ -21,6 +21,7 @@
         <div class="row">
             <div class="cell cell--bordered cell--third">
                 <h4 class="cell__title">SIRET: {{ sheet.org_id }}</h4>
+                <p>Établissement inscrit depuis le {{ sheet.company_created_at|date:"d/m/Y" }}.</p>
                 <p class="fr-text--bold">Profils établissements renseignés sur Trackdéchets :</p>
                 <ul>
                     {% for profile in sheet.company_profiles %}<li>{{ profile }}</li>{% endfor %}
@@ -278,6 +279,9 @@
         {#  quantity outliers table #}
         <div>{% render_quantity_outliers_table sheet %}</div>
         {# end quantity outliers table #}
+        {#  linked companies table #}
+        <div>{% render_linked_companies_data sheet %}</div>
+        {#  linked companies table #}
         {# input/output #}
         <h2 class="section__title">Liste des déchets entrants/sortants</h2>
         <div>{% render_in_out_table sheet %}</div>

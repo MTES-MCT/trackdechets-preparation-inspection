@@ -67,7 +67,12 @@ class ComputedInspectionData(models.Model):
         default=list,
     )
     company_address = models.CharField(_("Company address"), max_length=255, blank=True)
+    company_created_at = models.DateTimeField(
+        _("Company created at"), default=timezone.now
+    )
     created = models.DateTimeField(_("Created"), default=timezone.now)
+
+    linked_companies_data = models.JSONField(default=dict)
 
     bsdd_created_rectified_data = models.JSONField(default=dict)
     bsdd_stock_data = models.JSONField(default=dict)

@@ -1,6 +1,5 @@
 import json
 import numbers
-import re
 from datetime import datetime
 from itertools import chain
 from typing import Any, Dict, List
@@ -861,11 +860,6 @@ class ICPEItemsProcessor:
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     icpe_data: DataFrame
         DataFrame containing list of ICPE authorized items
-    bs_data_dfs: dict
-        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
-    mapping_processing_operation_code_rubrique: DataFrame
-        Mapping between operation codes and rubriques.
-
     """
 
     def __init__(
@@ -875,19 +869,6 @@ class ICPEItemsProcessor:
     ) -> None:
         self.company_siret = company_siret
         self.icpe_data = icpe_data
-
-        self.unit_pattern = re.compile(
-            r"""^t$
-                |^t\/.*$
-                |citerne
-                |bouteille
-                |cabine
-                |tonne
-                |aire
-                |cartouche
-            """,
-            re.X,
-        )
 
         self.preprocessed_df = None
 
@@ -1550,3 +1531,64 @@ class WasteProcessingWithoutICPEProcessor:
         if not self._check_data_empty():
             return self._add_stats()
         return {}
+
+
+class LinkedCompaniesProcessor:
+    """Component that displays list of ICPE authorized items.
+
+    Parameters
+    ----------
+    company_siret: str
+        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
+    linked_companies_data: DataFrame
+        DataFrame containing list of linked companies
+    """
+
+    def __init__(
+        self,
+        company_siret: str,
+        linked_companies_data: pd.DataFrame,
+    ) -> None:
+        self.company_siret = company_siret
+        self.linked_companies_data = linked_companies_data
+
+        self.preprocessed_df = None
+
+    def _preprocess_data(self) -> List[Dict[str, Any]]:
+        df = self.linked_companies_data
+        if df is None:
+            return
+
+        df = df[df.siret != self.company_siret]
+        if len(df) == 0:
+            return
+
+        df = df.sort_values("created_at")
+
+        self.preprocessed_df = df
+
+    def build_context(self):
+        data = self.preprocessed_df
+
+        data["created_at"] = data["created_at"].dt.strftime("%d/%m/%Y")
+
+        json_data = {
+            "siren": self.company_siret[:9],
+            "siret_list": json.loads(data.to_json(orient="records")),
+        }
+        return json_data
+
+    def _check_empty_data(self) -> bool:
+        if self.preprocessed_df is None or len(self.preprocessed_df) == 0:
+            return True
+
+        return False
+
+    def build(self):
+        self._preprocess_data()
+
+        data = {}
+        if not self._check_empty_data():
+            data = self.build_context()
+
+        return data

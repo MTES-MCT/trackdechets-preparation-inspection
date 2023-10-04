@@ -1,0 +1,25 @@
+{% if linked_companies_data %}
+    <h3>Liste des autres établissements de la même entreprise (SIREN {{ linked_companies_data.siren }}) :</h3>
+    <div {% if graph_context == "web" %}class="fr-table"{% endif %}>
+        <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
+            <thead>
+                <tr>
+                    <th scope="col">SIRET</th>
+                    <th scope="col">Nom</th>
+                    <th scope="col">Adresse</th>
+                    <th scope="col">Date de création</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in linked_companies_data.siret_list %}
+                    <tr>
+                        <td>{{ row.siret }}</td>
+                        <td>{{ row.name }}</td>
+                        <td>{{ row.address }}</td>
+                        <td>{{ row.created_at }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}

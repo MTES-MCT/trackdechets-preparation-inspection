@@ -129,13 +129,13 @@ def data_date_interval():
                     "total": "3",
                     "archived": "1",
                     "processed_in_more_than_one_month_count": "1",
-                    "processed_in_more_than_one_month_avg_processing_time": "60.0j",
+                    "processed_in_more_than_one_month_avg_processing_time": "60j",
                 },
                 "received_bs_stats": {
                     "total": "3",
                     "archived": "3",
                     "processed_in_more_than_one_month_count": "1",
-                    "processed_in_more_than_one_month_avg_processing_time": "60.0j",
+                    "processed_in_more_than_one_month_avg_processing_time": "60j",
                 },
                 "quantities_stats": {
                     "quantity_received": {
@@ -156,13 +156,13 @@ def data_date_interval():
                     "total": "3",
                     "archived": "3",
                     "processed_in_more_than_one_month_count": "1",
-                    "processed_in_more_than_one_month_avg_processing_time": "60.0j",
+                    "processed_in_more_than_one_month_avg_processing_time": "60j",
                 },
                 "received_bs_stats": {
                     "total": "3",
                     "archived": "1",
                     "processed_in_more_than_one_month_count": "1",
-                    "processed_in_more_than_one_month_avg_processing_time": "60.0j",
+                    "processed_in_more_than_one_month_avg_processing_time": "60j",
                 },
                 "quantities_stats": {
                     "quantity_received": {
@@ -209,14 +209,14 @@ def test_bsd_stats_processor(siret, sample_bs_data, data_date_interval, expected
                     "total": "3",
                     "archived": "1",
                     "processed_in_more_than_one_month_count": "1",
-                    "processed_in_more_than_one_month_avg_processing_time": "60.0j",
+                    "processed_in_more_than_one_month_avg_processing_time": "60j",
                 },
                 "revised_bs_count": "0",
                 "received_bs_stats": {
                     "total": "3",
                     "archived": "3",
                     "processed_in_more_than_one_month_count": "1",
-                    "processed_in_more_than_one_month_avg_processing_time": "60.0j",
+                    "processed_in_more_than_one_month_avg_processing_time": "60j",
                 },
                 "quantities_stats": {
                     "quantity_received": {

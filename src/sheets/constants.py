@@ -9,6 +9,7 @@ COMPANY_TYPES = {
     "ECO_ORGANISME": "Éco-organisme",
     "PRODUCER": "Producteur",
     "WASTE_VEHICLES": "Centre Véhicules Hors d'Usage",
+    "CREMATORIUM": "Crématorium",
 }
 
 BSDD = "bsdd"

@@ -684,7 +684,11 @@ class StorageStatsProcessor:
     def _preprocess_data(self) -> pd.Series:
         siret = self.company_siret
 
-        dfs_to_concat = [df for df in self.bs_data_dfs.values()]
+        dfs_to_concat = [
+            df
+            for bs_type, df in self.bs_data_dfs.items()
+            if bs_type != BSDD_NON_DANGEROUS
+        ]
 
         if len(dfs_to_concat) == 0:
             self.stock_by_waste_code = pd.Series()

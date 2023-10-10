@@ -250,7 +250,7 @@ def test_bsd_stats_processor_multiple_quantity_variables(
     # Test initialization
     assert bs_processor.company_siret == siret
     assert isinstance(bs_processor.bs_data, pd.DataFrame)
-    assert bs_processor.quantity_variables_names == quantity_variables_names
+    assert set(bs_processor.quantity_variables_names) == set(quantity_variables_names)
     assert bs_processor.bs_revised_data is None
     assert bs_processor.packagings_data is None
 

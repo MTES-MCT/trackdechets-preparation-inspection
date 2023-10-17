@@ -684,7 +684,11 @@ class StorageStatsProcessor:
     def _preprocess_data(self) -> pd.Series:
         siret = self.company_siret
 
-        dfs_to_concat = [df for df in self.bs_data_dfs.values()]
+        dfs_to_concat = [
+            df
+            for bs_type, df in self.bs_data_dfs.items()
+            if bs_type != BSDD_NON_DANGEROUS
+        ]
 
         if len(dfs_to_concat) == 0:
             self.stock_by_waste_code = pd.Series()
@@ -712,7 +716,7 @@ class StorageStatsProcessor:
 
         # Only positive differences are kept
         stock_by_waste_code = stock_by_waste_code[stock_by_waste_code > 0]
-        total_stock = format_number_str(stock_by_waste_code.sum(), precision=1)
+        total_stock = format_number_str(received.sum() - emitted.sum(), precision=1)
         stock_by_waste_code = stock_by_waste_code.apply(format_number_str, precision=1)
 
         # Data is enriched with waste description from the waste nomenclature

@@ -1510,7 +1510,10 @@ class WasteProcessingWithoutICPEProcessor:
                         "bs_type": e.bs_type,
                         "waste_code": e.waste_code,
                         "waste_name": e.waste_name
-                        if (e.bs_type != "BSVHU" and not pd.isna(e.waste_name))
+                        if (
+                            e.bs_type not in ("BSVHU", "BSDASRI")
+                            and not pd.isna(e.waste_name)
+                        )
                         else None,
                         "operation_code": e.processing_operation_code,
                         "quantity": format_number_str(e.quantity_received, 1)

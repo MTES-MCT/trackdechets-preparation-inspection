@@ -1032,13 +1032,13 @@ class ICPEAnnualItemProcessor:
                 fig.add_annotation(
                     xref="x domain",
                     yref="y",
-                    x=1,
+                    x=0.7,
                     y=authorized_quantity / 2,
                     text=f"Objectif 50% pour 2025 : <b>{format_number_str(authorized_quantity/2,2)}</b> t/an",
                     font_color="black",
                     xanchor="left",
+                    yanchor="bottom",
                     showarrow=False,
-                    textangle=-90,
                     font_size=12,
                 )
 

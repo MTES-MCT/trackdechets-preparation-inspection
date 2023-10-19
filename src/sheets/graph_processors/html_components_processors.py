@@ -728,6 +728,7 @@ class StorageStatsProcessor:
             how="left",
             validate="one_to_one",
         )
+        stock_by_waste_code["description"].fillna("", inplace=True)
 
         self.stock_by_waste_code = stock_by_waste_code
         self.total_stock = total_stock

@@ -95,15 +95,12 @@ class BsdStatsProcessor:
             "volume",
         ]
 
-        clean_quantity_variables_names = [
-            e for e in quantity_variables_names if e in allowed_quantity_variables_names
-        ]
+        clean_quantity_variables_names = [e for e in quantity_variables_names if e in allowed_quantity_variables_names]
 
         # Allows to handle the case when there is no packagings data but there is BSFF data
         if packagings_data is None:
             clean_quantity_variables_names = [
-                e if e != "acceptation_weight" else "quantity_received"
-                for e in clean_quantity_variables_names
+                e if e != "acceptation_weight" else "quantity_received" for e in clean_quantity_variables_names
             ]
 
         return list(set(clean_quantity_variables_names))
@@ -125,18 +122,13 @@ class BsdStatsProcessor:
 
         # If all values after preprocessing are empty, then output data will be empty
         if all(
-            (e == 0) or (e is None)
-            for e in chain(
-                self.emitted_bs_stats.values(), self.received_bs_stats.values()
-            )
+            (e == 0) or (e is None) for e in chain(self.emitted_bs_stats.values(), self.received_bs_stats.values())
         ):
             return True
 
         return False
 
-    def _preprocess_general_statistics(
-        self, bs_emitted_data: pd.DataFrame, bs_received_data: pd.DataFrame
-    ) -> None:
+    def _preprocess_general_statistics(self, bs_emitted_data: pd.DataFrame, bs_received_data: pd.DataFrame) -> None:
         # For incoming and outgoing data, we compute different statistics
         # about the 'bordereaux'.
         # `target` is the destination in each result dictionary
@@ -165,20 +157,13 @@ class BsdStatsProcessor:
             # DataFrame holding all the 'bordereaux' that have been
             # processed in more than one month.
             bs_emitted_processed_in_more_than_one_month = to_process[
-                (
-                    (to_process["processed_at"] - to_process["received_at"])
-                    > np.timedelta64(1, "M")
-                )
+                ((to_process["processed_at"] - to_process["received_at"]) > np.timedelta64(1, "M"))
             ]
 
             # Total number of bordereaux processed in more than one month
-            processed_in_more_than_one_month_count = len(
-                bs_emitted_processed_in_more_than_one_month
-            )
+            processed_in_more_than_one_month_count = len(bs_emitted_processed_in_more_than_one_month)
 
-            target[
-                "processed_in_more_than_one_month_count"
-            ] = processed_in_more_than_one_month_count
+            target["processed_in_more_than_one_month_count"] = processed_in_more_than_one_month_count
 
             # If there is some 'bordereaux' processed in morte than one month,
             # we compute the average processing time.
@@ -191,9 +176,7 @@ class BsdStatsProcessor:
                 ).total_seconds() / (
                     24 * 3600
                 )  # Time in seconds is converted in days
-                target[
-                    "processed_in_more_than_one_month_avg_processing_time"
-                ] = f"{format_number_str(res,1)}j"
+                target["processed_in_more_than_one_month_avg_processing_time"] = f"{format_number_str(res,1)}j"
 
             # Handle the case of BSFF specific packagings statistics
             if to_process_packagings is not None:
@@ -216,15 +199,10 @@ class BsdStatsProcessor:
 
                 # DataFrame with all BSFF along with packagings data
                 # for packagings that have been processed in more than one month
-                bs_data_with_packagings_processed_in_more_than_one_month = (
-                    bs_data_with_packagings[
-                        (
-                            bs_data_with_packagings["operation_date"]
-                            - bs_data_with_packagings["received_at"]
-                        )
-                        > np.timedelta64(1, "M")
-                    ]
-                )
+                bs_data_with_packagings_processed_in_more_than_one_month = bs_data_with_packagings[
+                    (bs_data_with_packagings["operation_date"] - bs_data_with_packagings["received_at"])
+                    > np.timedelta64(1, "M")
+                ]
 
                 # Number of packagings processed in more than one month.
                 target["processed_in_more_than_one_month_packagings_count"] = len(
@@ -234,20 +212,14 @@ class BsdStatsProcessor:
                 # Average processing times for the packagings processed in more than one month
                 res = (
                     (
-                        bs_data_with_packagings_processed_in_more_than_one_month[
-                            "operation_date"
-                        ]
-                        - bs_data_with_packagings_processed_in_more_than_one_month[
-                            "received_at"
-                        ]
+                        bs_data_with_packagings_processed_in_more_than_one_month["operation_date"]
+                        - bs_data_with_packagings_processed_in_more_than_one_month["received_at"]
                     ).mean()
                 ).total_seconds() / (
                     24 * 3600
                 )  # Conversion between number of seconds and days
                 if not pd.isna(res):
-                    target[
-                        "processed_in_more_than_one_month_packagings_avg_processing_time"
-                    ] = f"{res:.1f}j"
+                    target["processed_in_more_than_one_month_packagings_avg_processing_time"] = f"{res:.1f}j"
 
         # In case there is any 'bordereaux' revision data, we compute
         # the number of 'bordereaux' that have been revised.
@@ -258,9 +230,7 @@ class BsdStatsProcessor:
             bs_revised_data = bs_revised_data[bs_revised_data["bs_id"].isin(bs_ids)]
             self.revised_bs_count = bs_revised_data["bs_id"].nunique()
 
-    def _preprocess_quantities_stats(
-        self, bs_emitted_data: pd.DataFrame, bs_received_data: pd.DataFrame
-    ) -> None:
+    def _preprocess_quantities_stats(self, bs_emitted_data: pd.DataFrame, bs_received_data: pd.DataFrame) -> None:
         # We iterate over the different variables chosen to compute the statistics
         for key in self.quantities_stats.keys():
             # If there is a packagings_data DataFrame, then it means that we are
@@ -277,12 +247,8 @@ class BsdStatsProcessor:
                 total_quantity_incoming = bs_received_data[key].sum()
                 total_quantity_outgoing = bs_emitted_data[key].sum()
 
-            self.quantities_stats[key][
-                "total_quantity_incoming"
-            ] = total_quantity_incoming
-            self.quantities_stats[key][
-                "total_quantity_outgoing"
-            ] = total_quantity_outgoing
+            self.quantities_stats[key]["total_quantity_incoming"] = total_quantity_incoming
+            self.quantities_stats[key]["total_quantity_outgoing"] = total_quantity_outgoing
 
             incoming_bar_size = 0
             outgoing_bar_size = 0
@@ -292,13 +258,9 @@ class BsdStatsProcessor:
                 # Size is expressed as percentage of the component width.
                 if total_quantity_incoming > total_quantity_outgoing:
                     incoming_bar_size = 100
-                    outgoing_bar_size = int(
-                        100 * (total_quantity_outgoing / total_quantity_incoming)
-                    )
+                    outgoing_bar_size = int(100 * (total_quantity_outgoing / total_quantity_incoming))
                 else:
-                    incoming_bar_size = int(
-                        100 * (total_quantity_incoming / total_quantity_outgoing)
-                    )
+                    incoming_bar_size = int(100 * (total_quantity_incoming / total_quantity_outgoing))
                     outgoing_bar_size = 100
             self.quantities_stats[key]["bar_size_incoming"] = incoming_bar_size
             self.quantities_stats[key]["bar_size_outgoing"] = outgoing_bar_size
@@ -306,15 +268,10 @@ class BsdStatsProcessor:
         # If both "quantity_received" and "volume" variables have been chosen,
         # then it means that we are computing BSDASRI statistics.
         # In this case we compute the ratio between volume and weight.
-        if all(
-            key in self.quantity_variables_names
-            for key in ["quantity_received", "volume"]
-        ):
+        if all(key in self.quantity_variables_names for key in ["quantity_received", "volume"]):
             if (self.quantities_stats["volume"]["total_quantity_incoming"]) > 0:
                 self.weight_volume_ratio = (
-                    self.quantities_stats["quantity_received"][
-                        "total_quantity_incoming"
-                    ]
+                    self.quantities_stats["quantity_received"]["total_quantity_incoming"]
                     / self.quantities_stats["volume"]["total_quantity_incoming"]
                 )
 
@@ -350,11 +307,7 @@ class BsdStatsProcessor:
             # dict comprehension loop.
             "quantities_stats": {
                 ok: {
-                    k: (
-                        format_number_str(v, 2)
-                        if k in ["total_quantity_incoming", "total_quantity_outgoing"]
-                        else v
-                    )
+                    k: (format_number_str(v, 2) if k in ["total_quantity_incoming", "total_quantity_outgoing"] else v)
                     for k, v in ov.items()
                 }
                 for ok, ov in self.quantities_stats.items()
@@ -414,30 +367,24 @@ class InputOutputWasteTableProcessor:
 
         df = pd.concat(dfs_to_concat)
 
-        df = df[
-            (df.emitter_company_siret == siret) | (df.recipient_company_siret == siret)
-        ]
+        df = df[(df.emitter_company_siret == siret) | (df.recipient_company_siret == siret)]
 
         # We create a column to differentiate incoming waste from
         # outgoing waste.
         df["incoming_or_outgoing"] = pd.NA
         df.loc[
-            (df.emitter_company_siret == siret)
-            & df.sent_at.between(*self.data_date_interval),
+            (df.emitter_company_siret == siret) & df.sent_at.between(*self.data_date_interval),
             "incoming_or_outgoing",
         ] = "outgoing"
         df.loc[
-            (df.recipient_company_siret == siret)
-            & df.received_at.between(*self.data_date_interval),
+            (df.recipient_company_siret == siret) & df.received_at.between(*self.data_date_interval),
             "incoming_or_outgoing",
         ] = "incoming"
         df = df.dropna(subset="incoming_or_outgoing")
 
         if len(df) > 0:
             # We compute the quantity by waste codes and incoming/outgoing categories
-            df_grouped = df.groupby(
-                ["waste_code", "incoming_or_outgoing"], as_index=False
-            )["quantity_received"].sum()
+            df_grouped = df.groupby(["waste_code", "incoming_or_outgoing"], as_index=False)["quantity_received"].sum()
 
             # We add the waste code description from the waste nomenclature
             final_df = pd.merge(
@@ -450,9 +397,7 @@ class InputOutputWasteTableProcessor:
             )
 
             final_df = final_df[final_df["quantity_received"] > 0]
-            final_df["quantity_received"] = final_df["quantity_received"].apply(
-                lambda x: format_number_str(x, 2)
-            )
+            final_df["quantity_received"] = final_df["quantity_received"].apply(lambda x: format_number_str(x, 2))
             final_df["description"] = final_df["description"].fillna("")
             self.preprocessed_df = final_df[
                 [
@@ -517,8 +462,7 @@ class BsdCanceledTableProcessor:
         for bs_type, revised_data_df in self.bs_revised_data.items():
             # Cancellation events are stored in revisions
             cancellations = revised_data_df[
-                revised_data_df.is_canceled
-                & revised_data_df.updated_at.between(*self.data_date_interval)
+                revised_data_df.is_canceled & revised_data_df.updated_at.between(*self.data_date_interval)
             ]
             if len(cancellations):
                 bs_data = self.bs_data_dfs[bs_type]
@@ -597,11 +541,7 @@ class SameEmitterRecipientTableProcessor:
         self.preprocessed_df = pd.DataFrame()
 
     def _preprocess_data(self) -> None:
-        dfs_to_process = [
-            df
-            for bs_type, df in self.bs_data_dfs.items()
-            if bs_type in ["bsdd", "bsda"]
-        ]
+        dfs_to_process = [df for bs_type, df in self.bs_data_dfs.items() if bs_type in ["bsdd", "bsda"]]
 
         columns_to_take = [
             "id",
@@ -636,9 +576,7 @@ class SameEmitterRecipientTableProcessor:
     def build_context(self):
         data = self.preprocessed_df
         data["sent_at"] = pd.to_datetime(data["sent_at"]).dt.strftime("%d/%m/%Y %H:%M")
-        data["received_at"] = pd.to_datetime(data["received_at"]).dt.strftime(
-            "%d/%m/%Y %H:%M"
-        )
+        data["received_at"] = pd.to_datetime(data["received_at"]).dt.strftime("%d/%m/%Y %H:%M")
 
         return json.loads(data.to_json(orient="records"))
 
@@ -684,11 +622,7 @@ class StorageStatsProcessor:
     def _preprocess_data(self) -> pd.Series:
         siret = self.company_siret
 
-        dfs_to_concat = [
-            df
-            for bs_type, df in self.bs_data_dfs.items()
-            if bs_type != BSDD_NON_DANGEROUS
-        ]
+        dfs_to_concat = [df for bs_type, df in self.bs_data_dfs.items() if bs_type != BSDD_NON_DANGEROUS]
 
         if len(dfs_to_concat) == 0:
             self.stock_by_waste_code = pd.Series()
@@ -696,12 +630,8 @@ class StorageStatsProcessor:
 
         df = pd.concat(dfs_to_concat)
 
-        emitted_mask = (df.emitter_company_siret == siret) & df.sent_at.between(
-            *self.data_date_interval
-        )
-        received_mask = (df.recipient_company_siret == siret) & df.received_at.between(
-            *self.data_date_interval
-        )
+        emitted_mask = (df.emitter_company_siret == siret) & df.sent_at.between(*self.data_date_interval)
+        received_mask = (df.recipient_company_siret == siret) & df.received_at.between(*self.data_date_interval)
 
         emitted = df[emitted_mask].groupby("waste_code")["quantity_received"].sum()
         received = df[received_mask].groupby("waste_code")["quantity_received"].sum()
@@ -709,9 +639,7 @@ class StorageStatsProcessor:
         # Index wise sum (index being the waste codes)
         # to compute the theoretical stock of waste
         # (difference between incoming and outgoing quantities)
-        stock_by_waste_code: pd.Series = (
-            (-emitted + received).fillna(-emitted).fillna(received)
-        )
+        stock_by_waste_code: pd.Series = (-emitted + received).fillna(-emitted).fillna(received)
         stock_by_waste_code.sort_values(ascending=False, inplace=True)
 
         # Only positive differences are kept
@@ -734,9 +662,7 @@ class StorageStatsProcessor:
         self.total_stock = total_stock
 
     def _check_data_empty(self) -> bool:
-        if (len(self.stock_by_waste_code) == 0) or self.stock_by_waste_code[
-            "quantity_received"
-        ].isna().all():
+        if (len(self.stock_by_waste_code) == 0) or self.stock_by_waste_code["quantity_received"].isna().all():
             return True
 
         return False
@@ -788,11 +714,7 @@ class AdditionalInfoProcessor:
         self.quantity_outliers_data = None
 
     def _check_data_empty(self) -> bool:
-        if (
-            len(self.additional_data["date_outliers"])
-            == len(self.additional_data["quantity_outliers"])
-            == 0
-        ):
+        if len(self.additional_data["date_outliers"]) == len(self.additional_data["quantity_outliers"]) == 0:
             self.is_component_empty = True
             return self.is_component_empty
 
@@ -802,9 +724,7 @@ class AdditionalInfoProcessor:
     def _preprocess_data(self) -> None:
         date_outliers_data = {}
         for key, value in self.additional_data["date_outliers"].items():
-            date_outliers_data[key] = {
-                k: v[k] for k, v in value.items() if v is not None
-            }
+            date_outliers_data[key] = {k: v[k] for k, v in value.items() if v is not None}
 
         self.date_outliers_data = date_outliers_data
         self.quantity_outliers_data = self.additional_data["quantity_outliers"]
@@ -835,9 +755,7 @@ class AdditionalInfoProcessor:
                 {
                     "outliers_count": len(outlier_data),
                     "sample": format_number_str(
-                        outlier_data.quantity_received.sort_values(ascending=False)
-                        .head(1)
-                        .item(),
+                        outlier_data.quantity_received.sort_values(ascending=False).head(1).item(),
                         precision=0,
                     ),
                 }
@@ -968,9 +886,7 @@ class TraceabilityInterruptionsProcessor:
             validate="one_to_one",
         )
 
-        final_df["quantity"] = final_df["quantity"].apply(
-            format_number_str, precision=2
-        )
+        final_df["quantity"] = final_df["quantity"].apply(format_number_str, precision=2)
 
         self.preprocessed_data = final_df
 
@@ -983,9 +899,7 @@ class TraceabilityInterruptionsProcessor:
     def _add_stats(self) -> list:
         stats = []
 
-        for e in self.preprocessed_data.sort_values(
-            "quantity", ascending=False
-        ).itertuples():
+        for e in self.preprocessed_data.sort_values("quantity", ascending=False).itertuples():
             row = {
                 "waste_code": e.waste_code,
                 "count": e.count,
@@ -1058,9 +972,7 @@ class WasteIsDangerousStatementsProcessor:
             validate="one_to_one",
         )
 
-        final_df["quantity"] = final_df["quantity"].apply(
-            format_number_str, precision=2
-        )
+        final_df["quantity"] = final_df["quantity"].apply(format_number_str, precision=2)
 
         self.preprocessed_data = final_df
 
@@ -1073,9 +985,7 @@ class WasteIsDangerousStatementsProcessor:
     def _add_stats(self) -> list:
         stats = []
 
-        for e in self.preprocessed_data.sort_values(
-            "quantity", ascending=False
-        ).itertuples():
+        for e in self.preprocessed_data.sort_values("quantity", ascending=False).itertuples():
             row = {
                 "waste_code": e.waste_code,
                 "count": e.count,
@@ -1121,9 +1031,7 @@ class ReceiptAgrementsProcessor:
                 if "validity_limit" in line._fields:
                     # todo: utcnow
                     if line.validity_limit < datetime.now():
-                        validity_str = (
-                            f"expiré depuis le {line.validity_limit:%d/%m/%Y}"
-                        )
+                        validity_str = f"expiré depuis le {line.validity_limit:%d/%m/%Y}"
                     else:
                         validity_str = f"valide jusqu'au {line.validity_limit:%d/%m/%Y}"
                 res.append(
@@ -1200,15 +1108,9 @@ class PrivateIndividualsCollectionsTableProcessor:
                 "worksite_address": e.worksite_address,
                 "waste_code": e.waste_code,
                 "waste_name": e.waste_name,
-                "quantity": e.quantity_received
-                if not pd.isna(e.quantity_received)
-                else None,
-                "sent_at": e.sent_at.strftime("%d/%m/%Y %H:%M")
-                if not pd.isna(e.sent_at)
-                else None,
-                "received_at  ": e.received_at.strftime("%d/%m/%Y %H:%M")
-                if not pd.isna(e.received_at)
-                else None,
+                "quantity": e.quantity_received if not pd.isna(e.quantity_received) else None,
+                "sent_at": e.sent_at.strftime("%d/%m/%Y %H:%M") if not pd.isna(e.sent_at) else None,
+                "received_at  ": e.received_at.strftime("%d/%m/%Y %H:%M") if not pd.isna(e.received_at) else None,
             }
             stats.append(row)
         return stats
@@ -1259,23 +1161,15 @@ class QuantityOutliersTableProcessor:
         """
 
         if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA]:
-            df_quantity_outliers = df[
-                (df["quantity_received"] > 40)
-                & (df["transporter_transport_mode"] == "ROAD")
-            ]
+            df_quantity_outliers = df[(df["quantity_received"] > 40) & (df["transporter_transport_mode"] == "ROAD")]
         elif bs_type == BSDASRI:
-            df_quantity_outliers = df[
-                (df["quantity_received"] > 20)
-                & (df["transporter_transport_mode"] == "ROAD")
-            ]
+            df_quantity_outliers = df[(df["quantity_received"] > 20) & (df["transporter_transport_mode"] == "ROAD")]
         elif bs_type == BSVHU:
             df_quantity_outliers = df[(df["quantity_received"] > 40)]
         elif bs_type == BSFF:
             df_quantity_outliers = df[df["quantity_received"] > 20]
 
-        df_quantity_outliers["bs_type"] = (
-            bs_type if bs_type != BSDD_NON_DANGEROUS else "bsdd"
-        )
+        df_quantity_outliers["bs_type"] = bs_type if bs_type != BSDD_NON_DANGEROUS else "bsdd"
         return df_quantity_outliers
 
     def _preprocess_data(self) -> None:
@@ -1309,15 +1203,9 @@ class QuantityOutliersTableProcessor:
                 "recipient_company_siret": e.recipient_company_siret,
                 "waste_code": e.waste_code,
                 "waste_name": e.waste_name if e.bs_type != "bsvhu" else None,
-                "quantity": format_number_str(e.quantity_received, 1)
-                if not pd.isna(e.quantity_received)
-                else None,
-                "sent_at": e.sent_at.strftime("%d/%m/%Y %H:%M")
-                if not pd.isna(e.sent_at)
-                else None,
-                "received_at": e.received_at.strftime("%d/%m/%Y %H:%M")
-                if not pd.isna(e.received_at)
-                else None,
+                "quantity": format_number_str(e.quantity_received, 1) if not pd.isna(e.quantity_received) else None,
+                "sent_at": e.sent_at.strftime("%d/%m/%Y %H:%M") if not pd.isna(e.sent_at) else None,
+                "received_at": e.received_at.strftime("%d/%m/%Y %H:%M") if not pd.isna(e.received_at) else None,
             }
             stats.append(row)
         return stats
@@ -1363,22 +1251,8 @@ class WasteProcessingWithoutICPEProcessor:
         icpe_data = self.icpe_data
 
         if icpe_data is not None:
-            has_2760_1 = (
-                len(
-                    icpe_data[
-                        (icpe_data["rubrique"] == "2760") & (icpe_data["alinea"] == 1)
-                    ]
-                )
-                > 0
-            )
-            has_2760_2 = (
-                len(
-                    icpe_data[
-                        (icpe_data["rubrique"] == "2760") & (icpe_data["alinea"] == 2)
-                    ]
-                )
-                > 0
-            )
+            has_2760_1 = len(icpe_data[(icpe_data["rubrique"] == "2760") & (icpe_data["alinea"] == 1)]) > 0
+            has_2760_2 = len(icpe_data[(icpe_data["rubrique"] == "2760") & (icpe_data["alinea"] == 2)]) > 0
 
         if not has_2760_1:  # Means no authorization for ICPE 2760-1
             bs_2760_dfs = []
@@ -1393,9 +1267,7 @@ class WasteProcessingWithoutICPEProcessor:
                 bsdd_data_filtered["bs_type"] = "BSDD"
                 bs_2760_dfs.append(bsdd_data_filtered)
 
-            if (
-                not has_2760_2
-            ):  # Means no authorization for ICPE 2760-1 NEITHER 2760-2 (BSDA case)
+            if not has_2760_2:  # Means no authorization for ICPE 2760-1 NEITHER 2760-2 (BSDA case)
                 bsda_data = self.bs_data_dfs[BSDA]
                 bsda_data_filtered = bsda_data[
                     (bsda_data["recipient_company_siret"] == self.siret)
@@ -1460,18 +1332,12 @@ class WasteProcessingWithoutICPEProcessor:
                 bs_dfs = []
 
                 df_to_process = [
-                    (bs_type, df)
-                    for bs_type, df in self.bs_data_dfs.items()
-                    if bs_type in config["bs_types"]
+                    (bs_type, df) for bs_type, df in self.bs_data_dfs.items() if bs_type in config["bs_types"]
                 ]
                 for bs_type, df in df_to_process:
                     df_filtered = df[
                         (df["recipient_company_siret"] == self.siret)
-                        & (
-                            df["processing_operation_code"].isin(
-                                config["processing_codes"]
-                            )
-                        )
+                        & (df["processing_operation_code"].isin(config["processing_codes"]))
                         & (df["processed_at"].between(*self.data_date_interval))
                     ]
                     if len(df_filtered) > 0:
@@ -1515,10 +1381,7 @@ class WasteProcessingWithoutICPEProcessor:
                         "bs_type": e.bs_type,
                         "waste_code": e.waste_code,
                         "waste_name": e.waste_name
-                        if (
-                            e.bs_type not in ("BSVHU", "BSDASRI")
-                            and not pd.isna(e.waste_name)
-                        )
+                        if (e.bs_type not in ("BSVHU", "BSDASRI") and not pd.isna(e.waste_name))
                         else None,
                         "operation_code": e.processing_operation_code,
                         "quantity": format_number_str(e.quantity_received, 1)

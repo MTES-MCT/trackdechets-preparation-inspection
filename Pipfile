@@ -26,6 +26,7 @@ django-grappelli = "*"
 weasyprint = "*"
 sentry-sdk = {extras = ["django"], version = "*"}
 django-anymail = {extras = ["sendinblue"], version = "*"}
+django-otp = "*"
 
 [dev-packages]
 black = "*"

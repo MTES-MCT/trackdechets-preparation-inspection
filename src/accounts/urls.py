@@ -1,5 +1,4 @@
 from django.contrib.auth.views import (
-    LoginView,
     PasswordResetCompleteView,
     PasswordResetConfirmView,
     PasswordResetDoneView,
@@ -9,6 +8,7 @@ from django.contrib.auth.views import (
 from django.urls import path
 
 from .forms import EmailAuthenticationForm
+from .views import LoginView, ResendTokenEmail, VerifyView
 
 urlpatterns = [
     path(
@@ -19,6 +19,16 @@ urlpatterns = [
             redirect_authenticated_user=True,
         ),
         name="login",
+    ),
+    path(
+        "second_factor/",
+        VerifyView.as_view(),
+        name="second_factor",
+    ),
+    path(
+        "resend-token/",
+        ResendTokenEmail.as_view(),
+        name="resend_token",
     ),
     path("logout/", logout_then_login, name="logout"),
     path(
@@ -31,9 +41,7 @@ urlpatterns = [
     ),
     path(
         "password-reset/done/",
-        PasswordResetDoneView.as_view(
-            template_name="accounts/password_reset_done.html"
-        ),
+        PasswordResetDoneView.as_view(template_name="accounts/password_reset_done.html"),
         name="password_reset_done",
     ),
     path(
@@ -45,9 +53,7 @@ urlpatterns = [
     ),
     path(
         "reset/done/",
-        PasswordResetCompleteView.as_view(
-            template_name="accounts/password_reset_complete.html"
-        ),
+        PasswordResetCompleteView.as_view(template_name="accounts/password_reset_complete.html"),
         name="password_reset_complete",
     ),
 ]

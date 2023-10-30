@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}
-    {{ _('Login') }}
+    {{ _("Login") }}
 {% endblock title %}
 {% block main %}
     <div class="fr-container">
@@ -8,11 +8,18 @@
             <div class="fr-col-5">
                 <form action="" method="post">
                     {% csrf_token %}
-                    <h2 class="text-center">{{ _('Connexion ') }}</h2>
+                    <h2 class="text-center">{{ _("Connexion ") }}</h2>
+                    <div class="fr-alert fr-alert--warning fr-mb-3v">
+                        <h3 class="fr-alert__title">Renforcement de la sécurité</h3>
+                        <p>
+                            Désormais, pour vous connecter un code à 6 chiffre vous est envoyé par email après l'entrée de votre login et mot de passe.
+                        </p>
+                        <p>Ce code est a copier dans un champ qui apparaitra à la page suivante.</p>
+                    </div>
                     {% include "forms/_form_snippet.html" with form=form %}
-                    <input type="hidden" name="next" value="{{ next }}"/>
-                    <button class="fr-btn">{{ _('Connexion') }}</button>
-                    <a href="{%  url "password_reset" %}">Réinitialiser mon mot de passe</a>
+                    <input type="hidden" name="next" value="{{ next }}" />
+                    <button class="fr-btn">{{ _("Connexion") }}</button>
+                    <a href="{% url "password_reset" %}">Réinitialiser mon mot de passe</a>
                 </form>
             </div>
         </div>

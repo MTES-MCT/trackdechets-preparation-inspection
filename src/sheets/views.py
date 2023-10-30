@@ -1,12 +1,12 @@
 import base64
 import datetime as dt
 
-from braces.views import LoginRequiredMixin
 from celery.result import AsyncResult
 from django.http import HttpResponse, HttpResponseRedirect
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.views.generic import DetailView, FormView, TemplateView
 
+from common.mixins import SecondFactorMixin
 from config.celery_app import app
 from content.models import FeedbackResult
 
@@ -15,28 +15,33 @@ from .models import ComputedInspectionData
 from .task import prepare_sheet, render_pdf
 
 
-class HomeView(TemplateView):
-    template_name = "home.html"
+class PublicHomeView(TemplateView):
+    template_name = "public_home.html"
 
     def get(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return HttpResponseRedirect(reverse("login"))
+        """Redirect user to private home or second_factor page wether they're logged in or verified."""
+        if request.user.is_verified():
+            return HttpResponseRedirect(reverse_lazy("private_home"))
+        if request.user.is_authenticated:
+            return HttpResponseRedirect(reverse_lazy("second_factor"))
         return super().get(request, *args, **kwargs)
+
+
+class PrivateHomeView(SecondFactorMixin, TemplateView):
+    template_name = "private_home.html"
 
     def has_filled_survey(self):
         return FeedbackResult.objects.filter(author=self.request.user.email).exists()
 
     def get_context_data(self, **kwargs):
         # display survey links until user fills it
-        return super().get_context_data(
-            **kwargs, has_filled_survey=self.has_filled_survey()
-        )
+        return super().get_context_data(**kwargs, has_filled_survey=self.has_filled_survey())
 
 
 CHECK_INSPECTION = False
 
 
-class Prepare(LoginRequiredMixin, FormView):
+class Prepare(SecondFactorMixin, FormView):
     """
     View to prepare an inspection sheet $:
         - render a form
@@ -57,9 +62,7 @@ class Prepare(LoginRequiredMixin, FormView):
             self.existing_inspection = None
             return
         today = dt.date.today()
-        self.existing_inspection = ComputedInspectionData.objects.filter(
-            org_id=siret, created__date=today
-        ).first()
+        self.existing_inspection = ComputedInspectionData.objects.filter(org_id=siret, created__date=today).first()
 
     def form_valid(self, form):
         siret = form.cleaned_data["siret"]
@@ -91,7 +94,7 @@ class Prepare(LoginRequiredMixin, FormView):
         )
 
 
-class ComputingView(LoginRequiredMixin, TemplateView):
+class ComputingView(SecondFactorMixin, TemplateView):
     """Optional `task_id` trigger result polling in template"""
 
     template_name = "sheets/result.html"
@@ -123,7 +126,7 @@ STATE_RUNNING = "running"
 STATE_DONE = "done"
 
 
-class FragmentResultView(LoginRequiredMixin, TemplateView):
+class FragmentResultView(SecondFactorMixin, TemplateView):
     """View to be called by ResultView template to render api call results when done"""
 
     template_name = "sheets/_prepare_result.html"
@@ -160,13 +163,13 @@ class FragmentResultView(LoginRequiredMixin, TemplateView):
         return ctx
 
 
-class Sheet(LoginRequiredMixin, DetailView):
+class Sheet(SecondFactorMixin, DetailView):
     model = ComputedInspectionData
     template_name = "sheets/sheet.html"
     context_object_name = "sheet"
 
 
-class PrepareSheetPdf(LoginRequiredMixin, DetailView):
+class PrepareSheetPdf(SecondFactorMixin, DetailView):
     model = ComputedInspectionData
 
     def get(self, request, *args, **kwargs):
@@ -185,7 +188,7 @@ class PrepareSheetPdf(LoginRequiredMixin, DetailView):
         return HttpResponseRedirect("/")
 
 
-class SheetPdfHtml(LoginRequiredMixin, DetailView):
+class SheetPdfHtml(SecondFactorMixin, DetailView):
     """For debugging purpose"""
 
     model = ComputedInspectionData
@@ -217,7 +220,7 @@ class SheetPdfHtml(LoginRequiredMixin, DetailView):
         return ctx
 
 
-class SheetPdf(LoginRequiredMixin, DetailView):
+class SheetPdf(SecondFactorMixin, DetailView):
     model = ComputedInspectionData
 
     def get(self, request, *args, **kwargs):
@@ -226,8 +229,6 @@ class SheetPdf(LoginRequiredMixin, DetailView):
         decoded = base64.b64decode(sheet.pdf)
 
         response = HttpResponse(content_type="application/pdf")
-        response[
-            "Content-Disposition"
-        ] = f'attachment; filename="{sheet.pdf_filename}.pdf"'
+        response["Content-Disposition"] = f'attachment; filename="{sheet.pdf_filename}.pdf"'
         response.write(decoded)
         return response

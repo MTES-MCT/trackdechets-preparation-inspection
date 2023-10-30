@@ -1,8 +1,14 @@
 from django import forms
+from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+from django.core.exceptions import ValidationError
 from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
+from django_otp.forms import OTPAuthenticationFormMixin
+from django_otp.plugins.otp_email.models import EmailDevice
+
+from common.redis import gen_otp_email_key, redis_client
 
 UserModel = get_user_model()
 
@@ -13,17 +19,12 @@ class EmailAuthenticationForm(forms.Form):
     username/password logins.
     """
 
-    email = forms.EmailField(
-        max_length=254, widget=forms.TextInput(attrs={"autofocus": True})
-    )
-    password = forms.CharField(
-        label=_("Password"), strip=False, widget=forms.PasswordInput
-    )
+    email = forms.EmailField(max_length=254, widget=forms.TextInput(attrs={"autofocus": True}))
+    password = forms.CharField(label=_("Password"), strip=False, widget=forms.PasswordInput)
 
     error_messages = {
         "invalid_login": _(
-            "Please enter a correct %(username)s and password. Note that both "
-            "fields may be case-sensitive."
+            "Please enter a correct %(username)s and password. Note that both " "fields may be case-sensitive."
         ),
         "inactive": _("This account is inactive."),
     }
@@ -71,9 +72,7 @@ class EmailAuthenticationForm(forms.Form):
         If the given user may log in, this method should return None.
         """
         if not user.is_active:
-            raise forms.ValidationError(
-                self.error_messages["inactive"], code="inactive"
-            )
+            raise forms.ValidationError(self.error_messages["inactive"], code="inactive")
 
     def get_user_id(self):
         if self.user_cache:
@@ -94,3 +93,55 @@ class AdminCustomUserChangeForm(UserChangeForm):
     class Meta:
         model = UserModel
         fields = ("username", "email")
+
+
+class SecondFactorTokenForm(OTPAuthenticationFormMixin, forms.Form):
+    otp_error_messages = {
+        **OTPAuthenticationFormMixin.otp_error_messages,
+        "invalid_token": "Jeton non valable ou trop ancien. Assurez-vous de bien l’avoir saisi correctement.",
+    }
+    otp_token = forms.CharField(
+        max_length=6,
+        label="Copiez votre code de vérification reçu par email",
+        widget=forms.TextInput(attrs={"autocomplete": "off"}),
+    )
+
+    def __init__(self, user, request=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.user = user
+
+    def _chosen_device(self, user):
+        devices = EmailDevice.objects.devices_for_user(user)
+
+        return devices[0]
+
+    def clean(self):
+        super().clean()
+
+        self.clean_otp(self.user)
+
+        return self.cleaned_data
+
+    def get_user(self):
+        return self.user
+
+
+class VerifyForm(forms.Form):
+    code = forms.CharField()
+
+
+class ResendTokenEmailForm(forms.Form):
+    def __init__(self, user, request=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.user = user
+
+    def clean(self):
+        redis_key = gen_otp_email_key(self.user)
+        last_email_sent = redis_client.get(redis_key)
+        if last_email_sent:
+            raise ValidationError(
+                f"Veuillez attendre {int(settings.OTP_EMAIL_THROTTLE_DELAY / 60)} minutes entre chaque demande d'email "
+            )
+        return super().clean()

@@ -1,9 +1,10 @@
-from braces.views import LoginRequiredMixin
 from django.conf import settings
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.mail import EmailMessage
 from django.urls import reverse_lazy
 from django.views.generic import FormView
+
+from common.mixins import SecondFactorMixin
 
 from .forms import FeedbackForm
 from .models import FeedbackResult
@@ -11,10 +12,10 @@ from .models import FeedbackResult
 subject = "Un utilisateur a rempli un formulaire de feedback"
 
 
-class FeedbackView(LoginRequiredMixin, SuccessMessageMixin, FormView):
+class FeedbackView(SecondFactorMixin, SuccessMessageMixin, FormView):
     template_name = "content/feedback.html"
     form_class = FeedbackForm
-    success_url = reverse_lazy("home")
+    success_url = reverse_lazy("private_home")
     success_message = "Merci, vos réponses ont été enregistrées et nous aideront à améliorer cet outil "
 
     def form_valid(self, form):

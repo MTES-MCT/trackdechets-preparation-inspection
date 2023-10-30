@@ -12,8 +12,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="computedinspectiondata",
             name="created_by",
-            field=models.EmailField(
-                blank=True, max_length=254, verbose_name="Created by"
-            ),
+            field=models.EmailField(blank=True, max_length=254, verbose_name="Created by"),
         ),
     ]

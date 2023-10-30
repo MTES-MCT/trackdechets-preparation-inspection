@@ -60,15 +60,12 @@ class BsdQuantitiesGraph:
             "volume",
         ]
 
-        clean_quantity_variables_names = [
-            e for e in quantity_variables_names if e in allowed_quantity_variables_names
-        ]
+        clean_quantity_variables_names = [e for e in quantity_variables_names if e in allowed_quantity_variables_names]
 
         # Allows to handle the case when there is no packagings data but there is BSFF data
         if packagings_data is None:
             clean_quantity_variables_names = [
-                e if e != "acceptation_weight" else "quantity_received"
-                for e in clean_quantity_variables_names
+                e if e != "acceptation_weight" else "quantity_received" for e in clean_quantity_variables_names
             ]
 
         return list(set(clean_quantity_variables_names))
@@ -92,38 +89,26 @@ class BsdQuantitiesGraph:
             # 'bordereaux' data as quantity information is stored at packaging level
             if self.packagings_data is not None:
                 incoming_data_by_month = (
-                    incoming_data.merge(
-                        self.packagings_data, left_on="id", right_on="bsff_id"
-                    )
-                    .groupby(pd.Grouper(key="acceptation_date", freq="1M"))[
-                        variable_name
-                    ]
+                    incoming_data.merge(self.packagings_data, left_on="id", right_on="bsff_id")
+                    .groupby(pd.Grouper(key="acceptation_date", freq="1M"))[variable_name]
                     .sum()
                     .replace(0, np.nan)
                 )
                 outgoing_data_by_month = (
-                    outgoing_data.merge(
-                        self.packagings_data, left_on="id", right_on="bsff_id"
-                    )
+                    outgoing_data.merge(self.packagings_data, left_on="id", right_on="bsff_id")
                     .groupby(pd.Grouper(key="sent_at", freq="1M"))[variable_name]
                     .sum()
                     .replace(0, np.nan)
                 )
             else:
                 incoming_data_by_month = (
-                    incoming_data.groupby(pd.Grouper(key="received_at", freq="1M"))[
-                        variable_name
-                    ]
+                    incoming_data.groupby(pd.Grouper(key="received_at", freq="1M"))[variable_name]
                     .sum()
                     .replace(0, np.nan)
                 )
 
                 outgoing_data_by_month = (
-                    outgoing_data.groupby(pd.Grouper(key="sent_at", freq="1M"))[
-                        variable_name
-                    ]
-                    .sum()
-                    .replace(0, np.nan)
+                    outgoing_data.groupby(pd.Grouper(key="sent_at", freq="1M"))[variable_name].sum().replace(0, np.nan)
                 )
 
             self.incoming_data_by_month_series.append(incoming_data_by_month)
@@ -134,29 +119,20 @@ class BsdQuantitiesGraph:
         outgoing_data_by_month_series = self.outgoing_data_by_month_series
 
         # If DataFrames are empty then output is empty
-        if all(
-            len(s) == len(z) == 0
-            for s, z in zip(
-                incoming_data_by_month_series, outgoing_data_by_month_series
-            )
-        ):
+        if all(len(s) == len(z) == 0 for s, z in zip(incoming_data_by_month_series, outgoing_data_by_month_series)):
             return True
 
         # If preprocessed series are full of NA then output is empty
         if all(
             s.isna().all() and z.isna().all()
-            for s, z in zip(
-                incoming_data_by_month_series, outgoing_data_by_month_series
-            )
+            for s, z in zip(incoming_data_by_month_series, outgoing_data_by_month_series)
         ):
             return True
 
         # If preprocessed series are full of 0's then output is empty
         if all(
             (s == 0).all() and (z == 0).all()
-            for s, z in zip(
-                incoming_data_by_month_series, outgoing_data_by_month_series
-            )
+            for s, z in zip(incoming_data_by_month_series, outgoing_data_by_month_series)
         ):
             return True
 
@@ -205,9 +181,7 @@ class BsdQuantitiesGraph:
                     name=incoming_line_name,
                     mode="lines+markers",
                     hovertext=[
-                        incoming_hover_text.format(
-                            index.strftime("%B %y").capitalize(), format_number_str(e)
-                        )
+                        incoming_hover_text.format(index.strftime("%B %y").capitalize(), format_number_str(e))
                         for index, e in incoming_data_by_month.items()
                     ],
                     hoverinfo="text",
@@ -227,9 +201,7 @@ class BsdQuantitiesGraph:
                     name=outgoing_line_name,
                     mode="lines+markers",
                     hovertext=[
-                        outgoing_hover_text.format(
-                            index.strftime("%B %y").capitalize(), format_number_str(e)
-                        )
+                        outgoing_hover_text.format(index.strftime("%B %y").capitalize(), format_number_str(e))
                         for index, e in outgoing_data_by_month.items()
                     ],
                     hoverinfo="text",
@@ -323,18 +295,14 @@ class BsdTrackedAndRevisedProcessor:
             & bs_data["sent_at"].between(*self.data_date_interval)
         ].dropna(subset=["sent_at"])
 
-        bs_emitted_by_month = bs_emitted.groupby(
-            pd.Grouper(key="sent_at", freq="1M")
-        ).id.count()
+        bs_emitted_by_month = bs_emitted.groupby(pd.Grouper(key="sent_at", freq="1M")).id.count()
 
         bs_received = bs_data[
             (bs_data["recipient_company_siret"] == self.company_siret)
             & bs_data["received_at"].between(*self.data_date_interval)
         ].dropna(subset=["received_at"])
 
-        bs_received_by_month = bs_received.groupby(
-            pd.Grouper(key="received_at", freq="1M")
-        ).id.count()
+        bs_received_by_month = bs_received.groupby(pd.Grouper(key="received_at", freq="1M")).id.count()
 
         self.bs_emitted_by_month = bs_emitted_by_month
         self.bs_received_by_month = bs_received_by_month
@@ -343,12 +311,8 @@ class BsdTrackedAndRevisedProcessor:
         """Preprocess raw revised 'bordereaux' data to prepare it for plotting."""
         bs_revised_data = self.bs_revised_data
 
-        bs_revised_data = bs_revised_data[
-            bs_revised_data["bs_id"].isin(self.bs_data["id"])
-        ]
-        bs_revised_by_month = bs_revised_data.groupby(
-            pd.Grouper(key="created_at", freq="1M")
-        ).bs_id.nunique()
+        bs_revised_data = bs_revised_data[bs_revised_data["bs_id"].isin(self.bs_data["id"])]
+        bs_revised_by_month = bs_revised_data.groupby(pd.Grouper(key="created_at", freq="1M")).bs_id.nunique()
 
         self.bs_revised_by_month = bs_revised_by_month
 
@@ -373,9 +337,7 @@ class BsdTrackedAndRevisedProcessor:
             y=bs_emitted_by_month,
             name="Bordereaux émis",
             hovertext=[
-                "{} - <b>{}</b> bordereau(x) émis".format(
-                    index.strftime("%B %y").capitalize(), e
-                )
+                "{} - <b>{}</b> bordereau(x) émis".format(index.strftime("%B %y").capitalize(), e)
                 for index, e in bs_emitted_by_month.items()
             ],
             hoverinfo="text",
@@ -390,9 +352,7 @@ class BsdTrackedAndRevisedProcessor:
             y=bs_received_by_month,
             name="Bordereaux reçus",
             hovertext=[
-                "{} - <b>{}</b> bordereau(x) reçus".format(
-                    index.strftime("%B %y").capitalize(), e
-                )
+                "{} - <b>{}</b> bordereau(x) reçus".format(index.strftime("%B %y").capitalize(), e)
                 for index, e in bs_received_by_month.items()
             ],
             hoverinfo="text",
@@ -407,9 +367,7 @@ class BsdTrackedAndRevisedProcessor:
         elif pd.isna(bs_received_by_month.index.min()):
             tick0_min = bs_emitted_by_month.index.min()
         else:
-            tick0_min = min(
-                bs_emitted_by_month.index.min(), bs_received_by_month.index.min()
-            )
+            tick0_min = min(bs_emitted_by_month.index.min(), bs_received_by_month.index.min())
 
         # Used to store the maximum value of each line
         # to be able to configure the height of the plotting area of the figure.
@@ -432,9 +390,7 @@ class BsdTrackedAndRevisedProcessor:
                     y=bs_revised_by_month,
                     name="Bordereaux corrigés",
                     hovertext=[
-                        "{} - <b>{}</b> bordereau(x) révisés".format(
-                            index.strftime("%B %y").capitalize(), e
-                        )
+                        "{} - <b>{}</b> bordereau(x) révisés".format(index.strftime("%B %y").capitalize(), e)
                         for index, e in bs_revised_by_month.items()
                     ],
                     hoverinfo="text",
@@ -523,16 +479,11 @@ class WasteOriginProcessor:
             return
 
         concat_df = pd.concat(
-            [
-                df[df["received_at"].between(*self.data_date_interval)]
-                for df in self.bs_data_dfs.values()
-            ]
+            [df[df["received_at"].between(*self.data_date_interval)] for df in self.bs_data_dfs.values()]
         )
 
         # The postal code is extracted from the address field using a simple regex
-        concat_df["cp"] = concat_df["emitter_company_address"].str.extract(
-            r"([0-9]{5})", expand=False
-        )
+        concat_df["cp"] = concat_df["emitter_company_address"].str.extract(r"([0-9]{5})", expand=False)
         concat_df["code_dep"] = concat_df["cp"].apply(get_code_departement)
 
         # 'Bordereau' data is merged with INSEE geographical data
@@ -584,9 +535,7 @@ class WasteOriginProcessor:
 
     def _create_figure(self) -> None:
         # Prepare order for horizontal bar chart, preserving "Autre origines" as bottom bar
-        serie = pd.concat(
-            (self.preprocessed_serie[-1:], self.preprocessed_serie[-2::-1])
-        )
+        serie = pd.concat((self.preprocessed_serie[-1:], self.preprocessed_serie[-2::-1]))
 
         # The bar chart has invisible bar (at *_annot positions) that will hold the labels
         # Invisible bar is the bar with width 0 but with a label.
@@ -678,16 +627,11 @@ class WasteOriginsMapProcessor:
             return
 
         concat_df = pd.concat(
-            [
-                df[df["received_at"].between(*self.data_date_interval)]
-                for df in self.bs_data_dfs.values()
-            ]
+            [df[df["received_at"].between(*self.data_date_interval)] for df in self.bs_data_dfs.values()]
         )
 
         # The postal code is extracted from the address field using a simple regex
-        concat_df["cp"] = concat_df["emitter_company_address"].str.extract(
-            r"([0-9]{5})", expand=False
-        )
+        concat_df["cp"] = concat_df["emitter_company_address"].str.extract(r"([0-9]{5})", expand=False)
         concat_df["code_dep"] = concat_df["cp"].apply(get_code_departement)
         concat_df = pd.merge(
             concat_df,
@@ -705,9 +649,7 @@ class WasteOriginsMapProcessor:
             .aggregate({"quantity_received": "sum", "REG": "max"})
         )
 
-        final_df = pd.merge(
-            self.regions_geodata, df_grouped, left_on="code", right_on="REG", how="left"
-        )
+        final_df = pd.merge(self.regions_geodata, df_grouped, left_on="code", right_on="REG", how="left")
 
         final_df.fillna(0, inplace=True)
 
@@ -834,9 +776,7 @@ class ICPEDailyItemProcessor:
         final_df = series.resample("1d").max().fillna(0).reset_index()
 
         self.preprocessed_df = final_df
-        self.authorized_quantity = self.icpe_item_daily_data[
-            "authorized_quantity"
-        ].max()
+        self.authorized_quantity = self.icpe_item_daily_data["authorized_quantity"].max()
 
     def _check_data_empty(self) -> bool:
         if (self.preprocessed_df is None) or len(self.preprocessed_df) == 0:
@@ -891,9 +831,7 @@ class ICPEDailyItemProcessor:
             if authorized_quantity > max_y:
                 max_y = authorized_quantity
 
-        fig.update_yaxes(
-            range=[0, max_y * 1.3], gridcolor="#ccc", title="Quantité traitée en tonnes"
-        )
+        fig.update_yaxes(range=[0, max_y * 1.3], gridcolor="#ccc", title="Quantité traitée en tonnes")
 
         fig.update_xaxes(
             gridcolor="#ccc",
@@ -946,14 +884,10 @@ class ICPEAnnualItemProcessor:
 
         series = df.set_index("day_of_processing").squeeze()
         final_df = series.resample("1d").max().fillna(0).reset_index()
-        final_df["quantity_cumsum"] = final_df.groupby(
-            final_df["day_of_processing"].dt.year
-        ).cumsum()
+        final_df["quantity_cumsum"] = final_df.groupby(final_df["day_of_processing"].dt.year).cumsum()
 
         self.preprocessed_df = final_df
-        self.authorized_quantity = self.icpe_item_daily_data[
-            "authorized_quantity"
-        ].max()
+        self.authorized_quantity = self.icpe_item_daily_data["authorized_quantity"].max()
 
     def _check_data_empty(self) -> bool:
         if (self.preprocessed_df is None) or len(self.preprocessed_df) == 0:

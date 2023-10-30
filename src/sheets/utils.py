@@ -32,6 +32,4 @@ def format_number_str(input_number: float, precision: int = 2) -> str:
 
 
 def to_verbose_company_types(db_company_types):
-    return list(
-        {COMPANY_TYPES.get(ct) for ct in db_company_types if ct in COMPANY_TYPES.keys()}
-    )
+    return list({COMPANY_TYPES.get(ct) for ct in db_company_types if ct in COMPANY_TYPES.keys()})

@@ -1,6 +1,6 @@
 Bonjour,
 
-voici le code à recopier dans le formulaire de la fiche d'inspection de Trackdéchets :  {{ token }}
+Voici le code à recopier dans le formulaire de la fiche d'inspection de Trackdéchets :  {{ token }}
 
 L'utilisation de ce code nous permet de sécuriser l'accès à la fiche d'inspection et aux données sensibles des entreprises.
 

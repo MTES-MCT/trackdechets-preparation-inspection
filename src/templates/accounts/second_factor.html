@@ -10,6 +10,7 @@
                     {% csrf_token %}
                     <h2 class="text-center">{{ _("Vérification: consultez votre boite email") }}</h2>
                     <p>📩️ Nous avons envoyé un email contenant un code de vérification à {{ request.user.email }}.</p>
+                    <p>Ce code est valide pendant {{ token_validity }} minutes.</p>
                     <p>L'email peut prendre quelques minutes pour arriver, merci pour votre patience.</p>
                     {% include "forms/_form_snippet.html" with form=form %}
                     <input type="hidden" name="next" value="{{ next }}" />

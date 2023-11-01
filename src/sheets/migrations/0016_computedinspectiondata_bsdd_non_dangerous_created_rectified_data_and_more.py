@@ -19,9 +19,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="computedinspectiondata",
             name="bsdd_non_dangerous_stats_data",
-            field=models.JSONField(
-                default=dict, encoder=sheets.models.CustomJSONEncoder
-            ),
+            field=models.JSONField(default=dict, encoder=sheets.models.CustomJSONEncoder),
         ),
         migrations.AddField(
             model_name="computedinspectiondata",

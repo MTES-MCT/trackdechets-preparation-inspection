@@ -56,24 +56,18 @@ class SiretForm(Form):
         end_date = cleaned_data.get("end_date")
         if end_date and start_date:
             if end_date <= start_date:
-                raise ValidationError(
-                    "La date de fin doit être postérieure à la date de début"
-                )
+                raise ValidationError("La date de fin doit être postérieure à la date de début")
 
     def clean_start_date(self):
         start_date = self.cleaned_data["start_date"]
         if start_date > dt.date.today():
-            raise ValidationError(
-                "Les dates postérieures à aujourd'hui ne sont pas acceptées"
-            )
+            raise ValidationError("Les dates postérieures à aujourd'hui ne sont pas acceptées")
         return start_date
 
     def clean_end_date(self):
         end_date = self.cleaned_data["end_date"]
         if end_date > dt.date.today():
-            raise ValidationError(
-                "Les dates postérieures à aujourd'hui ne sont pas acceptées"
-            )
+            raise ValidationError("Les dates postérieures à aujourd'hui ne sont pas acceptées")
         return end_date
 
     def clean_siret(self):

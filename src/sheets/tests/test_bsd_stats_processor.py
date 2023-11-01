@@ -1,7 +1,9 @@
 import random
+from datetime import datetime, timedelta
+
 import pandas as pd
 import pytest
-from datetime import datetime, timedelta
+
 from ..graph_processors.html_components_processors import BsdStatsProcessor
 
 
@@ -19,9 +21,7 @@ def sample_bs_data():
     sent_at_datetimes = [e + timedelta(days=1) for e in created_at_datetimes]
     received_at_datetimes = [e + timedelta(days=1) for e in sent_at_datetimes]
     time_to_process = [60, 1, 1, 1, 60, 1]
-    processed_at_datetimes = [
-        e + timedelta(days=t) for e, t in zip(received_at_datetimes, time_to_process)
-    ]
+    processed_at_datetimes = [e + timedelta(days=t) for e, t in zip(received_at_datetimes, time_to_process)]
     bs_data = pd.DataFrame(
         {
             "id": [i for i in range(1, 7)],
@@ -64,8 +64,7 @@ def sample_bs_data():
 def sample_bs_data_empty():
     # Create a sample DataFrame for bs_data that should generate empty component
     created_at_datetimes = [
-        datetime.now()
-        - timedelta(days=3000),  # More than one year ago, should be discarded
+        datetime.now() - timedelta(days=3000),  # More than one year ago, should be discarded
         datetime.now() - timedelta(days=65),
     ]
     sent_at_datetimes = [
@@ -112,9 +111,7 @@ def data_date_interval():
     The first date is older than the second one.
     """
     today = datetime.today()
-    days_before = random.randint(
-        365, 500
-    )  # Generate a random number of days up to one year
+    days_before = random.randint(365, 500)  # Generate a random number of days up to one year
     start_date = today - timedelta(days=days_before)
     return start_date, today
 
@@ -273,9 +270,7 @@ def test_bsd_stats_processor_multiple_quantity_variables(
         ),
     ],
 )
-def test_bsd_stats_processor_empty_data(
-    siret, sample_bs_data_empty, data_date_interval, expected
-):
+def test_bsd_stats_processor_empty_data(siret, sample_bs_data_empty, data_date_interval, expected):
     # Test when the input data is empty
     bs_processor = BsdStatsProcessor(siret, sample_bs_data_empty, data_date_interval)
     bs_processor._preprocess_data()

@@ -8,7 +8,6 @@ INSTALLED_APPS += [  # noqa F405
     "django_extensions",
 ]
 
-
 ALLOWED_HOSTS = ["*"]
 
 INTERNAL_IPS = [
@@ -26,3 +25,5 @@ MIDDLEWARE = (
 # Celery config
 CELERY_BROKER_URL = "redis://localhost:6379/0"
 CELERY_RESULT_BACKEND = "redis"
+
+OTP_EMAIL_TOKEN_VALIDITY = 600

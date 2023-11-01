@@ -103,12 +103,7 @@ def render_pdf(computed_pk: str):
     if not computed.is_computed:
         return
 
-    graph_rendering = group(
-        (
-            render_indiv_graph.s(computed_pk, name)
-            for name in PLOTLY_GRAPHS_TO_RENDER_IN_PDF
-        )
-    )
+    graph_rendering = group((render_indiv_graph.s(computed_pk, name) for name in PLOTLY_GRAPHS_TO_RENDER_IN_PDF))
 
     result = graph_rendering.delay()
 

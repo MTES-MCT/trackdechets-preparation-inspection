@@ -33,9 +33,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "created",
-                    models.DateTimeField(
-                        default=django.utils.timezone.now, verbose_name="Created"
-                    ),
+                    models.DateTimeField(default=django.utils.timezone.now, verbose_name="Created"),
                 ),
                 (
                     "bsdd_created_rectified_graph",
@@ -51,22 +49,16 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "company_address",
-                    models.CharField(
-                        blank=True, max_length=255, verbose_name="Company address"
-                    ),
+                    models.CharField(blank=True, max_length=255, verbose_name="Company address"),
                 ),
                 (
                     "company_name",
-                    models.CharField(
-                        blank=True, max_length=255, verbose_name="Company Name"
-                    ),
+                    models.CharField(blank=True, max_length=255, verbose_name="Company Name"),
                 ),
                 (
                     "company_profiles",
                     django.contrib.postgres.fields.ArrayField(
-                        base_field=models.CharField(
-                            max_length=255, verbose_name="Company profiles"
-                        ),
+                        base_field=models.CharField(max_length=255, verbose_name="Company profiles"),
                         blank=True,
                         default=list,
                         size=None,
@@ -75,42 +67,32 @@ class Migration(migrations.Migration):
                 ("bsdd_created_rectified_data", models.JSONField(default=dict)),
                 (
                     "bsdd_stats_data",
-                    models.JSONField(
-                        default=dict, encoder=sheets.models.CustomJSONEncoder
-                    ),
+                    models.JSONField(default=dict, encoder=sheets.models.CustomJSONEncoder),
                 ),
                 ("bsdd_stock_data", models.JSONField(default=dict)),
                 ("bsda_created_rectified_data", models.JSONField(default=dict)),
                 (
                     "bsda_stats_data",
-                    models.JSONField(
-                        default=dict, encoder=sheets.models.CustomJSONEncoder
-                    ),
+                    models.JSONField(default=dict, encoder=sheets.models.CustomJSONEncoder),
                 ),
                 ("bsda_stock_data", models.JSONField(default=dict)),
                 ("bsdasri_created_rectified_data", models.JSONField(default=dict)),
                 (
                     "bsdasri_stats_data",
-                    models.JSONField(
-                        default=dict, encoder=sheets.models.CustomJSONEncoder
-                    ),
+                    models.JSONField(default=dict, encoder=sheets.models.CustomJSONEncoder),
                 ),
                 ("bsdasri_stock_data", models.JSONField(default=dict)),
                 ("input_output_waste_data", models.JSONField(default=dict)),
                 ("bsff_created_rectified_data", models.JSONField(default=dict)),
                 (
                     "bsff_stats_data",
-                    models.JSONField(
-                        default=dict, encoder=sheets.models.CustomJSONEncoder
-                    ),
+                    models.JSONField(default=dict, encoder=sheets.models.CustomJSONEncoder),
                 ),
                 ("bsff_stock_data", models.JSONField(default=dict)),
                 ("bsvhu_created_rectified_data", models.JSONField(default=dict)),
                 (
                     "bsvhu_stats_data",
-                    models.JSONField(
-                        default=dict, encoder=sheets.models.CustomJSONEncoder
-                    ),
+                    models.JSONField(default=dict, encoder=sheets.models.CustomJSONEncoder),
                 ),
                 ("bsvhu_stock_data", models.JSONField(default=dict)),
                 ("storage_data", models.JSONField(default=dict)),

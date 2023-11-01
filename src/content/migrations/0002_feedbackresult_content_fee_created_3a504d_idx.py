@@ -11,8 +11,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddIndex(
             model_name="feedbackresult",
-            index=models.Index(
-                fields=["created", "author"], name="content_fee_created_3a504d_idx"
-            ),
+            index=models.Index(fields=["created", "author"], name="content_fee_created_3a504d_idx"),
         ),
     ]

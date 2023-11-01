@@ -1,10 +1,5 @@
 from django import template
-from django.forms.widgets import (
-    CheckboxInput,
-    CheckboxSelectMultiple,
-    FileInput,
-    RadioSelect,
-)
+from django.forms.widgets import CheckboxInput, CheckboxSelectMultiple, FileInput, RadioSelect
 
 register = template.Library()
 

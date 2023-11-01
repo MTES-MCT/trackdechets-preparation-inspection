@@ -2,30 +2,20 @@
 <!DOCTYPE html>
 <html lang="fr" data-fr-scheme="light">
     <head>
-        <meta charset="UTF-8"/>
+        <meta charset="UTF-8" />
         <meta name="viewport"
-              content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
-        <meta name="theme-color" content="#000091"/>
+              content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="theme-color" content="#000091" />
         <title>
             {% block title %}Trackdéchets - Fiche d'inspection{% endblock %}
         </title>
-        <link rel="stylesheet" href="{% static "css/dsfr.main.min.css" %}"/>
-        <link rel="stylesheet" href="{% static "css/style.css" %}"/>
-        <link rel="apple-touch-icon"
-              sizes="120x120"
-              href="{% static "img/apple-touch-icon.png" %}">
-        <link rel="icon"
-              type="image/png"
-              sizes="32x32"
-              href="{% static "img/favicon-32x32.png" %}">
-        <link rel="icon"
-              type="image/png"
-              sizes="16x16"
-              href="{% static "img/favicon-16x16.png" %}">
+        <link rel="stylesheet" href="{% static "css/dsfr.main.min.css" %}" />
+        <link rel="stylesheet" href="{% static "css/style.css" %}" />
+        <link rel="apple-touch-icon" sizes="120x120" href="{% static "img/apple-touch-icon.png" %}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{% static "img/favicon-32x32.png" %}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{% static "img/favicon-16x16.png" %}">
         <link rel="manifest" href="{% static "site.webmanifest" %}">
-        <link rel="mask-icon"
-              href="{% static "img/safari-pinned-tab.svg" %}"
-              color="#fff">
+        <link rel="mask-icon" href="{% static "img/safari-pinned-tab.svg" %}" color="#fff">
         <meta name="theme-color" content="#ffffff">
     </head>
     <body>
@@ -43,18 +33,15 @@
                                     <div class="fr-header__logo">
                                         <p class="fr-logo">
                                             Ministère
-                                            <br/>
+                                            <br />
                                             de la transition
-                                            <br/>
+                                            <br />
                                             écologique
                                         </p>
                                     </div>
                                 </div>
                                 <div class="fr-header__service">
-                                    <img src="{% static "img/trackdechets.png" %}"
-                                         width="70px"
-                                         height="70px"
-                                         alt="Icone trackdéchets"/>
+                                    <img src="{% static "img/trackdechets.png" %}" width="70px" height="70px" alt="Icone trackdéchets" />
                                 </div>
                                 <div class="fr-h5">
                                     Trackdéchets
@@ -78,7 +65,7 @@
                     </div>
                 </div>
             </div>
-            {% if user.is_authenticated %}
+            {% if user.is_verified %}
                 <div class="fr-container">
                     <nav role="navigation" aria-label="Menu principal" class="fr-nav">
                         <ul class="fr-nav__list">
@@ -97,10 +84,7 @@
                                 </li>
                             {% endif %}
                             <li class="fr-nav__item">
-                                <a href="{% static "user-manual/trackdechets-mode-emploi-fiche-inspection.pdf" %}"
-                                   aria-controls="modal-header__menu"
-                                   target="_blank"
-                                   class="fr-nav__link">Guide d'utilisation</a>
+                                <a href="{% static "user-manual/trackdechets-mode-emploi-fiche-inspection.pdf" %}" aria-controls="modal-header__menu" target="_blank" class="fr-nav__link">Guide d'utilisation</a>
                             </li>
                             <li class="fr-nav__item">
                                 <a href="{% url "logout" %}"
@@ -126,6 +110,7 @@
         <script src="{% static "js/plotly-2.18.1.min.js" %}" charset="utf-8"></script>
         <script src="https://cdn.plot.ly/plotly-locale-fr-latest.js"></script>
         <script src="{% static "js/htmx.1.8.5.min.js" %}"></script>
-        {% block scripts %}{% endblock %}
+        {% block scripts %}
+        {% endblock %}
     </body>
 </html>

@@ -38,9 +38,7 @@
                             {% endif %}
                         </td>
                         <td>{{ row.sent_at|default:"N/A" }}</td>
-                        <td>
-                            {{ row.received_at|default:"N/A" }}
-                        </td>
+                        <td>{{ row.received_at|default:"N/A" }}</td>
                         <td>{{ row.waste_code }}</td>
                         <td>{{ row.waste_name }}</td>
                         <td class="td--right">{{ row.quantity }}</td>

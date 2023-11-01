@@ -19,15 +19,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(_("Email address"), unique=True)
     username = models.CharField(_("User name"), max_length=250)
-    is_active = models.BooleanField(
-        _("active"), default=True, help_text=_("Should this user be treated as active.")
-    )
+    is_active = models.BooleanField(_("active"), default=True, help_text=_("Should this user be treated as active."))
     is_staff = models.BooleanField(
         _("staff status"),
         default=False,
-        help_text=_(
-            "Can the user log into this admin site. ONLY SET THIS FOR SUPERADMINS USERS!"
-        ),
+        help_text=_("Can the user log into this admin site. ONLY SET THIS FOR SUPERADMINS USERS!"),
     )
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
     objects = UserManager()

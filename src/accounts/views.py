@@ -50,6 +50,9 @@ class VerifyView(LoginRequiredMixin, FormView):
         otp_login(self.request, self.request.user.otp_device)
         return super().form_valid(form)
 
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**kwargs, token_validity=int(settings.OTP_EMAIL_TOKEN_VALIDITY / 60))
+
 
 class ResendTokenEmail(SendSecondFactorMailMixin, LoginRequiredMixin, FormView):
     """

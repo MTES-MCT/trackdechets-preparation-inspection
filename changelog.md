@@ -5,6 +5,9 @@ Les changements importants de Trackdéchets préparation inspection sont documen
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 et le projet suit un schéma de versionning inspiré de [Calendar Versioning](https://calver.org/).
 
+## 09/11/2023
+- Mise à jour du mode d'emploi
+
 ## 31/10/2023
 
 - Ajout d'un second facteur pour la connexion (code reçu par email)

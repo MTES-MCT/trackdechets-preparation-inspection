@@ -15,7 +15,10 @@ def render_pdf_graph_fn(computed_pk, name):
         computed = get_object_or_404(ComputedInspectionData.objects.select_for_update(), pk=computed_pk)
         if not computed.is_computed:
             return
-        graph = data_to_bs64_plot(getattr(computed, f"{name}_data"))
+        graph_data = getattr(computed, f"{name}_data")
+        graph = ""
+        if graph_data is not None and graph_data != "{}":
+            graph = data_to_bs64_plot(graph_data)
         setattr(computed, f"{name}_graph", graph)
 
         computed.save()

@@ -1251,8 +1251,8 @@ class WasteProcessingWithoutICPEProcessor:
         icpe_data = self.icpe_data
 
         if icpe_data is not None:
-            has_2760_1 = len(icpe_data[(icpe_data["rubrique"] == "2760") & (icpe_data["alinea"] == 1)]) > 0
-            has_2760_2 = len(icpe_data[(icpe_data["rubrique"] == "2760") & (icpe_data["alinea"] == 2)]) > 0
+            has_2760_1 = len(icpe_data[(icpe_data["rubrique"] == "2760") & (icpe_data["alinea"] == "1")]) > 0
+            has_2760_2 = len(icpe_data[(icpe_data["rubrique"] == "2760") & (icpe_data["alinea"] == "2")]) > 0
 
         if not has_2760_1:  # Means no authorization for ICPE 2760-1
             bs_2760_dfs = []
@@ -1384,7 +1384,7 @@ class WasteProcessingWithoutICPEProcessor:
                         if (e.bs_type not in ("BSVHU", "BSDASRI") and not pd.isna(e.waste_name))
                         else None,
                         "operation_code": e.processing_operation_code,
-                        "quantity": format_number_str(e.quantity_received, 1)
+                        "quantity": format_number_str(e.quantity_received, 3)
                         if not pd.isna(e.quantity_received)
                         else None,
                         "processed_at": e.processed_at.strftime("%d/%m/%Y %H:%M")

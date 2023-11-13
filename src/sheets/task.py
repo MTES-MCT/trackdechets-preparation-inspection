@@ -63,9 +63,9 @@ def render_pdf_sheet(computed_pk: str):
         "bsvhu_stock_graph": sheet.bsvhu_stock_graph,
         "waste_origin_graph": sheet.waste_origin_graph,
         "waste_origin_map_graph": sheet.waste_origin_map_graph,
-        "icpe_2770_graph": sheet.icpe_2770_data,
-        "icpe_2790_graph": sheet.icpe_2790_data,
-        "icpe_2760_graph": sheet.icpe_2760_data,
+        "icpe_2770_graph": sheet.icpe_2770_graph,
+        "icpe_2790_graph": sheet.icpe_2790_graph,
+        "icpe_2760_graph": sheet.icpe_2760_graph,
         "skip_css": True,
     }
     content = render_to_string("sheets/sheetpdf.html", ctx)

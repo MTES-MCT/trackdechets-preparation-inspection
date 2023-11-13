@@ -644,7 +644,7 @@ class StorageStatsProcessor:
 
         # Only positive differences are kept
         stock_by_waste_code = stock_by_waste_code[stock_by_waste_code > 0]
-        total_stock = format_number_str(received.sum() - emitted.sum(), precision=1)
+        total_stock = format_number_str(stock_by_waste_code.sum(), precision=1)
         stock_by_waste_code = stock_by_waste_code.apply(format_number_str, precision=1)
 
         # Data is enriched with waste description from the waste nomenclature

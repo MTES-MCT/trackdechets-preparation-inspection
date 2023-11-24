@@ -1008,3 +1008,179 @@ class ICPEAnnualItemProcessor:
             figure = self.figure.to_json()
 
         return figure
+
+
+class BsdaWorkerQuantityProcessor:
+    """Component with a Line Figure of quantities linked to the worker company siret.
+
+    Parameters
+    ----------
+    company_siret: str
+        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
+    bsda_data_df: DataFrame
+        DataFrame containing BSDA data.
+    data_date_interval: tuple
+        Date interval to filter data.
+    """
+
+    def __init__(
+        self,
+        company_siret: str,
+        bsda_data_df: pd.DataFrame,
+        data_date_interval: tuple[datetime, datetime],
+    ) -> None:
+        self.company_siret = company_siret
+        self.bsda_data = bsda_data_df
+        self.data_date_interval = data_date_interval
+
+        self.quantities_signed_by_worker_by_month = None
+        self.quantities_transported_by_month = None
+        self.quantities_processed_by_month = None
+
+        self.figure = None
+
+    def _preprocess_bs_data(self) -> None:
+        """Preprocess raw 'bordereaux' data to prepare it for plotting."""
+        bsda_data = self.bsda_data
+
+        bsda_data = bsda_data[bsda_data["worker_company_siret"].notna()]
+
+        if len(bsda_data) == 0:
+            return
+
+        self.quantities_signed_by_worker_by_month = (
+            bsda_data[bsda_data["worker_work_signature_date"].between(*self.data_date_interval)]
+            .groupby(pd.Grouper(key="worker_work_signature_date", freq="1M"))["waste_details_quantity"]
+            .sum()
+        )
+
+        self.quantities_transported_by_month = (
+            bsda_data[bsda_data["sent_at"].between(*self.data_date_interval)]
+            .groupby(pd.Grouper(key="sent_at", freq="1M"))["quantity_received"]
+            .sum()
+        )
+
+        self.quantities_transported_by_month = (
+            bsda_data[bsda_data["sent_at"].between(*self.data_date_interval)]
+            .groupby(pd.Grouper(key="sent_at", freq="1M"))["quantity_received"]
+            .sum()
+        )
+
+    def _check_data_empty(self) -> bool:
+        if all(
+            (e is None) or (len(e) == 0)
+            for e in [
+                self.quantities_signed_by_worker_by_month,
+                self.quantities_transported_by_month,
+                self.quantities_processed_by_month,
+            ]
+        ):
+            return True
+
+        return False
+
+    def _create_figure(self) -> None:
+        lines = []
+
+        configs = [
+            {
+                "data": self.quantities_signed_by_worker_by_month,
+                "name": "Signé par l'entreprise de travaux",
+                "hover_suffix": "tonnes (estimées)",
+                "color": "#66673D",
+            },
+            {
+                "data": self.quantities_transported_by_month,
+                "name": "Enlevé par le transporteur",
+                "hover_suffix": "tonnes enlevées",
+                "color": "#E4794A",
+            },
+            {
+                "data": self.quantities_processed_by_month,
+                "name": "Traité",
+                "hover_suffix": "tonnes traitées",
+                "color": "#60E0EB",
+            },
+        ]
+
+        tick0_min = None
+        max_y = None
+        max_points = 0
+        for config in configs:
+            data = config["data"]
+            hover_suffix = config["hover_suffix"]
+            if data is not None and len(data) > 0:
+                lines.append(
+                    go.Scatter(
+                        x=data.index,
+                        y=data,
+                        name=config["name"],
+                        mode="lines+markers",
+                        hovertext=[
+                            f"{index.strftime('%B %y').capitalize()} - <b>{format_number_str(e,2)}</b> {hover_suffix}"
+                            for index, e in data.items()
+                        ],
+                        marker_color=config["color"],
+                        line_color=config["color"],
+                        hoverinfo="text",
+                    )
+                )
+                min_ = data.index.min()
+                if (tick0_min is None) or (min_ < tick0_min):
+                    tick0_min = min_
+
+                max_ = data.max()
+                if (max_y is None) or (max_ < max_y):
+                    max_y = max_
+
+                if len(data) > max_points:
+                    max_points = len(data)
+
+        fig = go.Figure(lines)
+
+        tickangle = 0
+        y_legend = -0.07
+        if max_points >= 15:
+            tickangle = -90
+            y_legend = -0.15
+
+        dtick = "M2"
+        if not max_points or max_points < 3:
+            dtick = "M1"
+
+        tickangle = 0
+        y_legend = -0.07
+        if max_points and max_points >= 15:
+            tickangle = -90
+            y_legend = -0.12
+
+        fig.update_layout(
+            margin={"t": 20, "l": 35, "r": 5},
+            legend={"orientation": "h", "y": y_legend, "x": 0},
+            legend_font_size=11,
+            legend_bgcolor="rgba(0,0,0,0)",
+            showlegend=True,
+            paper_bgcolor="#fff",
+            plot_bgcolor="rgba(0,0,0,0)",
+        )
+
+        fig.update_xaxes(
+            tickangle=tickangle,
+            tickformat="%b %y",
+            tick0=tick0_min,
+            dtick=dtick,
+            gridcolor="#ccc",
+        )
+        fig.update_yaxes(exponentformat="B", tickformat=".2s", gridcolor="#ccc")
+
+        self.figure = fig
+
+    def build(self):
+        self._preprocess_bs_data()
+
+        figure = {}
+        if not self._check_data_empty():
+            self._create_figure()
+            figure = self.figure.to_json()
+
+        return figure

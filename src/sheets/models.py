@@ -141,6 +141,10 @@ class ComputedInspectionData(models.Model):
 
     bs_processed_without_icpe_authorization = models.JSONField(default=dict)
 
+    bsda_worker_stats_data = models.JSONField(default=dict)
+    bsda_worker_quantity_data = models.JSONField(default=dict)
+    bsda_worker_quantity_graph = models.TextField(blank=True)
+
     pdf = models.TextField(blank=True)
 
     created_by = models.EmailField(verbose_name=_("Created by"), blank=True)

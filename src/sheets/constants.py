@@ -38,4 +38,5 @@ PLOTLY_GRAPHS_TO_RENDER_IN_PDF = [
     "icpe_2770",
     "icpe_2790",
     "icpe_2760",
+    "bsda_worker_quantity",
 ]

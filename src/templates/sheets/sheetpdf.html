@@ -159,7 +159,7 @@
                     </div>
                     <div class="cell cell--bordered cell--third">
                         <p class="cell__title">Quantité de déchets VHU en tonnes</p>
-                        <img src="data:image/png;base64,{{ bsvhustock_graph }}" class="cell__img">
+                        <img src="data:image/png;base64,{{ bsvhu_stock_graph }}" class="cell__img">
                     </div>
                     <div class="cell cell--bordered cell--third">
                         <p class="cell__title">BS VHU sur l'année</p>
@@ -168,6 +168,18 @@
                 </div>
             {% endif %}
             {#  end bsvhu #}
+            {# BSDA worker stats #}
+            {% if sheet.bsda_worker_stats_data %}
+                <div class="row">
+                    <div class="cell cell--bordered cell--third">{% render_bsda_worker_stats_data sheet graph_context="pdf" %}</div>
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">Entreprise de travaux - Quantité de déchets amiante en tonnes</h3>
+                        <img src="data:image/png;base64,{{ bsda_worker_quantity_graph }}"
+                             class="cell__img">
+                    </div>
+                </div>
+            {% endif %}
+            {# end BSDA worker stats #}
             {#  "waste is dangerous" statements #}
             {% if sheet.waste_is_dangerous_statements_data %}
                 <div>{% render_waste_is_dangerous_statements sheet graph_context="pdf" %}</div>

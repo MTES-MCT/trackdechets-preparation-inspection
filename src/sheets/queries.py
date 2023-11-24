@@ -91,6 +91,9 @@ sql_bsda_query_str = """
 select
     id,
     created_at,
+    emitter_emission_signature_date,
+    worker_work_signature_date,
+    transporter_transport_signature_date,
     transporter_transport_taken_over_at as sent_at,
     destination_reception_date as received_at,
     destination_operation_date as processed_at,
@@ -151,6 +154,7 @@ where
     and not is_draft
 order by
     created_at asc"""
+
 
 sql_bsff_query_str = """select
     id,

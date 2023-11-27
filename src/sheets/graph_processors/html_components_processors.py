@@ -1495,8 +1495,10 @@ class BsdaWorkerStatsProcessor:
             "received": None,
             "processed": None,
             "signed_vs_processed_ratio": None,
-            "avg_processing_time": None,  # Between signature of producer data and processing date
-            "max_processing_time": None,  # Between signature of producer data and processing date
+            "avg_processing_time_from_emission": None,  # Between signature of producer data and processing date
+            "max_processing_time_from_emission": None,  # Between signature of producer data and processing date
+            "max_processing_time_from_sending": None,
+            "avg_processing_time_from_sending": None,
         }
 
     def _preprocess_data(self) -> None:
@@ -1536,18 +1538,32 @@ class BsdaWorkerStatsProcessor:
                 100 * self.bsda_worker_stats["processed"] / self.bsda_worker_stats["signed_worker"], 2
             )
 
-        times_to_process = df["processed_at"] - df["emitter_emission_signature_date"]
-        max_time_to_process = times_to_process.max()
-        avg_time_to_process = times_to_process.mean()
+        times_to_process_from_sending = df["processed_at"] - df["emitter_emission_signature_date"]
+        max_time_to_process_from_sending = times_to_process_from_sending.max()
+        avg_time_to_process_from_sending = times_to_process_from_sending.mean()
 
-        if not pd.isna(max_time_to_process):
-            self.bsda_worker_stats["max_processing_time"] = format_number_str(
-                max_time_to_process.value / (1e9 * 3600 * 24), 2
+        if not pd.isna(max_time_to_process_from_sending):
+            self.bsda_worker_stats["max_processing_time_from_emission"] = format_number_str(
+                max_time_to_process_from_sending.value / (1e9 * 3600 * 24), 2
             )
 
-        if not pd.isna(avg_time_to_process):
-            self.bsda_worker_stats["avg_processing_time"] = format_number_str(
-                avg_time_to_process.value / (1e9 * 3600 * 24)
+        if not pd.isna(avg_time_to_process_from_sending):
+            self.bsda_worker_stats["avg_processing_time_from_emission"] = format_number_str(
+                avg_time_to_process_from_sending.value / (1e9 * 3600 * 24)
+            )
+
+        times_to_process_from_sending = df["processed_at"] - df["sent_at"]
+        max_time_to_process_from_sending = times_to_process_from_sending.max()
+        avg_time_to_process_from_sending = times_to_process_from_sending.mean()
+
+        if not pd.isna(max_time_to_process_from_sending):
+            self.bsda_worker_stats["max_processing_time_from_sending"] = format_number_str(
+                max_time_to_process_from_sending.value / (1e9 * 3600 * 24), 2
+            )
+
+        if not pd.isna(avg_time_to_process_from_sending):
+            self.bsda_worker_stats["avg_processing_time_from_sending"] = format_number_str(
+                avg_time_to_process_from_sending.value / (1e9 * 3600 * 24)
             )
 
     def _check_empty_data(self) -> bool:

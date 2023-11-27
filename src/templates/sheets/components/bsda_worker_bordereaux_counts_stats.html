@@ -4,7 +4,7 @@
         font-size: 0.8rem;
     }
 </style>
-<h3 class="cell__title">Statistiques en tant qu'entreprise de travaux</h3>
+<h3 class="cell__title">Statistiques en tant qu'entreprise de travaux - Nombre de BSDA</h3>
 {% if bsda_worker_stats_data %}
     <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
         <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
@@ -50,16 +50,6 @@
         {% if bsda_worker_stats_data.signed_vs_processed_ratio %}
             <div class="single-stat">
                 Ratio du nombre de borderaux traités par rapport au nombre de bordereaux signés par l'entreprise de travaux : <span class="td-font-lead">{{ bsda_worker_stats_data.signed_vs_processed_ratio }}</span> %
-            </div>
-        {% endif %}
-        {% if bsda_worker_stats_data.avg_processing_time %}
-            <div class="single-stat">
-                Temps moyen entre le traitement et la signature par l'entreprise de travaux : <span class="td-font-lead">{{ bsda_worker_stats_data.avg_processing_time }}</span> jours
-            </div>
-        {% endif %}
-        {% if bsda_worker_stats_data.max_processing_time %}
-            <div class="single-stat">
-                Temps maximum entre le traitement et la signature par l'entreprise de travaux : <span class="td-font-lead">{{ bsda_worker_stats_data.max_processing_time }}</span> jours
             </div>
         {% endif %}
     </div>

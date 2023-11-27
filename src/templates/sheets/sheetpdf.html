@@ -171,7 +171,10 @@
             {# BSDA worker stats #}
             {% if sheet.bsda_worker_stats_data %}
                 <div class="row">
-                    <div class="cell cell--bordered cell--third">{% render_bsda_worker_stats_data sheet graph_context="pdf" %}</div>
+                    <div class="cell cell--bordered cell--third">{% render_bsda_worker_counts_stats_data sheet graph_context="pdf" %}</div>
+                    <div class="cell cell--bordered cell--third">
+                        {% render_bsda_worker_durations_stats_data sheet graph_context="pdf" %}
+                    </div>
                     <div class="cell cell--bordered cell--third">
                         <h3 class="cell__title">Entreprise de travaux - Quantité de déchets amiante en tonnes</h3>
                         <img src="data:image/png;base64,{{ bsda_worker_quantity_graph }}"

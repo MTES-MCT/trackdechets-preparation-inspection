@@ -1,0 +1,44 @@
+<style>
+    .single-stat {
+        margin-top: 5%;
+        font-size: 0.8rem;
+    }
+</style>
+<h3 class="cell__title">Statistiques en tant qu'entreprise de travaux - Durées</h3>
+{% if bsda_worker_stats_data %}
+    <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+        <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+            <thead>
+                <tr>
+                    <th class="table-headline" scope="col">Durée en jours</th>
+                    <th scope="col">Moyenne</th>
+                    <th scope="col">Maximale</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Entre la signature par l'émétteur et le traitement</td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ bsda_worker_stats_data.avg_processing_time_from_emission|default:"N/A" }}j</span>
+                    </td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ bsda_worker_stats_data.max_processing_time_from_emission|default:"N/A" }}j</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Entre la prise en charge par le transporteur et le traitement</td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ bsda_worker_stats_data.avg_processing_time_from_sending|default:"N/A" }}j</span>
+                    </td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ bsda_worker_stats_data.max_processing_time_from_sending|default:"N/A" }}j</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="sc-primary">
+        <span>Pas de données</span>
+    </div>
+{% endif %}

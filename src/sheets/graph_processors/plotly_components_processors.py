@@ -1060,9 +1060,9 @@ class BsdaWorkerQuantityProcessor:
             .sum()
         )
 
-        self.quantities_transported_by_month = (
-            bsda_data[bsda_data["sent_at"].between(*self.data_date_interval)]
-            .groupby(pd.Grouper(key="sent_at", freq="1M"))["quantity_received"]
+        self.quantities_processed_by_month = (
+            bsda_data[bsda_data["processed_at"].between(*self.data_date_interval)]
+            .groupby(pd.Grouper(key="processed_at", freq="1M"))["quantity_received"]
             .sum()
         )
 

@@ -200,6 +200,16 @@
             </div>
         {% endif %}
         {# end BSDA worker stats #}
+        {% if sheet.transporter_bordereaux_stats_data %}
+            <div class="row">
+                <div class="cell cell--bordered cell--third">
+                    <h3 class="cell__title">Bordereaux transportés</h3>
+                    <div id="bs_transported_graph">
+                        <div class="no-data">Pas de données à afficher.</div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
         {#  "waste is dangerous" statements #}
         {% if sheet.waste_is_dangerous_statements_data %}
             <div class="cell cell--bordered cell--half">{% render_waste_is_dangerous_statements sheet %}</div>
@@ -324,6 +334,7 @@
         const icpe_2790_data = {{ sheet.icpe_2790_data }};
         const icpe_2760_data = {{ sheet.icpe_2760_data }};
         const bsda_worker_quantity_data = {{ sheet.bsda_worker_quantity_data }};
+        const transporter_bordereaux_stats_data = {{ sheet.transporter_bordereaux_stats_data }};
         {% endautoescape %}
     </script>
     <script>
@@ -390,8 +401,12 @@
         {
             "data": bsda_worker_quantity_data,
             "target": "bsda_worker_quantity_graph"
+        },
+        {
+            "data": transporter_bordereaux_stats_data,
+            "target": "bs_transported_graph"
         }];
-
+        
         for (const config of plot_configs) {
             if (isNotEmpty(config.data)) {
                 removeNoDataClass(`#${config.target} > .no-data`);

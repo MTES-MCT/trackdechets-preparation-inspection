@@ -74,6 +74,42 @@ order by
     created_at ASC;
 """
 
+sql_bsdd_transporter_query_str = """
+select
+    bt.id,
+    bt.form_id,
+    bt.taken_over_at,
+    bt.transporter_company_siret,
+    bt.transporter_number_plate,
+    b.created_at,
+    b.quantity_received
+from
+    trusted_zone_trackdechets.bsdd_transporter bt
+    left join trusted_zone_trackdechets.bsdd b on bt.form_id = b.id
+where 
+    bt.transporter_company_siret = :siret
+    and b.created_at BETWEEN :data_start_date AND :data_end_date
+    and (b.waste_details_code ~* '.*\*$' or b.waste_details_pop or b.waste_details_is_dangerous)
+"""
+
+sql_bsdd_non_dangerous_transporter_query_str = """
+select
+    bt.id,
+    bt.form_id,
+    bt.taken_over_at,
+    bt.transporter_company_siret,
+    bt.transporter_number_plate,
+    b.created_at,
+    b.quantity_received
+from
+    trusted_zone_trackdechets.bsdd_transporter bt
+    left join trusted_zone_trackdechets.bsdd b on bt.form_id = b.id
+where 
+    bt.transporter_company_siret = :siret
+    and b.created_at BETWEEN :data_start_date AND :data_end_date
+    and not (b.waste_details_code ~* '.*\*$' or b.waste_details_pop or b.waste_details_is_dangerous)
+"""
+
 sql_company_query_str = """
 select id,
     created_at,

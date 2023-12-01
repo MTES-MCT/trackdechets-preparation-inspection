@@ -25,7 +25,9 @@ select
     trusted_zone_trackdechets.bsdd
 where
     (emitter_company_siret = :siret
-    or recipient_company_siret = :siret)
+    or recipient_company_siret = :siret
+    or transporter_company_siret = :siret
+    )
     and is_deleted = false
     and created_at BETWEEN :data_start_date AND :data_end_date
     and status::text not in ('DRAFT', 'INITIAL')
@@ -61,7 +63,9 @@ select
     trusted_zone_trackdechets.bsdd
 where
     (emitter_company_siret = :siret
-    or recipient_company_siret = :siret)
+    or recipient_company_siret = :siret
+    or transporter_company_siret = :siret
+    )
     and is_deleted = false
     and created_at BETWEEN :data_start_date AND :data_end_date
     and status::text not in ('DRAFT', 'INITIAL')
@@ -118,7 +122,8 @@ from
 where
     (emitter_company_siret = :siret
         or destination_company_siret = :siret
-        or worker_company_siret = :siret)
+        or worker_company_siret = :siret
+        or transporter_company_siret = :siret)
     and is_deleted = false
     and created_at BETWEEN :data_start_date AND :data_end_date
     and status::text not in ('DRAFT', 'INITIAL')
@@ -147,7 +152,8 @@ from
         trusted_zone_trackdechets.bsdasri
 where
     (emitter_company_siret = :siret
-        or destination_company_siret = :siret)
+        or destination_company_siret = :siret
+        or transporter_company_siret = :siret)
     and is_deleted = false
     and created_at BETWEEN :data_start_date AND :data_end_date
     and status::text not in ('DRAFT', 'INITIAL')
@@ -175,7 +181,8 @@ from
     trusted_zone_trackdechets.bsff
 where
     (emitter_company_siret = :siret
-        or destination_company_siret = :siret)
+        or destination_company_siret = :siret
+        or transporter_company_siret = :siret)
     and is_deleted = false
     and created_at BETWEEN :data_start_date AND :data_end_date
     and status::text not in ('DRAFT', 'INITIAL')
@@ -231,7 +238,8 @@ from
     trusted_zone_trackdechets.bsvhu
 where
     (emitter_company_siret = :siret
-        or destination_company_siret = :siret)
+        or destination_company_siret = :siret
+        or transporter_company_siret = :siret)
     and is_deleted = false
     and created_at BETWEEN :data_start_date AND :data_end_date
     and  status::text not in ('DRAFT', 'INITIAL')

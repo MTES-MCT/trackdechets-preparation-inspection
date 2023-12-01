@@ -50,6 +50,7 @@ from .graph_processors.plotly_components_processors import (
     BsdaWorkerQuantityProcessor,
     ICPEAnnualItemProcessor,
     ICPEDailyItemProcessor,
+    TransportedQuantitiesStatsProcessor,
     TransporterBordereauxStatsProcessor,
     WasteOriginProcessor,
     WasteOriginsMapProcessor,
@@ -397,6 +398,15 @@ class SheetProcessor:
             data_date_interval=data_date_interval,
         )
         self.computed.transporter_bordereaux_stats_data = transporter_bordereaux_stats.build()
+
+        quantities_transported_stats = TransportedQuantitiesStatsProcessor(
+            company_siret=self.siret,
+            transporters_data_df=self.transporter_data_dfs,
+            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k not in [BSDD, BSDD_NON_DANGEROUS]},
+            data_date_interval=data_date_interval,
+            packagings_data_df=self.bsff_packagings_df,
+        )
+        self.computed.quantities_transported_stats_data = quantities_transported_stats.build()
 
         self.computed.state = ComputedInspectionData.StateChoice.COMPUTED
         self.computed.save()

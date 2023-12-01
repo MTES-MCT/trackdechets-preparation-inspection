@@ -208,6 +208,12 @@
                         <div class="no-data">Pas de données à afficher.</div>
                     </div>
                 </div>
+                <div class="cell cell--bordered cell--third">
+                    <h3 class="cell__title">Quantité de déchets transportés</h3>
+                    <div id="bs_quantities_transported_graph">
+                        <div class="no-data">Pas de données à afficher.</div>
+                    </div>
+                </div>
             </div>
         {% endif %}
         {#  "waste is dangerous" statements #}
@@ -335,6 +341,7 @@
         const icpe_2760_data = {{ sheet.icpe_2760_data }};
         const bsda_worker_quantity_data = {{ sheet.bsda_worker_quantity_data }};
         const transporter_bordereaux_stats_data = {{ sheet.transporter_bordereaux_stats_data }};
+        const quantities_transported_stats_data = {{ sheet.quantities_transported_stats_data }};
         {% endautoescape %}
     </script>
     <script>
@@ -405,6 +412,10 @@
         {
             "data": transporter_bordereaux_stats_data,
             "target": "bs_transported_graph"
+        },
+        {
+            "data": quantities_transported_stats_data,
+            "target": "bs_quantities_transported_graph"
         }];
         
         for (const config of plot_configs) {

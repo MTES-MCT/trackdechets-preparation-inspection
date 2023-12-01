@@ -20,7 +20,8 @@ select
     waste_details_pop as waste_pop,
     waste_details_is_dangerous as is_dangerous,
     emitter_worksite_name as worksite_name,
-    emitter_worksite_address as worksite_address
+    emitter_worksite_address as worksite_address,
+    transporter_company_siret
  from
     trusted_zone_trackdechets.bsdd
 where
@@ -58,7 +59,8 @@ select
     waste_details_pop as waste_pop,
     waste_details_is_dangerous as is_dangerous,
     emitter_worksite_name as worksite_name,
-    emitter_worksite_address as worksite_address
+    emitter_worksite_address as worksite_address,
+    transporter_company_siret
  from
     trusted_zone_trackdechets.bsdd
 where
@@ -152,7 +154,8 @@ select
     emitter_pickup_site_name as worksite_name,
     emitter_pickup_site_address as worksite_address,
     worker_company_siret,
-    emitter_is_private_individual
+    emitter_is_private_individual,
+    transporter_company_siret
 from
     trusted_zone_trackdechets.bsda
 where
@@ -183,7 +186,8 @@ select
     waste_code,
     destination_operation_code as processing_operation_code,
     status,
-    transporter_transport_mode
+    transporter_transport_mode,
+    transporter_company_siret
 from
         trusted_zone_trackdechets.bsdasri
 where
@@ -212,7 +216,8 @@ sql_bsff_query_str = """select
     waste_code,
     destination_operation_code as processing_operation_code,
     status,
-    transporter_transport_mode
+    transporter_transport_mode,
+    transporter_company_siret
 from
     trusted_zone_trackdechets.bsff
 where
@@ -269,7 +274,8 @@ select
     destination_reception_weight as quantity_received,
     waste_code,
     destination_operation_code as processing_operation_code,
-    status
+    status,
+    transporter_company_siret
 from
     trusted_zone_trackdechets.bsvhu
 where

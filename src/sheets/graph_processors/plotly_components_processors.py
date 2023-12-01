@@ -1045,7 +1045,7 @@ class BsdaWorkerQuantityProcessor:
         """Preprocess raw 'bordereaux' data to prepare it for plotting."""
         bsda_data = self.bsda_data
 
-        bsda_data = bsda_data[bsda_data["worker_company_siret"].notna()]
+        bsda_data = bsda_data[bsda_data["worker_company_siret"] == self.company_siret]
 
         if len(bsda_data) == 0:
             return
@@ -1189,14 +1189,17 @@ class BsdaWorkerQuantityProcessor:
 
 
 class TransporterBordereauxStatsProcessor:
-    """Component with a Line Figure of quantities linked to the worker company siret.
+    """Component with a Bar Figure showing monthly number of bordereaux as transporter company.
 
     Parameters
     ----------
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
-    bsda_data_df: DataFrame
-        DataFrame containing BSDA data.
+    transporters_data_df: dict
+        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau transported data.
+        Correspond to the new way of managing transporters in Trackdéchets.
+    bs_data_dfs: dict
+        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
     data_date_interval: tuple
         Date interval to filter data.
     """
@@ -1230,23 +1233,21 @@ class TransporterBordereauxStatsProcessor:
         bs_data_dfs = self.bs_data_dfs
 
         for bs_type, df in transporter_data_dfs.items():
-            df_by_month = (
-                df[df["taken_over_at"].between(*self.data_date_interval)]
-                .groupby(pd.Grouper(key="taken_over_at", freq="1M"))["form_id"]
-                .nunique()
-            )
-            self.transported_bordereaux_stats[bs_type] = df_by_month
+            df = df[df["taken_over_at"].between(*self.data_date_interval)]
+
+            if len(df) > 0:
+                df_by_month = df.groupby(pd.Grouper(key="taken_over_at", freq="1M"))["form_id"].nunique()
+                self.transported_bordereaux_stats[bs_type] = df_by_month
 
         for bs_type, df in bs_data_dfs.items():
-            df_by_month = (
-                df[df["sent_at"].between(*self.data_date_interval)]
-                .groupby(pd.Grouper(key="sent_at", freq="1M"))["id"]
-                .nunique()
-            )
-            self.transported_bordereaux_stats[bs_type] = df_by_month
+            df = df[df["sent_at"].between(*self.data_date_interval)]
+
+            if len(df) > 0:
+                df_by_month = df.groupby(pd.Grouper(key="sent_at", freq="1M"))["id"].nunique()
+                self.transported_bordereaux_stats[bs_type] = df_by_month
 
     def _check_data_empty(self) -> bool:
-        if all((e is None) or (len(e) == 0) for e in self.transported_bordereaux_stats):
+        if all((e is None) or (len(e) == 0) for e in self.transported_bordereaux_stats.values()):
             return True
 
         return False
@@ -1347,6 +1348,7 @@ class TransporterBordereauxStatsProcessor:
             paper_bgcolor="#fff",
             plot_bgcolor="rgba(0,0,0,0)",
             barmode="stack",
+            margin_pad=5,
         )
 
         fig.update_xaxes(

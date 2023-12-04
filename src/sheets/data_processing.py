@@ -29,6 +29,7 @@ from .graph_processors.html_components_processors import (
     AdditionalInfoProcessor,
     BsdCanceledTableProcessor,
     BsdStatsProcessor,
+    BsdaWorkerStatsProcessor,
     ICPEItemsProcessor,
     InputOutputWasteTableProcessor,
     LinkedCompaniesProcessor,
@@ -44,6 +45,7 @@ from .graph_processors.html_components_processors import (
 from .graph_processors.plotly_components_processors import (
     BsdQuantitiesGraph,
     BsdTrackedAndRevisedProcessor,
+    BsdaWorkerQuantityProcessor,
     ICPEAnnualItemProcessor,
     ICPEDailyItemProcessor,
     WasteOriginProcessor,
@@ -361,6 +363,16 @@ class SheetProcessor:
             self.siret, self.bsds_dfs, icpe_data, data_date_interval
         )
         self.computed.bs_processed_without_icpe_authorization = waste_processing_without_icpe_data.build()
+
+        bsda_worker_stats = BsdaWorkerStatsProcessor(
+            company_siret=self.siret, bsda_data_df=self.bsds_dfs[BSDA], data_date_interval=data_date_interval
+        )
+        self.computed.bsda_worker_stats_data = bsda_worker_stats.build()
+
+        bsda_worker_quantities = BsdaWorkerQuantityProcessor(
+            company_siret=self.siret, bsda_data_df=self.bsds_dfs[BSDA], data_date_interval=data_date_interval
+        )
+        self.computed.bsda_worker_quantity_data = bsda_worker_quantities.build()
 
         self.computed.state = ComputedInspectionData.StateChoice.COMPUTED
         self.computed.save()

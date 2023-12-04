@@ -1,0 +1,60 @@
+<style>
+    .single-stat {
+        margin-top: 5%;
+        font-size: 0.8rem;
+    }
+</style>
+<h3 class="cell__title">Statistiques en tant qu'entreprise de travaux - Nombre de BSDA</h3>
+{% if bsda_worker_stats_data %}
+    <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+        <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+            <thead>
+                <tr>
+                    <th class="table-headline" scope="col">Statut du BSDA</th>
+                    <th scope="col">Nombre</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Signés par le producteur</td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ bsda_worker_stats_data.signed_producer }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Signés par le producteur et l'entreprise de travaux</td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ bsda_worker_stats_data.signed_worker }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Signés par le producteur, l'entreprise de travaux et le transporteur</td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ bsda_worker_stats_data.signed_transporter }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Reçus</td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ bsda_worker_stats_data.received }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Traités</td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ bsda_worker_stats_data.processed }}</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {% if bsda_worker_stats_data.signed_vs_processed_ratio %}
+            <div class="single-stat">
+                Ratio du nombre de borderaux traités par rapport au nombre de bordereaux signés par l'entreprise de travaux : <span class="td-font-lead">{{ bsda_worker_stats_data.signed_vs_processed_ratio }}</span> %
+            </div>
+        {% endif %}
+    </div>
+{% else %}
+    <div class="sc-primary">
+        <span>Pas de données</span>
+    </div>
+{% endif %}

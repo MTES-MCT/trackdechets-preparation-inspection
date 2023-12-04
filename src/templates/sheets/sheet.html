@@ -15,7 +15,7 @@
             <a href="{% url "prepare" %}">Préparer une autre fiche</a>
             {% if user.is_superuser and debug %}
                 -
-                <a href="{% url "sheet_pdf_debug" sheet.pk %}" target="_blank">Pdf debug</a>
+                <a href="{% url "sheet_pdf_debug" sheet.pk %}" target="_blank">PDF debug</a>
             {% endif %}
         </p>
         <div class="row">
@@ -185,7 +185,21 @@
                 </div>
             </div>
         {% endif %}
-        {# end bsff #}
+        {# end bsvhu #}
+        {# BSDA worker stats #}
+        {% if sheet.bsda_worker_stats_data %}
+            <div class="row">
+                <div class="cell cell--bordered cell--third">{% render_bsda_worker_counts_stats_data sheet %}</div>
+                <div class="cell cell--bordered cell--third">{% render_bsda_worker_durations_stats_data sheet %}</div>
+                <div class="cell cell--bordered cell--third">
+                    <h3 class="cell__title">Entreprise de travaux - Quantité de déchets amiante en tonnes</h3>
+                    <div id="bsda_worker_quantity_graph">
+                        <div class="no-data">Pas de données à afficher.</div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        {# end BSDA worker stats #}
         {#  "waste is dangerous" statements #}
         {% if sheet.waste_is_dangerous_statements_data %}
             <div class="cell cell--bordered cell--half">{% render_waste_is_dangerous_statements sheet %}</div>
@@ -309,6 +323,7 @@
         const icpe_2770_data = {{ sheet.icpe_2770_data }};
         const icpe_2790_data = {{ sheet.icpe_2790_data }};
         const icpe_2760_data = {{ sheet.icpe_2760_data }};
+        const bsda_worker_quantity_data = {{ sheet.bsda_worker_quantity_data }};
         {% endautoescape %}
     </script>
     <script>
@@ -371,6 +386,10 @@
         {
             "data": icpe_2760_data,
             "target": "icpe_2760_graph"
+        },
+        {
+            "data": bsda_worker_quantity_data,
+            "target": "bsda_worker_quantity_graph"
         }];
 
         for (const config of plot_configs) {

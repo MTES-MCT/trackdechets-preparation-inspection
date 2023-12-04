@@ -120,3 +120,19 @@ def render_linked_companies_data(computed, graph_context="web"):
         "linked_companies_data": computed.linked_companies_data,
         "graph_context": graph_context,
     }
+
+
+@register.inclusion_tag("sheets/components/bsda_worker_bordereaux_counts_stats.html")
+def render_bsda_worker_counts_stats_data(computed, graph_context="web"):
+    return {
+        "bsda_worker_stats_data": computed.bsda_worker_stats_data,
+        "graph_context": graph_context,
+    }
+
+
+@register.inclusion_tag("sheets/components/bsda_worker_bordereaux_durations_stats.html")
+def render_bsda_worker_durations_stats_data(computed, graph_context="web"):
+    return {
+        "bsda_worker_stats_data": computed.bsda_worker_stats_data,
+        "graph_context": graph_context,
+    }

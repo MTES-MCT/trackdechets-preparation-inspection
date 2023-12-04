@@ -1233,10 +1233,10 @@ class TransporterBordereauxStatsProcessor:
         bs_data_dfs = self.bs_data_dfs
 
         for bs_type, df in transporter_data_dfs.items():
-            df = df[df["taken_over_at"].between(*self.data_date_interval)]
+            df = df[df["sent_at"].between(*self.data_date_interval)]
 
             if len(df) > 0:
-                df_by_month = df.groupby(pd.Grouper(key="taken_over_at", freq="1M"))["form_id"].nunique()
+                df_by_month = df.groupby(pd.Grouper(key="sent_at", freq="1M"))["form_id"].nunique()
                 self.transported_bordereaux_stats[bs_type] = df_by_month
 
         for bs_type, df in bs_data_dfs.items():
@@ -1423,10 +1423,10 @@ class TransportedQuantitiesStatsProcessor:
         bs_data_dfs = self.bs_data_dfs
 
         for bs_type, df in transporter_data_dfs.items():
-            df = df[df["taken_over_at"].between(*self.data_date_interval)].dropna(subset=["quantity_received"])
+            df = df[df["sent_at"].between(*self.data_date_interval)].dropna(subset=["quantity_received"])
 
             if len(df) > 0:
-                df_by_month = df.groupby(pd.Grouper(key="taken_over_at", freq="1M"))["quantity_received"].sum()
+                df_by_month = df.groupby(pd.Grouper(key="sent_at", freq="1M"))["quantity_received"].sum()
                 self.transported_quantities_stats[bs_type] = df_by_month
 
         for bs_type, df in bs_data_dfs.items():

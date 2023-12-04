@@ -33,7 +33,7 @@ from .graph_processors.html_components_processors import (
     BsdStatsProcessor,
     BsdaWorkerStatsProcessor,
     ICPEItemsProcessor,
-    InputOutputWasteTableProcessor,
+    WasteFlowsTableProcessor,
     LinkedCompaniesProcessor,
     PrivateIndividualsCollectionsTableProcessor,
     QuantityOutliersTableProcessor,
@@ -304,8 +304,10 @@ class SheetProcessor:
         )
         self.computed.icpe_data = icpe_processor.build()
 
-        table = InputOutputWasteTableProcessor(self.siret, self.bs_dfs, data_date_interval, WASTE_CODES_DATA)
-        self.computed.input_output_waste_data = table.build()
+        table = WasteFlowsTableProcessor(
+            self.siret, self.bs_dfs, self.transporter_data_dfs, data_date_interval, WASTE_CODES_DATA
+        )
+        self.computed.waste_flows_data = table.build()
 
         storage_stats = StorageStatsProcessor(
             self.siret,

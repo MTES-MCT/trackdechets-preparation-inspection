@@ -67,6 +67,8 @@ def render_pdf_sheet(computed_pk: str):
         "icpe_2790_graph": sheet.icpe_2790_graph,
         "icpe_2760_graph": sheet.icpe_2760_graph,
         "bsda_worker_quantity_graph": sheet.bsda_worker_quantity_graph,
+        "bs_transported_graph": sheet.transporter_bordereaux_stats_graph,
+        "bs_quantities_transported_graph": sheet.quantities_transported_stats_graph,
         "skip_css": True,
     }
     content = render_to_string("sheets/sheetpdf.html", ctx)

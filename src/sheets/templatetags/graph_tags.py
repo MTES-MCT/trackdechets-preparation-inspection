@@ -22,10 +22,10 @@ def stats_graph(computed, bsd_type):
     return return_dict
 
 
-@register.inclusion_tag("sheets/components/in_out_table.html")
-def render_in_out_table(computed, graph_context="web"):
+@register.inclusion_tag("sheets/components/waste_flows_table.html")
+def render_waste_flows_table(computed, graph_context="web"):
     return {
-        "input_output_waste_data": computed.input_output_waste_data,
+        "waste_flows_data": computed.waste_flows_data,
         "graph_context": graph_context,
     }
 

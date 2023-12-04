@@ -80,11 +80,12 @@ sql_bsdd_transporter_query_str = """
 select
     bt.id,
     bt.form_id,
-    bt.taken_over_at,
+    bt.taken_over_at as sent_at,
     bt.transporter_company_siret,
     bt.transporter_number_plate,
     b.created_at,
-    b.quantity_received
+    b.quantity_received,
+    b.waste_details_code as waste_code
 from
     trusted_zone_trackdechets.bsdd_transporter bt
     left join trusted_zone_trackdechets.bsdd b on bt.form_id = b.id
@@ -98,11 +99,12 @@ sql_bsdd_non_dangerous_transporter_query_str = """
 select
     bt.id,
     bt.form_id,
-    bt.taken_over_at,
+    bt.taken_over_at as sent_at,
     bt.transporter_company_siret,
     bt.transporter_number_plate,
     b.created_at,
-    b.quantity_received
+    b.quantity_received,
+    b.waste_details_code as waste_code
 from
     trusted_zone_trackdechets.bsdd_transporter bt
     left join trusted_zone_trackdechets.bsdd b on bt.form_id = b.id

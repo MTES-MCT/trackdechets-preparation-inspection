@@ -9,15 +9,19 @@
             </tr>
         </thead>
         <tbody>
-            {% for row in input_output_waste_data %}
+            {% for row in waste_flows_data %}
                 <tr>
                     <td>{{ row.waste_code }}</td>
                     <td>{{ row.description }}</td>
                     <td>
-                        {% if row.incoming_or_outgoing == "incoming" %}
+                        {% if row.flow_status == "incoming" %}
                             ➜Entrant
-                        {% else %}
+                        {% elif row.flow_status == "outgoing" %}
                             Sortant➜
+                        {% elif row.flow_status == "transported" %}
+                            Transporté 🚛
+                        {% else %}
+                            N/A
                         {% endif %}
                     </td>
                     <td class="td--right">{{ row.quantity_received }}</td>

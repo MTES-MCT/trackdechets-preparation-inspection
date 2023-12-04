@@ -329,7 +329,7 @@ class BsdStatsProcessor:
         return data
 
 
-class InputOutputWasteTableProcessor:
+class WasteFlowsTableProcessor:
     """Component that displays an exhaustive tables with input and output wastes classified by waste codes.
 
     Parameters
@@ -346,10 +346,12 @@ class InputOutputWasteTableProcessor:
         self,
         company_siret: str,
         bs_data_dfs: Dict[str, pd.DataFrame],
+        transporters_data_df: Dict[str, pd.DataFrame],  # Handling new multi-modal Trackdéchets feature
         data_date_interval: tuple[datetime, datetime],
         waste_codes_df: pd.DataFrame,
     ) -> None:
         self.bs_data_dfs = bs_data_dfs
+        self.transporters_data_df = transporters_data_df
         self.data_date_interval = data_date_interval
         self.waste_codes_df = waste_codes_df
         self.company_siret = company_siret
@@ -359,7 +361,9 @@ class InputOutputWasteTableProcessor:
     def _preprocess_data(self) -> None:
         siret = self.company_siret
 
-        dfs_to_concat = [df for df in self.bs_data_dfs.values()]
+        dfs_to_concat = [
+            df for df in chain(self.bs_data_dfs.values(), self.transporters_data_df.values()) if df is not None
+        ]
 
         if len(dfs_to_concat) == 0:
             self.preprocessed_df = pd.DataFrame()
@@ -367,24 +371,26 @@ class InputOutputWasteTableProcessor:
 
         df = pd.concat(dfs_to_concat)
 
-        df = df[(df.emitter_company_siret == siret) | (df.recipient_company_siret == siret)]
-
         # We create a column to differentiate incoming waste from
-        # outgoing waste.
-        df["incoming_or_outgoing"] = pd.NA
+        # outgoing and transported waste.
+        df["flow_status"] = pd.NA
         df.loc[
-            (df.emitter_company_siret == siret) & df.sent_at.between(*self.data_date_interval),
-            "incoming_or_outgoing",
+            (df["emitter_company_siret"] == siret) & df["sent_at"].between(*self.data_date_interval),
+            "flow_status",
         ] = "outgoing"
         df.loc[
-            (df.recipient_company_siret == siret) & df.received_at.between(*self.data_date_interval),
-            "incoming_or_outgoing",
+            (df["recipient_company_siret"] == siret) & df["received_at"].between(*self.data_date_interval),
+            "flow_status",
         ] = "incoming"
-        df = df.dropna(subset="incoming_or_outgoing")
+        df.loc[
+            (df["transporter_company_siret"] == siret) & df["sent_at"].between(*self.data_date_interval),
+            "flow_status",
+        ] = "transported"
+        df = df.dropna(subset="flow_status")
 
         if len(df) > 0:
             # We compute the quantity by waste codes and incoming/outgoing categories
-            df_grouped = df.groupby(["waste_code", "incoming_or_outgoing"], as_index=False)["quantity_received"].sum()
+            df_grouped = df.groupby(["waste_code", "flow_status"], as_index=False)["quantity_received"].sum()
 
             # We add the waste code description from the waste nomenclature
             final_df = pd.merge(
@@ -403,10 +409,10 @@ class InputOutputWasteTableProcessor:
                 [
                     "waste_code",
                     "description",
-                    "incoming_or_outgoing",
+                    "flow_status",
                     "quantity_received",
                 ]
-            ].sort_values(by=["waste_code", "incoming_or_outgoing"])
+            ].sort_values(by=["waste_code", "flow_status"])
 
     def _check_empty_data(self) -> bool:
         if self.preprocessed_df is None:

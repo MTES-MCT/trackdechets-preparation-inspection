@@ -183,6 +183,20 @@
                 </div>
             {% endif %}
             {# end BSDA worker stats #}
+            {% if sheet.transporter_bordereaux_stats_data %}
+                <div class="row">
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">Bordereaux transportés</h3>
+                        <img src="data:image/png;base64,{{ bs_transported_graph }}"
+                             class="cell__img">
+                    </div>
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">Quantité de déchets transportés</h3>
+                        <img src="data:image/png;base64,{{ bs_quantities_transported_graph }}"
+                             class="cell__img">
+                    </div>
+                </div>
+            {% endif %}
             {#  "waste is dangerous" statements #}
             {% if sheet.waste_is_dangerous_statements_data %}
                 <div>{% render_waste_is_dangerous_statements sheet graph_context="pdf" %}</div>
@@ -301,8 +315,8 @@
         <section class="vertical">
             {# input/output #}
             <div>
-                <h3 class="section__title">Liste des déchets entrants/sortants</h3>
-                {% render_in_out_table sheet graph_context="pdf" %}
+                <h3 class="section__title">Liste des déchets entrants, sortants et transportés</h3>
+                {% render_waste_flows_table sheet graph_context="pdf" %}
             </div>
             {# endinput/output #}
         </section>

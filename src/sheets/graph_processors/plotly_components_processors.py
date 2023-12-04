@@ -1423,7 +1423,7 @@ class TransportedQuantitiesStatsProcessor:
         bs_data_dfs = self.bs_data_dfs
 
         for bs_type, df in transporter_data_dfs.items():
-            df = df[df["taken_over_at"].between(*self.data_date_interval)]
+            df = df[df["taken_over_at"].between(*self.data_date_interval)].dropna(subset=["quantity_received"])
 
             if len(df) > 0:
                 df_by_month = df.groupby(pd.Grouper(key="taken_over_at", freq="1M"))["quantity_received"].sum()
@@ -1433,7 +1433,7 @@ class TransportedQuantitiesStatsProcessor:
             df = df[
                 df["sent_at"].between(*self.data_date_interval)
                 & (df["transporter_company_siret"] == self.company_siret)
-            ]
+            ].dropna(subset=["quantity_received"])
 
             if len(df) > 0:
                 if (bs_type == BSFF) and (self.packagings_data_df is not None):
@@ -1507,6 +1507,7 @@ class TransportedQuantitiesStatsProcessor:
                             for index, e in data.items()
                         ],
                         hoverinfo="text",
+                        stackgroup="one",
                     )
                 )
                 min_ = data.index.min()

@@ -76,7 +76,7 @@ order by
     created_at ASC;
 """
 
-sql_bsdd_transporter_query_str = """
+sql_bsdd_transporter_query_str = r"""
 select
     bt.id,
     bt.form_id,
@@ -89,13 +89,13 @@ select
 from
     trusted_zone_trackdechets.bsdd_transporter bt
     left join trusted_zone_trackdechets.bsdd b on bt.form_id = b.id
-where 
+where
     bt.transporter_company_siret = :siret
     and b.created_at BETWEEN :data_start_date AND :data_end_date
     and (b.waste_details_code ~* '.*\*$' or b.waste_details_pop or b.waste_details_is_dangerous)
 """
 
-sql_bsdd_non_dangerous_transporter_query_str = """
+sql_bsdd_non_dangerous_transporter_query_str = r"""
 select
     bt.id,
     bt.form_id,
@@ -108,7 +108,7 @@ select
 from
     trusted_zone_trackdechets.bsdd_transporter bt
     left join trusted_zone_trackdechets.bsdd b on bt.form_id = b.id
-where 
+where
     bt.transporter_company_siret = :siret
     and b.created_at BETWEEN :data_start_date AND :data_end_date
     and not (b.waste_details_code ~* '.*\*$' or b.waste_details_pop or b.waste_details_is_dangerous)

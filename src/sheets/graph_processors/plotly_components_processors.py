@@ -1343,7 +1343,7 @@ class TransporterBordereauxStatsProcessor:
             y_legend = -0.12
 
         fig.update_layout(
-            margin={"t": 20, "l": 55, "r": 5},
+            margin={"t": 20, "l": 35, "r": 5},
             legend={"orientation": "h", "y": y_legend, "x": 0},
             legend_font_size=11,
             legend_bgcolor="rgba(0,0,0,0)",
@@ -1540,7 +1540,7 @@ class TransportedQuantitiesStatsProcessor:
             y_legend = -0.12
 
         fig.update_layout(
-            margin={"t": 20, "l": 55, "r": 5},
+            margin={"t": 20, "l": 35, "r": 5},
             legend={"orientation": "h", "y": y_legend, "x": 0},
             legend_font_size=11,
             legend_bgcolor="rgba(0,0,0,0)",

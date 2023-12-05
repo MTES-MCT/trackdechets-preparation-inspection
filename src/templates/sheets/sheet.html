@@ -200,7 +200,7 @@
             </div>
         {% endif %}
         {# end BSDA worker stats #}
-        {% if sheet.transporter_bordereaux_stats_data %}
+        {% if sheet.transporter_bordereaux_stats_graph_data %}
             <div class="row">
                 <div class="cell cell--bordered cell--third">
                     <h3 class="cell__title">Bordereaux transportés</h3>
@@ -340,8 +340,8 @@
         const icpe_2790_data = {{ sheet.icpe_2790_data }};
         const icpe_2760_data = {{ sheet.icpe_2760_data }};
         const bsda_worker_quantity_data = {{ sheet.bsda_worker_quantity_data }};
-        const transporter_bordereaux_stats_data = {{ sheet.transporter_bordereaux_stats_data }};
-        const quantities_transported_stats_data = {{ sheet.quantities_transported_stats_data }};
+        const transporter_bordereaux_stats_graph_data = {{ sheet.transporter_bordereaux_stats_graph_data }};
+        const quantities_transported_stats_graph_data = {{ sheet.quantities_transported_stats_graph_data }};
         {% endautoescape %}
     </script>
     <script>
@@ -410,11 +410,11 @@
             "target": "bsda_worker_quantity_graph"
         },
         {
-            "data": transporter_bordereaux_stats_data,
+            "data": transporter_bordereaux_stats_graph_data,
             "target": "bs_transported_graph"
         },
         {
-            "data": quantities_transported_stats_data,
+            "data": quantities_transported_stats_graph_data,
             "target": "bs_quantities_transported_graph"
         }];
         

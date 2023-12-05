@@ -145,9 +145,9 @@ class ComputedInspectionData(models.Model):
     bsda_worker_quantity_data = models.JSONField(default=dict)
     bsda_worker_quantity_graph = models.TextField(blank=True)
 
-    transporter_bordereaux_stats_data = models.JSONField(default=dict)
+    transporter_bordereaux_stats_graph_data = models.JSONField(default=dict)
     transporter_bordereaux_stats_graph = models.TextField(blank=True)
-    quantities_transported_stats_data = models.JSONField(default=dict)
+    quantities_transported_stats_graph_data = models.JSONField(default=dict)
     quantities_transported_stats_graph = models.TextField(blank=True)
 
     pdf = models.TextField(blank=True)

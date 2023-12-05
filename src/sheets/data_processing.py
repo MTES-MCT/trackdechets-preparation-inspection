@@ -50,8 +50,8 @@ from .graph_processors.plotly_components_processors import (
     BsdaWorkerQuantityProcessor,
     ICPEAnnualItemProcessor,
     ICPEDailyItemProcessor,
-    TransportedQuantitiesStatsProcessor,
-    TransporterBordereauxStatsProcessor,
+    TransportedQuantitiesGraphProcessor,
+    TransporterBordereauxGraphProcessor,
     WasteOriginProcessor,
     WasteOriginsMapProcessor,
 )
@@ -393,22 +393,22 @@ class SheetProcessor:
         )
         self.computed.bsda_worker_quantity_data = bsda_worker_quantities.build()
 
-        transporter_bordereaux_stats = TransporterBordereauxStatsProcessor(
+        transporter_bordereaux_graph = TransporterBordereauxGraphProcessor(
             company_siret=self.siret,
             transporters_data_df=self.transporter_data_dfs,
             bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k not in [BSDD, BSDD_NON_DANGEROUS]},
             data_date_interval=data_date_interval,
         )
-        self.computed.transporter_bordereaux_stats_data = transporter_bordereaux_stats.build()
+        self.computed.transporter_bordereaux_stats_graph_data = transporter_bordereaux_graph.build()
 
-        quantities_transported_stats = TransportedQuantitiesStatsProcessor(
+        quantities_transported_graph = TransportedQuantitiesGraphProcessor(
             company_siret=self.siret,
             transporters_data_df=self.transporter_data_dfs,
             bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k not in [BSDD, BSDD_NON_DANGEROUS]},
             data_date_interval=data_date_interval,
             packagings_data_df=self.bsff_packagings_df,
         )
-        self.computed.quantities_transported_stats_data = quantities_transported_stats.build()
+        self.computed.quantities_transported_stats_graph_data = quantities_transported_graph.build()
 
         self.computed.state = ComputedInspectionData.StateChoice.COMPUTED
         self.computed.save()

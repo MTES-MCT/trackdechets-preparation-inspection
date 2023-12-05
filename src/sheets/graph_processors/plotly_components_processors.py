@@ -1188,7 +1188,7 @@ class BsdaWorkerQuantityProcessor:
         return figure
 
 
-class TransporterBordereauxStatsProcessor:
+class TransporterBordereauxGraphProcessor:
     """Component with a Bar Figure showing monthly number of bordereaux as transporter company.
 
     Parameters
@@ -1376,7 +1376,7 @@ class TransporterBordereauxStatsProcessor:
         return figure
 
 
-class TransportedQuantitiesStatsProcessor:
+class TransportedQuantitiesGraphProcessor:
     """Component with a Line Figure showing monthly quantity fo waste transported company.
 
     Parameters

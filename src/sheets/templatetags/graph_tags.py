@@ -141,6 +141,6 @@ def render_bsda_worker_durations_stats_data(computed, graph_context="web"):
 @register.inclusion_tag("sheets/components/transported_bordereaux_stats.html")
 def render_transported_bordereaux_stats_data(computed, graph_context="web"):
     return {
-        "transported_bordereaux_stats_data": computed.transporter_bordereaux_stats_data,
+        "transporter_bordereaux_stats_data": computed.transporter_bordereaux_stats_data,
         "graph_context": graph_context,
     }

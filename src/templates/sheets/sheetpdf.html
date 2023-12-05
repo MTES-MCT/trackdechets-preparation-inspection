@@ -195,6 +195,9 @@
                         <img src="data:image/png;base64,{{ bs_quantities_transported_graph }}"
                              class="cell__img">
                     </div>
+                    <div class="cell cell--bordered cell--third">
+                        {% render_transported_bordereaux_stats_data sheet graph_context="pdf" %}
+                    </div>
                 </div>
             {% endif %}
             {#  "waste is dangerous" statements #}

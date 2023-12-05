@@ -149,6 +149,7 @@ class ComputedInspectionData(models.Model):
     transporter_bordereaux_stats_graph = models.TextField(blank=True)
     quantities_transported_stats_graph_data = models.JSONField(default=dict)
     quantities_transported_stats_graph = models.TextField(blank=True)
+    transporter_bordereaux_stats_data = models.JSONField(default=dict)
 
     pdf = models.TextField(blank=True)
 

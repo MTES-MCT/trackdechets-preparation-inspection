@@ -5,7 +5,11 @@ Les changements importants de Trackdéchets préparation inspection sont documen
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 et le projet suit un schéma de versioning inspiré de [Calendar Versioning](https://calver.org/).
 
-## XX/XX/2023
+## 05/12/2023
+
+- Ajout de statistiques pour les transporteurs
+
+## 04/12/2023
 
 - Ajout de statistiques pour les entreprise de travaux
 

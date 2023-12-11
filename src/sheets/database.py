@@ -24,6 +24,8 @@ from .queries import (
     sql_get_vhu_agrement_data,
     sql_revised_bsda_query_str,
     sql_revised_bsdd_query_str,
+    sql_bsdd_transporter_query_str,
+    sql_bsdd_non_dangerous_transporter_query_str,
 )
 
 wh_engine = create_engine(settings.WAREHOUSE_URL, pool_pre_ping=True)
@@ -101,6 +103,34 @@ def build_revised_bsdd_query(company_id: str, data_start_date: datetime, data_en
         sql_revised_bsdd_query_str,
         query_params={
             "company_id": company_id,
+            "data_start_date": data_start_date,
+            "data_end_date": data_end_date,
+        },
+        date_columns=bsd_date_params,
+    )
+
+    return df
+
+
+def build_bsdd_transporter_query_str(siret: str, data_start_date: datetime, data_end_date: datetime):
+    df = build_query(
+        sql_bsdd_transporter_query_str,
+        query_params={
+            "siret": siret,
+            "data_start_date": data_start_date,
+            "data_end_date": data_end_date,
+        },
+        date_columns=bsd_date_params,
+    )
+
+    return df
+
+
+def build_bsdd_non_dangerous_transporter_query_str(siret: str, data_start_date: datetime, data_end_date: datetime):
+    df = build_query(
+        sql_bsdd_non_dangerous_transporter_query_str,
+        query_params={
+            "siret": siret,
             "data_start_date": data_start_date,
             "data_end_date": data_end_date,
         },

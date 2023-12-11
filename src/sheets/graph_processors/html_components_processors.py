@@ -329,7 +329,7 @@ class BsdStatsProcessor:
         return data
 
 
-class InputOutputWasteTableProcessor:
+class WasteFlowsTableProcessor:
     """Component that displays an exhaustive tables with input and output wastes classified by waste codes.
 
     Parameters
@@ -346,10 +346,12 @@ class InputOutputWasteTableProcessor:
         self,
         company_siret: str,
         bs_data_dfs: Dict[str, pd.DataFrame],
+        transporters_data_df: Dict[str, pd.DataFrame],  # Handling new multi-modal Trackdéchets feature
         data_date_interval: tuple[datetime, datetime],
         waste_codes_df: pd.DataFrame,
     ) -> None:
         self.bs_data_dfs = bs_data_dfs
+        self.transporters_data_df = transporters_data_df
         self.data_date_interval = data_date_interval
         self.waste_codes_df = waste_codes_df
         self.company_siret = company_siret
@@ -359,7 +361,9 @@ class InputOutputWasteTableProcessor:
     def _preprocess_data(self) -> None:
         siret = self.company_siret
 
-        dfs_to_concat = [df for df in self.bs_data_dfs.values()]
+        dfs_to_concat = [
+            df for df in chain(self.bs_data_dfs.values(), self.transporters_data_df.values()) if df is not None
+        ]
 
         if len(dfs_to_concat) == 0:
             self.preprocessed_df = pd.DataFrame()
@@ -367,24 +371,26 @@ class InputOutputWasteTableProcessor:
 
         df = pd.concat(dfs_to_concat)
 
-        df = df[(df.emitter_company_siret == siret) | (df.recipient_company_siret == siret)]
-
         # We create a column to differentiate incoming waste from
-        # outgoing waste.
-        df["incoming_or_outgoing"] = pd.NA
+        # outgoing and transported waste.
+        df["flow_status"] = pd.NA
         df.loc[
-            (df.emitter_company_siret == siret) & df.sent_at.between(*self.data_date_interval),
-            "incoming_or_outgoing",
+            (df["emitter_company_siret"] == siret) & df["sent_at"].between(*self.data_date_interval),
+            "flow_status",
         ] = "outgoing"
         df.loc[
-            (df.recipient_company_siret == siret) & df.received_at.between(*self.data_date_interval),
-            "incoming_or_outgoing",
+            (df["recipient_company_siret"] == siret) & df["received_at"].between(*self.data_date_interval),
+            "flow_status",
         ] = "incoming"
-        df = df.dropna(subset="incoming_or_outgoing")
+        df.loc[
+            (df["transporter_company_siret"] == siret) & df["sent_at"].between(*self.data_date_interval),
+            "flow_status",
+        ] = "transported"
+        df = df.dropna(subset="flow_status")
 
         if len(df) > 0:
             # We compute the quantity by waste codes and incoming/outgoing categories
-            df_grouped = df.groupby(["waste_code", "incoming_or_outgoing"], as_index=False)["quantity_received"].sum()
+            df_grouped = df.groupby(["waste_code", "flow_status"], as_index=False)["quantity_received"].sum()
 
             # We add the waste code description from the waste nomenclature
             final_df = pd.merge(
@@ -403,10 +409,10 @@ class InputOutputWasteTableProcessor:
                 [
                     "waste_code",
                     "description",
-                    "incoming_or_outgoing",
+                    "flow_status",
                     "quantity_received",
                 ]
-            ].sort_values(by=["waste_code", "incoming_or_outgoing"])
+            ].sort_values(by=["waste_code", "flow_status"])
 
     def _check_empty_data(self) -> bool:
         if self.preprocessed_df is None:
@@ -1580,3 +1586,88 @@ class BsdaWorkerStatsProcessor:
         if not self._check_empty_data():
             res = self.bsda_worker_stats
         return res
+
+
+class TransporterBordereauxStatsProcessor:
+    """Component that compute statistics about number of bordereaux as transporter company and corresponding quantities.
+
+    Parameters
+    ----------
+    company_siret: str
+        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
+    transporters_data_df: dict
+        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau transported data.
+        Correspond to the new way of managing transporters in Trackdéchets.
+    bs_data_dfs: dict
+        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
+    data_date_interval: tuple
+        Date interval to filter data.
+    """
+
+    def __init__(
+        self,
+        company_siret: str,
+        transporters_data_df: Dict[str, pd.DataFrame],  # Handling new multi-modal Trackdéchets feature
+        bs_data_dfs: Dict[str, pd.DataFrame],
+        data_date_interval: tuple[datetime, datetime],
+        packagings_data_df: pd.DataFrame = None,
+    ) -> None:
+        self.company_siret = company_siret
+        self.transporters_data_df = transporters_data_df
+        self.bs_data_dfs = bs_data_dfs
+        self.data_date_interval = data_date_interval
+        self.packagings_data_df = packagings_data_df
+
+        self.transported_bordereaux_stats = {
+            BSDD: {},
+            BSDD_NON_DANGEROUS: {},
+            BSDA: {},
+            BSFF: {},
+            BSDASRI: {},
+            BSVHU: {},
+        }
+
+    def _preprocess_bs_data(self) -> None:
+        """Preprocess raw 'bordereaux' data to prepare it for plotting."""
+        transporter_data_dfs = self.transporters_data_df
+        bs_data_dfs = self.bs_data_dfs
+
+        for bs_type, df in transporter_data_dfs.items():
+            df = df[df["sent_at"].between(*self.data_date_interval)]
+
+            if len(df) > 0:
+                num_bordereaux = df["form_id"].nunique()
+                quantity = df["quantity_received"].sum()
+                self.transported_bordereaux_stats[bs_type]["count"] = num_bordereaux
+                self.transported_bordereaux_stats[bs_type]["quantity"] = format_number_str(quantity, 2)
+
+        for bs_type, df in bs_data_dfs.items():
+            df = df[
+                df["sent_at"].between(*self.data_date_interval)
+                & (df["transporter_company_siret"] == self.company_siret)
+            ]
+
+            if len(df) > 0:
+                quantity_col = "quantity_received"
+                if (bs_type == BSFF) and (self.packagings_data_df is not None):
+                    df = df.merge(self.packagings_data_df, left_on="id", right_on="bsff_id")
+                    quantity_col = "acceptation_weight"
+                num_bordereaux = df["id"].nunique()
+                quantity = df[quantity_col].sum()
+                self.transported_bordereaux_stats[bs_type]["count"] = num_bordereaux
+                self.transported_bordereaux_stats[bs_type]["quantity"] = format_number_str(quantity, 2)
+
+    def _check_data_empty(self) -> bool:
+        if all((e is None) or (e == {}) for e in self.transported_bordereaux_stats.values()):
+            return True
+
+        return False
+
+    def build(self):
+        self._preprocess_bs_data()
+
+        data = {}
+        if not self._check_data_empty():
+            data = self.transported_bordereaux_stats
+
+        return data

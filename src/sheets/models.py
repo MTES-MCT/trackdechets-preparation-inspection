@@ -97,7 +97,7 @@ class ComputedInspectionData(models.Model):
     waste_origin_data = models.JSONField(default=dict)
     waste_origin_map_data = models.JSONField(default=dict)
 
-    input_output_waste_data = models.JSONField(default=dict)
+    waste_flows_data = models.JSONField(default=dict)
 
     outliers_data = models.JSONField(default=dict)
     icpe_data = models.JSONField(default=dict)
@@ -144,6 +144,12 @@ class ComputedInspectionData(models.Model):
     bsda_worker_stats_data = models.JSONField(default=dict)
     bsda_worker_quantity_data = models.JSONField(default=dict)
     bsda_worker_quantity_graph = models.TextField(blank=True)
+
+    transporter_bordereaux_stats_graph_data = models.JSONField(default=dict)
+    transporter_bordereaux_stats_graph = models.TextField(blank=True)
+    quantities_transported_stats_graph_data = models.JSONField(default=dict)
+    quantities_transported_stats_graph = models.TextField(blank=True)
+    transporter_bordereaux_stats_data = models.JSONField(default=dict)
 
     pdf = models.TextField(blank=True)
 

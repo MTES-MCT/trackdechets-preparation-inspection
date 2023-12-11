@@ -1,0 +1,68 @@
+<style>
+    .single-stat {
+        margin-top: 5%;
+        font-size: 0.8rem;
+    }
+</style>
+<h3 class="cell__title">Statistiques en tant que transporteur</h3>
+{% if transporter_bordereaux_stats_data %}
+    <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+        <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+            <thead>
+                <tr>
+                    <th class="table-headline" scope="col">Type de Bordereau</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Quantité transportée (tonnes)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>BSDD</td>
+                    <td>{{ transporter_bordereaux_stats_data.bsdd.count|default:"0" }}</td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ transporter_bordereaux_stats_data.bsdd.quantity|default:"0" }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>BSDD Non Dangereux</td>
+                    <td>{{ transporter_bordereaux_stats_data.bsdd_non_dangerous.count|default:"0" }}</td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ transporter_bordereaux_stats_data.bsdd_non_dangerous.quantity|default:"0" }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>BSDA</td>
+                    <td>{{ transporter_bordereaux_stats_data.bsda.count|default:"0" }}</td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ transporter_bordereaux_stats_data.bsda.quantity|default:"0" }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>BSFF</td>
+                    <td>{{ transporter_bordereaux_stats_data.bsff.count|default:"0" }}</td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ transporter_bordereaux_stats_data.bsff.quantity|default:"0" }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>BSDASRI</td>
+                    <td>{{ transporter_bordereaux_stats_data.bsdasri.count|default:"0" }}</td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ transporter_bordereaux_stats_data.bsdasri.quantity|default:"0" }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>BSVHU</td>
+                    <td>{{ transporter_bordereaux_stats_data.bsvhu.count|default:"0" }}</td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ transporter_bordereaux_stats_data.bsvhu.quantity|default:"0" }}</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="sc-primary">
+        <span>Pas de données</span>
+    </div>
+{% endif %}

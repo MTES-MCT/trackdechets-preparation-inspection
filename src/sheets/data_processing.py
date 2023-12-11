@@ -13,7 +13,9 @@ from .database import (
     build_bsda_query,
     build_bsdasri_query,
     build_bsdd_non_dangerous_query,
+    build_bsdd_non_dangerous_transporter_query_str,
     build_bsdd_query,
+    build_bsdd_transporter_query_str,
     build_bsff_packagings_query,
     build_bsff_query,
     build_bsvhu_query,
@@ -31,7 +33,8 @@ from .graph_processors.html_components_processors import (
     BsdStatsProcessor,
     BsdaWorkerStatsProcessor,
     ICPEItemsProcessor,
-    InputOutputWasteTableProcessor,
+    TransporterBordereauxStatsProcessor,
+    WasteFlowsTableProcessor,
     LinkedCompaniesProcessor,
     PrivateIndividualsCollectionsTableProcessor,
     QuantityOutliersTableProcessor,
@@ -48,6 +51,8 @@ from .graph_processors.plotly_components_processors import (
     BsdaWorkerQuantityProcessor,
     ICPEAnnualItemProcessor,
     ICPEDailyItemProcessor,
+    TransportedQuantitiesGraphProcessor,
+    TransporterBordereauxGraphProcessor,
     WasteOriginProcessor,
     WasteOriginsMapProcessor,
 )
@@ -105,11 +110,13 @@ bsds_config = [
         "bsd_type": BSDD,
         "bs_data": build_bsdd_query,
         "bs_revised_data": build_revised_bsdd_query,
+        "bs_transporter_data": build_bsdd_transporter_query_str,
     },
     {
         "bsd_type": BSDD_NON_DANGEROUS,
         "bs_data": build_bsdd_non_dangerous_query,
         "bs_revised_data": build_revised_bsdd_query,
+        "bs_transporter_data": build_bsdd_non_dangerous_transporter_query_str,
     },
     {
         "bsd_type": BSDA,
@@ -134,8 +141,9 @@ class SheetProcessor:
         self.data_start_date = self.computed.data_start_date.replace(tzinfo=None)
         self.data_end_date = self.computed.data_end_date.replace(tzinfo=None)
         self.company_id = None
-        self.bsds_dfs = {}
-        self.revised_bsds_dfs = {}
+        self.bs_dfs = {}
+        self.revised_bs_dfs = {}
+        self.transporter_data_dfs = {}
         self.bsff_packagings_df = None
 
     def _process_company_data(self):
@@ -162,14 +170,14 @@ class SheetProcessor:
 
         data_date_interval = (self.data_start_date, self.data_end_date)
 
-        for bsd_type, df in self.bsds_dfs.items():
+        for bsd_type, df in self.bs_dfs.items():
             if not len(df):
                 continue
             created_rectified_graph = BsdTrackedAndRevisedProcessor(
                 self.siret,
                 df,
                 data_date_interval,
-                self.revised_bsds_dfs.get(bsd_type, None),
+                self.revised_bs_dfs.get(bsd_type, None),
             )
             created_rectified_graph_data = created_rectified_graph.build()
             if created_rectified_graph_data:
@@ -205,7 +213,7 @@ class SheetProcessor:
                 df,
                 data_date_interval,
                 quantity_variables_names=quantity_variables,
-                bs_revised_data=self.revised_bsds_dfs.get(bsd_type, None),
+                bs_revised_data=self.revised_bs_dfs.get(bsd_type, None),
                 packagings_data=packaging_data,
             )
             stats_graph_data = stats_graph.build()
@@ -249,7 +257,7 @@ class SheetProcessor:
                 data_start_date=self.data_start_date,
                 data_end_date=self.data_end_date,
             )
-            self.bsds_dfs[bsd_type] = df
+            self.bs_dfs[bsd_type] = df
 
             bs_data_df, date_outliers = get_outliers_datetimes_df(
                 df, date_columns=["sent_at", "received_at", "processed_at"]
@@ -265,7 +273,17 @@ class SheetProcessor:
                     data_end_date=self.data_end_date,
                 )
                 if len(revised_df) > 0:
-                    self.revised_bsds_dfs[bsd_type] = revised_df
+                    self.revised_bs_dfs[bsd_type] = revised_df
+
+            bs_transporter_data = bsd_config.get("bs_transporter_data", None)
+            if bs_transporter_data:
+                transporter_data_df = bs_transporter_data(
+                    siret=self.computed.org_id,
+                    data_start_date=self.data_start_date,
+                    data_end_date=self.data_end_date,
+                )
+                if len(transporter_data_df) > 0:
+                    self.transporter_data_dfs[bsd_type] = transporter_data_df
 
             if bsd_type == BSFF:
                 bsff_packagings_data = bsd_config.get("packagings_data")(
@@ -287,12 +305,14 @@ class SheetProcessor:
         )
         self.computed.icpe_data = icpe_processor.build()
 
-        table = InputOutputWasteTableProcessor(self.siret, self.bsds_dfs, data_date_interval, WASTE_CODES_DATA)
-        self.computed.input_output_waste_data = table.build()
+        table = WasteFlowsTableProcessor(
+            self.siret, self.bs_dfs, self.transporter_data_dfs, data_date_interval, WASTE_CODES_DATA
+        )
+        self.computed.waste_flows_data = table.build()
 
         storage_stats = StorageStatsProcessor(
             self.siret,
-            self.bsds_dfs,
+            self.bs_dfs,
             WASTE_CODES_DATA,
             data_date_interval,
         )
@@ -300,7 +320,7 @@ class SheetProcessor:
 
         waste_origin = WasteOriginProcessor(
             self.siret,
-            self.bsds_dfs,
+            self.bs_dfs,
             DEPARTEMENTS_REGION_DATA,
             data_date_interval,
         )
@@ -308,7 +328,7 @@ class SheetProcessor:
 
         waste_origin_map = WasteOriginsMapProcessor(
             self.siret,
-            self.bsds_dfs,
+            self.bs_dfs,
             DEPARTEMENTS_REGION_DATA,
             REGIONS_GEODATA,
             data_date_interval,
@@ -321,7 +341,7 @@ class SheetProcessor:
 
         traceability_interruptions = TraceabilityInterruptionsProcessor(
             self.siret,
-            self.bsds_dfs[BSDD],
+            self.bs_dfs[BSDD],
             WASTE_CODES_DATA,
             data_date_interval,
         )
@@ -329,7 +349,7 @@ class SheetProcessor:
 
         waste_is_dangerous_statements = WasteIsDangerousStatementsProcessor(
             self.siret,
-            self.bsds_dfs[BSDD],
+            self.bs_dfs[BSDD],
             WASTE_CODES_DATA,
             data_date_interval,
         )
@@ -337,42 +357,67 @@ class SheetProcessor:
 
         bsd_canceled_table = BsdCanceledTableProcessor(
             self.siret,
-            self.bsds_dfs,
-            self.revised_bsds_dfs,
+            self.bs_dfs,
+            self.revised_bs_dfs,
             data_date_interval,
         )
         self.computed.bsd_canceled_data = bsd_canceled_table.build()
 
         same_emitter_recipient_table = SameEmitterRecipientTableProcessor(
-            self.bsds_dfs,
+            self.bs_dfs,
             data_date_interval,
         )
         self.computed.same_emitter_recipient_data = same_emitter_recipient_table.build()
 
         private_individuals_collections_table = PrivateIndividualsCollectionsTableProcessor(
             self.siret,
-            self.bsds_dfs[BSDA],
+            self.bs_dfs[BSDA],
             data_date_interval,
         )
         self.computed.private_individuals_collections_data = private_individuals_collections_table.build()
 
-        quantity_outliers_table = QuantityOutliersTableProcessor(self.bsds_dfs)
+        quantity_outliers_table = QuantityOutliersTableProcessor(self.bs_dfs)
         self.computed.quantity_outliers_data = quantity_outliers_table.build()
 
         waste_processing_without_icpe_data = WasteProcessingWithoutICPEProcessor(
-            self.siret, self.bsds_dfs, icpe_data, data_date_interval
+            self.siret, self.bs_dfs, icpe_data, data_date_interval
         )
         self.computed.bs_processed_without_icpe_authorization = waste_processing_without_icpe_data.build()
 
         bsda_worker_stats = BsdaWorkerStatsProcessor(
-            company_siret=self.siret, bsda_data_df=self.bsds_dfs[BSDA], data_date_interval=data_date_interval
+            company_siret=self.siret, bsda_data_df=self.bs_dfs[BSDA], data_date_interval=data_date_interval
         )
         self.computed.bsda_worker_stats_data = bsda_worker_stats.build()
 
         bsda_worker_quantities = BsdaWorkerQuantityProcessor(
-            company_siret=self.siret, bsda_data_df=self.bsds_dfs[BSDA], data_date_interval=data_date_interval
+            company_siret=self.siret, bsda_data_df=self.bs_dfs[BSDA], data_date_interval=data_date_interval
         )
         self.computed.bsda_worker_quantity_data = bsda_worker_quantities.build()
+
+        transporter_bordereaux_graph = TransporterBordereauxGraphProcessor(
+            company_siret=self.siret,
+            transporters_data_df=self.transporter_data_dfs,
+            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k not in [BSDD, BSDD_NON_DANGEROUS]},
+            data_date_interval=data_date_interval,
+        )
+        self.computed.transporter_bordereaux_stats_graph_data = transporter_bordereaux_graph.build()
+
+        quantities_transported_graph = TransportedQuantitiesGraphProcessor(
+            company_siret=self.siret,
+            transporters_data_df=self.transporter_data_dfs,
+            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k not in [BSDD, BSDD_NON_DANGEROUS]},
+            data_date_interval=data_date_interval,
+            packagings_data_df=self.bsff_packagings_df,
+        )
+        self.computed.quantities_transported_stats_graph_data = quantities_transported_graph.build()
+
+        transporter_bordereaux_stats = TransporterBordereauxStatsProcessor(
+            company_siret=self.siret,
+            transporters_data_df=self.transporter_data_dfs,
+            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k not in [BSDD, BSDD_NON_DANGEROUS]},
+            data_date_interval=data_date_interval,
+        )
+        self.computed.transporter_bordereaux_stats_data = transporter_bordereaux_stats.build()
 
         self.computed.state = ComputedInspectionData.StateChoice.COMPUTED
         self.computed.save()

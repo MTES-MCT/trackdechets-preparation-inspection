@@ -20,12 +20,15 @@ select
     waste_details_pop as waste_pop,
     waste_details_is_dangerous as is_dangerous,
     emitter_worksite_name as worksite_name,
-    emitter_worksite_address as worksite_address
+    emitter_worksite_address as worksite_address,
+    transporter_company_siret
  from
     trusted_zone_trackdechets.bsdd
 where
     (emitter_company_siret = :siret
-    or recipient_company_siret = :siret)
+    or recipient_company_siret = :siret
+    or transporter_company_siret = :siret
+    )
     and is_deleted = false
     and created_at BETWEEN :data_start_date AND :data_end_date
     and status::text not in ('DRAFT', 'INITIAL')
@@ -56,18 +59,59 @@ select
     waste_details_pop as waste_pop,
     waste_details_is_dangerous as is_dangerous,
     emitter_worksite_name as worksite_name,
-    emitter_worksite_address as worksite_address
+    emitter_worksite_address as worksite_address,
+    transporter_company_siret
  from
     trusted_zone_trackdechets.bsdd
 where
     (emitter_company_siret = :siret
-    or recipient_company_siret = :siret)
+    or recipient_company_siret = :siret
+    or transporter_company_siret = :siret
+    )
     and is_deleted = false
     and created_at BETWEEN :data_start_date AND :data_end_date
     and status::text not in ('DRAFT', 'INITIAL')
     and not (waste_details_code ~* '.*\*$' or waste_details_pop or waste_details_is_dangerous)
 order by
     created_at ASC;
+"""
+
+sql_bsdd_transporter_query_str = r"""
+select
+    bt.id,
+    bt.form_id,
+    bt.taken_over_at as sent_at,
+    bt.transporter_company_siret,
+    bt.transporter_number_plate,
+    b.created_at,
+    b.quantity_received,
+    b.waste_details_code as waste_code
+from
+    trusted_zone_trackdechets.bsdd_transporter bt
+    left join trusted_zone_trackdechets.bsdd b on bt.form_id = b.id
+where
+    bt.transporter_company_siret = :siret
+    and b.created_at BETWEEN :data_start_date AND :data_end_date
+    and (b.waste_details_code ~* '.*\*$' or b.waste_details_pop or b.waste_details_is_dangerous)
+"""
+
+sql_bsdd_non_dangerous_transporter_query_str = r"""
+select
+    bt.id,
+    bt.form_id,
+    bt.taken_over_at as sent_at,
+    bt.transporter_company_siret,
+    bt.transporter_number_plate,
+    b.created_at,
+    b.quantity_received,
+    b.waste_details_code as waste_code
+from
+    trusted_zone_trackdechets.bsdd_transporter bt
+    left join trusted_zone_trackdechets.bsdd b on bt.form_id = b.id
+where
+    bt.transporter_company_siret = :siret
+    and b.created_at BETWEEN :data_start_date AND :data_end_date
+    and not (b.waste_details_code ~* '.*\*$' or b.waste_details_pop or b.waste_details_is_dangerous)
 """
 
 sql_company_query_str = """
@@ -112,13 +156,15 @@ select
     emitter_pickup_site_name as worksite_name,
     emitter_pickup_site_address as worksite_address,
     worker_company_siret,
-    emitter_is_private_individual
+    emitter_is_private_individual,
+    transporter_company_siret
 from
     trusted_zone_trackdechets.bsda
 where
     (emitter_company_siret = :siret
         or destination_company_siret = :siret
-        or worker_company_siret = :siret)
+        or worker_company_siret = :siret
+        or transporter_company_siret = :siret)
     and is_deleted = false
     and created_at BETWEEN :data_start_date AND :data_end_date
     and status::text not in ('DRAFT', 'INITIAL')
@@ -142,12 +188,14 @@ select
     waste_code,
     destination_operation_code as processing_operation_code,
     status,
-    transporter_transport_mode
+    transporter_transport_mode,
+    transporter_company_siret
 from
         trusted_zone_trackdechets.bsdasri
 where
     (emitter_company_siret = :siret
-        or destination_company_siret = :siret)
+        or destination_company_siret = :siret
+        or transporter_company_siret = :siret)
     and is_deleted = false
     and created_at BETWEEN :data_start_date AND :data_end_date
     and status::text not in ('DRAFT', 'INITIAL')
@@ -170,12 +218,14 @@ sql_bsff_query_str = """select
     waste_code,
     destination_operation_code as processing_operation_code,
     status,
-    transporter_transport_mode
+    transporter_transport_mode,
+    transporter_company_siret
 from
     trusted_zone_trackdechets.bsff
 where
     (emitter_company_siret = :siret
-        or destination_company_siret = :siret)
+        or destination_company_siret = :siret
+        or transporter_company_siret = :siret)
     and is_deleted = false
     and created_at BETWEEN :data_start_date AND :data_end_date
     and status::text not in ('DRAFT', 'INITIAL')
@@ -226,12 +276,14 @@ select
     destination_reception_weight as quantity_received,
     waste_code,
     destination_operation_code as processing_operation_code,
-    status
+    status,
+    transporter_company_siret
 from
     trusted_zone_trackdechets.bsvhu
 where
     (emitter_company_siret = :siret
-        or destination_company_siret = :siret)
+        or destination_company_siret = :siret
+        or transporter_company_siret = :siret)
     and is_deleted = false
     and created_at BETWEEN :data_start_date AND :data_end_date
     and  status::text not in ('DRAFT', 'INITIAL')

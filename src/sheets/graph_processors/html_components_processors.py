@@ -1727,7 +1727,10 @@ class FollowedWithPNTTDTableProcessor:
             # We compute the quantity by waste codes
             df_grouped = df.groupby(
                 ["foreign_org_id", "waste_code", "next_destination_processing_operation"], as_index=False
-            )["quantity_received"].sum()
+            ).agg(
+                quantity=pd.NamedAgg("quantity_received", "sum"),
+                destination_country=pd.NamedAgg("next_destination_company_country", "max"),
+            )
             # We add the waste code description from the waste nomenclature
             final_df = pd.merge(
                 df_grouped,
@@ -1738,15 +1741,23 @@ class FollowedWithPNTTDTableProcessor:
                 validate="many_to_one",
             )
 
-            final_df["quantity_received"] = final_df["quantity_received"].apply(lambda x: format_number_str(x, 2))
+            company_names = (
+                df.groupby(by="foreign_org_id")["next_destination_company_name"].max().rename("destination_name")
+            )
+
+            final_df = final_df.merge(company_names, left_on="foreign_org_id", right_index=True)
+
+            final_df["quantity"] = final_df["quantity"].apply(lambda x: format_number_str(x, 2))
             final_df["description"] = final_df["description"].fillna("")
             self.preprocessed_df = final_df[
                 [
                     "foreign_org_id",
+                    "destination_name",
+                    "destination_country",
                     "waste_code",
                     "description",
                     "next_destination_processing_operation",
-                    "quantity_received",
+                    "quantity",
                 ]
             ].sort_values(by=["foreign_org_id", "waste_code"])
 

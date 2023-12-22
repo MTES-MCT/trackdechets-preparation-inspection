@@ -1671,3 +1671,99 @@ class TransporterBordereauxStatsProcessor:
             data = self.transported_bordereaux_stats
 
         return data
+
+
+class FollowedWithPNTTDTableProcessor:
+    """Component that displays an exhaustive tables of BSDD followed by PNTTD.
+
+    Parameters
+    ----------
+    company_siret: str
+        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
+    bs_data_dfs: dict
+        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
+        Only BSDD and BSDD non dangerous.
+    data_date_interval: tuple
+        Date interval to filter data.
+    waste_codes_df: DataFrame
+        DataFrame containing list of waste codes with their descriptions. It is the waste nomenclature.
+    """
+
+    def __init__(
+        self,
+        company_siret: str,
+        bs_data_dfs: Dict[str, pd.DataFrame],
+        data_date_interval: tuple[datetime, datetime],
+        waste_codes_df: pd.DataFrame,
+    ) -> None:
+        self.bs_data_dfs = bs_data_dfs
+        self.data_date_interval = data_date_interval
+        self.waste_codes_df = waste_codes_df
+        self.company_siret = company_siret
+
+        self.preprocessed_df = None
+
+    def _preprocess_data(self) -> None:
+        siret = self.company_siret
+
+        dfs_to_concat = [df for df in self.bs_data_dfs.values() if df is not None]
+
+        if len(dfs_to_concat) == 0:
+            self.preprocessed_df = pd.DataFrame()
+            return
+
+        df = pd.concat(dfs_to_concat)
+
+        df = df[
+            (df["recipient_company_siret"] == siret)
+            & (df["status"] == "FOLLOWED_WITH_PNTTD")
+            & df["processed_at"].between(*self.data_date_interval)
+        ]
+
+        if len(df) > 0:
+            df["foreign_org_id"] = (
+                df[["next_destination_company_siret", "next_destination_company_vat_number"]].bfill(axis=1).iloc[:, 0]
+            )
+            # We compute the quantity by waste codes
+            df_grouped = df.groupby(
+                ["foreign_org_id", "waste_code", "next_destination_processing_operation"], as_index=False
+            )["quantity_received"].sum()
+            # We add the waste code description from the waste nomenclature
+            final_df = pd.merge(
+                df_grouped,
+                self.waste_codes_df,
+                left_on="waste_code",
+                right_index=True,
+                how="left",
+                validate="many_to_one",
+            )
+
+            final_df["quantity_received"] = final_df["quantity_received"].apply(lambda x: format_number_str(x, 2))
+            final_df["description"] = final_df["description"].fillna("")
+            self.preprocessed_df = final_df[
+                [
+                    "foreign_org_id",
+                    "waste_code",
+                    "description",
+                    "next_destination_processing_operation",
+                    "quantity_received",
+                ]
+            ].sort_values(by=["foreign_org_id", "waste_code"])
+
+    def _check_empty_data(self) -> bool:
+        if self.preprocessed_df is None:
+            return True
+
+        return False
+
+    def build_context(self):
+        return self.preprocessed_df.to_dict("records")
+
+    def build(self):
+        self._preprocess_data()
+
+        res = {}
+
+        if not self._check_empty_data():
+            res = self.build_context()
+        return res

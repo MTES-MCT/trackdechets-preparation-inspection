@@ -144,3 +144,11 @@ def render_transported_bordereaux_stats_data(computed, graph_context="web"):
         "transporter_bordereaux_stats_data": computed.transporter_bordereaux_stats_data,
         "graph_context": graph_context,
     }
+
+
+@register.inclusion_tag("sheets/components/followed_with_pnttd_table.html")
+def render_followed_with_pnttd_table(computed, graph_context="web"):
+    return {
+        "followed_with_pnttd_data": computed.followed_with_pnttd_data,
+        "graph_context": graph_context,
+    }

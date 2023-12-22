@@ -1,0 +1,27 @@
+{% if followed_with_pnttd_data %}
+    <h2 class="section__title">Liste des déchets sortants suivis par le PNTTD</h2>
+    <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+        <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+            <thead>
+                <tr>
+                    <th scope="col">SIRET ou N° de TVA du destinataire</th>
+                    <th scope="col">Code déchet</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Opération réalisée</th>
+                    <th scope="col">Quantité&nbsp;(t)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in followed_with_pnttd_data %}
+                    <tr>
+                        <td>{{ row.foreign_org_id }}</td>
+                        <td>{{ row.waste_code }}</td>
+                        <td>{{ row.description }}</td>
+                        <td>{{ row.next_destination_processing_operation }}</td>
+                        <td class="td--right">{{ row.quantity_received }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}

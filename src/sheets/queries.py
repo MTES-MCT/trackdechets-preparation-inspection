@@ -21,7 +21,12 @@ select
     waste_details_is_dangerous as is_dangerous,
     emitter_worksite_name as worksite_name,
     emitter_worksite_address as worksite_address,
-    transporter_company_siret
+    transporter_company_siret,
+    next_destination_company_siret,
+    next_destination_company_name,
+    next_destination_company_country,
+    next_destination_company_vat_number,
+    next_destination_processing_operation
  from
     trusted_zone_trackdechets.bsdd
 where
@@ -60,7 +65,12 @@ select
     waste_details_is_dangerous as is_dangerous,
     emitter_worksite_name as worksite_name,
     emitter_worksite_address as worksite_address,
-    transporter_company_siret
+    transporter_company_siret,
+    next_destination_company_siret,
+    next_destination_company_name,
+    next_destination_company_country,
+    next_destination_company_vat_number,
+    next_destination_processing_operation
  from
     trusted_zone_trackdechets.bsdd
 where

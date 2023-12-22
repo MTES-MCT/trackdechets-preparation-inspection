@@ -299,6 +299,9 @@
                 {% render_traceabilty_break sheet graph_context="pdf" %}
                 {# end traceability #}
             </div>
+            {# followed with pnttd table #}
+            <div>{% render_followed_with_pnttd_table sheet %}</div>
+            {# end followed with pnttd table #}
             {# bsd canceled table #}
             <div>{% render_bsd_canceled_table sheet graph_context="pdf" %}</div>
             {# end bsd canceled table #}

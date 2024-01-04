@@ -29,12 +29,10 @@ from .database import (
 )
 from .graph_processors.html_components_processors import (
     AdditionalInfoProcessor,
+    BsdaWorkerStatsProcessor,
     BsdCanceledTableProcessor,
     BsdStatsProcessor,
-    BsdaWorkerStatsProcessor,
     ICPEItemsProcessor,
-    TransporterBordereauxStatsProcessor,
-    WasteFlowsTableProcessor,
     LinkedCompaniesProcessor,
     PrivateIndividualsCollectionsTableProcessor,
     QuantityOutliersTableProcessor,
@@ -42,13 +40,15 @@ from .graph_processors.html_components_processors import (
     SameEmitterRecipientTableProcessor,
     StorageStatsProcessor,
     TraceabilityInterruptionsProcessor,
+    TransporterBordereauxStatsProcessor,
+    WasteFlowsTableProcessor,
     WasteIsDangerousStatementsProcessor,
     WasteProcessingWithoutICPEProcessor,
 )
 from .graph_processors.plotly_components_processors import (
+    BsdaWorkerQuantityProcessor,
     BsdQuantitiesGraph,
     BsdTrackedAndRevisedProcessor,
-    BsdaWorkerQuantityProcessor,
     ICPEAnnualItemProcessor,
     ICPEDailyItemProcessor,
     TransportedQuantitiesGraphProcessor,

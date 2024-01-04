@@ -84,13 +84,16 @@
                                 </li>
                             {% endif %}
                             <li class="fr-nav__item">
-                                <a href="{% static "user-manual/trackdechets-mode-emploi-fiche-inspection.pdf" %}" aria-controls="modal-header__menu" target="_blank" class="fr-nav__link">Guide d'utilisation</a>
+                                <a href="{% static "user-manual/trackdechets-mode-emploi-fiche-inspection.pdf" %}" aria-controls="modal-header__menu" target="_blank" class="fr-nav__link">Guide
+                                d'utilisation</a>
                             </li>
                             <li class="fr-nav__item">
-                                <a href="{% url "logout" %}"
-                                   target="_self"
-                                   aria-controls="modal-header__menu"
-                                   class="fr-nav__link">Déconnexion</a>
+                                <form action="{% url "logout" %}" method="post">
+                                    {% csrf_token %}
+                                    <button class="fr-nav__link"
+                                            aria-controls="modal-header__menu"
+                                            style="padding: 1rem">Déconnexion</button>
+                                </form>
                             </li>
                         </ul>
                     </nav>

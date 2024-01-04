@@ -173,9 +173,7 @@ class BsdStatsProcessor:
                         bs_emitted_processed_in_more_than_one_month["processed_at"]
                         - bs_emitted_processed_in_more_than_one_month["received_at"]
                     ).mean()
-                ).total_seconds() / (
-                    24 * 3600
-                )  # Time in seconds is converted in days
+                ).total_seconds() / (24 * 3600)  # Time in seconds is converted in days
                 target["processed_in_more_than_one_month_avg_processing_time"] = f"{format_number_str(res,1)}j"
 
             # Handle the case of BSFF specific packagings statistics
@@ -215,9 +213,7 @@ class BsdStatsProcessor:
                         bs_data_with_packagings_processed_in_more_than_one_month["operation_date"]
                         - bs_data_with_packagings_processed_in_more_than_one_month["received_at"]
                     ).mean()
-                ).total_seconds() / (
-                    24 * 3600
-                )  # Conversion between number of seconds and days
+                ).total_seconds() / (24 * 3600)  # Conversion between number of seconds and days
                 if not pd.isna(res):
                     target["processed_in_more_than_one_month_packagings_avg_processing_time"] = f"{res:.1f}j"
 

@@ -86,7 +86,7 @@ def test_login_view_redirects_logged_in_user(logged_in_user):
 
 def test_logout_view(verified_user):
     logout_url = reverse("logout")
-    res = verified_user.get(logout_url, follow=True)
+    res = verified_user.post(logout_url, {}, follow=True)
     assert res.status_code == 200
     assert reverse("login") in res.redirect_chain[-1][0]
     assert res.redirect_chain[-1][1] == 302

@@ -29,9 +29,8 @@ django-anymail = {extras = ["sendinblue"], version = "*"}
 django-otp = "*"
 
 [dev-packages]
-black = "*"
+ruff = "*"
 isort = "*"
-flake8 = "*"
 djlint = "*"
 pywatchman = "*"
 django-debug-toolbar = "*"
@@ -39,4 +38,4 @@ django-extensions = "*"
 ipykernel = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.11"

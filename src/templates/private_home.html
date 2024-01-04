@@ -14,7 +14,10 @@
                 </p>
             {% endif %}
             <p>
-                <a href="{% url "logout" %}">Déconnexion</a>
+                <form action="{% url "logout" %}" method="post">
+                    {% csrf_token %}
+                    <button aria-controls="modal-header__menu" class="fr-nav__link">Déconnexion</button>
+                </form>
             </p>
         {% else %}
             <a href="{% url "login" %}">Connectez vous</a>

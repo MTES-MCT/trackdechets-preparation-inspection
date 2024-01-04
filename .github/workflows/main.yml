@@ -29,12 +29,12 @@ jobs:
         run: sudo apt-get install -y tzdata locales && sudo locale-gen fr_FR && sudo dpkg-reconfigure --frontend=noninteractive locales
 
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: 3.11
 
       - name: Install Dependencies
         run: |
@@ -55,11 +55,11 @@ jobs:
         run: |
           pipenv install --deploy --dev
 
-      - name: Lint
-        run: pipenv run flake8
+      - name: Ruff Linting
+        run: pipenv run ruff .
 
-      - name: Black
-        run: pipenv run black --check .
+      - name: Ruff Formatting
+        run: pipenv run ruff format --check .
 
       - name: Run Tests
         working-directory: src

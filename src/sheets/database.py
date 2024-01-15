@@ -167,7 +167,11 @@ def build_bsda_query(
             "data_start_date": data_start_date,
             "data_end_date": data_end_date,
         },
-        date_columns=bsd_date_params,
+        date_columns=[
+            *bsd_date_params,
+            "emitter_emission_signature_date",
+            "transporter_transport_signature_date",
+        ],
     )
 
 

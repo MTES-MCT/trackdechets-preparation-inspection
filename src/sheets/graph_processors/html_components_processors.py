@@ -587,7 +587,7 @@ class BsdCanceledTableProcessor:
                 ).sort_values("updated_at")
 
                 temp_df = temp_df[columns_to_take]
-                temp_df.rename(columns={"id_y": "id"})
+                temp_df = temp_df.rename(columns={"id_y": "id"})
 
                 dfs.append(temp_df)
 

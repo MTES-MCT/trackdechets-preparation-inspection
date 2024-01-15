@@ -63,8 +63,14 @@ def build_query(
         params=query_params,
         con=engine,
         dtype=dtypes,
-        parse_dates=date_columns,
     )
+
+    if date_columns is not None:
+        for col in date_columns:
+            if col in df.columns:
+                df[col] = pd.to_datetime(
+                    df[col], utc=True, errors="coerce"
+                ).dt.tz_convert(None)
 
     return df
 
@@ -313,6 +319,7 @@ def get_icpe_item_data(siret: str, rubrique: str) -> Union[pd.DataFrame, None]:
     icpe_data = build_query(
         sql_get_icpe_item_data,
         query_params={"siret": siret, "rubrique": rubrique},
+        date_columns=["day_of_processing"],
     )
 
     if len(icpe_data):

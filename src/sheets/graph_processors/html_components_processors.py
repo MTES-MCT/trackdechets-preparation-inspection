@@ -137,22 +137,23 @@ class BsdStatsProcessor:
             (self.emitted_bs_stats, bs_emitted_data, self.packagings_data),
             (self.received_bs_stats, bs_received_data, self.packagings_data),
         ]:
+            df = to_process
             if (to_process_packagings is not None) and (len(to_process_packagings) > 0):
-                target = (
-                    target[["id", "status", "received_at"]]
+                df = (
+                    to_process[["id", "status", "received_at"]]
                     .merge(
                         to_process_packagings.loc[
                             to_process_packagings["acceptation_status"] == "ACCEPTED",
-                            ["form_id", "operation_date", "acceptation_weight"],
+                            ["bsff_id", "operation_date", "acceptation_weight"],
                         ],
                         left_on="id",
                         right_on="bsff_id",
                         how="left",
                     )
-                    .groupby("id", as_index=False)
                     .sort_values(
                         "operation_date", ascending=False, na_position="last"
                     )  # Used to capture the date of the last processed packaging or null if there is at least one packaging not processed
+                    .groupby("id", as_index=False)
                     .agg(
                         {
                             "status": pd.NamedAgg(column="status", agg_func="max"),
@@ -162,17 +163,18 @@ class BsdStatsProcessor:
                     )
                 )
             # total number of 'bordereaux' emitted/received
-            target["total"] = len(to_process)
+            target["total"] = len(df)
 
             # total number of 'bordereaux' that are considered as 'archived' (end of traceability)
             target["archived"] = len(
-                to_process[
-                    to_process["status"].isin(
+                df[
+                    df["status"].isin(
                         [
                             "PROCESSED",
                             "REFUSED",
                             "NO_TRACEABILITY",
                             "FOLLOWED_WITH_PNTTD",
+                            "INTERMEDIATELY_PROCESSED",
                         ]
                     )
                 ]
@@ -180,8 +182,8 @@ class BsdStatsProcessor:
 
             # DataFrame holding all the 'bordereaux' that have been
             # processed in more than one month.
-            bs_emitted_processed_in_more_than_one_month = to_process[
-                ((to_process["processed_at"] - to_process["received_at"]) > np.timedelta64(1, "M"))
+            bs_emitted_processed_in_more_than_one_month = df[
+                ((df["processed_at"] - df["received_at"]) > np.timedelta64(1, "M"))
             ]
 
             # Total number of bordereaux processed in more than one month
@@ -1165,14 +1167,22 @@ class QuantityOutliersTableProcessor:
         self,
         bs_data_dfs: Dict[str, pd.DataFrame],
         transporters_data_df: Dict[str, pd.DataFrame],
+        packagings_data_df: pd.DataFrame = None,
     ) -> None:
         self.bs_data_dfs = bs_data_dfs
         self.transporters_data_df = transporters_data_df
 
+        self.packagings_data_df = packagings_data_df
+
         self.preprocessed_data = None
 
     @staticmethod
-    def get_quantity_outliers(df: pd.DataFrame, bs_type: str, transporters_df: pd.DataFrame) -> pd.DataFrame:
+    def get_quantity_outliers(
+        df: pd.DataFrame,
+        bs_type: str,
+        transporters_df: pd.DataFrame,
+        packagings_data_df: pd.DataFrame,
+    ) -> pd.DataFrame:
         """Get lines from 'bordereau' DataFrame with inconsistent received quantity.
         The rules to identify outliers in received quantity are business rules and may be tweaked in the future.
 
@@ -1188,7 +1198,7 @@ class QuantityOutliersTableProcessor:
         DataFrame
             DataFrame with lines with received quantity outliers removed.
         """
-
+        df_quantity_outliers = pd.DataFrame()
         if bs_type in [BSDD, BSDD_NON_DANGEROUS] and (transporters_df is not None):
             df_with_transport = df.merge(
                 transporters_df[["form_id", "transporter_transport_mode"]],
@@ -1209,7 +1219,24 @@ class QuantityOutliersTableProcessor:
         elif bs_type == BSVHU:
             df_quantity_outliers = df[(df["quantity_received"] > 40)]
         elif bs_type == BSFF:
-            df_quantity_outliers = df[df["quantity_received"] > 20]
+            if packagings_data_df is not None:
+                df = df.merge(
+                    packagings_data_df["acceptation_weight"],
+                    left_on="id",
+                    right_on="bsff_id",
+                    validate="one_to_many",
+                    how="left",
+                )
+                df = df.groupby("id", as_index=False).aggregate(
+                    emitter_company_siret=pd.NamedAgg(column="emitter_company_siret", aggfunc="max"),
+                    recipient_company_siret=pd.NamedAgg(column="recipient_company_siret", aggfunc="max"),
+                    waste_code=pd.NamedAgg(column="waste_code", aggfunc="max"),
+                    waste_name=pd.NamedAgg(column="waste_name", aggfunc="max"),
+                    sent_at=pd.NamedAgg(column="sent_at", aggfunc="max"),
+                    received_at=pd.NamedAgg(column="received_at", aggfunc="max"),
+                    quantity_received=pd.NamedAgg(column="acceptation_weight", aggfunc="sum"),
+                )
+                df_quantity_outliers = df[df["quantity_received"] > 20]
 
         df_quantity_outliers["bs_type"] = bs_type if bs_type != BSDD_NON_DANGEROUS else "bsdd"
         return df_quantity_outliers
@@ -1220,8 +1247,12 @@ class QuantityOutliersTableProcessor:
             if len(df) == 0:
                 continue
 
+            packagings_data_df = None
+            if bs_type == BSFF:
+                packagings_data_df = self.packagings_data_df
+
             transporters_df = self.transporters_data_df.get(bs_type, None)
-            df_outliers = self.get_quantity_outliers(df, bs_type, transporters_df)
+            df_outliers = self.get_quantity_outliers(df, bs_type, transporters_df, packagings_data_df)
 
             if len(df_outliers) != 0:
                 if bs_type in [BSDD, BSDD_NON_DANGEROUS]:

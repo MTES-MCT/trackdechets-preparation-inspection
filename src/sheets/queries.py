@@ -380,7 +380,6 @@ WHERE
     id = :id
 """
 
-# TODO: Change columns names when model will evolve
 sql_get_icpe_item_data = """
 SELECT
     day_of_processing,

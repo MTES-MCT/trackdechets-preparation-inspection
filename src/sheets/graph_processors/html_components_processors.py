@@ -14,7 +14,6 @@ from ..constants import BSDA, BSDASRI, BSDD, BSDD_NON_DANGEROUS, BSFF, BSVHU
 # classes returning a context to be rendered in a non-plotly template
 
 
-# todo: rename
 class BsdStatsProcessor:
     """Component that displays aggregated data about 'bordereaux' and estimations of the onsite waste stock.
 
@@ -155,11 +154,9 @@ class BsdStatsProcessor:
                     )  # Used to capture the date of the last processed packaging or null if there is at least one packaging not processed
                     .groupby("id", as_index=False)
                     .agg(
-                        {
-                            "status": pd.NamedAgg(column="status", agg_func="max"),
-                            "received_at": pd.NamedAgg(column="received_at", agg_func="max"),
-                            "processed_at": pd.NamedAgg(column="operation_date", agg_func="first"),
-                        }
+                        status=pd.NamedAgg(column="status", aggfunc="max"),
+                        received_at=pd.NamedAgg(column="received_at", aggfunc="max"),
+                        processed_at=pd.NamedAgg(column="operation_date", aggfunc="first"),
                     )
                 )
             # total number of 'bordereaux' emitted/received
@@ -716,91 +713,6 @@ class StorageStatsProcessor:
         if not self._check_data_empty():
             data = self._add_stats()
         return data
-
-
-class AdditionalInfoProcessor:
-    """Component that displays additional informations like outliers quantities or inconsistent dates.
-
-    Parameters
-    ----------
-    company_siret: str
-        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
-    additional_data: dict
-        dict with additional data. The schema of the dict is like:
-        {'date_outliers': {'BSDD': {'processed_at':some_DataFrame, 'sentAt': some_DataFrame}}, 'quantity_outliers': {'BSDD': some_DataFrame, 'BSDA': some_DataFrame, 'BSDASRI': some_DataFrame}}
-    """
-
-    def __init__(
-        self,
-        company_siret: str,
-        additional_data: Dict[str, Dict[str, pd.DataFrame]],
-    ) -> None:
-        self.company_siret = company_siret
-
-        self.additional_data = additional_data
-
-        self.date_outliers_data = None
-        self.quantity_outliers_data = None
-
-    def _check_data_empty(self) -> bool:
-        if len(self.additional_data["date_outliers"]) == len(self.additional_data["quantity_outliers"]) == 0:
-            self.is_component_empty = True
-            return self.is_component_empty
-
-        self.is_component_empty = False
-        return False
-
-    def _preprocess_data(self) -> None:
-        date_outliers_data = {}
-        for key, value in self.additional_data["date_outliers"].items():
-            date_outliers_data[key] = {k: v[k] for k, v in value.items() if v is not None}
-
-        self.date_outliers_data = date_outliers_data
-        self.quantity_outliers_data = self.additional_data["quantity_outliers"]
-
-    def _add_date_outliers_layout(self):
-        """Create and add the layout for date outliers."""
-        res = []
-        for bs_type, outlier_data in self.date_outliers_data.items():
-            bs_col_example_li = []
-            for col, serie in outlier_data.items():
-                bs_col_example_li.append(
-                    {
-                        "bs_type": bs_type,
-                        "col": col,
-                        "outliers_count": len(serie),
-                        "sample": "serie.sample(1).item()",
-                    }
-                )
-            res.append(bs_col_example_li)
-        return res
-
-    def _add_quantity_outliers_layout(self):
-        """Create and add the layout for quantity outliers."""
-
-        quantity_outliers_bs_list_layout = []
-        for bs_type, outlier_data in self.quantity_outliers_data.items():
-            quantity_outliers_bs_list_layout.append(
-                {
-                    "outliers_count": len(outlier_data),
-                    "sample": format_number_str(
-                        outlier_data.quantity_received.sort_values(ascending=False).head(1).item(),
-                        precision=0,
-                    ),
-                }
-            )
-        return quantity_outliers_bs_list_layout
-
-    def build(self) -> list:
-        self._preprocess_data()
-        res = {}
-        if not self._check_data_empty():
-            if len(self.date_outliers_data):
-                res["dates_outliers"] = self._add_date_outliers_layout()
-            if len(self.quantity_outliers_data):
-                res["quantity_outliers"] = self._add_quantity_outliers_layout()
-
-        return res
 
 
 class ICPEItemsProcessor:

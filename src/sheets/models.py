@@ -11,7 +11,6 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
-# todo : rename
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         return (
@@ -109,7 +108,6 @@ class ComputedInspectionData(models.Model):
 
     waste_flows_data = models.JSONField(default=dict)
 
-    outliers_data = models.JSONField(default=dict)
     icpe_data = models.JSONField(default=dict)
     agreement_data = models.JSONField(default=dict)
     traceability_interruptions_data = models.JSONField(default=dict)

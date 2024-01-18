@@ -30,8 +30,7 @@ select
     trusted_zone_trackdechets.bsdd
 where
     (emitter_company_siret = :siret
-    or recipient_company_siret = :siret
-    )
+    or recipient_company_siret = :siret)
     and is_deleted = false
     and created_at BETWEEN :data_start_date AND :data_end_date
     and status::text not in ('DRAFT', 'INITIAL')
@@ -72,8 +71,7 @@ select
     trusted_zone_trackdechets.bsdd
 where
     (emitter_company_siret = :siret
-    or recipient_company_siret = :siret
-    )
+    or recipient_company_siret = :siret)
     and is_deleted = false
     and created_at BETWEEN :data_start_date AND :data_end_date
     and status::text not in ('DRAFT', 'INITIAL')
@@ -84,46 +82,49 @@ order by
 
 sql_bsdd_transporter_query_str = r"""
 select
-    bt.id,
-    bt.form_id,
-    bt.taken_over_at as sent_at,
-    bt.transporter_company_siret,
-    bt.transporter_number_plate,
-    bt.transporter_transport_mode,
-    b.created_at,
-    b.quantity_received,
-    b.waste_details_code as waste_code
+    id,
+    form_id,
+    taken_over_at as sent_at,
+    transporter_company_siret,
+    transporter_number_plate,
+    transporter_transport_mode,
+    quantity_received,
+    waste_details_code as waste_code
 from
-    trusted_zone_trackdechets.bsdd_transporter bt
-    left join trusted_zone_trackdechets.bsdd b on bt.form_id = b.id
+    refined_zone_enriched.bsdd_transporter_enriched
 where
-    (b.emitter_company_siret = :siret
-    or b.recipient_company_siret = :siret
-    or bt.transporter_company_siret = :siret)
-    and b.created_at BETWEEN :data_start_date AND :data_end_date
-    and (b.waste_details_code ~* '.*\*$' or b.waste_details_pop or b.waste_details_is_dangerous)
+    (emitter_company_siret = :siret
+        or recipient_company_siret = :siret
+        or transporter_company_siret = :siret
+    )
+    and bordereau_created_at between :data_start_date and :data_end_date
+    and (waste_details_code like '%*'
+        or waste_details_pop
+        or waste_details_is_dangerous)
 """
+
 
 sql_bsdd_non_dangerous_transporter_query_str = r"""
 select
-    bt.id,
-    bt.form_id,
-    bt.taken_over_at as sent_at,
-    bt.transporter_company_siret,
-    bt.transporter_number_plate,
-    bt.transporter_transport_mode,
-    b.created_at,
-    b.quantity_received,
-    b.waste_details_code as waste_code
+    id,
+    form_id,
+    taken_over_at as sent_at,
+    transporter_company_siret,
+    transporter_number_plate,
+    transporter_transport_mode,
+    quantity_received,
+    waste_details_code as waste_code
 from
-    trusted_zone_trackdechets.bsdd_transporter bt
-    left join trusted_zone_trackdechets.bsdd b on bt.form_id = b.id
+    refined_zone_enriched.bsdd_transporter_enriched
 where
-    (b.emitter_company_siret = :siret
-    or b.recipient_company_siret = :siret
-    or bt.transporter_company_siret = :siret)
-    and b.created_at BETWEEN :data_start_date AND :data_end_date
-    and not (b.waste_details_code ~* '.*\*$' or b.waste_details_pop or b.waste_details_is_dangerous)
+    (emitter_company_siret = :siret
+        or recipient_company_siret = :siret
+        or transporter_company_siret = :siret
+    )
+    and bordereau_created_at between :data_start_date and :data_end_date
+    and not (waste_details_code like '%*'
+        or waste_details_pop
+        or waste_details_is_dangerous)
 """
 
 sql_company_query_str = """

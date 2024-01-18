@@ -13,7 +13,11 @@ from django.utils.translation import gettext_lazy as _
 
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, obj):
-        return super().encode(bool(obj)) if isinstance(obj, np.bool_) else super().default(obj)
+        return (
+            super().encode(bool(obj))
+            if isinstance(obj, np.bool_)
+            else super().default(obj)
+        )
 
 
 def notify_admins(pk):
@@ -51,7 +55,9 @@ class ComputedInspectionData(models.Model):
         default=StateChoice.INITIAL,
     )
     org_id = models.CharField(_("Organization ID"), max_length=20)
-    data_start_date = models.DateTimeField(_("Data Start Date"), default=datetime(2022, 1, 1))
+    data_start_date = models.DateTimeField(
+        _("Data Start Date"), default=datetime(2022, 1, 1)
+    )
     data_end_date = models.DateTimeField(_("Data End Date"), default=timezone.now)
     company_name = models.CharField(_("Company Name"), max_length=255, blank=True)
     company_profiles = ArrayField(
@@ -60,7 +66,9 @@ class ComputedInspectionData(models.Model):
         default=list,
     )
     company_address = models.CharField(_("Company address"), max_length=255, blank=True)
-    company_created_at = models.DateTimeField(_("Company created at"), default=timezone.now)
+    company_created_at = models.DateTimeField(
+        _("Company created at"), default=timezone.now
+    )
     created = models.DateTimeField(_("Created"), default=timezone.now)
 
     linked_companies_data = models.JSONField(default=dict)
@@ -71,7 +79,9 @@ class ComputedInspectionData(models.Model):
 
     bsdd_non_dangerous_created_rectified_data = models.JSONField(default=dict)
     bsdd_non_dangerous_stock_data = models.JSONField(default=dict)
-    bsdd_non_dangerous_stats_data = models.JSONField(default=dict, encoder=CustomJSONEncoder)
+    bsdd_non_dangerous_stats_data = models.JSONField(
+        default=dict, encoder=CustomJSONEncoder
+    )
 
     bsda_created_rectified_data = models.JSONField(default=dict)
     bsda_stock_data = models.JSONField(default=dict)

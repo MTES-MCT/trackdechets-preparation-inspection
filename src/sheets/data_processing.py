@@ -28,7 +28,6 @@ from .database import (
     get_linked_companies_data,
 )
 from .graph_processors.html_components_processors import (
-    AdditionalInfoProcessor,
     BsdaWorkerStatsProcessor,
     BsdCanceledTableProcessor,
     BsdStatsProcessor,
@@ -245,8 +244,6 @@ class SheetProcessor:
         setattr(self.computed, "icpe_2760_data", icpe_2760_graph_data)
 
     def _process_bsds(self):
-        additional_data = {"date_outliers": {}, "quantity_outliers": {}}
-
         data_date_interval = (self.data_start_date, self.data_end_date)
 
         for bsd_config in bsds_config:
@@ -258,12 +255,6 @@ class SheetProcessor:
                 data_end_date=self.data_end_date,
             )
             self.bs_dfs[bsd_type] = df
-
-            bs_data_df, date_outliers = get_outliers_datetimes_df(
-                df, date_columns=["sent_at", "received_at", "processed_at"]
-            )
-            if len(date_outliers) > 0:
-                additional_data["date_outliers"][bsd_type] = date_outliers
 
             bs_revised_data = bsd_config.get("bs_revised_data", None)
             if bs_revised_data:
@@ -306,7 +297,11 @@ class SheetProcessor:
         self.computed.icpe_data = icpe_processor.build()
 
         table = WasteFlowsTableProcessor(
-            self.siret, self.bs_dfs, self.transporter_data_dfs, data_date_interval, WASTE_CODES_DATA
+            self.siret,
+            self.bs_dfs,
+            self.transporter_data_dfs,
+            data_date_interval,
+            WASTE_CODES_DATA,
         )
         self.computed.waste_flows_data = table.build()
 
@@ -334,10 +329,6 @@ class SheetProcessor:
             data_date_interval,
         )
         self.computed.waste_origin_map_data = waste_origin_map.build()
-
-        outliers_data = AdditionalInfoProcessor(self.siret, additional_data)
-
-        self.computed.outliers_data = outliers_data.build()
 
         traceability_interruptions = TraceabilityInterruptionsProcessor(
             self.siret,
@@ -376,7 +367,7 @@ class SheetProcessor:
         )
         self.computed.private_individuals_collections_data = private_individuals_collections_table.build()
 
-        quantity_outliers_table = QuantityOutliersTableProcessor(self.bs_dfs)
+        quantity_outliers_table = QuantityOutliersTableProcessor(self.bs_dfs, self.transporter_data_dfs)
         self.computed.quantity_outliers_data = quantity_outliers_table.build()
 
         waste_processing_without_icpe_data = WasteProcessingWithoutICPEProcessor(
@@ -385,12 +376,16 @@ class SheetProcessor:
         self.computed.bs_processed_without_icpe_authorization = waste_processing_without_icpe_data.build()
 
         bsda_worker_stats = BsdaWorkerStatsProcessor(
-            company_siret=self.siret, bsda_data_df=self.bs_dfs[BSDA], data_date_interval=data_date_interval
+            company_siret=self.siret,
+            bsda_data_df=self.bs_dfs[BSDA],
+            data_date_interval=data_date_interval,
         )
         self.computed.bsda_worker_stats_data = bsda_worker_stats.build()
 
         bsda_worker_quantities = BsdaWorkerQuantityProcessor(
-            company_siret=self.siret, bsda_data_df=self.bs_dfs[BSDA], data_date_interval=data_date_interval
+            company_siret=self.siret,
+            bsda_data_df=self.bs_dfs[BSDA],
+            data_date_interval=data_date_interval,
         )
         self.computed.bsda_worker_quantity_data = bsda_worker_quantities.build()
 

@@ -1,3 +1,4 @@
+from itertools import chain
 import json
 import locale
 from datetime import datetime
@@ -288,6 +289,8 @@ class BsdTrackedAndRevisedProcessor:
         self.bs_received_by_month = None
         self.bs_revised_by_month = None
 
+        self.figure = None
+
     def _preprocess_bs_data(self) -> None:
         """Preprocess raw 'bordereaux' data to prepare it for plotting."""
         bs_data = self.bs_data
@@ -475,6 +478,7 @@ class WasteOriginProcessor:
         self.data_date_interval = data_date_interval
 
         self.preprocessed_serie = None
+        self.figure = None
 
     def _preprocess_data(self) -> None:
         if len(self.bs_data_dfs) == 0:
@@ -623,6 +627,7 @@ class WasteOriginsMapProcessor:
         self.data_date_interval = data_date_interval
 
         self.preprocessed_df = None
+        self.figure = None
 
     def _preprocess_data(self) -> None:
         if len(self.bs_data_dfs) == 0:
@@ -1232,21 +1237,15 @@ class TransporterBordereauxGraphProcessor:
         transporter_data_dfs = self.transporters_data_df
         bs_data_dfs = self.bs_data_dfs
 
-        for bs_type, df in transporter_data_dfs.items():
-            df = df[df["sent_at"].between(*self.data_date_interval)]
-
-            if len(df) > 0:
-                df_by_month = df.groupby(pd.Grouper(key="sent_at", freq="1M"))["form_id"].nunique()
-                self.transported_bordereaux_stats[bs_type] = df_by_month
-
-        for bs_type, df in bs_data_dfs.items():
+        for bs_type, df in chain(transporter_data_dfs.items(), bs_data_dfs.items()):
             df = df[
                 df["sent_at"].between(*self.data_date_interval)
                 & (df["transporter_company_siret"] == self.company_siret)
             ]
 
             if len(df) > 0:
-                df_by_month = df.groupby(pd.Grouper(key="sent_at", freq="1M"))["id"].nunique()
+                id_col = "form_id" if bs_type in [BSDD, BSDD_NON_DANGEROUS] else "id"
+                df_by_month = df.groupby(pd.Grouper(key="sent_at", freq="1M"))[id_col].nunique()
                 self.transported_bordereaux_stats[bs_type] = df_by_month
 
     def _check_data_empty(self) -> bool:
@@ -1422,18 +1421,11 @@ class TransportedQuantitiesGraphProcessor:
         transporter_data_dfs = self.transporters_data_df
         bs_data_dfs = self.bs_data_dfs
 
-        for bs_type, df in transporter_data_dfs.items():
-            df = df[df["sent_at"].between(*self.data_date_interval)].dropna(subset=["quantity_received"])
-
-            if len(df) > 0:
-                df_by_month = df.groupby(pd.Grouper(key="sent_at", freq="1M"))["quantity_received"].sum()
-                self.transported_quantities_stats[bs_type] = df_by_month
-
-        for bs_type, df in bs_data_dfs.items():
+        for bs_type, df in chain(transporter_data_dfs.items(), bs_data_dfs.items()):
             df = df[
                 df["sent_at"].between(*self.data_date_interval)
                 & (df["transporter_company_siret"] == self.company_siret)
-            ].dropna(subset=["quantity_received"])
+            ]
 
             if len(df) > 0:
                 if (bs_type == BSFF) and (self.packagings_data_df is not None):
@@ -1503,7 +1495,10 @@ class TransportedQuantitiesGraphProcessor:
                         name=config["name"],
                         mode="lines+markers",
                         hovertext=[
-                            hover_text.format(index.strftime("%B %y").capitalize(), format_number_str(e))
+                            hover_text.format(
+                                index.strftime("%B %y").capitalize(),
+                                format_number_str(e),
+                            )
                             for index, e in data.items()
                         ],
                         hoverinfo="text",

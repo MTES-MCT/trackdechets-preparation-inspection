@@ -14,7 +14,6 @@ from ..constants import BSDA, BSDASRI, BSDD, BSDD_NON_DANGEROUS, BSFF, BSVHU
 # classes returning a context to be rendered in a non-plotly template
 
 
-# todo: rename
 class BsdStatsProcessor:
     """Component that displays aggregated data about 'bordereaux' and estimations of the onsite waste stock.
 
@@ -137,18 +136,42 @@ class BsdStatsProcessor:
             (self.emitted_bs_stats, bs_emitted_data, self.packagings_data),
             (self.received_bs_stats, bs_received_data, self.packagings_data),
         ]:
+            df = to_process
+            if (to_process_packagings is not None) and (len(to_process_packagings) > 0):
+                df = (
+                    to_process[["id", "status", "received_at"]]
+                    .merge(
+                        to_process_packagings.loc[
+                            to_process_packagings["acceptation_status"] == "ACCEPTED",
+                            ["bsff_id", "operation_date", "acceptation_weight"],
+                        ],
+                        left_on="id",
+                        right_on="bsff_id",
+                        how="left",
+                    )
+                    .sort_values(
+                        "operation_date", ascending=False, na_position="last"
+                    )  # Used to capture the date of the last processed packaging or null if there is at least one packaging not processed
+                    .groupby("id", as_index=False)
+                    .agg(
+                        status=pd.NamedAgg(column="status", aggfunc="max"),
+                        received_at=pd.NamedAgg(column="received_at", aggfunc="max"),
+                        processed_at=pd.NamedAgg(column="operation_date", aggfunc="first"),
+                    )
+                )
             # total number of 'bordereaux' emitted/received
-            target["total"] = len(to_process)
+            target["total"] = len(df)
 
             # total number of 'bordereaux' that are considered as 'archived' (end of traceability)
             target["archived"] = len(
-                to_process[
-                    to_process["status"].isin(
+                df[
+                    df["status"].isin(
                         [
                             "PROCESSED",
                             "REFUSED",
                             "NO_TRACEABILITY",
                             "FOLLOWED_WITH_PNTTD",
+                            "INTERMEDIATELY_PROCESSED",
                         ]
                     )
                 ]
@@ -156,8 +179,8 @@ class BsdStatsProcessor:
 
             # DataFrame holding all the 'bordereaux' that have been
             # processed in more than one month.
-            bs_emitted_processed_in_more_than_one_month = to_process[
-                ((to_process["processed_at"] - to_process["received_at"]) > np.timedelta64(1, "M"))
+            bs_emitted_processed_in_more_than_one_month = df[
+                ((df["processed_at"] - df["received_at"]) > np.timedelta64(1, "M"))
             ]
 
             # Total number of bordereaux processed in more than one month
@@ -165,7 +188,7 @@ class BsdStatsProcessor:
 
             target["processed_in_more_than_one_month_count"] = processed_in_more_than_one_month_count
 
-            # If there is some 'bordereaux' processed in morte than one month,
+            # If there is some 'bordereaux' processed in more than one month,
             # we compute the average processing time.
             if processed_in_more_than_one_month_count:
                 res = (
@@ -193,6 +216,7 @@ class BsdStatsProcessor:
                     left_on="id",
                     right_on="bsff_id",
                     validate="one_to_many",
+                    how="left",
                 )
 
                 # DataFrame with all BSFF along with packagings data
@@ -493,7 +517,7 @@ class BsdCanceledTableProcessor:
                 ).sort_values("updated_at")
 
                 temp_df = temp_df[columns_to_take]
-                temp_df.rename(columns={"id_y": "id"})
+                temp_df = temp_df.rename(columns={"id_y": "id"})
 
                 dfs.append(temp_df)
 
@@ -689,91 +713,6 @@ class StorageStatsProcessor:
         if not self._check_data_empty():
             data = self._add_stats()
         return data
-
-
-class AdditionalInfoProcessor:
-    """Component that displays additional informations like outliers quantities or inconsistent dates.
-
-    Parameters
-    ----------
-    company_siret: str
-        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
-    additional_data: dict
-        dict with additional data. The schema of the dict is like:
-        {'date_outliers': {'BSDD': {'processed_at':some_DataFrame, 'sentAt': some_DataFrame}}, 'quantity_outliers': {'BSDD': some_DataFrame, 'BSDA': some_DataFrame, 'BSDASRI': some_DataFrame}}
-    """
-
-    def __init__(
-        self,
-        company_siret: str,
-        additional_data: Dict[str, Dict[str, pd.DataFrame]],
-    ) -> None:
-        self.company_siret = company_siret
-
-        self.additional_data = additional_data
-
-        self.date_outliers_data = None
-        self.quantity_outliers_data = None
-
-    def _check_data_empty(self) -> bool:
-        if len(self.additional_data["date_outliers"]) == len(self.additional_data["quantity_outliers"]) == 0:
-            self.is_component_empty = True
-            return self.is_component_empty
-
-        self.is_component_empty = False
-        return False
-
-    def _preprocess_data(self) -> None:
-        date_outliers_data = {}
-        for key, value in self.additional_data["date_outliers"].items():
-            date_outliers_data[key] = {k: v[k] for k, v in value.items() if v is not None}
-
-        self.date_outliers_data = date_outliers_data
-        self.quantity_outliers_data = self.additional_data["quantity_outliers"]
-
-    def _add_date_outliers_layout(self):
-        """Create and add the layout for date outliers."""
-        res = []
-        for bs_type, outlier_data in self.date_outliers_data.items():
-            bs_col_example_li = []
-            for col, serie in outlier_data.items():
-                bs_col_example_li.append(
-                    {
-                        "bs_type": bs_type,
-                        "col": col,
-                        "outliers_count": len(serie),
-                        "sample": "serie.sample(1).item()",
-                    }
-                )
-            res.append(bs_col_example_li)
-        return res
-
-    def _add_quantity_outliers_layout(self):
-        """Create and add the layout for quantity outliers."""
-
-        quantity_outliers_bs_list_layout = []
-        for bs_type, outlier_data in self.quantity_outliers_data.items():
-            quantity_outliers_bs_list_layout.append(
-                {
-                    "outliers_count": len(outlier_data),
-                    "sample": format_number_str(
-                        outlier_data.quantity_received.sort_values(ascending=False).head(1).item(),
-                        precision=0,
-                    ),
-                }
-            )
-        return quantity_outliers_bs_list_layout
-
-    def build(self) -> list:
-        self._preprocess_data()
-        res = {}
-        if not self._check_data_empty():
-            if len(self.date_outliers_data):
-                res["dates_outliers"] = self._add_date_outliers_layout()
-            if len(self.quantity_outliers_data):
-                res["quantity_outliers"] = self._add_quantity_outliers_layout()
-
-        return res
 
 
 class ICPEItemsProcessor:
@@ -1139,13 +1078,23 @@ class QuantityOutliersTableProcessor:
     def __init__(
         self,
         bs_data_dfs: Dict[str, pd.DataFrame],
+        transporters_data_df: Dict[str, pd.DataFrame],
+        packagings_data_df: pd.DataFrame = None,
     ) -> None:
         self.bs_data_dfs = bs_data_dfs
+        self.transporters_data_df = transporters_data_df
+
+        self.packagings_data_df = packagings_data_df
 
         self.preprocessed_data = None
 
     @staticmethod
-    def get_quantity_outliers(df: pd.DataFrame, bs_type: str) -> pd.DataFrame:
+    def get_quantity_outliers(
+        df: pd.DataFrame,
+        bs_type: str,
+        transporters_df: pd.DataFrame,
+        packagings_data_df: pd.DataFrame,
+    ) -> pd.DataFrame:
         """Get lines from 'bordereau' DataFrame with inconsistent received quantity.
         The rules to identify outliers in received quantity are business rules and may be tweaked in the future.
 
@@ -1161,15 +1110,45 @@ class QuantityOutliersTableProcessor:
         DataFrame
             DataFrame with lines with received quantity outliers removed.
         """
+        df_quantity_outliers = pd.DataFrame()
+        if bs_type in [BSDD, BSDD_NON_DANGEROUS] and (transporters_df is not None):
+            df_with_transport = df.merge(
+                transporters_df[["form_id", "transporter_transport_mode"]],
+                left_on="id",
+                right_on="form_id",
+                how="left",
+                validate="one_to_many",
+            )
 
-        if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA]:
+            df_quantity_outliers = df_with_transport[
+                (df_with_transport["quantity_received"] > 40)
+                & (df_with_transport["transporter_transport_mode"] == "ROAD")
+            ].drop_duplicates("id")
+        elif bs_type == BSDA:
             df_quantity_outliers = df[(df["quantity_received"] > 40) & (df["transporter_transport_mode"] == "ROAD")]
         elif bs_type == BSDASRI:
             df_quantity_outliers = df[(df["quantity_received"] > 20) & (df["transporter_transport_mode"] == "ROAD")]
         elif bs_type == BSVHU:
             df_quantity_outliers = df[(df["quantity_received"] > 40)]
         elif bs_type == BSFF:
-            df_quantity_outliers = df[df["quantity_received"] > 20]
+            if packagings_data_df is not None:
+                df = df.merge(
+                    packagings_data_df["acceptation_weight"],
+                    left_on="id",
+                    right_on="bsff_id",
+                    validate="one_to_many",
+                    how="left",
+                )
+                df = df.groupby("id", as_index=False).aggregate(
+                    emitter_company_siret=pd.NamedAgg(column="emitter_company_siret", aggfunc="max"),
+                    recipient_company_siret=pd.NamedAgg(column="recipient_company_siret", aggfunc="max"),
+                    waste_code=pd.NamedAgg(column="waste_code", aggfunc="max"),
+                    waste_name=pd.NamedAgg(column="waste_name", aggfunc="max"),
+                    sent_at=pd.NamedAgg(column="sent_at", aggfunc="max"),
+                    received_at=pd.NamedAgg(column="received_at", aggfunc="max"),
+                    quantity_received=pd.NamedAgg(column="acceptation_weight", aggfunc="sum"),
+                )
+                df_quantity_outliers = df[df["quantity_received"] > 20]
 
         df_quantity_outliers["bs_type"] = bs_type if bs_type != BSDD_NON_DANGEROUS else "bsdd"
         return df_quantity_outliers
@@ -1177,7 +1156,15 @@ class QuantityOutliersTableProcessor:
     def _preprocess_data(self) -> None:
         outliers_dfs = []
         for bs_type, df in self.bs_data_dfs.items():
-            df_outliers = self.get_quantity_outliers(df, bs_type)
+            if len(df) == 0:
+                continue
+
+            packagings_data_df = None
+            if bs_type == BSFF:
+                packagings_data_df = self.packagings_data_df
+
+            transporters_df = self.transporters_data_df.get(bs_type, None)
+            df_outliers = self.get_quantity_outliers(df, bs_type, transporters_df, packagings_data_df)
 
             if len(df_outliers) != 0:
                 if bs_type in [BSDD, BSDD_NON_DANGEROUS]:
@@ -1239,11 +1226,13 @@ class WasteProcessingWithoutICPEProcessor:
         bs_data_dfs: Dict[str, pd.DataFrame],
         icpe_data: pd.DataFrame,
         data_date_interval: tuple[datetime, datetime],
+        packagings_data_df: pd.DataFrame = None,
     ) -> None:
         self.siret = company_siret
         self.bs_data_dfs = bs_data_dfs
         self.icpe_data = icpe_data
         self.data_date_interval = data_date_interval
+        self.packagings_data_df = packagings_data_df
 
         self.preprocessed_data = {k: None for k in ["2760", "2770", "2790", "2718"]}
 
@@ -1337,11 +1326,44 @@ class WasteProcessingWithoutICPEProcessor:
                     (bs_type, df) for bs_type, df in self.bs_data_dfs.items() if bs_type in config["bs_types"]
                 ]
                 for bs_type, df in df_to_process:
-                    df_filtered = df[
-                        (df["recipient_company_siret"] == self.siret)
-                        & (df["processing_operation_code"].isin(config["processing_codes"]))
-                        & (df["processed_at"].between(*self.data_date_interval))
-                    ]
+                    if len(df) == 0:
+                        continue
+
+                    df_filtered = pd.DataFrame()
+                    if bs_type != BSFF:
+                        df_filtered = df[
+                            (df["recipient_company_siret"] == self.siret)
+                            & (df["processing_operation_code"].isin(config["processing_codes"]))
+                            & (df["processed_at"].between(*self.data_date_interval))
+                        ]
+                    else:
+                        if (self.packagings_data_df is not None) and (len(self.packagings_data_df) > 0):
+                            df = df.merge(
+                                self.packagings_data_df[
+                                    [
+                                        "bsff_id",
+                                        "acceptation_weight",
+                                        "operation_date",
+                                        "operation_code",
+                                    ]
+                                ],
+                                left_on="id",
+                                right_on="bsff_id",
+                                validate="one_to_many",
+                            )
+                            df = df[
+                                (df["recipient_company_siret"] == self.siret)
+                                & (df["operation_code"].isin(config["processing_codes"]))
+                                & (df["operation_date"].between(*self.data_date_interval))
+                            ]
+                            df_filtered = df.groupby("id", as_index=False).agg(
+                                {
+                                    "processing_operation_code": pd.NamedAgg(column="operation_code", aggfunc="max"),
+                                    "processed_at": pd.NamedAgg(column="operation_date", aggfunc="max"),
+                                    "quantity_received": pd.NamedAgg(column="acceptation_weight", aggfunc="sum"),
+                                }
+                            )
+
                     if len(df_filtered) > 0:
                         df_filtered["bs_type"] = bs_type.upper()
                         bs_dfs.append(df_filtered)
@@ -1537,7 +1559,8 @@ class BsdaWorkerStatsProcessor:
 
         if self.bsda_worker_stats["signed_worker"] > 0:
             self.bsda_worker_stats["signed_vs_processed_ratio"] = format_number_str(
-                100 * self.bsda_worker_stats["processed"] / self.bsda_worker_stats["signed_worker"], 2
+                100 * self.bsda_worker_stats["processed"] / self.bsda_worker_stats["signed_worker"],
+                2,
             )
 
         times_to_process_from_sending = df["processed_at"] - df["emitter_emission_signature_date"]
@@ -1628,16 +1651,7 @@ class TransporterBordereauxStatsProcessor:
         transporter_data_dfs = self.transporters_data_df
         bs_data_dfs = self.bs_data_dfs
 
-        for bs_type, df in transporter_data_dfs.items():
-            df = df[df["sent_at"].between(*self.data_date_interval)]
-
-            if len(df) > 0:
-                num_bordereaux = df["form_id"].nunique()
-                quantity = df["quantity_received"].sum()
-                self.transported_bordereaux_stats[bs_type]["count"] = num_bordereaux
-                self.transported_bordereaux_stats[bs_type]["quantity"] = format_number_str(quantity, 2)
-
-        for bs_type, df in bs_data_dfs.items():
+        for bs_type, df in chain(transporter_data_dfs.items(), bs_data_dfs.items()):
             df = df[
                 df["sent_at"].between(*self.data_date_interval)
                 & (df["transporter_company_siret"] == self.company_siret)
@@ -1648,7 +1662,9 @@ class TransporterBordereauxStatsProcessor:
                 if (bs_type == BSFF) and (self.packagings_data_df is not None):
                     df = df.merge(self.packagings_data_df, left_on="id", right_on="bsff_id")
                     quantity_col = "acceptation_weight"
-                num_bordereaux = df["id"].nunique()
+
+                id_col = "form_id" if bs_type in [BSDD, BSDD_NON_DANGEROUS] else "id"
+                num_bordereaux = df[id_col].nunique()
                 quantity = df[quantity_col].sum()
                 self.transported_bordereaux_stats[bs_type]["count"] = num_bordereaux
                 self.transported_bordereaux_stats[bs_type]["quantity"] = format_number_str(quantity, 2)

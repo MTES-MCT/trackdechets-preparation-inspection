@@ -55,15 +55,18 @@ def build_query(
 ):
     query = text(query_str)
 
-    # todo: use utc
     engine = wh_engine
     df = pd.read_sql_query(
         query,
         params=query_params,
         con=engine,
         dtype=dtypes,
-        parse_dates=date_columns,
     )
+
+    if date_columns is not None:
+        for col in date_columns:
+            if col in df.columns:
+                df[col] = pd.to_datetime(df[col], utc=True, errors="coerce").dt.tz_convert(None)
 
     return df
 
@@ -148,7 +151,11 @@ def build_bsda_query(siret: str, data_start_date: datetime, data_end_date: datet
             "data_start_date": data_start_date,
             "data_end_date": data_end_date,
         },
-        date_columns=bsd_date_params,
+        date_columns=[
+            *bsd_date_params,
+            "emitter_emission_signature_date",
+            "transporter_transport_signature_date",
+        ],
     )
 
 
@@ -290,6 +297,7 @@ def get_icpe_item_data(siret: str, rubrique: str) -> Union[pd.DataFrame, None]:
     icpe_data = build_query(
         sql_get_icpe_item_data,
         query_params={"siret": siret, "rubrique": rubrique},
+        date_columns=["day_of_processing"],
     )
 
     if len(icpe_data):

@@ -18,7 +18,7 @@
                 {% for row in bsd_canceled_data %}
                     <tr>
                         <td>
-                            {% if "readable_id" in row %}
+                            {% if row.readable_id %}
                                 {{ row.readable_id }}
                             {% else %}
                                 {{ row.id }}

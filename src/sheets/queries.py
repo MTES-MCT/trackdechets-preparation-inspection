@@ -404,3 +404,24 @@ from
 where
     substring(c.siret for 9) = substring(:siret for 9)
 """
+
+sql_get_gistrid_data_data = """
+select
+    n.numero_notification,
+    n.type_dossier,
+    n.numero_gistrid_notifiant,
+    n.siret_notifiant,
+    n.nom_notifiant,
+    n.pays_notifiant,
+    n.numero_gistrid_installation_traitement,
+    n.siret_installation_traitement,
+    n.nom_installation_traitement,
+    n.pays_installation_traitement,
+    n.somme_quantites_recues,
+    n.nombre_transferts_receptionnes,
+    n.date_autorisee_debut_transferts,
+    n.date_autorisee_fin_transferts
+from
+    refined_zone_gistrid.notifications_enriched n
+where (siret_notifiant = :siret or siret_installation_traitement = :siret)
+"""

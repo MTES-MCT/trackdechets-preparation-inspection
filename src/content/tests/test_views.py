@@ -1,4 +1,5 @@
 import pytest
+from django.conf import settings
 from django.core import mail
 from django.urls import reverse
 
@@ -35,3 +36,9 @@ def test_form_view_post(verified_user):
     message = mail.outbox[0]
     assert message.subject == "Un utilisateur a rempli un formulaire de feedback"
     assert message.to == ["lorem@ipsum.lol"]
+
+
+def test_admin_login_view_is_denied(anon_client):
+    url = f"{settings.ADMIN_SLUG}/login/"
+    res = anon_client.get(url)
+    assert res.status_code == 404

@@ -2,6 +2,7 @@
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.staticfiles.storage import staticfiles_storage
+from django.http import HttpResponseNotFound
 from django.urls import include, path
 from django.views.generic.base import RedirectView
 from django_otp.admin import OTPAdminSite
@@ -17,6 +18,7 @@ urlpatterns = [
         "favicon.ico",
         RedirectView.as_view(permanent=True, url=staticfiles_storage.url("img/favicon.ico")),
     ),
+    path(f"{settings.ADMIN_SLUG}/login/", HttpResponseNotFound),
     path("grappelli/", include("grappelli.urls")),  # grappelli URLS
     path(f"{settings.ADMIN_SLUG}/", admin.site.urls),
     path("", PublicHomeView.as_view(), name="public_home"),

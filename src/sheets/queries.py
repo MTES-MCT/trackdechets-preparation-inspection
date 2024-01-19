@@ -419,7 +419,9 @@ select
     n.somme_quantites_recues,
     n.nombre_transferts_receptionnes,
     n.date_autorisee_debut_transferts,
-    n.date_autorisee_fin_transferts
+    n.date_autorisee_fin_transferts,
+    code_d_r,
+    code_ced
 from
     refined_zone_gistrid.notifications_enriched n
 where (siret_notifiant = :siret or siret_installation_traitement = :siret)

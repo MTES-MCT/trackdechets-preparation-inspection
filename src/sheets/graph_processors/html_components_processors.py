@@ -1733,16 +1733,13 @@ class FollowedWithPNTTDTableProcessor:
         ]
 
         if len(df) > 0:
-            df["foreign_org_id"] = (
-                df[
-                    [
-                        "next_destination_company_siret",
-                        "next_destination_company_vat_number",
-                    ]
-                ]
-                .bfill(axis=1)
-                .iloc[:, 0]
+            df["foreign_org_id"] = df.apply(
+                lambda x: x["next_destination_company_siret"]
+                if not (pd.isna(x["next_destination_company_siret"]) or x["next_destination_company_siret"] == "")
+                else x["next_destination_company_vat_number"],
+                axis=1,
             )
+
             # We compute the quantity by waste codes
             df_grouped = df.groupby(
                 [
@@ -1824,36 +1821,58 @@ class GistridStatsProcessor:
     def _preprocess_gistrid_data(self) -> None:
         """Preprocess raw 'bordereaux' data to prepare it for plotting."""
         df = self.gistrid_data_df
+        if (df is None) or (len(df) == 0):
+            return
+
+        df = self.gistrid_data_df
         df["annee_fin_autorisation"] = df["date_autorisee_fin_transferts"].str[-2:]
 
         import_data = df[df["siret_installation_traitement"] == self.company_siret]
 
-        import_data_grouped = import_data.groupby(
-            ["annee_fin_autorisation", "numero_gistrid_notifiant"], as_index=False
-        ).aggregate(
-            nom_origine=pd.NamedAgg(column="nom_notifiant", aggfunc="max"),
-            pays_origine=pd.NamedAgg(column="pays_notifiant", aggfunc="max"),
-            quantites_recues=pd.NamedAgg(column="somme_quantites_recues", aggfunc="sum"),
-            nombre_transferts=pd.NamedAgg(column="nombre_transferts_receptionnes", aggfunc="sum"),
-        )
+        def parse_codes(x):
+            codes = set()
+            for codes_str in x:
+                codes.update(codes_str.split(", "))
+            return ", ".join(sorted(codes))
 
+        import_data_grouped = (
+            import_data.groupby(["annee_fin_autorisation", "numero_gistrid_notifiant"], as_index=False)
+            .aggregate(
+                nom_origine=pd.NamedAgg(column="nom_notifiant", aggfunc="max"),
+                pays_origine=pd.NamedAgg(column="pays_notifiant", aggfunc="max"),
+                quantites_recues=pd.NamedAgg(column="somme_quantites_recues", aggfunc="sum"),
+                nombre_transferts=pd.NamedAgg(column="nombre_transferts_receptionnes", aggfunc="sum"),
+                codes_dechets=pd.NamedAgg(column="code_ced", aggfunc=parse_codes),
+                codes_operations=pd.NamedAgg(column="code_d_r", aggfunc=parse_codes),
+            )
+            .sort_values("annee_fin_autorisation")
+        )
+        import_data_grouped["quantites_recues"] = import_data_grouped["quantites_recues"].apply(format_number_str, 2)
         if len(import_data_grouped) > 0:
             self.gistrid_stats["import"] = import_data_grouped.to_dict(orient="records")
+            self.gistrid_stats["numero_gistrid"] = import_data["numero_gistrid_installation_traitement"].iloc[0]
 
         export_data = df[df["siret_notifiant"] == self.company_siret]
 
-        export_data_grouped = export_data.groupby(
-            ["annee_fin_autorisation", "numero_gistrid_installation_traitement"],
-            as_index=False,
-        ).aggregate(
-            nom_destination=pd.NamedAgg(column="nom_installation_traitement", aggfunc="max"),
-            pays_destination=pd.NamedAgg(column="pays_installation_traitement", aggfunc="max"),
-            quantites_recues=pd.NamedAgg(column="somme_quantites_recues", aggfunc="sum"),
-            nombre_transferts=pd.NamedAgg(column="nombre_transferts_receptionnes", aggfunc="sum"),
+        export_data_grouped = (
+            export_data.groupby(
+                ["annee_fin_autorisation", "numero_gistrid_installation_traitement"],
+                as_index=False,
+            )
+            .aggregate(
+                nom_destination=pd.NamedAgg(column="nom_installation_traitement", aggfunc="max"),
+                pays_destination=pd.NamedAgg(column="pays_installation_traitement", aggfunc="max"),
+                quantites_recues=pd.NamedAgg(column="somme_quantites_recues", aggfunc="sum"),
+                nombre_transferts=pd.NamedAgg(column="nombre_transferts_receptionnes", aggfunc="sum"),
+                codes_dechets=pd.NamedAgg(column="code_ced", aggfunc=parse_codes),
+                codes_operations=pd.NamedAgg(column="code_d_r", aggfunc=parse_codes),
+            )
+            .sort_values("annee_fin_autorisation")
         )
-
+        export_data_grouped["quantites_recues"] = export_data_grouped["quantites_recues"].apply(format_number_str, 2)
         if len(export_data_grouped) > 0:
             self.gistrid_stats["export"] = export_data_grouped.to_dict(orient="records")
+            self.gistrid_stats["numero_gistrid"] = export_data["numero_gistrid_notifiant"].iloc[0]
 
     def _check_data_empty(self) -> bool:
         if len(self.gistrid_stats) == 0:

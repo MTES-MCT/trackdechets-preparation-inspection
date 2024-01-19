@@ -152,3 +152,11 @@ def render_followed_with_pnttd_table(computed, graph_context="web"):
         "followed_with_pnttd_data": computed.followed_with_pnttd_data,
         "graph_context": graph_context,
     }
+
+
+@register.inclusion_tag("sheets/components/gistrid_stats_table.html")
+def render_gistrid_stats_table(computed, graph_context="web"):
+    return {
+        "gistrid_stats_data": computed.gistrid_stats_data,
+        "graph_context": graph_context,
+    }

@@ -26,6 +26,7 @@ from .queries import (
     sql_get_vhu_agrement_data,
     sql_revised_bsda_query_str,
     sql_revised_bsdd_query_str,
+    sql_get_gistrid_data_data,
 )
 
 wh_engine = create_engine(settings.WAREHOUSE_URL, pool_pre_ping=True)
@@ -308,6 +309,19 @@ def get_icpe_item_data(siret: str, rubrique: str) -> Union[pd.DataFrame, None]:
 def get_linked_companies_data(siret: str) -> Union[pd.DataFrame, None]:
     linked_companies_data = build_query(
         sql_get_linked_companies_data,
+        query_params={
+            "siret": siret,
+        },
+    )
+
+    if len(linked_companies_data):
+        return linked_companies_data
+    return None
+
+
+def get_gistrid_data(siret: str) -> Union[pd.DataFrame, None]:
+    linked_companies_data = build_query(
+        sql_get_gistrid_data_data,
         query_params={
             "siret": siret,
         },

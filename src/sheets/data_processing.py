@@ -23,6 +23,7 @@ from .database import (
     build_revised_bsda_query,
     build_revised_bsdd_query,
     get_agreement_data,
+    get_gistrid_data,
     get_icpe_data,
     get_icpe_item_data,
     get_linked_companies_data,
@@ -31,6 +32,8 @@ from .graph_processors.html_components_processors import (
     BsdaWorkerStatsProcessor,
     BsdCanceledTableProcessor,
     BsdStatsProcessor,
+    FollowedWithPNTTDTableProcessor,
+    GistridStatsProcessor,
     ICPEItemsProcessor,
     LinkedCompaniesProcessor,
     PrivateIndividualsCollectionsTableProcessor,
@@ -413,6 +416,21 @@ class SheetProcessor:
             data_date_interval=data_date_interval,
         )
         self.computed.transporter_bordereaux_stats_data = transporter_bordereaux_stats.build()
+
+        followed_with_pnttd = FollowedWithPNTTDTableProcessor(
+            company_siret=self.siret,
+            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k in [BSDD, BSDD_NON_DANGEROUS]},
+            data_date_interval=data_date_interval,
+            waste_codes_df=WASTE_CODES_DATA,
+        )
+        self.computed.followed_with_pnttd_data = followed_with_pnttd.build()
+        gistrid_data = get_gistrid_data(self.siret)
+
+        gistrid_stats = GistridStatsProcessor(
+            company_siret=self.siret,
+            gistrid_data_df=gistrid_data,
+        )
+        self.computed.gistrid_stats_data = gistrid_stats.build()
 
         self.computed.state = ComputedInspectionData.StateChoice.COMPUTED
         self.computed.save()

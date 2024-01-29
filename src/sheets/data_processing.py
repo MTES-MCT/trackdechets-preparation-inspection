@@ -305,6 +305,7 @@ class SheetProcessor:
             self.transporter_data_dfs,
             data_date_interval,
             WASTE_CODES_DATA,
+            self.bsff_packagings_df,
         )
         self.computed.waste_flows_data = table.build()
 
@@ -414,6 +415,7 @@ class SheetProcessor:
             transporters_data_df=self.transporter_data_dfs,
             bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k not in [BSDD, BSDD_NON_DANGEROUS]},
             data_date_interval=data_date_interval,
+            packagings_data_df=self.bsff_packagings_df,
         )
         self.computed.transporter_bordereaux_stats_data = transporter_bordereaux_stats.build()
 

@@ -38,8 +38,8 @@ class BsdStatsProcessor:
         bs_data: pd.DataFrame,
         data_date_interval: tuple[datetime, datetime],
         quantity_variables_names: list[str] = ["quantity_received"],
-        bs_revised_data: pd.DataFrame = None,
-        packagings_data: pd.DataFrame = None,
+        bs_revised_data: pd.DataFrame | None = None,
+        packagings_data: pd.DataFrame | None = None,
     ) -> None:
         self.company_siret = company_siret
 
@@ -369,11 +369,13 @@ class WasteFlowsTableProcessor:
         transporters_data_df: Dict[str, pd.DataFrame],  # Handling new multi-modal Trackdéchets feature
         data_date_interval: tuple[datetime, datetime],
         waste_codes_df: pd.DataFrame,
+        packagings_data: pd.DataFrame | None = None,
     ) -> None:
         self.bs_data_dfs = bs_data_dfs
         self.transporters_data_df = transporters_data_df
         self.data_date_interval = data_date_interval
         self.waste_codes_df = waste_codes_df
+        self.packagings_data = packagings_data
         self.company_siret = company_siret
 
         self.preprocessed_df = None
@@ -381,9 +383,16 @@ class WasteFlowsTableProcessor:
     def _preprocess_data(self) -> None:
         siret = self.company_siret
 
-        dfs_to_concat = [
-            df for df in chain(self.bs_data_dfs.values(), self.transporters_data_df.values()) if df is not None
-        ]
+        dfs_to_concat = []
+        for bs_type, df in chain(self.bs_data_dfs.items(), self.transporters_data_df.items()):
+            if df is None:
+                continue
+
+            if (bs_type == BSFF) and (self.packagings_data is not None):
+                df = df.merge(self.packagings_data, left_on="id", right_on="bsff_id")
+                df = df.rename(columns={"acceptation_weight": "quantity_received"})
+
+            dfs_to_concat.append(df)
 
         if len(dfs_to_concat) == 0:
             self.preprocessed_df = pd.DataFrame()
@@ -1629,7 +1638,7 @@ class TransporterBordereauxStatsProcessor:
         transporters_data_df: Dict[str, pd.DataFrame],  # Handling new multi-modal Trackdéchets feature
         bs_data_dfs: Dict[str, pd.DataFrame],
         data_date_interval: tuple[datetime, datetime],
-        packagings_data_df: pd.DataFrame = None,
+        packagings_data_df: pd.DataFrame | None = None,
     ) -> None:
         self.company_siret = company_siret
         self.transporters_data_df = transporters_data_df
@@ -1659,11 +1668,12 @@ class TransporterBordereauxStatsProcessor:
 
             if len(df) > 0:
                 quantity_col = "quantity_received"
+                id_col = "form_id" if bs_type in [BSDD, BSDD_NON_DANGEROUS] else "id"
                 if (bs_type == BSFF) and (self.packagings_data_df is not None):
                     df = df.merge(self.packagings_data_df, left_on="id", right_on="bsff_id")
                     quantity_col = "acceptation_weight"
+                    id_col = "bsff_id"
 
-                id_col = "form_id" if bs_type in [BSDD, BSDD_NON_DANGEROUS] else "id"
                 num_bordereaux = df[id_col].nunique()
                 quantity = df[quantity_col].sum()
                 self.transported_bordereaux_stats[bs_type]["count"] = num_bordereaux

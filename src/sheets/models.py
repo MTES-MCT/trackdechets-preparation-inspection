@@ -149,6 +149,9 @@ class ComputedInspectionData(models.Model):
     quantities_transported_stats_graph = models.TextField(blank=True)
     transporter_bordereaux_stats_data = models.JSONField(default=dict)
 
+    followed_with_pnttd_data = models.JSONField(default=dict)
+    gistrid_stats_data = models.JSONField(default=dict)
+
     pdf = models.TextField(blank=True)
 
     created_by = models.EmailField(verbose_name=_("Created by"), blank=True)

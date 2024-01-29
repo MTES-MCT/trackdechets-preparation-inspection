@@ -19,7 +19,12 @@ select
     waste_details_pop as waste_pop,
     waste_details_is_dangerous as is_dangerous,
     emitter_work_site_name as worksite_name,
-    emitter_work_site_address as worksite_address
+    emitter_work_site_address as worksite_address,
+    next_destination_company_siret,
+    next_destination_company_name,
+    next_destination_company_country,
+    next_destination_company_vat_number,
+    next_destination_processing_operation
  from
     trusted_zone_trackdechets.bsdd
 where
@@ -54,7 +59,12 @@ select
     waste_details_pop as waste_pop,
     waste_details_is_dangerous as is_dangerous,
     emitter_work_site_name as worksite_name,
-    emitter_work_site_address as worksite_address
+    emitter_work_site_address as worksite_address,
+    next_destination_company_siret,
+    next_destination_company_name,
+    next_destination_company_country,
+    next_destination_company_vat_number,
+    next_destination_processing_operation
  from
     trusted_zone_trackdechets.bsdd
 where
@@ -392,4 +402,27 @@ from
     trusted_zone_trackdechets.company c
 where
     substring(c.siret for 9) = substring(:siret for 9)
+"""
+
+sql_get_gistrid_data_data = """
+select
+    n.numero_notification,
+    n.type_dossier,
+    n.numero_gistrid_notifiant,
+    n.siret_notifiant,
+    n.nom_notifiant,
+    n.pays_notifiant,
+    n.numero_gistrid_installation_traitement,
+    n.siret_installation_traitement,
+    n.nom_installation_traitement,
+    n.pays_installation_traitement,
+    n.somme_quantites_recues,
+    n.nombre_transferts_receptionnes,
+    n.date_autorisee_debut_transferts,
+    n.date_autorisee_fin_transferts,
+    code_d_r,
+    code_ced
+from
+    refined_zone_gistrid.notifications_enriched n
+where (siret_notifiant = :siret or siret_installation_traitement = :siret)
 """

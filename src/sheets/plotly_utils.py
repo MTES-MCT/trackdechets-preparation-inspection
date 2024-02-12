@@ -8,4 +8,4 @@ def data_to_bs64_plot(json_plotly):
     if not json_plotly:
         return ""
     fig = from_json(json_plotly)
-    return b64encode(fig.to_image(format="png")).decode("ascii")
+    return b64encode(fig.to_image(format="png", width=1280, height=720)).decode("ascii")

@@ -1,35 +1,37 @@
-<h3 class="cell__title">Rupture de traçabilité</h3>
-{% if traceability_interruptions_data %}
-    <p>
-        L'établissement a indiqué sur les BSDs être autorisé à la rupture de traçabilité, par arrêté préfectoral pour
-        les déchets suivants:
-    </p>
-    <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
-        <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
-            <thead>
-                <tr>
-                    <th scope="col">Code déchet</th>
-                    <th scope="col">Description</th>
-                    <th scope="col">Nombre de bordereaux</th>
-                    <th scope="col">Quantité totale</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in traceability_interruptions_data %}
+<div class="cell cell--bordered cell--full">
+    <h3>Rupture de traçabilité</h3>
+    {% if traceability_interruptions_data %}
+        <p>
+            L'établissement a indiqué sur les BSDs être autorisé à la rupture de traçabilité, par arrêté préfectoral pour
+            les déchets suivants:
+        </p>
+        <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+            <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+                <thead>
                     <tr>
-                        <td>{{ row.waste_code }}</td>
-                        <td>{{ row.description }}</td>
-                        <td class="td--right">
-                            <span class="fr-text--bold">{{ row.count }}</span>
-                        </td>
-                        <td class="td--right">
-                            <span class="fr-text--bold">{{ row.quantity }}</span> tonnes
-                        </td>
+                        <th scope="col">Code déchet</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Nombre de bordereaux</th>
+                        <th scope="col">Quantité totale</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-{% else %}
-    <p>Aucune donnée</p>
-{% endif %}
+                </thead>
+                <tbody>
+                    {% for row in traceability_interruptions_data %}
+                        <tr>
+                            <td>{{ row.waste_code }}</td>
+                            <td>{{ row.description }}</td>
+                            <td class="td--right">
+                                <span class="fr-text--bold">{{ row.count }}</span>
+                            </td>
+                            <td class="td--right">
+                                <span class="fr-text--bold">{{ row.quantity }}</span> tonnes
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>Aucune donnée</p>
+    {% endif %}
+</div>

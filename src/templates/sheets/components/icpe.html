@@ -1,27 +1,29 @@
-<h3>Listes des rubriques des installations associées à l'établissement</h3>
-{% if  icpe_data %}
-    <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
-        <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
-            <thead>
-                <tr>
-                    <th scope="col">Rubrique</th>
-                    <th scope="col">Nature</th>
-                    <th scope="col">Quantité autorisée</th>
-                    <th scope="col">Unité</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in icpe_data %}
+<div class="cell cell--bordered cell--full">
+    <h3>Listes des rubriques des installations associées à l'établissement</h3>
+    {% if  icpe_data %}
+        <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+            <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+                <thead>
                     <tr>
-                        <td>{{ row.rubrique_alinea }}</td>
-                        <td>{{ row.nature|default:"N/A" }}</td>
-                        <td>{{ row.quantite|default:"N/A" }}</td>
-                        <td>{{ row.unite|default:"N/A" }}</td>
+                        <th scope="col">Rubrique</th>
+                        <th scope="col">Nature</th>
+                        <th scope="col">Quantité autorisée</th>
+                        <th scope="col">Unité</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-{% else %}
-    <p>Aucune donnée</p>
-{% endif %}
+                </thead>
+                <tbody>
+                    {% for row in icpe_data %}
+                        <tr>
+                            <td>{{ row.rubrique_alinea }}</td>
+                            <td>{{ row.nature|default:"N/A" }}</td>
+                            <td>{{ row.quantite|default:"N/A" }}</td>
+                            <td>{{ row.unite|default:"N/A" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>Aucune donnée</p>
+    {% endif %}
+</div>

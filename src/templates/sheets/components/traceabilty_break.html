@@ -12,7 +12,7 @@
                         <th scope="col">Code déchet</th>
                         <th scope="col">Description</th>
                         <th scope="col">Nombre de bordereaux</th>
-                        <th scope="col">Quantité totale</th>
+                        <th scope="col">Quantité totale (tonnes)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -24,7 +24,7 @@
                                 <span class="fr-text--bold">{{ row.count }}</span>
                             </td>
                             <td class="td--right">
-                                <span class="fr-text--bold">{{ row.quantity }}</span> tonnes
+                                <span class="fr-text--bold">{{ row.quantity }}</span>t
                             </td>
                         </tr>
                     {% endfor %}

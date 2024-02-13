@@ -113,7 +113,7 @@ class BsdStatsProcessor:
 
         bs_revised_data = self.bs_revised_data
 
-        # If all raw dataframes are empty, then output data will be empty
+        # If all raw DataFrames are empty, then output data will be empty
         if (len(bs_emitted_data) == len(bs_received_data) == 0) and (
             (bs_revised_data is None) or (len(bs_revised_data) == 0)
         ):
@@ -358,8 +358,16 @@ class WasteFlowsTableProcessor:
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bs_data_dfs: dict
         Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
+    transporters_data_df : Dict[str, pd.DataFrame]
+        Dictionary that contains DataFrames related to transporters. Each key in the "Bordereau type" (BSDD, BSDA...)
+        and the corresponding value is a pandas DataFrame containing information about the transported waste.
+    data_date_interval : tuple[datetime, datetime]
+        Represents the date range for which the data is being processed.
+        It consists of two `datetime` objects, the start date and the end date.
     waste_codes_df: DataFrame
         DataFrame containing list of waste codes with their descriptions. It is the waste nomenclature.
+    packagings_data : pd.DataFrame | None
+        Optional parameter that represents a DataFrame containing data about BSFF packagings.
     """
 
     def __init__(
@@ -473,6 +481,9 @@ class BsdCanceledTableProcessor:
         Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
     bs_revised_data: DataFrame
         Dict with key being the 'bordereau' type and values the DataFrame containing the associated revision data.
+    data_date_interval : tuple[datetime, datetime]
+        Represents the date range for which the data is being processed.
+        It consists of two `datetime` objects, the start date and the end date.
     """
 
     def __init__(
@@ -563,6 +574,9 @@ class SameEmitterRecipientTableProcessor:
     ----------
     bs_data_dfs: dict
         Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
+    data_date_interval : tuple[datetime, datetime]
+        Represents the date range for which the data is being processed.
+        It consists of two `datetime` objects, the start date and the end date.
     """
 
     def __init__(
@@ -636,6 +650,9 @@ class StorageStatsProcessor:
         Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
     waste_codes_df: DataFrame
         DataFrame containing list of waste codes with their descriptions.
+    data_date_interval : tuple[datetime, datetime]
+        Represents the date range for which the data is being processed.
+        It consists of two `datetime` objects, the start date and the end date.
     """
 
     def __init__(
@@ -790,6 +807,11 @@ class TraceabilityInterruptionsProcessor:
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bsdd_data: DataFrame
         DataFrame containing BSDD data.
+    waste_codes_df: DataFrame
+        DataFrame containing list of waste codes with their descriptions.
+    data_date_interval : tuple[datetime, datetime]
+        Represents the date range for which the data is being processed.
+        It consists of two `datetime` objects, the start date and the end date.
     """
 
     def __init__(
@@ -877,6 +899,11 @@ class WasteIsDangerousStatementsProcessor:
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bsdd_data: DataFrame
         DataFrame containing bsdd data.
+    waste_codes_df: DataFrame
+        DataFrame containing list of waste codes with their descriptions.
+    data_date_interval : tuple[datetime, datetime]
+        Represents the date range for which the data is being processed.
+        It consists of two `datetime` objects, the start date and the end date.
     """
 
     def __init__(
@@ -964,7 +991,7 @@ class ReceiptAgrementsProcessor:
         there might be more).
     """
 
-    def __init__(self, receipts_agreements_data: Dict[str, str]) -> None:
+    def __init__(self, receipts_agreements_data: Dict[str, pd.DataFrame]) -> None:
         self.receipts_agreements_data = receipts_agreements_data
 
     def _check_data_empty(self) -> bool:
@@ -1005,8 +1032,9 @@ class PrivateIndividualsCollectionsTableProcessor:
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bsda_data_df: DataFrame
         Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
-
-
+    data_date_interval : tuple[datetime, datetime]
+        Represents the date range for which the data is being processed.
+        It consists of two `datetime` objects, the start date and the end date.
     """
 
     def __init__(
@@ -1080,29 +1108,36 @@ class QuantityOutliersTableProcessor:
     ----------
     bs_data_dfs: dict
         Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
-
-
+    transporters_data_df : Dict[str, pd.DataFrame]
+        Dictionary that contains DataFrames related to transporters. Each key in the "Bordereau type" (BSDD, BSDA...)
+        and the corresponding value is a pandas DataFrame containing information about the transported waste.
+    data_date_interval : tuple[datetime, datetime]
+        Represents the date range for which the data is being processed.
+        It consists of two `datetime` objects, the start date and the end date.
+    packagings_data_df : pd.DataFrame | None
+        Optional parameter that represents a DataFrame containing data about BSFF packagings.
     """
 
     def __init__(
         self,
         bs_data_dfs: Dict[str, pd.DataFrame],
         transporters_data_df: Dict[str, pd.DataFrame],
-        packagings_data_df: pd.DataFrame = None,
+        data_date_interval: tuple[datetime, datetime],
+        packagings_data_df: pd.DataFrame | None = None,
     ) -> None:
         self.bs_data_dfs = bs_data_dfs
         self.transporters_data_df = transporters_data_df
-
         self.packagings_data_df = packagings_data_df
+        self.data_date_interval = data_date_interval
 
         self.preprocessed_data = None
 
-    @staticmethod
     def get_quantity_outliers(
+        self,
         df: pd.DataFrame,
         bs_type: str,
-        transporters_df: pd.DataFrame,
-        packagings_data_df: pd.DataFrame,
+        transporters_df: pd.DataFrame | None,
+        packagings_data_df: pd.DataFrame | None,
     ) -> pd.DataFrame:
         """Get lines from 'bordereau' DataFrame with inconsistent received quantity.
         The rules to identify outliers in received quantity are business rules and may be tweaked in the future.
@@ -1122,23 +1157,38 @@ class QuantityOutliersTableProcessor:
         df_quantity_outliers = pd.DataFrame()
         if bs_type in [BSDD, BSDD_NON_DANGEROUS] and (transporters_df is not None):
             df_with_transport = df.merge(
-                transporters_df[["form_id", "transporter_transport_mode"]],
+                transporters_df[["form_id", "transporter_transport_mode", "sent_at"]],
                 left_on="id",
                 right_on="form_id",
                 how="left",
                 validate="one_to_many",
+                suffixes=("", "_transport"),
             )
 
             df_quantity_outliers = df_with_transport[
                 (df_with_transport["quantity_received"] > 40)
                 & (df_with_transport["transporter_transport_mode"] == "ROAD")
+                & (
+                    df_with_transport["sent_at_transport"].between(*self.data_date_interval)
+                    | df_with_transport["sent_at"].between(*self.data_date_interval)
+                )
             ].drop_duplicates("id")
         elif bs_type == BSDA:
-            df_quantity_outliers = df[(df["quantity_received"] > 40) & (df["transporter_transport_mode"] == "ROAD")]
+            df_quantity_outliers = df[
+                (df["quantity_received"] > 40)
+                & (df["transporter_transport_mode"] == "ROAD")
+                & (df["sent_at"].between(*self.data_date_interval))
+            ]
         elif bs_type == BSDASRI:
-            df_quantity_outliers = df[(df["quantity_received"] > 20) & (df["transporter_transport_mode"] == "ROAD")]
+            df_quantity_outliers = df[
+                (df["quantity_received"] > 20)
+                & (df["transporter_transport_mode"] == "ROAD")
+                & (df["sent_at"].between(*self.data_date_interval))
+            ]
         elif bs_type == BSVHU:
-            df_quantity_outliers = df[(df["quantity_received"] > 40)]
+            df_quantity_outliers = df[
+                (df["quantity_received"] > 40) & (df["sent_at"].between(*self.data_date_interval))
+            ]
         elif bs_type == BSFF:
             if packagings_data_df is not None:
                 df = df.merge(
@@ -1157,7 +1207,9 @@ class QuantityOutliersTableProcessor:
                     received_at=pd.NamedAgg(column="received_at", aggfunc="max"),
                     quantity_received=pd.NamedAgg(column="acceptation_weight", aggfunc="sum"),
                 )
-                df_quantity_outliers = df[df["quantity_received"] > 20]
+                df_quantity_outliers = df[
+                    (df["quantity_received"] > 20) & (df["sent_at"].between(*self.data_date_interval))
+                ]
 
         df_quantity_outliers["bs_type"] = bs_type if bs_type != BSDD_NON_DANGEROUS else "bsdd"
         return df_quantity_outliers
@@ -1227,15 +1279,20 @@ class WasteProcessingWithoutICPEProcessor:
         Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
     icpe_data: pd.DataFrame
         DataFrame containing the list of authorized 'rubriques'.
+    data_date_interval : tuple[datetime, datetime]
+        Represents the date range for which the data is being processed.
+        It consists of two `datetime` objects, the start date and the end date.
+    packagings_data_df : pd.DataFrame | None
+        Optional parameter that represents a DataFrame containing data about BSFF packagings.
     """
 
     def __init__(
         self,
         company_siret: str,
         bs_data_dfs: Dict[str, pd.DataFrame],
-        icpe_data: pd.DataFrame,
+        icpe_data: pd.DataFrame | None,
         data_date_interval: tuple[datetime, datetime],
-        packagings_data_df: pd.DataFrame = None,
+        packagings_data_df: pd.DataFrame | None = None,
     ) -> None:
         self.siret = company_siret
         self.bs_data_dfs = bs_data_dfs
@@ -1630,6 +1687,8 @@ class TransporterBordereauxStatsProcessor:
         Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
     data_date_interval: tuple
         Date interval to filter data.
+    packagings_data_df : pd.DataFrame | None
+        Optional parameter that represents a DataFrame containing data about BSFF packagings.
     """
 
     def __init__(
@@ -1822,7 +1881,7 @@ class GistridStatsProcessor:
         DataFrame containing Gistrid notifications.
     """
 
-    def __init__(self, company_siret: str, gistrid_data_df: pd.DataFrame) -> None:
+    def __init__(self, company_siret: str, gistrid_data_df: pd.DataFrame | None) -> None:
         self.company_siret = company_siret
         self.gistrid_data_df = gistrid_data_df
 

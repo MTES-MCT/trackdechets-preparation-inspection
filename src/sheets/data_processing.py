@@ -371,7 +371,11 @@ class SheetProcessor:
         )
         self.computed.private_individuals_collections_data = private_individuals_collections_table.build()
 
-        quantity_outliers_table = QuantityOutliersTableProcessor(self.bs_dfs, self.transporter_data_dfs)
+        quantity_outliers_table = QuantityOutliersTableProcessor(
+            self.bs_dfs,
+            self.transporter_data_dfs,
+            data_date_interval,
+        )
         self.computed.quantity_outliers_data = quantity_outliers_table.build()
 
         waste_processing_without_icpe_data = WasteProcessingWithoutICPEProcessor(

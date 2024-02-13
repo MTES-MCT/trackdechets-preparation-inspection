@@ -38,7 +38,7 @@ class BsdQuantitiesGraph:
         bs_data: pd.DataFrame,
         data_date_interval: tuple[datetime, datetime],
         quantity_variables_names: list[str] = ["quantity_received"],
-        packagings_data: pd.DataFrame = None,
+        packagings_data: pd.DataFrame | None = None,
     ):
         self.bs_data = bs_data
         self.packagings_data = packagings_data
@@ -270,8 +270,10 @@ class BsdTrackedAndRevisedProcessor:
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bs_data: DataFrame
         DataFrame containing data for a given 'bordereau' type.
+    data_date_interval: tuple
+        Date interval to filter data.
     bs_revised_data: DataFrame
-        DataFrame containing list of revised 'bordereaux' for a given 'bordereau' type.
+        Optional DataFrame containing list of revised 'bordereaux' for a given 'bordereau' type.
     """
 
     def __init__(
@@ -279,7 +281,7 @@ class BsdTrackedAndRevisedProcessor:
         company_siret: str,
         bs_data: pd.DataFrame,
         data_date_interval: tuple[datetime, datetime],
-        bs_revised_data: pd.DataFrame = None,
+        bs_revised_data: pd.DataFrame | None = None,
     ) -> None:
         self.company_siret = company_siret
         self.bs_data = bs_data
@@ -316,7 +318,10 @@ class BsdTrackedAndRevisedProcessor:
         """Preprocess raw revised 'bordereaux' data to prepare it for plotting."""
         bs_revised_data = self.bs_revised_data
 
-        bs_revised_data = bs_revised_data[bs_revised_data["bs_id"].isin(self.bs_data["id"])]
+        bs_revised_data = bs_revised_data[
+            bs_revised_data["bs_id"].isin(self.bs_data["id"])
+            & (bs_revised_data["created_at"].between(*self.data_date_interval))
+        ]
         bs_revised_by_month = bs_revised_data.groupby(pd.Grouper(key="created_at", freq="1M")).bs_id.nunique()
 
         self.bs_revised_by_month = bs_revised_by_month
@@ -463,6 +468,8 @@ class WasteOriginProcessor:
         Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
     departements_regions_df: DataFrame
         Static data about regions and départements with their codes.
+    data_date_interval: tuple
+        Date interval to filter data.
     """
 
     def __init__(
@@ -610,6 +617,8 @@ class WasteOriginsMapProcessor:
         Static data about regions and départements with their codes.
     regions_geodata: GeoDataFrame
         GeoDataFrame including regions geometries.
+    data_date_interval: tuple
+        Date interval to filter data.
     """
 
     def __init__(
@@ -1389,6 +1398,8 @@ class TransportedQuantitiesGraphProcessor:
         Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
     data_date_interval: tuple
         Date interval to filter data.
+    packagings_data_df : pd.DataFrame | None
+        Optional parameter that represents a DataFrame containing data about BSFF packagings.
     """
 
     def __init__(
@@ -1397,7 +1408,7 @@ class TransportedQuantitiesGraphProcessor:
         transporters_data_df: Dict[str, pd.DataFrame],  # Handling new multi-modal Trackdéchets feature
         bs_data_dfs: Dict[str, pd.DataFrame],
         data_date_interval: tuple[datetime, datetime],
-        packagings_data_df: pd.DataFrame = None,
+        packagings_data_df: pd.DataFrame | None = None,
     ) -> None:
         self.company_siret = company_siret
         self.transporters_data_df = transporters_data_df

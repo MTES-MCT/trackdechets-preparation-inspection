@@ -18,6 +18,7 @@ from .queries import (
     sql_bsvhu_query_str,
     sql_company_query_str,
     sql_get_broker_receipt_id_data,
+    sql_get_gistrid_data_data,
     sql_get_icpe_data,
     sql_get_icpe_item_data,
     sql_get_linked_companies_data,
@@ -26,7 +27,6 @@ from .queries import (
     sql_get_vhu_agrement_data,
     sql_revised_bsda_query_str,
     sql_revised_bsdd_query_str,
-    sql_get_gistrid_data_data,
 )
 
 wh_engine = create_engine(settings.WAREHOUSE_URL, pool_pre_ping=True)

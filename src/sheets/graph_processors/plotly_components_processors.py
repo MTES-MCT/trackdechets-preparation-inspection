@@ -1,7 +1,7 @@
-from itertools import chain
 import json
 import locale
 from datetime import datetime
+from itertools import chain
 from typing import Dict
 
 import geopandas as gpd

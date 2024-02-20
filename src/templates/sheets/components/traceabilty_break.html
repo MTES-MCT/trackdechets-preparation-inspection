@@ -1,4 +1,4 @@
-<div class="cell cell--bordered cell--full">
+<div {% if graph_context == "web" %}class="cell cell--bordered cell--full"{% endif %}>
     <h3>Rupture de traçabilité</h3>
     {% if traceability_interruptions_data %}
         <p>

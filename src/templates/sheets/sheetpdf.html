@@ -50,7 +50,7 @@
             </div>
             <div class="row">
                 {#  linked companies table #}
-                <div class="cell cell--bordered cell--full">{% render_linked_companies_data sheet %}</div>
+                <div>{% render_linked_companies_data sheet graph_context="pdf" %}</div>
                 {#  end linked companies table #}
             </div>
             <h2 class="section-title">Données des bordereaux de suivi dématérialisés issues de Trackdéchets</h2>
@@ -276,7 +276,7 @@
                 </div>
                 {% if sheet.bs_processed_without_icpe_authorization %}
                     <div class="row">
-                        <div class="cell cell--bordered cell--full">
+                        <div>
                             <div class="fr-alert fr-alert--warning">
                                 <h3 class="fr-alert__title">Attention : traitements de déchets sans rubriques correspondantes</h3>
                                 <p>L'établissement a traité des déchets dangereux mais les données ICPE sont manquantes.</p>
@@ -297,7 +297,7 @@
                     Pour disposer de ces données, merci de vous assurer que le SIRET de l'établissement est complété dans GUN et qu'il est bien à jour (à corroborer avec l'exploitant).
                 </p>
                 {% if sheet.bs_processed_without_icpe_authorization %}
-                    <div class="cell cell--bordered cell--full">
+                    <div>
                         <div class="fr-alert fr-alert--warning">
                             <h3 class="fr-alert__title">Attention : traitements de déchets sans rubriques correspondantes</h3>
                             <p>L'établissement a traité des déchets dangereux mais les données ICPE sont manquantes.</p>

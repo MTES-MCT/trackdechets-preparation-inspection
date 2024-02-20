@@ -1,5 +1,5 @@
 {% if followed_with_pnttd_data %}
-    <div class ="cell cell--bordered cell--full">
+    <div {% if graph_context == "web" %}class="cell cell--bordered cell--full"{% endif %}>
         <h3>Données Trackdéchets</h3>
         <p>Liste des déchets dont la destination ultérieure prévue est à l'étranger :</p>
         <div {% if graph_context == "web" %}class="fr-table "{% endif %}>

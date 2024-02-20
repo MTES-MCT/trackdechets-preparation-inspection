@@ -1,4 +1,4 @@
-<div class="cell cell--bordered cell--full">
+<div {% if graph_context == "web" %}class="cell cell--bordered cell--full"{% endif %}>
     <h3>Listes des rubriques des installations associées à l'établissement</h3>
     {% if  icpe_data %}
         <div {% if graph_context == "web" %}class="fr-table "{% endif %}>

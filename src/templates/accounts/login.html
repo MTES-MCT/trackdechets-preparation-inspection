@@ -6,6 +6,7 @@
     <div class="fr-container">
         <div class="fr-grid-row fr-grid-row--center fr-mt-4v">
             <div class="fr-col-5">
+                {% include "content/_rename_banner.html" %}
                 <form action="" method="post">
                     {% csrf_token %}
                     <h2 class="text-center">{{ _("Connexion ") }}</h2>

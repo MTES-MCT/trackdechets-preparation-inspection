@@ -1,74 +1,76 @@
 {% if gistrid_stats_data %}
-    <h3>Données issues de GISTRID</h3>
-    <p>Cette établissement porte le numéro GISTRID {{ gistrid_stats_data.numero_gistrid }}.</p>
-    {% if gistrid_stats_data.import %}
-        <h4>Importations</h4>
-        <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
-            <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
-                <thead>
-                    <tr>
-                        <th scope="col">Annee de fin autorisée des échanges</th>
-                        <th scope="col">Numero GISTRID de l'établissement d'origine</th>
-                        <th scope="col">Nom de l'établissement d'origine</th>
-                        <th scope="col">Pays de l'établissement d'origine</th>
-                        <th scope="col">Codes déchets</th>
-                        <th scope="col">Opérations effectuées effectués</th>
-                        <th scope="col">Nombre de transferts effectués</th>
-                        <th scope="col">Quantitées reçues&nbsp;(t)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in gistrid_stats_data.import %}
+    <div {% if graph_context == "web" %}class="cell cell--bordered cell--full"{% endif %}>
+        <h3>Données issues de GISTRID</h3>
+        <p>Cette établissement porte le numéro GISTRID {{ gistrid_stats_data.numero_gistrid }}.</p>
+        {% if gistrid_stats_data.import %}
+            <h4>Importations</h4>
+            <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+                <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+                    <thead>
                         <tr>
-                            <td>{{ row.annee_fin_autorisation }}</td>
-                            <td>{{ row.numero_gistrid_notifiant }}</td>
-                            <td>{{ row.nom_origine }}</td>
-                            <td>{{ row.pays_origine }}</td>
-                            <td>{{ row.codes_dechets }}</td>
-                            <td>{{ row.codes_operations }}</td>
-                            <td>{{ row.nombre_transferts }}</td>
-                            <td class="td--right">
-                                <b>{{ row.quantites_recues }}</b>
-                            </td>
+                            <th scope="col">Annee de fin autorisée des échanges</th>
+                            <th scope="col">Numero GISTRID de l'établissement d'origine</th>
+                            <th scope="col">Nom de l'établissement d'origine</th>
+                            <th scope="col">Pays de l'établissement d'origine</th>
+                            <th scope="col">Codes déchets</th>
+                            <th scope="col">Opérations effectuées effectués</th>
+                            <th scope="col">Nombre de transferts effectués</th>
+                            <th scope="col">Quantitées reçues&nbsp;(t)</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% endif %}
-    {% if gistrid_stats_data.export %}
-        <h4>Exportations</h4>
-        <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
-            <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
-                <thead>
-                    <tr>
-                        <th scope="col">Annee de fin autorisée des échanges</th>
-                        <th scope="col">Numero GISTRID de l'établissement destinataire</th>
-                        <th scope="col">Nom de l'établissement destinataire</th>
-                        <th scope="col">Pays de l'établissement destinataire</th>
-                        <th scope="col">Codes déchets</th>
-                        <th scope="col">Opérations effectuées effectués</th>
-                        <th scope="col">Nombre de transferts effectués</th>
-                        <th scope="col">Quantitées reçues&nbsp;(t)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in gistrid_stats_data.export %}
+                    </thead>
+                    <tbody>
+                        {% for row in gistrid_stats_data.import %}
+                            <tr>
+                                <td>{{ row.annee_fin_autorisation }}</td>
+                                <td>{{ row.numero_gistrid_notifiant }}</td>
+                                <td>{{ row.nom_origine }}</td>
+                                <td>{{ row.pays_origine }}</td>
+                                <td>{{ row.codes_dechets }}</td>
+                                <td>{{ row.codes_operations }}</td>
+                                <td>{{ row.nombre_transferts }}</td>
+                                <td class="td--right">
+                                    <b>{{ row.quantites_recues }}</b>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+        {% if gistrid_stats_data.export %}
+            <h4>Exportations</h4>
+            <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+                <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+                    <thead>
                         <tr>
-                            <td>{{ row.annee_fin_autorisation }}</td>
-                            <td>{{ row.numero_gistrid_installation_traitement }}</td>
-                            <td>{{ row.nom_destination }}</td>
-                            <td>{{ row.pays_destination }}</td>
-                            <td>{{ row.codes_dechets }}</td>
-                            <td>{{ row.codes_operations }}</td>
-                            <td>{{ row.nombre_transferts }}</td>
-                            <td class="td--right">
-                                <b>{{ row.quantites_recues }}</b>
-                            </td>
+                            <th scope="col">Annee de fin autorisée des échanges</th>
+                            <th scope="col">Numero GISTRID de l'établissement destinataire</th>
+                            <th scope="col">Nom de l'établissement destinataire</th>
+                            <th scope="col">Pays de l'établissement destinataire</th>
+                            <th scope="col">Codes déchets</th>
+                            <th scope="col">Opérations effectuées effectués</th>
+                            <th scope="col">Nombre de transferts effectués</th>
+                            <th scope="col">Quantitées reçues&nbsp;(t)</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% endif %}
+                    </thead>
+                    <tbody>
+                        {% for row in gistrid_stats_data.export %}
+                            <tr>
+                                <td>{{ row.annee_fin_autorisation }}</td>
+                                <td>{{ row.numero_gistrid_installation_traitement }}</td>
+                                <td>{{ row.nom_destination }}</td>
+                                <td>{{ row.pays_destination }}</td>
+                                <td>{{ row.codes_dechets }}</td>
+                                <td>{{ row.codes_operations }}</td>
+                                <td>{{ row.nombre_transferts }}</td>
+                                <td class="td--right">
+                                    <b>{{ row.quantites_recues }}</b>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
 {% endif %}

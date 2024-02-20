@@ -48,6 +48,11 @@
                 </ul>
             </div>
         </div>
+        <div class="row">
+            {#  linked companies table #}
+            <div class="cell cell--bordered cell--full">{% render_linked_companies_data sheet %}</div>
+            {#  linked companies table #}
+        </div>
         <h2 class="section__title" id="bs-section-title">
             Données des bordereaux de suivi dématérialisés issues de Trackdéchets
         </h2>
@@ -273,12 +278,17 @@
                 </div>
             </div>
             {% if sheet.bs_processed_without_icpe_authorization %}
-                <div>
-                    <h3>⚠️ L'établissement a traité des déchets dangereux sans avoir la ou les rubriques ICPE nécessaires.</h3>
-                    {% render_bs_without_icpe_authorization_tables sheet %}
+                <div class="row">
+                    <div class="cell cell--bordered cell--full">
+                        <div class="fr-alert fr-alert--warning">
+                            <h3 class="fr-alert__title">Attention : traitements de déchets sans rubriques correspondantes</h3>
+                            <p>L'établissement a traité des déchets dangereux mais les données ICPE sont manquantes.</p>
+                        </div>
+                        {% render_bs_without_icpe_authorization_tables sheet %}
+                    </div>
                 </div>
             {% endif %}
-            <div>
+            <div class="row">
                 {# Rubriques list #}
                 {% render_icpe sheet %}
                 {# end Rubriques list #}
@@ -290,23 +300,34 @@
                 Pour disposer de ces données, merci de vous assurer que le SIRET de l'établissement est complété dans GUN et qu'il est bien à jour (à corroborer avec l'exploitant).
             </p>
             {% if sheet.bs_processed_without_icpe_authorization %}
-                <div>
-                    <h3>⚠️ L'établissement a traité des déchets dangereux mais les données ICPE sont manquantes.</h3>
+                <div class="cell cell--bordered cell--full">
+                    <div class="fr-alert fr-alert--warning">
+                        <h3 class="fr-alert__title">Attention : traitements de déchets sans rubriques correspondantes</h3>
+                        <p>L'établissement a traité des déchets dangereux mais les données ICPE sont manquantes.</p>
+                    </div>
                     {% render_bs_without_icpe_authorization_tables sheet %}
                 </div>
             {% endif %}
         {% endif %}
-        <div>{% render_traceabilty_break sheet %}</div>
+        <div class="row">
+            {% render_traceabilty_break sheet %}
+        </div>
         {# end ICPE #}
+        {# Transborder section #}
+        <h2 class="section__title">Données relatives aux échanges transfrontaliers</h2>
         {% if sheet.followed_with_pnttd_data or sheet.gistrid_stats_data %}
-            <h2 class="section__title">Données relatives aux échanges transfrontaliers</h2>
             {# followed with pnttd table #}
-            <div>{% render_followed_with_pnttd_table sheet %}</div>
+            <div class="row">{% render_followed_with_pnttd_table sheet %}</div>
             {# end followed with pnttd table #}
             {# start gistrid stats table #}
-            <div>{% render_gistrid_stats_table sheet %}</div>
+            <div class="row">{% render_gistrid_stats_table sheet %}</div>
             {# end gistrid stats table #}
+        {% else %}
+            <div class="no-data">Pas de données à afficher.</div>
         {% endif %}
+        {# end Transborder section #}
+        {# Appendices section #}
+        <h2 class="section__title">Annexes</h2>
         {# bsd canceled table #}
         <div>{% render_bsd_canceled_table sheet %}</div>
         {# end bsd canceled table #}
@@ -319,13 +340,11 @@
         {#  quantity outliers table #}
         <div>{% render_quantity_outliers_table sheet %}</div>
         {# end quantity outliers table #}
-        {#  linked companies table #}
-        <div>{% render_linked_companies_data sheet %}</div>
-        {#  linked companies table #}
         {# input/output #}
         <h2 class="section__title">Liste des déchets entrants, sortants et transportés</h2>
         <div>{% render_waste_flows_table sheet %}</div>
         {# end input/output #}
+        {# end Appendices section #}
     </div>
 {% endblock %}
 {% block scripts %}

@@ -1,33 +1,36 @@
 {% if followed_with_pnttd_data %}
-    <h3>Liste des déchets dont la destination ultérieure prévue est à l'étranger</h3>
-    <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
-        <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
-            <thead>
-                <tr>
-                    <th scope="col">SIRET ou N° de TVA du destinataire</th>
-                    <th scope="col">Nom du destinataire</th>
-                    <th scope="col">Pays du destinataire</th>
-                    <th scope="col">Code déchet</th>
-                    <th scope="col">Description</th>
-                    <th scope="col">Opération réalisée</th>
-                    <th scope="col">Quantité&nbsp;(t)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in followed_with_pnttd_data %}
+    <div {% if graph_context == "web" %}class="cell cell--bordered cell--full"{% endif %}>
+        <h3>Données Trackdéchets</h3>
+        <p>Liste des déchets dont la destination ultérieure prévue est à l'étranger :</p>
+        <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+            <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+                <thead>
                     <tr>
-                        <td>{{ row.foreign_org_id }}</td>
-                        <td>{{ row.destination_name }}</td>
-                        <td>{{ row.destination_country }}</td>
-                        <td>{{ row.waste_code }}</td>
-                        <td>{{ row.description }}</td>
-                        <td>{{ row.next_destination_processing_operation }}</td>
-                        <td class="td--right">
-                            <b>{{ row.quantity }}</b>
-                        </td>
+                        <th scope="col">SIRET ou N° de TVA du destinataire</th>
+                        <th scope="col">Nom du destinataire</th>
+                        <th scope="col">Pays du destinataire</th>
+                        <th scope="col">Code déchet</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Opération réalisée</th>
+                        <th scope="col">Quantité&nbsp;(t)</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for row in followed_with_pnttd_data %}
+                        <tr>
+                            <td>{{ row.foreign_org_id }}</td>
+                            <td>{{ row.destination_name }}</td>
+                            <td>{{ row.destination_country }}</td>
+                            <td>{{ row.waste_code }}</td>
+                            <td>{{ row.description }}</td>
+                            <td>{{ row.next_destination_processing_operation }}</td>
+                            <td class="td--right">
+                                <b>{{ row.quantity }}</b>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 {% endif %}

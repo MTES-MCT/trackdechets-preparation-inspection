@@ -5,6 +5,12 @@ Les changements importants de Trackdéchets préparation inspection sont documen
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 et le projet suit un schéma de versioning inspiré de [Calendar Versioning](https://calver.org/).
 
+## 20/02/2024
+
+- Réorganisation de la mise en page ;
+- Le filtre de date sur les données est maintenant plus précis ;
+- La Fiche Inspection est renommée en Fiche Établissement.
+
 ## 29/01/2024
 
 - Ajout des données sur le transport transfrontalier de déchets

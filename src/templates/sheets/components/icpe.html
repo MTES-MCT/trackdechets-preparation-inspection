@@ -1,5 +1,6 @@
 <div {% if graph_context == "web" %}class="cell cell--bordered cell--full"{% endif %}>
     <h3>Listes des rubriques des installations associées à l'établissement</h3>
+    <p class="fr-tag fr-tag--sm fr-icon-info-fill fr-tag--icon-left">Source : GUN/Géorisques</p>
     {% if  icpe_data %}
         <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
             <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>

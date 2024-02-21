@@ -1,7 +1,5 @@
 {% if same_emitter_recipient_data %}
-    <h2 class="section__title">
-        Liste des bordereaux pour lesquels l'établissement s'est positionné en tant qu'émetteur et destinataire
-    </h2>
+    <h3>Liste des bordereaux pour lesquels l'établissement s'est positionné en tant qu'émetteur et destinataire</h3>
     <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
         <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
             <thead>

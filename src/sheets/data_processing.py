@@ -11,11 +11,12 @@ from .data_extract import (
 )
 from .database import (
     build_bsda_query,
+    build_bsda_transporter_query,
     build_bsdasri_query,
     build_bsdd_non_dangerous_query,
-    build_bsdd_non_dangerous_transporter_query_str,
+    build_bsdd_non_dangerous_transporter_query,
     build_bsdd_query,
-    build_bsdd_transporter_query_str,
+    build_bsdd_transporter_query,
     build_bsff_packagings_query,
     build_bsff_query,
     build_bsvhu_query,
@@ -112,18 +113,19 @@ bsds_config = [
         "bsd_type": BSDD,
         "bs_data": build_bsdd_query,
         "bs_revised_data": build_revised_bsdd_query,
-        "bs_transporter_data": build_bsdd_transporter_query_str,
+        "bs_transporter_data": build_bsdd_transporter_query,
     },
     {
         "bsd_type": BSDD_NON_DANGEROUS,
         "bs_data": build_bsdd_non_dangerous_query,
         "bs_revised_data": build_revised_bsdd_query,
-        "bs_transporter_data": build_bsdd_non_dangerous_transporter_query_str,
+        "bs_transporter_data": build_bsdd_non_dangerous_transporter_query,
     },
     {
         "bsd_type": BSDA,
         "bs_data": build_bsda_query,
         "bs_revised_data": build_revised_bsda_query,
+        "bs_transporter_data": build_bsda_transporter_query,
     },
     {"bsd_type": BSDASRI, "bs_data": build_bsdasri_query},
     {
@@ -254,8 +256,6 @@ class SheetProcessor:
             # compute and store df in a dict
             df = bsd_config["bs_data"](
                 siret=self.computed.org_id,
-                data_start_date=self.data_start_date,
-                data_end_date=self.data_end_date,
             )
             self.bs_dfs[bsd_type] = df
 
@@ -263,8 +263,6 @@ class SheetProcessor:
             if bs_revised_data:
                 revised_df = bs_revised_data(
                     company_id=self.company_id,
-                    data_start_date=self.data_start_date,
-                    data_end_date=self.data_end_date,
                 )
                 if len(revised_df) > 0:
                     self.revised_bs_dfs[bsd_type] = revised_df
@@ -273,8 +271,6 @@ class SheetProcessor:
             if bs_transporter_data:
                 transporter_data_df = bs_transporter_data(
                     siret=self.computed.org_id,
-                    data_start_date=self.data_start_date,
-                    data_end_date=self.data_end_date,
                 )
                 if len(transporter_data_df) > 0:
                     self.transporter_data_dfs[bsd_type] = transporter_data_df
@@ -282,8 +278,6 @@ class SheetProcessor:
             if bsd_type == BSFF:
                 bsff_packagings_data = bsd_config.get("packagings_data")(
                     siret=self.computed.org_id,
-                    data_start_date=self.data_start_date,
-                    data_end_date=self.data_end_date,
                 )
                 if len(bsff_packagings_data) > 0:
                     self.bsff_packagings_df = bsff_packagings_data
@@ -400,7 +394,7 @@ class SheetProcessor:
         transporter_bordereaux_graph = TransporterBordereauxGraphProcessor(
             company_siret=self.siret,
             transporters_data_df=self.transporter_data_dfs,
-            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k not in [BSDD, BSDD_NON_DANGEROUS]},
+            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k not in [BSDD, BSDD_NON_DANGEROUS, BSDA]},
             data_date_interval=data_date_interval,
         )
         self.computed.transporter_bordereaux_stats_graph_data = transporter_bordereaux_graph.build()
@@ -408,7 +402,7 @@ class SheetProcessor:
         quantities_transported_graph = TransportedQuantitiesGraphProcessor(
             company_siret=self.siret,
             transporters_data_df=self.transporter_data_dfs,
-            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k not in [BSDD, BSDD_NON_DANGEROUS]},
+            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k not in [BSDD, BSDD_NON_DANGEROUS, BSDA]},
             data_date_interval=data_date_interval,
             packagings_data_df=self.bsff_packagings_df,
         )
@@ -417,7 +411,7 @@ class SheetProcessor:
         transporter_bordereaux_stats = TransporterBordereauxStatsProcessor(
             company_siret=self.siret,
             transporters_data_df=self.transporter_data_dfs,
-            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k not in [BSDD, BSDD_NON_DANGEROUS]},
+            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k not in [BSDD, BSDD_NON_DANGEROUS, BSDA]},
             data_date_interval=data_date_interval,
             packagings_data_df=self.bsff_packagings_df,
         )

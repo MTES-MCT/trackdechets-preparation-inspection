@@ -297,9 +297,12 @@ class BsdStatsProcessor:
 
     def _preprocess_data(self) -> None:
         bs_data = self.bs_data
+
+        # Handle the case of BSDA having transported date in separate table, to avoid use transporter data
+        sent_at_key = "sent_at" if ("sent_at" in bs_data.columns) else "transporter_transport_signature_date"
         bs_emitted_data = bs_data[
             (bs_data["emitter_company_siret"] == self.company_siret)
-            & bs_data["sent_at"].between(*self.data_date_interval)
+            & bs_data[sent_at_key].between(*self.data_date_interval)
         ]
         bs_received_data = bs_data[
             (bs_data["recipient_company_siret"] == self.company_siret)
@@ -590,7 +593,14 @@ class SameEmitterRecipientTableProcessor:
         self.preprocessed_df = pd.DataFrame()
 
     def _preprocess_data(self) -> None:
-        dfs_to_process = [df for bs_type, df in self.bs_data_dfs.items() if bs_type in ["bsdd", "bsda"]]
+        # Handle the case of BSDA having transported date in separate table, to avoid use transporter data
+        dfs_to_process = []
+        for bs_type, df in self.bs_data_dfs.items():
+            if bs_type in [BSDD, BSDD_NON_DANGEROUS]:
+                dfs_to_process.append(df)
+            elif bs_type == BSDA:
+                df = df.rename(columns={"transporter_transport_signature_date": "sent_at"})
+                dfs_to_process.append(df)
 
         columns_to_take = [
             "id",
@@ -1060,7 +1070,7 @@ class PrivateIndividualsCollectionsTableProcessor:
                 | (self.bsda_data_df["worker_company_siret"] == self.company_siret)
             )
             & self.bsda_data_df["emitter_is_private_individual"]
-            & self.bsda_data_df["sent_at"].between(*self.data_date_interval)
+            & self.bsda_data_df["transporter_transport_signature_date"].between(*self.data_date_interval)
         ]
 
         if len(filtered_df) > 0:
@@ -1075,7 +1085,7 @@ class PrivateIndividualsCollectionsTableProcessor:
     def _add_stats(self) -> list:
         stats = []
 
-        for e in self.preprocessed_data.sort_values("sent_at").itertuples():
+        for e in self.preprocessed_data.sort_values("transporter_transport_signature_date").itertuples():
             row = {
                 "id": e.id,
                 "recipient_company_siret": e.recipient_company_siret,
@@ -1087,7 +1097,9 @@ class PrivateIndividualsCollectionsTableProcessor:
                 "waste_code": e.waste_code,
                 "waste_name": e.waste_name,
                 "quantity": e.quantity_received if not pd.isna(e.quantity_received) else None,
-                "sent_at": e.sent_at.strftime("%d/%m/%Y %H:%M") if not pd.isna(e.sent_at) else None,
+                "sent_at": e.transporter_transport_signature_date.strftime("%d/%m/%Y %H:%M")
+                if not pd.isna(e.transporter_transport_signature_date)
+                else None,
                 "received_at  ": e.received_at.strftime("%d/%m/%Y %H:%M") if not pd.isna(e.received_at) else None,
             }
             stats.append(row)
@@ -1155,30 +1167,28 @@ class QuantityOutliersTableProcessor:
             DataFrame with lines with received quantity outliers removed.
         """
         df_quantity_outliers = pd.DataFrame()
-        if bs_type in [BSDD, BSDD_NON_DANGEROUS] and (transporters_df is not None):
+        if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA] and (transporters_df is not None):
             df_with_transport = df.merge(
-                transporters_df[["form_id", "transporter_transport_mode", "sent_at"]],
+                transporters_df[["bs_id", "transporter_transport_mode", "sent_at"]],
                 left_on="id",
-                right_on="form_id",
+                right_on="bs_id",
                 how="left",
                 validate="one_to_many",
                 suffixes=("", "_transport"),
             )
 
+            date_filter = df_with_transport["sent_at"].between(*self.data_date_interval)
+            if bs_type in [BSDD, BSDD_NON_DANGEROUS]:
+                date_filter = date_filter | df_with_transport["sent_at_transport"].between(*self.data_date_interval)
+
             df_quantity_outliers = df_with_transport[
                 (df_with_transport["quantity_received"] > 40)
-                & (df_with_transport["transporter_transport_mode"] == "ROAD")
                 & (
-                    df_with_transport["sent_at_transport"].between(*self.data_date_interval)
-                    | df_with_transport["sent_at"].between(*self.data_date_interval)
+                    (df_with_transport["transporter_transport_mode"] == "ROAD")
+                    | df_with_transport["transporter_transport_mode"].isna()
                 )
+                & date_filter
             ].drop_duplicates("id")
-        elif bs_type == BSDA:
-            df_quantity_outliers = df[
-                (df["quantity_received"] > 40)
-                & (df["transporter_transport_mode"] == "ROAD")
-                & (df["sent_at"].between(*self.data_date_interval))
-            ]
         elif bs_type == BSDASRI:
             df_quantity_outliers = df[
                 (df["quantity_received"] > 20)
@@ -1643,7 +1653,7 @@ class BsdaWorkerStatsProcessor:
                 avg_time_to_process_from_sending.value / (1e9 * 3600 * 24)
             )
 
-        times_to_process_from_sending = df["processed_at"] - df["sent_at"]
+        times_to_process_from_sending = df["processed_at"] - df["transporter_transport_signature_date"]
         max_time_to_process_from_sending = times_to_process_from_sending.max()
         avg_time_to_process_from_sending = times_to_process_from_sending.mean()
 
@@ -1727,7 +1737,7 @@ class TransporterBordereauxStatsProcessor:
 
             if len(df) > 0:
                 quantity_col = "quantity_received"
-                id_col = "form_id" if bs_type in [BSDD, BSDD_NON_DANGEROUS] else "id"
+                id_col = "bs_id" if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA] else "id"
                 if (bs_type == BSFF) and (self.packagings_data_df is not None):
                     df = df.merge(self.packagings_data_df, left_on="id", right_on="bsff_id")
                     quantity_col = "acceptation_weight"

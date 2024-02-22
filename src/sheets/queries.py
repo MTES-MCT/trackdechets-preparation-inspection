@@ -79,7 +79,7 @@ order by
 sql_bsdd_transporter_query_str = r"""
 select
     id,
-    form_id,
+    form_id as bs_id,
     taken_over_at as sent_at,
     transporter_company_siret,
     transporter_number_plate,
@@ -102,7 +102,7 @@ where
 sql_bsdd_non_dangerous_transporter_query_str = r"""
 select
     id,
-    form_id,
+    form_id as bs_id,
     taken_over_at as sent_at,
     transporter_company_siret,
     transporter_number_plate,
@@ -145,7 +145,6 @@ select
     emitter_emission_signature_date,
     worker_work_signature_date,
     transporter_transport_signature_date,
-    transporter_transport_taken_over_at as sent_at,
     destination_reception_date as received_at,
     destination_operation_date as processed_at,
     emitter_company_siret,
@@ -177,6 +176,26 @@ where
     and not is_draft
 order by
     created_at asc"""
+
+sql_bsda_transporter_query_str = r"""
+select
+    id,
+    bsda_id as bs_id,
+    transporter_transport_taken_over_at as sent_at,
+    transporter_company_siret,
+    transporter_transport_plates,
+    transporter_transport_mode,
+    destination_reception_weight as quantity_received,
+    waste_code
+from
+    refined_zone_enriched.bsda_transporter_enriched
+where
+    (emitter_company_siret = :siret
+        or destination_company_siret = :siret
+        or transporter_company_siret = :siret
+    )
+    and waste_code like '%*'
+"""
 
 sql_bsdasri_query_str = """
 select

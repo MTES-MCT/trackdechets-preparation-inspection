@@ -27,6 +27,7 @@ from .queries import (
     sql_get_vhu_agrement_data,
     sql_revised_bsda_query_str,
     sql_revised_bsdd_query_str,
+    sql_bsda_transporter_query_str,
 )
 
 wh_engine = create_engine(settings.WAREHOUSE_URL, pool_pre_ping=True)
@@ -50,9 +51,9 @@ bs_dtypes = {
 
 def build_query(
     query_str,
-    query_params: dict[str, Any] = None,
+    query_params: dict[str, Any] | None = None,
     date_columns=None,
-    dtypes: dict[str, Any] = None,
+    dtypes: dict[str, Any] | None = None,
 ):
     query = text(query_str)
 
@@ -72,7 +73,9 @@ def build_query(
     return df
 
 
-def build_bsdd_query(siret: str, data_start_date: datetime, data_end_date: datetime) -> pd.DataFrame:
+def build_bsdd_query(
+    siret: str,
+) -> pd.DataFrame:
     df = build_query(
         sql_bsdd_query_str,
         query_params={
@@ -85,7 +88,9 @@ def build_bsdd_query(siret: str, data_start_date: datetime, data_end_date: datet
     return df
 
 
-def build_bsdd_non_dangerous_query(siret: str, data_start_date: datetime, data_end_date: datetime) -> pd.DataFrame:
+def build_bsdd_non_dangerous_query(
+    siret: str,
+) -> pd.DataFrame:
     df = build_query(
         sql_bsdd_non_dangerous_query_str,
         query_params={
@@ -98,7 +103,9 @@ def build_bsdd_non_dangerous_query(siret: str, data_start_date: datetime, data_e
     return df
 
 
-def build_revised_bsdd_query(company_id: str, data_start_date: datetime, data_end_date: datetime):
+def build_revised_bsdd_query(
+    company_id: str,
+):
     df = build_query(
         sql_revised_bsdd_query_str,
         query_params={
@@ -110,7 +117,9 @@ def build_revised_bsdd_query(company_id: str, data_start_date: datetime, data_en
     return df
 
 
-def build_bsdd_transporter_query_str(siret: str, data_start_date: datetime, data_end_date: datetime):
+def build_bsdd_transporter_query(
+    siret: str,
+):
     df = build_query(
         sql_bsdd_transporter_query_str,
         query_params={
@@ -122,7 +131,9 @@ def build_bsdd_transporter_query_str(siret: str, data_start_date: datetime, data
     return df
 
 
-def build_bsdd_non_dangerous_transporter_query_str(siret: str, data_start_date: datetime, data_end_date: datetime):
+def build_bsdd_non_dangerous_transporter_query(
+    siret: str,
+):
     df = build_query(
         sql_bsdd_non_dangerous_transporter_query_str,
         query_params={
@@ -134,7 +145,9 @@ def build_bsdd_non_dangerous_transporter_query_str(siret: str, data_start_date: 
     return df
 
 
-def build_bsda_query(siret: str, data_start_date: datetime, data_end_date: datetime) -> pd.DataFrame:
+def build_bsda_query(
+    siret: str,
+) -> pd.DataFrame:
     return build_query(
         sql_bsda_query_str,
         query_params={
@@ -148,7 +161,23 @@ def build_bsda_query(siret: str, data_start_date: datetime, data_end_date: datet
     )
 
 
-def build_revised_bsda_query(company_id: str, data_start_date: datetime, data_end_date: datetime):
+def build_bsda_transporter_query(
+    siret: str,
+):
+    df = build_query(
+        sql_bsda_transporter_query_str,
+        query_params={
+            "siret": siret,
+        },
+        date_columns=bsd_date_params,
+    )
+
+    return df
+
+
+def build_revised_bsda_query(
+    company_id: str,
+):
     df = build_query(
         sql_revised_bsda_query_str,
         query_params={
@@ -160,7 +189,9 @@ def build_revised_bsda_query(company_id: str, data_start_date: datetime, data_en
     return df
 
 
-def build_bsdasri_query(siret: str, data_start_date: datetime, data_end_date: datetime) -> pd.DataFrame:
+def build_bsdasri_query(
+    siret: str,
+) -> pd.DataFrame:
     return build_query(
         sql_bsdasri_query_str,
         query_params={
@@ -170,7 +201,9 @@ def build_bsdasri_query(siret: str, data_start_date: datetime, data_end_date: da
     )
 
 
-def build_bsff_query(siret: str, data_start_date: datetime, data_end_date: datetime) -> pd.DataFrame:
+def build_bsff_query(
+    siret: str,
+) -> pd.DataFrame:
     return build_query(
         sql_bsff_query_str,
         query_params={
@@ -180,7 +213,9 @@ def build_bsff_query(siret: str, data_start_date: datetime, data_end_date: datet
     )
 
 
-def build_bsff_packagings_query(siret: str, data_start_date: datetime, data_end_date: datetime) -> pd.DataFrame:
+def build_bsff_packagings_query(
+    siret: str,
+) -> pd.DataFrame:
     return build_query(
         sql_bsff_packagings_query_str,
         query_params={
@@ -190,7 +225,9 @@ def build_bsff_packagings_query(siret: str, data_start_date: datetime, data_end_
     )
 
 
-def build_bsvhu_query(siret: str, data_start_date: datetime, data_end_date: datetime) -> pd.DataFrame:
+def build_bsvhu_query(
+    siret: str,
+) -> pd.DataFrame:
     return build_query(
         sql_bsvhu_query_str,
         query_params={

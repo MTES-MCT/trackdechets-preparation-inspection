@@ -35,12 +35,14 @@ class BsdQuantitiesGraph:
     def __init__(
         self,
         company_siret: str,
+        bs_type: str,
         bs_data: pd.DataFrame,
         data_date_interval: tuple[datetime, datetime],
         quantity_variables_names: list[str] = ["quantity_received"],
         packagings_data: pd.DataFrame | None = None,
     ):
         self.bs_data = bs_data
+        self.bs_type = bs_type
         self.packagings_data = packagings_data
         self.company_siret = company_siret
         self.data_date_interval = data_date_interval
@@ -93,7 +95,10 @@ class BsdQuantitiesGraph:
             # If there is a packagings_data DataFrame, then it means that we are
             # computing BSFF statistics, in this case we use the packagings data instead of
             # 'bordereaux' data as quantity information is stored at packaging level
-            if self.packagings_data is not None:
+            if self.bs_type == BSFF:
+                if self.packagings_data is None:
+                    # Case when there is BSFFs but no packagings info
+                    continue
                 incoming_data_by_month = (
                     incoming_data.merge(self.packagings_data, left_on="id", right_on="bsff_id")
                     .groupby(pd.Grouper(key="acceptation_date", freq="1M"))[variable_name]

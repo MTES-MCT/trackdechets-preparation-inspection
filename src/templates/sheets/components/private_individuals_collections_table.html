@@ -10,7 +10,7 @@
                         <th scope="col">SIRET de l'entreprise de travaux</th>
                     {% endif %}
                     <th scope="col">Date de l'envoi</th>
-                    <th scope="col">Date de la réception</th>
+                    {% if graph_context == "web" %}<th scope="col">Date de la réception</th>{% endif %}
                     <th scope="col">Nom de l'émetteur</th>
                     <th scope="col">Adresse de l'émetteur</th>
                     <th scope="col">Nom du chantier</th>
@@ -45,7 +45,7 @@
                             </td>
                         {% endif %}
                         <td>{{ row.sent_at|default:"N/A" }}</td>
-                        <td>{{ row.received_at|default:"N/A" }}</td>
+                        {% if graph_context == "web" %}<td>{{ row.received_at|default:"N/A" }}</td>{% endif %}
                         <td>{{ row.emitter_company_name|default:"N/A" }}</td>
                         <td>{{ row.emitter_company_address|default:"N/A" }}</td>
                         <td>{{ row.worksite_name|default:"N/A" }}</td>

@@ -202,6 +202,7 @@ class SheetProcessor:
 
             stock_graph = BsdQuantitiesGraph(
                 self.siret,
+                bsd_type,
                 df,
                 data_date_interval,
                 quantity_variables_names=quantity_variables,
@@ -214,6 +215,7 @@ class SheetProcessor:
 
             stats_graph = BsdStatsProcessor(
                 self.siret,
+                bsd_type,
                 df,
                 data_date_interval,
                 quantity_variables_names=quantity_variables,

@@ -35,6 +35,7 @@ class BsdStatsProcessor:
     def __init__(
         self,
         company_siret: str,
+        bs_type: str,
         bs_data: pd.DataFrame,
         data_date_interval: tuple[datetime, datetime],
         quantity_variables_names: list[str] = ["quantity_received"],
@@ -42,7 +43,7 @@ class BsdStatsProcessor:
         packagings_data: pd.DataFrame | None = None,
     ) -> None:
         self.company_siret = company_siret
-
+        self.bs_type = bs_type
         self.bs_data = bs_data
         self.data_date_interval = data_date_interval
         self.quantity_variables_names = self._validate_quantity_variables_names(
@@ -137,7 +138,11 @@ class BsdStatsProcessor:
             (self.received_bs_stats, bs_received_data, self.packagings_data),
         ]:
             df = to_process
-            if (to_process_packagings is not None) and (len(to_process_packagings) > 0):
+
+            if self.bs_type == BSFF:
+                if (to_process_packagings is None) or (len(to_process_packagings) > 0):
+                    # Case when there is BSFFs but no packagings info
+                    continue
                 df = (
                     to_process[["id", "status", "received_at"]]
                     .merge(
@@ -159,6 +164,7 @@ class BsdStatsProcessor:
                         processed_at=pd.NamedAgg(column="operation_date", aggfunc="first"),
                     )
                 )
+
             # total number of 'bordereaux' emitted/received
             target["total"] = len(df)
 
@@ -256,7 +262,11 @@ class BsdStatsProcessor:
             # If there is a packagings_data DataFrame, then it means that we are
             # computing BSFF statistics, in this case we use the packagings data instead of
             # 'bordereaux' data as quantity information is stored at packaging level
-            if self.packagings_data is not None:
+            if self.bs_type == BSFF:
+                if self.packagings_data is None:
+                    # Case when there is BSFFs but no packagings info
+                    continue
+
                 total_quantity_incoming = bs_received_data.merge(
                     self.packagings_data, left_on="id", right_on="bsff_id"
                 )[key].sum()

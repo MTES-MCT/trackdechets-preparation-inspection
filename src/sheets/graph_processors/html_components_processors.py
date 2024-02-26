@@ -1673,7 +1673,7 @@ class BsdaWorkerStatsProcessor:
             )
 
     def _check_empty_data(self) -> bool:
-        if all(e is None for e in self.bsda_worker_stats.values()):
+        if all(e in [None, 0] for e in self.bsda_worker_stats.values()):
             return True
 
         return False

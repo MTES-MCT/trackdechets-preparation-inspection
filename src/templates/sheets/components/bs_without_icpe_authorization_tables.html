@@ -9,7 +9,7 @@
                 pour autant, vous trouverez ci-aprés la liste de <b>{{ bs_data_2760.stats.total_bs }}</b> bordereau{{ bs_data_2760.stats.total_bs|pluralize:"x" }} dont l'entreprise, destinataire, a indiqué D5 comme traitement.
             </p>
             <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
-                <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+                <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
                     <thead>
                         <tr>
                             <th scope="col">N° du bordereau</th>
@@ -47,7 +47,7 @@
                 pour autant, vous trouverez ci-aprés la liste de <b>{{ bs_data_2770.stats.total_bs }}</b> bordereau{{ bs_data_2770.stats.total_bs|pluralize:"x" }} dont l'entreprise, destinataire, a indiqué R1 ou D10 comme traitement.
             </p>
             <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
-                <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+                <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
                     <thead>
                         <tr>
                             <th scope="col">N° du bordereau</th>
@@ -88,7 +88,7 @@
                 a indiqué D13, D14, D15, R12 ou R13 comme traitement.
             </p>
             <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
-                <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+                <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
                     <thead>
                         <tr>
                             <th scope="col">N° du bordereau</th>
@@ -129,7 +129,7 @@
                 a indiqué R2, R3, R4, R5, R6, R7, R9 ou D9 (final) comme traitement.
             </p>
             <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
-                <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+                <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
                     <thead>
                         <tr>
                             <th scope="col">N° du bordereau</th>

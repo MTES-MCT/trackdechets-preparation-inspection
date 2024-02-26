@@ -7,7 +7,7 @@
 <h3 class="cell__title">Statistiques en tant que transporteur</h3>
 {% if transporter_bordereaux_stats_data %}
     <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
-        <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+        <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
             <thead>
                 <tr>
                     <th class="table-headline" scope="col">Type de Bordereau</th>

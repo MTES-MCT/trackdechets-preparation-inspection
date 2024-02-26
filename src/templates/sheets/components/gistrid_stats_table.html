@@ -5,7 +5,7 @@
         {% if gistrid_stats_data.import %}
             <h4>Importations</h4>
             <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
-                <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+                <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
                     <thead>
                         <tr>
                             <th scope="col">Annee de fin autorisée des échanges</th>
@@ -40,7 +40,7 @@
         {% if gistrid_stats_data.export %}
             <h4>Exportations</h4>
             <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
-                <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+                <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
                     <thead>
                         <tr>
                             <th scope="col">Annee de fin autorisée des échanges</th>

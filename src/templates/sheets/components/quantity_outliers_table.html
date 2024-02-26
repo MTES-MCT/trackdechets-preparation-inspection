@@ -4,7 +4,7 @@
         Une quantité est dite aberrante si elle dépasse 40t pour un BSDD, BSDA, BSVHU ou 20t pour un BSDASRI ou un BSFF.
     </div>
     <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
-        <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+        <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
             <thead>
                 <tr>
                     <th scope="col">Type de bordereau</th>

@@ -1582,9 +1582,11 @@ class BsdaWorkerStatsProcessor:
         self,
         company_siret: str,
         bsda_data_df: pd.DataFrame,
+        bsda_transporter_df: pd.DataFrame,
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.bsda_data_df = bsda_data_df
+        self.bsda_transporter_df = bsda_transporter_df
         self.data_date_interval = data_date_interval
         self.company_siret = company_siret
 
@@ -1605,6 +1607,8 @@ class BsdaWorkerStatsProcessor:
         siret = self.company_siret
 
         df = self.bsda_data_df
+        df_transporter = self.bsda_transporter_df
+        df_transporter = df_transporter.groupby("bs_id", as_index=False).agg({"sent_at": "min"})
 
         if len(self.bsda_data_df) == 0:
             return
@@ -1639,21 +1643,22 @@ class BsdaWorkerStatsProcessor:
                 2,
             )
 
-        times_to_process_from_sending = df["processed_at"] - df["emitter_emission_signature_date"]
-        max_time_to_process_from_sending = times_to_process_from_sending.max()
-        avg_time_to_process_from_sending = times_to_process_from_sending.mean()
+        times_to_process_from_emission = df["processed_at"] - df["emitter_emission_signature_date"]
+        max_time_to_process_from_emission = times_to_process_from_emission.max()
+        avg_time_to_process_from_emission = times_to_process_from_emission.mean()
 
-        if not pd.isna(max_time_to_process_from_sending):
+        if not pd.isna(max_time_to_process_from_emission):
             self.bsda_worker_stats["max_processing_time_from_emission"] = format_number_str(
-                max_time_to_process_from_sending.value / (1e9 * 3600 * 24), 2
+                max_time_to_process_from_emission.value / (1e9 * 3600 * 24), 2
             )
 
-        if not pd.isna(avg_time_to_process_from_sending):
+        if not pd.isna(avg_time_to_process_from_emission):
             self.bsda_worker_stats["avg_processing_time_from_emission"] = format_number_str(
-                avg_time_to_process_from_sending.value / (1e9 * 3600 * 24)
+                avg_time_to_process_from_emission.value / (1e9 * 3600 * 24)
             )
 
-        times_to_process_from_sending = df["processed_at"] - df["transporter_transport_signature_date"]
+        df = df.merge(df_transporter, left_on="id", right_on="bs_id", validate="one_to_one", how="left")
+        times_to_process_from_sending = df["processed_at"] - df["sent_at"]
         max_time_to_process_from_sending = times_to_process_from_sending.max()
         avg_time_to_process_from_sending = times_to_process_from_sending.mean()
 

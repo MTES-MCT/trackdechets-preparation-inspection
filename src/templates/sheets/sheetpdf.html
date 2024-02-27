@@ -1,6 +1,33 @@
 {% extends "base_pdf.html" %}
 {% load static graph_tags %}
 {% block main %}
+    <nav id="toc"
+         class="fr-summary"
+         role="navigation"
+         aria-labelledby="fr-summary-title">
+        <p class="fr-summary__title" id="fr-summary-title">Sommaire</p>
+        <h3 href="#company-info-summary">Informations entreprises</h3>
+        <ul class="fr-summary__list">
+            <li>
+                <a href="#company-info-summary">Informations de base</a>
+            </li>
+            <li>
+                <a href="#linked-companies">Établissements liés</a>
+            </li>
+        </ul>
+        <h3>Part two</h3>
+        <ul class="fr-summary__list">
+            <li>
+                <a href="#offers-title"></a>
+            </li>
+            <li>
+                <a href="#chapter-title"></a>
+            </li>
+            <li>
+                <a href="#typography-title"></a>
+            </li>
+        </ul>
+    </nav>
     <div>
         <section class="horizontal">
             <div class="header">
@@ -11,7 +38,7 @@
                     <h2 class="header__title">{{ sheet.company_name }}</h2>
                 </div>
             </div>
-            <div class="row">
+            <div class="row" id="company-info-summary">
                 <div class="cell cell--third">
                     <p>
                         <span class="bold">SIRET :</span> {{ sheet.org_id }}

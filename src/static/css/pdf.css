@@ -206,3 +206,9 @@ ul {
   font-weight: 700;
   margin-right: 0.5rem;
 }
+
+#toc ul li a::after, #toc h3::after {
+  color: #fbc847;
+  content: target-counter(attr(href), page);
+  float: right;
+}

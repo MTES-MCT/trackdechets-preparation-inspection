@@ -1,6 +1,8 @@
 {% if linked_companies_data %}
     <div {% if graph_context == "web" %}class="cell cell--bordered cell--full"{% endif %}>
-        <h3>Liste des autres établissements de la même entreprise (SIREN {{ linked_companies_data.siren }}) :</h3>
+        <h3 id="linked-companies">
+            Liste des autres établissements de la même entreprise (SIREN {{ linked_companies_data.siren }}) :
+        </h3>
         <div {% if graph_context == "web" %}class="fr-table"{% endif %}>
             <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
                 <thead>

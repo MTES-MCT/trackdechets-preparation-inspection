@@ -1,33 +1,6 @@
 {% extends "base_pdf.html" %}
 {% load static graph_tags %}
 {% block main %}
-    <nav id="toc"
-         class="fr-summary"
-         role="navigation"
-         aria-labelledby="fr-summary-title">
-        <p class="fr-summary__title" id="fr-summary-title">Sommaire</p>
-        <h3 href="#company-info-summary">Informations entreprises</h3>
-        <ul class="fr-summary__list">
-            <li>
-                <a href="#company-info-summary">Informations de base</a>
-            </li>
-            <li>
-                <a href="#linked-companies">Établissements liés</a>
-            </li>
-        </ul>
-        <h3>Part two</h3>
-        <ul class="fr-summary__list">
-            <li>
-                <a href="#offers-title"></a>
-            </li>
-            <li>
-                <a href="#chapter-title"></a>
-            </li>
-            <li>
-                <a href="#typography-title"></a>
-            </li>
-        </ul>
-    </nav>
     <div>
         <section class="horizontal">
             <div class="header">
@@ -37,6 +10,66 @@
                     <h1 class="header__title">Fiche Établissement</h1>
                     <h2 class="header__title">{{ sheet.company_name }}</h2>
                 </div>
+                <nav id="toc"
+                     class="fr-summary"
+                     role="navigation"
+                     aria-labelledby="fr-summary-title">
+                    <h2 class="fr-summary__title" id="fr-summary-title">Sommaire</h2>
+                    <h3 href="#company-info-summary">Établissement</h3>
+                    <ul class="fr-summary__list">
+                        <li>
+                            <a class="fr-summary__link"  href="#company-info-summary">Informations de base</a>
+                        </li>
+                        {% if sheet.linked_companies_data %}
+                            <li>
+                                <a class="fr-summary__link" href="#linked-companies">Établissements liés</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                    <h3 href="#bs-section">Données des bordereaux de suivi dématérialisés issues de Trackdéchets</h3>
+                    <ul class="fr-summary__list">
+                        {% if sheet.bsdd_created_rectified_data %}
+                            <li>
+                                <a class="fr-summary__link" href="#bsdd-stats">BSDD</a>
+                            </li>
+                        {% endif %}
+                        {% if sheet.bsdd_non_dangerous_created_rectified_data %}
+                            <li>
+                                <a class="fr-summary__link" href="#bsdd-non-dangerous-stats">BSDD Non Dangereux</a>
+                            </li>
+                        {% endif %}
+                        {% if sheet.bsda_created_rectified_data %}
+                            <li>
+                                <a class="fr-summary__link" href="#bsda-stats">BSDA</a>
+                            </li>
+                        {% endif %}
+                        {% if sheet.bsdasri_created_rectified_data %}
+                            <li>
+                                <a class="fr-summary__link" href="#bsdasri-stats">BSDASRI</a>
+                            </li>
+                        {% endif %}
+                        {% if sheet.bsff_created_rectified_data %}
+                            <li>
+                                <a class="fr-summary__link" href="#bsff-stats">BSFF</a>
+                            </li>
+                        {% endif %}
+                        {% if sheet.bsvhu_created_rectified_data %}
+                            <li>
+                                <a class="fr-summary__link" href="#bsvhu-stats">BSVHU</a>
+                            </li>
+                        {% endif %}
+                        {% if sheet.bsda_worker_stats_data %}
+                            <li>
+                                <a class="fr-summary__link" href="#bsda-worker-stats">Bordereaux en tant qu'entreprise de travaux</a>
+                            </li>
+                        {% endif %}
+                        {% if sheet.transporter_bordereaux_stats_graph_data %}
+                            <li>
+                                <a class="fr-summary__link" href="#ordereaux-transported-stats">Bordereaux en tant que transporteur</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
             </div>
             <div class="row" id="company-info-summary">
                 <div class="cell cell--third">
@@ -80,13 +113,13 @@
                 {% render_linked_companies_data sheet graph_context="pdf" %}
                 {#  end linked companies table #}
             </div>
-            <h2 class="section-title">Données des bordereaux de suivi dématérialisés issues de Trackdéchets</h2>
+            <h2 class="section-title" id="bs-section">Données des bordereaux de suivi dématérialisés issues de Trackdéchets</h2>
             {% if sheet.all_bsd_data_empty %}
                 <div class="no-data-section">PAS DE DONNÉES À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
             {% endif %}
             {#  bsdd #}
-            <div class="row">
-                {% if sheet.bsdd_created_rectified_data %}
+            {% if sheet.bsdd_created_rectified_data %}
+                <div class="row" id="bsdd-stats">
                     <div class="cell cell--bordered cell--third">
                         <p class="cell__title">BSD Dangereux émis, reçus et corrigés</p>
                         <img src="data:image/png;base64,{{ bsdd_created_rectified_graph }}"
@@ -105,7 +138,7 @@
             {#  end bsdd #}
             {#  bsdd non dangereux #}
             {% if sheet.bsdd_non_dangerous_created_rectified_data %}
-                <div class="row">
+                <div class="row" id="bsdd-non-dangerous-stats">
                     <div class="cell cell--bordered cell--third">
                         <h3 class="cell__title">BSD de déchets non dangereux émis, reçus et corrigés</h3>
                         <img src="data:image/png;base64,{{ bsdd_non_dangerous_created_rectified_graph }}"
@@ -202,7 +235,7 @@
             {#  end bsvhu #}
             {# BSDA worker stats #}
             {% if sheet.bsda_worker_stats_data %}
-                <div class="row">
+                <div class="row" id="bsda-worker-stats">
                     <div class="cell cell--bordered cell--third">{% render_bsda_worker_counts_stats_data sheet graph_context="pdf" %}</div>
                     <div class="cell cell--bordered cell--third">
                         {% render_bsda_worker_durations_stats_data sheet graph_context="pdf" %}
@@ -216,7 +249,7 @@
             {% endif %}
             {# end BSDA worker stats #}
             {% if sheet.transporter_bordereaux_stats_graph_data %}
-                <div class="row">
+                <div class="row" id="bordereaux-transported-stats">
                     <div class="cell cell--bordered cell--third">
                         <h3 class="cell__title">Bordereaux transportés</h3>
                         <img src="data:image/png;base64,{{ bs_transported_graph }}"

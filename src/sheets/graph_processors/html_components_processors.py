@@ -1617,7 +1617,13 @@ class BsdaWorkerStatsProcessor:
         siret = self.company_siret
 
         df = self.bsda_data_df
+        if len(df) == 0:
+            return
+
         df_transporter = self.bsda_transporter_df
+        if (df_transporter is None) or (len(df_transporter) == 0):
+            return
+
         df_transporter = df_transporter.groupby("bs_id", as_index=False).agg({"sent_at": "min"})
 
         if len(self.bsda_data_df) == 0:

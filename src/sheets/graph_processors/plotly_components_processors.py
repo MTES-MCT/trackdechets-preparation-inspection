@@ -1454,6 +1454,7 @@ class TransportedQuantitiesGraphProcessor:
                 if (bs_type == BSFF) and (self.packagings_data_df is not None):
                     df_by_month = (
                         df.merge(self.packagings_data_df, left_on="id", right_on="bsff_id")
+                        .dropna(subset="acceptation_date")
                         .groupby(pd.Grouper(key="acceptation_date", freq="1M"))["acceptation_weight"]
                         .sum()
                     )

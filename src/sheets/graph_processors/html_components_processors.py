@@ -1639,14 +1639,14 @@ class BsdaWorkerStatsProcessor:
         )
         self.bsda_worker_stats["signed_worker"] = len(
             df[
-                df["emitter_emission_signature_date"].notna()
+                df["emitter_emission_signature_date"].between(*self.data_date_interval)
                 & df["worker_work_signature_date"].between(*self.data_date_interval)
             ]
         )
         self.bsda_worker_stats["signed_transporter"] = len(
             df[
-                df["emitter_emission_signature_date"].notna()
-                & df["worker_work_signature_date"].notna()
+                df["emitter_emission_signature_date"].between(*self.data_date_interval)
+                & df["worker_work_signature_date"].between(*self.data_date_interval)
                 & df["transporter_transport_signature_date"].between(*self.data_date_interval)
             ]
         )

@@ -1659,7 +1659,11 @@ class BsdaWorkerStatsProcessor:
                 2,
             )
 
-        times_to_process_from_emission = df["processed_at"] - df["emitter_emission_signature_date"]
+        df_filtered = df[
+            df["processed_at"].between(*self.data_date_interval)
+            & df["emitter_emission_signature_date"].between(*self.data_date_interval)
+        ]
+        times_to_process_from_emission = df_filtered["processed_at"] - df_filtered["emitter_emission_signature_date"]
         max_time_to_process_from_emission = times_to_process_from_emission.max()
         avg_time_to_process_from_emission = times_to_process_from_emission.mean()
 
@@ -1674,6 +1678,9 @@ class BsdaWorkerStatsProcessor:
             )
 
         df = df.merge(df_transporter, left_on="id", right_on="bs_id", validate="one_to_one", how="left")
+        df_filtered = df[
+            df["processed_at"].between(*self.data_date_interval) & df["sent_at"].between(*self.data_date_interval)
+        ]
         times_to_process_from_sending = df["processed_at"] - df["sent_at"]
         max_time_to_process_from_sending = times_to_process_from_sending.max()
         avg_time_to_process_from_sending = times_to_process_from_sending.mean()
@@ -1689,7 +1696,7 @@ class BsdaWorkerStatsProcessor:
             )
 
     def _check_empty_data(self) -> bool:
-        if all(e in [None, 0] for e in self.bsda_worker_stats.values()):
+        if all(e in [None, 0, "0"] for e in self.bsda_worker_stats.values()):
             return True
 
         return False

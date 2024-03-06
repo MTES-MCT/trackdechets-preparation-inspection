@@ -3,7 +3,7 @@
         <h3>Données Trackdéchets</h3>
         <p>Liste des déchets dont la destination ultérieure prévue est à l'étranger :</p>
         <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
-            <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+            <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
                 <thead>
                     <tr>
                         <th scope="col">SIRET ou N° de TVA du destinataire</th>

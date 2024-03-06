@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 import pandas as pd
 import pytest
 
+from sheets.constants import BSDD
+
 from ..graph_processors.html_components_processors import BsdStatsProcessor
 
 
@@ -176,7 +178,7 @@ def data_date_interval():
     ],
 )
 def test_bsd_stats_processor(siret, sample_bs_data, data_date_interval, expected):
-    bs_processor = BsdStatsProcessor(siret, sample_bs_data, data_date_interval)
+    bs_processor = BsdStatsProcessor(siret, BSDD, sample_bs_data, data_date_interval)
 
     # Test initialization
     assert bs_processor.company_siret == siret
@@ -239,6 +241,7 @@ def test_bsd_stats_processor_multiple_quantity_variables(
 ):
     bs_processor = BsdStatsProcessor(
         siret,
+        BSDD,
         sample_bs_data,
         data_date_interval,
         quantity_variables_names=quantity_variables_names,
@@ -272,7 +275,7 @@ def test_bsd_stats_processor_multiple_quantity_variables(
 )
 def test_bsd_stats_processor_empty_data(siret, sample_bs_data_empty, data_date_interval, expected):
     # Test when the input data is empty
-    bs_processor = BsdStatsProcessor(siret, sample_bs_data_empty, data_date_interval)
+    bs_processor = BsdStatsProcessor(siret, BSDD, sample_bs_data_empty, data_date_interval)
     bs_processor._preprocess_data()
     assert bs_processor._check_data_empty() is True
 

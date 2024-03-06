@@ -35,12 +35,14 @@ class BsdQuantitiesGraph:
     def __init__(
         self,
         company_siret: str,
+        bs_type: str,
         bs_data: pd.DataFrame,
         data_date_interval: tuple[datetime, datetime],
         quantity_variables_names: list[str] = ["quantity_received"],
         packagings_data: pd.DataFrame | None = None,
     ):
         self.bs_data = bs_data
+        self.bs_type = bs_type
         self.packagings_data = packagings_data
         self.company_siret = company_siret
         self.data_date_interval = data_date_interval
@@ -80,9 +82,12 @@ class BsdQuantitiesGraph:
             (bs_data["recipient_company_siret"] == self.company_siret)
             & bs_data["received_at"].between(*self.data_date_interval)
         ]
+
+        # Handle the case of BSDA having transported date in separate table, to avoid use transporter data
+        sent_at_key = "sent_at" if ("sent_at" in bs_data.columns) else "transporter_transport_signature_date"
         outgoing_data = bs_data[
             (bs_data["emitter_company_siret"] == self.company_siret)
-            & bs_data["sent_at"].between(*self.data_date_interval)
+            & bs_data[sent_at_key].between(*self.data_date_interval)
         ]
 
         # We iterate over the different variables chosen to compute the statistics
@@ -90,7 +95,10 @@ class BsdQuantitiesGraph:
             # If there is a packagings_data DataFrame, then it means that we are
             # computing BSFF statistics, in this case we use the packagings data instead of
             # 'bordereaux' data as quantity information is stored at packaging level
-            if self.packagings_data is not None:
+            if self.bs_type == BSFF:
+                if self.packagings_data is None:
+                    # Case when there is BSFFs but no packagings info
+                    continue
                 incoming_data_by_month = (
                     incoming_data.merge(self.packagings_data, left_on="id", right_on="bsff_id")
                     .groupby(pd.Grouper(key="acceptation_date", freq="1M"))[variable_name]
@@ -111,7 +119,9 @@ class BsdQuantitiesGraph:
                 )
 
                 outgoing_data_by_month = (
-                    outgoing_data.groupby(pd.Grouper(key="sent_at", freq="1M"))[variable_name].sum().replace(0, np.nan)
+                    outgoing_data.groupby(pd.Grouper(key=sent_at_key, freq="1M"))[variable_name]
+                    .sum()
+                    .replace(0, np.nan)
                 )
 
             self.incoming_data_by_month_series.append(incoming_data_by_month)
@@ -297,12 +307,14 @@ class BsdTrackedAndRevisedProcessor:
         """Preprocess raw 'bordereaux' data to prepare it for plotting."""
         bs_data = self.bs_data
 
+        # Handle the case of BSDA having transported date in separate table, to avoid use transporter data
+        sent_at_key = "sent_at" if ("sent_at" in bs_data.columns) else "transporter_transport_signature_date"
         bs_emitted = bs_data[
             (bs_data["emitter_company_siret"] == self.company_siret)
-            & bs_data["sent_at"].between(*self.data_date_interval)
-        ].dropna(subset=["sent_at"])
+            & bs_data[sent_at_key].between(*self.data_date_interval)
+        ].dropna(subset=[sent_at_key])
 
-        bs_emitted_by_month = bs_emitted.groupby(pd.Grouper(key="sent_at", freq="1M")).id.count()
+        bs_emitted_by_month = bs_emitted.groupby(pd.Grouper(key=sent_at_key, freq="1M")).id.count()
 
         bs_received = bs_data[
             (bs_data["recipient_company_siret"] == self.company_siret)
@@ -1071,8 +1083,8 @@ class BsdaWorkerQuantityProcessor:
         )
 
         self.quantities_transported_by_month = (
-            bsda_data[bsda_data["sent_at"].between(*self.data_date_interval)]
-            .groupby(pd.Grouper(key="sent_at", freq="1M"))["quantity_received"]
+            bsda_data[bsda_data["transporter_transport_signature_date"].between(*self.data_date_interval)]
+            .groupby(pd.Grouper(key="transporter_transport_signature_date", freq="1M"))["quantity_received"]
             .sum()
         )
 
@@ -1253,7 +1265,7 @@ class TransporterBordereauxGraphProcessor:
             ]
 
             if len(df) > 0:
-                id_col = "form_id" if bs_type in [BSDD, BSDD_NON_DANGEROUS] else "id"
+                id_col = "bs_id" if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA] else "id"
                 df_by_month = df.groupby(pd.Grouper(key="sent_at", freq="1M"))[id_col].nunique()
                 self.transported_bordereaux_stats[bs_type] = df_by_month
 

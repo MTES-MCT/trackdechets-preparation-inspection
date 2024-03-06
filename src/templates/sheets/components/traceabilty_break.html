@@ -6,7 +6,7 @@
             les déchets suivants:
         </p>
         <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
-            <table {% if graph_context == "web" %}{% else %}class="pdf-table"{% endif %}>
+            <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
                 <thead>
                     <tr>
                         <th scope="col">Code déchet</th>

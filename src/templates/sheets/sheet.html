@@ -309,9 +309,7 @@
                 </div>
             {% endif %}
         {% endif %}
-        <div class="row">
-            {% render_traceabilty_break sheet %}
-        </div>
+        <div class="row">{% render_traceabilty_break sheet %}</div>
         {# end ICPE #}
         {# Transborder section #}
         <h2 class="section__title">Données relatives aux échanges transfrontaliers</h2>
@@ -341,11 +339,12 @@
         <div>{% render_quantity_outliers_table sheet %}</div>
         {# end quantity outliers table #}
         {# input/output #}
-        <h2 class="section__title">Liste des déchets entrants, sortants et transportés</h2>
-        <div>{% render_waste_flows_table sheet %}</div>
-        {# end input/output #}
-        {# end Appendices section #}
-    </div>
+        <h23>Liste des déchets entrants, sortants et transportés
+    </h3>
+    <div>{% render_waste_flows_table sheet %}</div>
+    {# end input/output #}
+    {# end Appendices section #}
+</div>
 {% endblock %}
 {% block scripts %}
     <script>
@@ -452,7 +451,8 @@
                 removeNoDataClass(`#${config.target} > .no-data`);
                 let newConfig = {
                     ...config.data.config,
-                    locale: 'fr'
+                    locale: 'fr',
+                    autosize:true
                 }
 
                 Plotly.newPlot(

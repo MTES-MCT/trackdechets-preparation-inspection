@@ -140,7 +140,7 @@ class BsdStatsProcessor:
             df = to_process
 
             if self.bs_type == BSFF:
-                if (to_process_packagings is None) or (len(to_process_packagings) > 0):
+                if (to_process_packagings is None) or (len(to_process_packagings) == 0):
                     # Case when there is BSFFs but no packagings info
                     continue
                 df = (

@@ -223,12 +223,10 @@
     </div>
     <div class="revised-bs-count">
       <span class="td-font-lead">{{ revised_bs_count }}</span>bordereaux corrigés
+      {% if pending_revisions_count %}
+        et <span class="td-font-lead">{{ pending_revisions_count }}</span>demandes de révision en cours ⏳
+      {% endif %}
     </div>
-    {% if pending_revisions_count %}
-      <div class="revised-bs-count">
-        <span class="td-font-lead">{{ pending_revisions_count }}</span>demandes de révision en cours
-      </div>
-    {% endif %}
     <div class="quantities-stats">
       {% for k, v in quantities_stats.items %}
         <div class="quantity-stats">

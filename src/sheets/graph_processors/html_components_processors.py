@@ -413,6 +413,9 @@ class WasteFlowsTableProcessor:
                 df = df.merge(self.packagings_data, left_on="id", right_on="bsff_id")
                 df = df.rename(columns={"acceptation_weight": "quantity_received"})
 
+            if bs_type == BSDA:
+                df = df.rename(columns={"transporter_transport_signature_date": "sent_at"})
+
             dfs_to_concat.append(df)
 
         if len(dfs_to_concat) == 0:

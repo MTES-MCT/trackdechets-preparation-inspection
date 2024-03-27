@@ -1,96 +1,111 @@
 /* Typography */
 .td-font-display {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-right: 0.5rem;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-right: 0.5rem;
 }
 
 .td-font-lead {
-  font-size: 1.5rem;
-  font-weight: 700;
+    font-size: 1.5rem;
+    font-weight: 700;
 }
 
 /* cells */
 .row {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 12px;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
 }
 
 .cell__img {
-  width: 100%;
+    width: 100%;
 }
 
 .sheet {
-  padding-top: 2rem;
+    padding-top: 2rem;
 }
 
 .cell {
 
-  vertical-align: top;
-  padding: 1rem 0.5rem;
+    vertical-align: top;
+    padding: 1rem 0.5rem;
 }
 
 .cell--full {
-  width: 100%;
+    width: 100%;
 }
 
 .cell--third {
-  flex-basis: 33%;
+    flex-basis: 33%;
 }
 
 .cell--half {
-  flex-basis: 49%;
+    flex-basis: 49%;
 }
 
 .cell--two-thirds {
-  flex-basis: 66%;
+    flex-basis: 66%;
 }
 
 .cell--bordered {
-  border: 1px solid #e3e3fd;
-  border-left: 5px solid #e3e3fd
+    border: 1px solid #e3e3fd;
+    border-left: 5px solid #e3e3fd
 }
 
 .cell__title {
-  font-size: 1rem;
-  margin-bottom: 1rem;
-  line-height: 1.2;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    line-height: 1.2;
 }
 
 /* sections */
 .section__title {
-  margin-top: 2rem;
-  margin-bottom: 0.5rem;
-  font-size: 2.3rem;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+    font-size: 2.3rem;
 }
 
 .no-data-section {
-  text-align: center;
-  margin-bottom: 10px;
+    text-align: center;
+    margin-bottom: 10px;
 }
 
 /* tables */
 table .td--right {
-  text-align: right;
+    text-align: right;
 }
 
 /* Header */
 .fr-header__body {
-  border-bottom: 1px solid var(--grey-975-75-active);
+    border-bottom: 1px solid var(--grey-975-75-active);
 }
 
 /* Warning */
 .warning-banner {
-  height: 32px;
-  line-height: 32px;
-  text-align: center;
-  background-color: #ef9657;
+    height: 32px;
+    line-height: 32px;
+    text-align: center;
+    background-color: #ef9657;
 }
 
 
 .fr-input[type=date] {
-  /* DSFR date field fix: prevent native and dsfr date input icon overlap */
-  background-image: none;
-  width: 170px;
+    /* DSFR date field fix: prevent native and dsfr date input icon overlap */
+    background-image: none;
+}
+
+/* Custom banner modifier to appease the gods of UX */
+.fr-notice--warning .fr-notice__body::before {
+    -webkit-mask-image: url("../icons/system/fr--warning-fill.svg");
+    mask-image: url("../icons/system/fr--warning-fill.svg");
+    content: "";
+}
+
+.fr-notice--warning {
+    background-color: var(--background-contrast-info);
+
+    --idle: transparent;
+    --hover: var(--background-contrast-info-hover);
+    --active: var(--background-contrast-info-active);
+    color: var(--text-default-info);
 }

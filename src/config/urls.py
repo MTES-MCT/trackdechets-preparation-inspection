@@ -1,4 +1,5 @@
 """Inspection URL Configuration"""
+
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.staticfiles.storage import staticfiles_storage

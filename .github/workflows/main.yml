@@ -56,7 +56,7 @@ jobs:
           pipenv install --deploy --dev
 
       - name: Ruff Linting
-        run: pipenv run ruff .
+        run: pipenv run ruff check .
 
       - name: Ruff Formatting
         run: pipenv run ruff format --check .
@@ -72,3 +72,5 @@ jobs:
           DEFENDER_REDIS_URL: redis://localhost:6379/0
           ADMIN_SLUG: admin
           MESSAGE_RECIPIENTS: lorem@ipsum.lol
+          TD_API_URL: http://api.test
+          TD_API_TOKEN: xyz"

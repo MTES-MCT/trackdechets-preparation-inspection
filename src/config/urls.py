@@ -27,7 +27,7 @@ urlpatterns = [
     path("content/", include("content.urls")),
     path("sheets/", include("sheets.urls")),
 ]
-
+# comment
 if settings.DEBUG:
     urlpatterns += [
         path("__debug__/", include("debug_toolbar.urls")),

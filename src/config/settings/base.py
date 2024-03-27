@@ -173,3 +173,6 @@ OTP_EMAIL_SUBJECT = "Votre code pour Trackdéchets fiche établissement"
 OTP_EMAIL_BODY_TEMPLATE_PATH = "emails/second_factor/second_factor.txt"
 OTP_EMAIL_BODY_HTML_TEMPLATE_PATH = "emails/second_factor/second_factor.html"
 OTP_EMAIL_THROTTLE_DELAY = 300  # s
+
+TD_API_URL = env("TD_API_URL")
+TD_API_TOKEN = env("TD_API_TOKEN")

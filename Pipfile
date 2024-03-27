@@ -27,6 +27,7 @@ weasyprint = "*"
 sentry-sdk = {extras = ["django"], version = "*"}
 django-anymail = {extras = ["sendinblue"], version = "*"}
 django-otp = "*"
+httpx = "*"
 
 [dev-packages]
 ruff = "*"

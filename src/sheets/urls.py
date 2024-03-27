@@ -6,6 +6,7 @@ from .views import (
     FragmentResultView,
     Prepare,
     PrepareSheetPdf,
+    RegistryView,
     RenderingView,
     Sheet,
     SheetPdf,
@@ -14,6 +15,7 @@ from .views import (
 
 urlpatterns = [
     path("prepare/", Prepare.as_view(), name="prepare"),
+    path("registry/", RegistryView.as_view(), name="registry"),
     path(
         "compute/<str:task_id>/<uuid:compute_pk>/",
         ComputingView.as_view(),

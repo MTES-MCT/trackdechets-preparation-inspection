@@ -2,41 +2,16 @@ import base64
 import datetime as dt
 
 from celery.result import AsyncResult
-from django.http import HttpResponse, HttpResponseRedirect
-from django.urls import reverse, reverse_lazy
+from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.urls import reverse
 from django.views.generic import DetailView, FormView, TemplateView
 
 from common.mixins import SecondFactorMixin
 from config.celery_app import app
-from content.models import FeedbackResult
 
-from .forms import SiretForm
-from .models import ComputedInspectionData
-from .task import prepare_sheet, render_pdf
-
-
-class PublicHomeView(TemplateView):
-    template_name = "public_home.html"
-
-    def get(self, request, *args, **kwargs):
-        """Redirect user to private home or second_factor page wether they're logged in or verified."""
-        if request.user.is_verified():
-            return HttpResponseRedirect(reverse_lazy("private_home"))
-        if request.user.is_authenticated:
-            return HttpResponseRedirect(reverse_lazy("second_factor"))
-        return super().get(request, *args, **kwargs)
-
-
-class PrivateHomeView(SecondFactorMixin, TemplateView):
-    template_name = "private_home.html"
-
-    def has_filled_survey(self):
-        return FeedbackResult.objects.filter(author=self.request.user.email).exists()
-
-    def get_context_data(self, **kwargs):
-        # display survey links until user fills it
-        return super().get_context_data(**kwargs, has_filled_survey=self.has_filled_survey())
-
+from ..forms import SiretForm
+from ..models import ComputedInspectionData
+from ..task import prepare_sheet, render_pdf
 
 CHECK_INSPECTION = False
 
@@ -56,6 +31,8 @@ class Prepare(SecondFactorMixin, FormView):
         super().__init__(*args, **kwargs)
         self.existing_inspection = None
         self.new_inspection = None
+        self.is_registry = False
+        self.is_inspection = False
 
     def check_existing_inspection(self, siret):
         if not CHECK_INSPECTION:
@@ -65,10 +42,32 @@ class Prepare(SecondFactorMixin, FormView):
         self.existing_inspection = ComputedInspectionData.objects.filter(org_id=siret, created__date=today).first()
 
     def form_valid(self, form):
+        self.is_registry = bool(self.request.POST.get("registry"))
+        self.is_inspection = bool(self.request.POST.get("inspection"))
+
+        if self.is_inspection:
+            return self.handle_inspection(form)
+        if self.is_registry:
+            return self.handle_registry(form)
+        raise Http404
+
+    def handle_registry(self, form):
+        # store form data in session and redirect to download view
+        for fn in [
+            "siret",
+            "registry_type",
+            "registry_format",
+        ]:
+            self.request.session[fn] = form.cleaned_data[fn]
+        for fn in ["start_date", "end_date"]:
+            self.request.session[fn] = form.cleaned_data[fn].isoformat()
+
+        return HttpResponseRedirect(reverse("registry"))
+
+    def handle_inspection(self, form):
         siret = form.cleaned_data["siret"]
         data_start_date = form.cleaned_data["start_date"]
         data_end_date = form.cleaned_data["end_date"]
-
         if self.existing_inspection:
             return super().form_valid(form)
 
@@ -79,11 +78,15 @@ class Prepare(SecondFactorMixin, FormView):
             created_by=self.request.user.email,
         )
         self.task_id = prepare_sheet.delay(self.new_inspection.pk)
-
-        return super().form_valid(form)
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs, computed=self.new_inspection)
+        year = dt.date.today().year
+        label_this_year = year
+        label_prev_year = year - 1
+        return super().get_context_data(
+            **kwargs, computed=self.new_inspection, label_this_year=label_this_year, label_prev_year=label_prev_year
+        )
 
     def get_success_url(self):
         if self.existing_inspection:

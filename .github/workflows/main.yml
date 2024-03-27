@@ -77,3 +77,5 @@ jobs:
           MONAIOT_CLIENT_ID: td
           MONAIOT_SECRET: xyz
           CSRF_TRUSTED_ORIGINS: "https://url.test"
+          TD_API_URL: http://api.test
+          TD_API_TOKEN: xyz"

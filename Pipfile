@@ -28,6 +28,7 @@ sentry-sdk = {extras = ["django"], version = "*"}
 django-anymail = {extras = ["sendinblue"], version = "*"}
 django-otp = "*"
 django-allauth = "*"
+httpx = "*"
 
 [dev-packages]
 ruff = "*"

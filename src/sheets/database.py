@@ -7,6 +7,7 @@ from sqlalchemy.sql import text
 
 from .queries import (
     sql_bsda_query_str,
+    sql_bsda_transporter_query_str,
     sql_bsdasri_query_str,
     sql_bsdd_non_dangerous_query_str,
     sql_bsdd_non_dangerous_transporter_query_str,
@@ -26,7 +27,6 @@ from .queries import (
     sql_get_vhu_agrement_data,
     sql_revised_bsda_query_str,
     sql_revised_bsdd_query_str,
-    sql_bsda_transporter_query_str,
 )
 
 wh_engine = create_engine(settings.WAREHOUSE_URL, pool_pre_ping=True)

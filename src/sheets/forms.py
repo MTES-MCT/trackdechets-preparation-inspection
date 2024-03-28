@@ -1,9 +1,17 @@
 import datetime as dt
 
-from django.forms import CharField, DateField, Form, ValidationError
+from django.forms import CharField, ChoiceField, DateField, Form, ValidationError
 from django.forms.widgets import DateInput
 from sqlalchemy.sql import text
 
+from .constants import (
+    REGISTRY_FORMAT_CSV,
+    REGISTRY_FORMAT_XLS,
+    REGISTRY_TYPE_ALL,
+    REGISTRY_TYPE_INCOMING,
+    REGISTRY_TYPE_OUTGOING,
+    REGISTRY_TYPE_TRANSPORTED,
+)
 from .database import wh_engine
 
 sql_company_query_str = """
@@ -23,16 +31,30 @@ class TypedDateInput(DateInput):
 
 
 class SiretForm(Form):
-    siret = CharField(max_length=14)
+    siret = CharField(
+        max_length=14,
+        help_text="Format: 14 chifre 123 456 789 00099",
+    )
     start_date = DateField(
-        label="Date de début des données",
-        help_text="Saisissez la date minimale pour laquelle vous souhaitez récupérer les données",
+        label="Date de début",
         widget=TypedDateInput,
     )
     end_date = DateField(
-        label="Date de fin des données",
-        help_text="Saisissez la date maximale pour laquelle vous souhaitez récupérer les données",
+        label="Date de fin",
         widget=TypedDateInput,
+    )
+    registry_type = ChoiceField(
+        label="Type de registre",
+        choices=(
+            (REGISTRY_TYPE_ALL, "Exhaustif"),
+            (REGISTRY_TYPE_INCOMING, "Entrant"),
+            (REGISTRY_TYPE_OUTGOING, "Sortant"),
+            (REGISTRY_TYPE_TRANSPORTED, "Transporté"),
+        ),
+    )
+    registry_format = ChoiceField(
+        label="Format",
+        choices=((REGISTRY_FORMAT_CSV, ".csv (données tabulées)"), (REGISTRY_FORMAT_XLS, ".xls (Excel)")),
     )
 
     def __init__(self, *ars, **kwargs):

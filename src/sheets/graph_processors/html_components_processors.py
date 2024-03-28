@@ -71,6 +71,7 @@ class BsdStatsProcessor:
         self.emitted_bs_stats = {key: None for key in keys}
         self.received_bs_stats = {key: None for key in keys}
 
+        self.pending_revisions_count = 0
         self.revised_bs_count = 0
 
         # Quantities stats is two level deep as it will store the statistics for each
@@ -254,7 +255,9 @@ class BsdStatsProcessor:
         if bs_revised_data is not None:
             bs_ids = pd.concat([bs_emitted_data["id"], bs_received_data["id"]])
             bs_revised_data = bs_revised_data[bs_revised_data["bs_id"].isin(bs_ids)]
-            self.revised_bs_count = bs_revised_data["bs_id"].nunique()
+
+            self.pending_revisions_count = bs_revised_data[bs_revised_data["status"] == "PENDING"]["id"].nunique()
+            self.revised_bs_count = bs_revised_data[bs_revised_data.status == "ACCEPTED"]["bs_id"].nunique()
 
     def _preprocess_quantities_stats(self, bs_emitted_data: pd.DataFrame, bs_received_data: pd.DataFrame) -> None:
         # We iterate over the different variables chosen to compute the statistics
@@ -335,6 +338,7 @@ class BsdStatsProcessor:
                 k: (format_number_str(v, 0) if isinstance(v, numbers.Number) else v)
                 for k, v in self.received_bs_stats.items()
             },
+            "pending_revisions_count": format_number_str(self.pending_revisions_count, precision=0),
             "revised_bs_count": format_number_str(self.revised_bs_count, precision=0),
             # quantities_stats is two level deep so we need to use a nested
             # dict comprehension loop.

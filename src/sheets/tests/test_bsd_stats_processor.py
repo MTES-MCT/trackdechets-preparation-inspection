@@ -145,6 +145,7 @@ def data_date_interval():
                     }
                 },
                 "revised_bs_count": "0",
+                "pending_revisions_count": "0",
                 "weight_volume_ratio": None,
             },
         ),
@@ -172,6 +173,7 @@ def data_date_interval():
                     }
                 },
                 "revised_bs_count": "0",
+                "pending_revisions_count": "0",
                 "weight_volume_ratio": None,
             },
         ),
@@ -211,6 +213,7 @@ def test_bsd_stats_processor(siret, sample_bs_data, data_date_interval, expected
                     "processed_in_more_than_one_month_avg_processing_time": "60j",
                 },
                 "revised_bs_count": "0",
+                "pending_revisions_count": "0",
                 "received_bs_stats": {
                     "total": "3",
                     "archived": "3",

@@ -310,25 +310,25 @@ where
 sql_revised_bsdd_query_str = """
 select id,
     bsdd_id as bs_id,
+    status,
     created_at,
     updated_at,
     comment,
     is_canceled
 from trusted_zone_trackdechets.bsdd_revision_request
 where authoring_company_id = :company_id
-    and status='ACCEPTED'
 """
 
 sql_revised_bsda_query_str = """
 select id,
     bsda_id as bs_id,
+    status,
     created_at,
     updated_at,
     comment,
     is_canceled
 from trusted_zone_trackdechets.bsda_revision_request
 where authoring_company_id = :company_id
-    and status='ACCEPTED'
 """
 
 sql_get_icpe_data = """

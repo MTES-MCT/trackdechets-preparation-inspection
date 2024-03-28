@@ -141,135 +141,138 @@
 
 </style>
 {% if emitted_bs_stats.total != 0 or received_bs_stats.total != "0" %}
-    <div class="col-framed col-print">
-        <div class="bs-stats">
-            <table>
-                <thead>
-                    <tr>
-                        <th scope="col" class="table-headline">Bordereaux</th>
-                        <th scope="col">Émis</th>
-                        <th scope="col">Reçus</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <th scope="row">Total</th>
-                        <td>{{ emitted_bs_stats.total }}</td>
-                        <td>{{ received_bs_stats.total }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Archivés</th>
-                        <td>{{ emitted_bs_stats.archived }}</td>
-                        <td>{{ received_bs_stats.archived }}</td>
-                    </tr>
-                    {% if bsd_type == "bsff" %}
-                        <tr>
-                            <th scope="row">Nombre de contenants</th>
-                            <td>{{ emitted_bs_stats.total_packagings }}</td>
-                            <td>{{ received_bs_stats.total_packagings }}</td>
-                        </tr>
-                    {% endif %}
-                    <tr>
-                        <th colspan="3">Traitement > 1 mois</th>
-                    </tr>
-                    <tr>
-                        <th scope="row">Nombre</th>
-                        <td>{{ emitted_bs_stats.processed_in_more_than_one_month_count }}</td>
-                        <td>{{ received_bs_stats.processed_in_more_than_one_month_count }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Temps moyen de traitement</th>
-                        <td>
-                            {% if emitted_bs_stats.processed_in_more_than_one_month_avg_processing_time %}
-                                {{ emitted_bs_stats.processed_in_more_than_one_month_avg_processing_time }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if received_bs_stats.processed_in_more_than_one_month_avg_processing_time %}
-                                {{ received_bs_stats.processed_in_more_than_one_month_avg_processing_time }}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% if bsd_type == "bsff" %}
-                        <tr>
-                            <th scope="row">Nombre de contenants</th>
-                            <td>{{ emitted_bs_stats.processed_in_more_than_one_month_packagings_count }}</td>
-                            <td>{{ received_bs_stats.processed_in_more_than_one_month_packagings_count }}</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Temps moyen de traitement - contenants</th>
-                            <td>
-                                {% if emitted_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time %}
-                                    {{ emitted_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time }}
-                                {% else %}
-                                    N/A
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if received_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time %}
-                                    {{ received_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time }}
-                                {% else %}
-                                    N/A
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
-        <div class="revised-bs-count">
-            <span class="td-font-lead">{{ revised_bs_count }}</span>bordereaux corrigés
-        </div>
-        <div class="quantities-stats">
-            {% for k, v in quantities_stats.items %}
-                <div class="quantity-stats">
-                    <div>
-                        <p class="sc-number">
-                            <span class="td-font-display">{{ v.total_quantity_incoming }}</span>
-                            {% if k == "volume" %}
-                                m³ entrants
-                            {% else %}
-                                tonnes entrantes
-                            {% endif %}
-                        </p>
-                    </div>
-                    <div>
-                        <svg style="width:100%;height:45px;">
-                            <rect width="{{ v.bar_size_incoming }}%" height="20" y="0" x="0" fill="rgba(255, 0, 15, 0.7)">
-                            </rect>
-                            <rect width="100%" height="20" y="0" x="0" stroke="rgba(255, 0, 15, 1)", fill="rgba(0,0,0,0)">
-                            </rect>
-                            <rect width="{{ v.bar_size_outgoing }}%" height="20" y="25" x="0" fill="rgba(106, 106, 244, 0.7)">
-                            </rect>
-                            <rect width="100%" height="20" y="25" x="0" stroke="rgba(106, 106, 244, 1)", fill="rgba(0,0,0,0)">
-                            </rect>
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="sc-number">
-                            <span class="td-font-display">{{ v.total_quantity_outgoing }}</span>
-                            {% if k == "volume" %}
-                                m³ sortants
-                            {% else %}
-                                tonnes sortantes
-                            {% endif %}
-                        </p>
-                    </div>
-                </div>
-            {% endfor %}
-            {% if weight_volume_ratio %}
-                <div>
-                    Ratio masse/volume : <span class="td-font-lead">{{ weight_volume_ratio }}</span> kg/m³
-                </div>
-            {% endif %}
-        </div>
+  <div class="col-framed col-print">
+    <div class="bs-stats">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col" class="table-headline">Bordereaux</th>
+            <th scope="col">Émis</th>
+            <th scope="col">Reçus</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Total</th>
+            <td>{{ emitted_bs_stats.total }}</td>
+            <td>{{ received_bs_stats.total }}</td>
+          </tr>
+          <tr>
+            <th scope="row">Archivés</th>
+            <td>{{ emitted_bs_stats.archived }}</td>
+            <td>{{ received_bs_stats.archived }}</td>
+          </tr>
+          {% if bsd_type == "bsff" %}
+            <tr>
+              <th scope="row">Nombre de contenants</th>
+              <td>{{ emitted_bs_stats.total_packagings }}</td>
+              <td>{{ received_bs_stats.total_packagings }}</td>
+            </tr>
+          {% endif %}
+          <tr>
+            <th colspan="3">Traitement > 1 mois</th>
+          </tr>
+          <tr>
+            <th scope="row">Nombre</th>
+            <td>{{ emitted_bs_stats.processed_in_more_than_one_month_count }}</td>
+            <td>{{ received_bs_stats.processed_in_more_than_one_month_count }}</td>
+          </tr>
+          <tr>
+            <th scope="row">Temps moyen de traitement</th>
+            <td>
+              {% if emitted_bs_stats.processed_in_more_than_one_month_avg_processing_time %}
+                {{ emitted_bs_stats.processed_in_more_than_one_month_avg_processing_time }}
+              {% else %}
+                N/A
+              {% endif %}
+            </td>
+            <td>
+              {% if received_bs_stats.processed_in_more_than_one_month_avg_processing_time %}
+                {{ received_bs_stats.processed_in_more_than_one_month_avg_processing_time }}
+              {% else %}
+                N/A
+              {% endif %}
+            </td>
+          </tr>
+          {% if bsd_type == "bsff" %}
+            <tr>
+              <th scope="row">Nombre de contenants</th>
+              <td>{{ emitted_bs_stats.processed_in_more_than_one_month_packagings_count }}</td>
+              <td>{{ received_bs_stats.processed_in_more_than_one_month_packagings_count }}</td>
+            </tr>
+            <tr>
+              <th scope="row">Temps moyen de traitement - contenants</th>
+              <td>
+                {% if emitted_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time %}
+                  {{ emitted_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time }}
+                {% else %}
+                  N/A
+                {% endif %}
+              </td>
+              <td>
+                {% if received_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time %}
+                  {{ received_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time }}
+                {% else %}
+                  N/A
+                {% endif %}
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
     </div>
+    <div class="revised-bs-count">
+      <span class="td-font-lead">{{ revised_bs_count }}</span>bordereaux corrigés
+      {% if pending_revisions_count %}
+        et <span class="td-font-lead">{{ pending_revisions_count }}</span>demandes de révision en cours ⏳
+      {% endif %}
+    </div>
+    <div class="quantities-stats">
+      {% for k, v in quantities_stats.items %}
+        <div class="quantity-stats">
+          <div>
+            <p class="sc-number">
+              <span class="td-font-display">{{ v.total_quantity_incoming }}</span>
+              {% if k == "volume" %}
+                m³ entrants
+              {% else %}
+                tonnes entrantes
+              {% endif %}
+            </p>
+          </div>
+          <div>
+            <svg style="width:100%;height:45px;">
+              <rect width="{{ v.bar_size_incoming }}%" height="20" y="0" x="0" fill="rgba(255, 0, 15, 0.7)">
+              </rect>
+              <rect width="100%" height="20" y="0" x="0" stroke="rgba(255, 0, 15, 1)", fill="rgba(0,0,0,0)">
+              </rect>
+              <rect width="{{ v.bar_size_outgoing }}%" height="20" y="25" x="0" fill="rgba(106, 106, 244, 0.7)">
+              </rect>
+              <rect width="100%" height="20" y="25" x="0" stroke="rgba(106, 106, 244, 1)", fill="rgba(0,0,0,0)">
+              </rect>
+            </svg>
+          </div>
+          <div>
+            <p class="sc-number">
+              <span class="td-font-display">{{ v.total_quantity_outgoing }}</span>
+              {% if k == "volume" %}
+                m³ sortants
+              {% else %}
+                tonnes sortantes
+              {% endif %}
+            </p>
+          </div>
+        </div>
+      {% endfor %}
+      {% if weight_volume_ratio %}
+        <div>
+          Ratio masse/volume : <span class="td-font-lead">{{ weight_volume_ratio }}</span> kg/m³
+        </div>
+      {% endif %}
+    </div>
+  </div>
 {% else %}
-    <div class="sc-primary">
-        <span>Pas de données</span>
-    </div>
+  <div class="sc-primary">
+    <span>Pas de données</span>
+  </div>
 {% endif %}

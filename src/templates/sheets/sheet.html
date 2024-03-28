@@ -326,6 +326,10 @@
         {# end Transborder section #}
         {# Appendices section #}
         <h2 class="section__title">Annexes</h2>
+        {# input/output #}
+        <h3>Liste des déchets entrants, sortants et transportés</h3>
+        <div>{% render_waste_flows_table sheet %}</div>
+        {# end input/output #}
         {# bsd canceled table #}
         <div>{% render_bsd_canceled_table sheet %}</div>
         {# end bsd canceled table #}
@@ -338,11 +342,7 @@
         {#  quantity outliers table #}
         <div>{% render_quantity_outliers_table sheet %}</div>
         {# end quantity outliers table #}
-        {# input/output #}
-        <h23>Liste des déchets entrants, sortants et transportés
-    </h3>
-    <div>{% render_waste_flows_table sheet %}</div>
-    {# end input/output #}
+
     {# end Appendices section #}
 </div>
 {% endblock %}

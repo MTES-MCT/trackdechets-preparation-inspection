@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}
+    {{ _("Login") }}
+{% endblock title %}
+{% block main %}
+    <div class="fr-container">
+        <div class="fr-grid-row fr-grid-row--center fr-mt-4v">
+            <div class="fr-col-5">
+                <h3>Connexion Mon Aiott</h3>
+                {% if user.is_authenticated %}
+                    <div style="display:flex; align-items: center">
+                        Veuillez vous déconnecter&nbsp;
+                        <form action="{% url "logout" %}" method="post">
+                            {% csrf_token %}
+                            <button class="fr-btn">Déconnexion</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <p>
+                        Se connecter avec <a href="{% url "monaiot_login" "monaiot" %}">MON AIOT</a>
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    {% endblock %}

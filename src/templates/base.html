@@ -62,7 +62,7 @@
                     </div>
                 </div>
             </div>
-            {% if user.is_verified %}
+            {% if user.is_verified or user.is_authenticated_from_monaiot %}
                 <div class="fr-container">
                     <nav role="navigation" aria-label="Menu principal" class="fr-nav">
                         <ul class="fr-nav__list">
@@ -87,7 +87,7 @@
                             <li class="fr-nav__item">
                                 <form action="{% url "logout" %}" method="post">
                                     {% csrf_token %}
-                                    <button class="fr-nav__link"
+                                    <button class="fr-nav__link "
                                             aria-controls="modal-header__menu"
                                             style="padding: 1rem">Déconnexion</button>
                                 </form>

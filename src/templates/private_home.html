@@ -16,7 +16,7 @@
             <p>
                 <form action="{% url "logout" %}" method="post">
                     {% csrf_token %}
-                    <button aria-controls="modal-header__menu" class="fr-nav__link">Déconnexion</button>
+                    <button class="fr-fr-btn fr-btn--tertiary-no-outline fr-icon-logout-box-r-line">Déconnexion</button>
                 </form>
             </p>
         {% else %}

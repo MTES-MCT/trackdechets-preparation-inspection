@@ -35,6 +35,11 @@ INSTALLED_APPS = [
     "django_otp",
     "django_otp.plugins.otp_email",
     "request",  # webstats module
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.openid_connect",
+    "aiot_provider",
     "accounts",
     "content",
     "sheets",
@@ -52,6 +57,8 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "defender.middleware.FailedLoginMiddleware",
     "request.middleware.RequestMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
+    "aiot_provider.middleware.MonaiotMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -128,6 +135,13 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    "django.contrib.auth.backends.ModelBackend",
+    # `allauth` specific authentication methods, such as login by email
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
 ADMIN_SLUG = env("ADMIN_SLUG")
 
 AUTH_USER_MODEL = "accounts.User"
@@ -173,3 +187,47 @@ OTP_EMAIL_SUBJECT = "Votre code pour Trackdéchets fiche établissement"
 OTP_EMAIL_BODY_TEMPLATE_PATH = "emails/second_factor/second_factor.txt"
 OTP_EMAIL_BODY_HTML_TEMPLATE_PATH = "emails/second_factor/second_factor.html"
 OTP_EMAIL_THROTTLE_DELAY = 300  # s
+
+# allauth monaiot
+ACCOUNT_ADAPTER = "aiot_provider.account_adapter.MonaiotAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "aiot_provider.account_adapter.MonaiotSocialAccountAdapter"
+SOCIALACCOUNT_ENABLED = True
+SOCIALACCOUNT_STORE_TOKENS = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_AUTO_SIGNUP = True
+AUTO_SIGNUP = True
+ACCOUNT_EMAIL_VERIFICATION = "none"
+MONAIOT_SERVER_URL = env("MONAIOT_SERVER_URL")
+MONAIOT_REALM = env("MONAIOT_REALM")
+MONAIOT_CLIENT_ID = env("MONAIOT_CLIENT_ID")
+MONAIOT_SECRET = env("MONAIOT_SECRET")
+SOCIALACCOUNT_FORMS = {"signup": "aiot_provider.forms.MonAiotSignupForm"}
+
+WELL_KNOWN_URL = f"{MONAIOT_SERVER_URL}/auth/realms/{MONAIOT_REALM}/.well-known/openid-configuration"
+SOCIALACCOUNT_PROVIDERS = {
+    "monaiot": {
+        "APPS": [
+            {
+                "provider_id": "monaiot",
+                "name": "monaiot",
+                "client_id": MONAIOT_CLIENT_ID,
+                "secret": MONAIOT_SECRET,
+                "settings": {"server_url": WELL_KNOWN_URL, "token_auth_method": "client_secret_jwt"},
+            }
+        ],
+        "SCOPE": [
+            "openid",
+            "profile",
+            "email",
+            "microprofile-jwt",
+            "roles",
+            "acr",
+            "phone",
+            "address",
+            "web-origins",
+        ],
+    }
+}
+
+
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])

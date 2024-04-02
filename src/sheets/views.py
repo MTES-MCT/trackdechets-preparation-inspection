@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic import DetailView, FormView, TemplateView
 
-from common.mixins import SecondFactorMixin
+from common.mixins import FullyLoggedMixin
 from config.celery_app import app
 from content.models import FeedbackResult
 
@@ -19,15 +19,15 @@ class PublicHomeView(TemplateView):
     template_name = "public_home.html"
 
     def get(self, request, *args, **kwargs):
-        """Redirect user to private home or second_factor page wether they're logged in or verified."""
-        if request.user.is_verified():
+        """Redirect user to private home or second_factor page wether they're logged in or verified/authenticated_from_monaio."""
+        if request.user.is_verified() or request.user.is_authenticated_from_monaiot:
             return HttpResponseRedirect(reverse_lazy("private_home"))
         if request.user.is_authenticated:
             return HttpResponseRedirect(reverse_lazy("second_factor"))
         return super().get(request, *args, **kwargs)
 
 
-class PrivateHomeView(SecondFactorMixin, TemplateView):
+class PrivateHomeView(FullyLoggedMixin, TemplateView):
     template_name = "private_home.html"
 
     def has_filled_survey(self):
@@ -41,7 +41,7 @@ class PrivateHomeView(SecondFactorMixin, TemplateView):
 CHECK_INSPECTION = False
 
 
-class Prepare(SecondFactorMixin, FormView):
+class Prepare(FullyLoggedMixin, FormView):
     """
     View to prepare an inspection sheet $:
         - render a form
@@ -82,9 +82,6 @@ class Prepare(SecondFactorMixin, FormView):
 
         return super().form_valid(form)
 
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(**kwargs, computed=self.new_inspection)
-
     def get_success_url(self):
         if self.existing_inspection:
             return reverse("sheet", args=[self.existing_inspection.pk])
@@ -94,7 +91,7 @@ class Prepare(SecondFactorMixin, FormView):
         )
 
 
-class ComputingView(SecondFactorMixin, TemplateView):
+class ComputingView(FullyLoggedMixin, TemplateView):
     """Optional `task_id` trigger result polling in template"""
 
     template_name = "sheets/result.html"
@@ -126,7 +123,7 @@ STATE_RUNNING = "running"
 STATE_DONE = "done"
 
 
-class FragmentResultView(SecondFactorMixin, TemplateView):
+class FragmentResultView(FullyLoggedMixin, TemplateView):
     """View to be called by ResultView template to render api call results when done"""
 
     template_name = "sheets/_prepare_result.html"
@@ -163,13 +160,13 @@ class FragmentResultView(SecondFactorMixin, TemplateView):
         return ctx
 
 
-class Sheet(SecondFactorMixin, DetailView):
+class Sheet(FullyLoggedMixin, DetailView):
     model = ComputedInspectionData
     template_name = "sheets/sheet.html"
     context_object_name = "sheet"
 
 
-class PrepareSheetPdf(SecondFactorMixin, DetailView):
+class PrepareSheetPdf(FullyLoggedMixin, DetailView):
     model = ComputedInspectionData
 
     def get(self, request, *args, **kwargs):
@@ -188,7 +185,7 @@ class PrepareSheetPdf(SecondFactorMixin, DetailView):
         return HttpResponseRedirect("/")
 
 
-class SheetPdfHtml(SecondFactorMixin, DetailView):
+class SheetPdfHtml(FullyLoggedMixin, DetailView):
     """For debugging purpose"""
 
     model = ComputedInspectionData
@@ -226,7 +223,7 @@ class SheetPdfHtml(SecondFactorMixin, DetailView):
         return ctx
 
 
-class SheetPdf(SecondFactorMixin, DetailView):
+class SheetPdf(FullyLoggedMixin, DetailView):
     model = ComputedInspectionData
 
     def get(self, request, *args, **kwargs):

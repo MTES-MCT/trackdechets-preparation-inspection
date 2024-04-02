@@ -26,6 +26,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         help_text=_("Can the user log into this admin site. ONLY SET THIS FOR SUPERADMINS USERS!"),
     )
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
+    monaiot_connexion = models.BooleanField(
+        _("Mon aiot connexion"), help_text=_("Did this user already log in with monaiot ?"), default=False
+    )
+    monaiot_signup = models.BooleanField(
+        _("Mon aiot inscription"), help_text=_("Did this user sign up in with monaiot ?"), default=False
+    )
+
     objects = UserManager()
 
     class Meta:

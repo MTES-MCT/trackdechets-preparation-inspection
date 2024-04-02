@@ -20,3 +20,9 @@ CELERY_ALWAYS_EAGER = True
 MESSAGE_RECIPIENTS = ["lorem@ipsum.lol"]
 
 OTP_EMAIL_TOKEN_VALIDITY = 600
+
+MONAIOT_SERVER_URL = "https://lorem.test"
+MONAIOT_REALM = "realm"
+MONAIOT_CLIENT_ID = "td"
+MONAIOT_SECRET = "xyz"
+CSRF_TRUSTED_ORIGINS = ["https://url.test"]

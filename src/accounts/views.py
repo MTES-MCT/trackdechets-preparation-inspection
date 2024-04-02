@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.views import LoginView as BaseLoginView
 from django.http import HttpResponseRedirect
+from django.shortcuts import resolve_url
 from django.urls import reverse_lazy
 from django.views.generic import FormView
 from django_otp import login as otp_login
@@ -29,8 +30,17 @@ class SendSecondFactorMailMixin:
 
 
 class LoginView(SendSecondFactorMailMixin, BaseLoginView):
+    def get_default_redirect_url(self):
+        try:
+            if self.request.user.is_authenticated_from_monaiot():
+                return resolve_url("private_home")
+        except AttributeError:
+            pass
+        return resolve_url(settings.LOGIN_REDIRECT_URL)
+
     def form_valid(self, form):
         res = super().form_valid(form)
+
         self.process()
         return res
 

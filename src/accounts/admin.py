@@ -44,6 +44,8 @@ class CustomUserAdmin(UserAdmin):
         "is_superuser",
         "last_login",
         "date_joined",
+        "monaiot_connexion",
+        "monaiot_signup",
     ]
 
     fieldsets = (

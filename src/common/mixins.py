@@ -4,17 +4,23 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 
 
-class SecondFactorMixin(UserPassesTestMixin):
+class FullyLoggedMixin(UserPassesTestMixin):
     """
-    Forbid access to non verified user (user logged with second factor).
+    Forbid access to :
+     - non verified users (users logged with second factor)
+     - users not coming from MonAiot
     Redirect them :
-        - to verifiy page if they'rr logged in without second factor
+        - to verifiy page if they're logged in without second factor and not coming from Monaiot
         - to login page if they're not logged.
 
     """
 
     def test_func(self, user):
-        return user.is_authenticated and user.is_verified()
+        if not user.is_authenticated:
+            return False
+        is_verified_with_otp = user.is_verified()
+        is_authenticated_from_monaiot = user.is_authenticated_from_monaiot()
+        return is_verified_with_otp or is_authenticated_from_monaiot
 
     def no_permissions_fail(self, request=None):
         if request.user.is_authenticated:

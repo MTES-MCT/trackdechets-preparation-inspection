@@ -59,6 +59,7 @@ def test_login_view_accepts_good_password_and_sends_email(anon_client):
 
     # Good password
     res = anon_client.post(login_url, {"email": user.email, "password": DEFAULT_PASSWORD})
+
     assert res.status_code == 302
     assert res.url == second_factor_url
 

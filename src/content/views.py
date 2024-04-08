@@ -4,7 +4,7 @@ from django.core.mail import EmailMessage
 from django.urls import reverse_lazy
 from django.views.generic import FormView
 
-from common.mixins import SecondFactorMixin
+from common.mixins import FullyLoggedMixin
 
 from .forms import FeedbackForm
 from .models import FeedbackResult
@@ -12,7 +12,7 @@ from .models import FeedbackResult
 subject = "Un utilisateur a rempli un formulaire de feedback"
 
 
-class FeedbackView(SecondFactorMixin, SuccessMessageMixin, FormView):
+class FeedbackView(FullyLoggedMixin, SuccessMessageMixin, FormView):
     template_name = "content/feedback.html"
     form_class = FeedbackForm
     success_url = reverse_lazy("private_home")

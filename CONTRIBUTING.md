@@ -10,6 +10,6 @@ Workflow:
 - Un email contenant un code secret lui est adressé, le code a une durée de vie de `OTP_EMAIL_TOKEN_VALIDITY` secondes (10 mn par défaut)
 - Il est dirigé vers la page du second facteur
 - Il renseigne le code reçu. Il est désormais vérifié ( user.is_verified() est True )
-- Les views à protéger héritent de SecondFactorMixin qui requiert un user vérifié
+- Les views à protéger héritent de FullyLoggedMixin qui requiert un user vérifié ou connecté via Monaiot
 - L'admin django est également protégé
 - L'utilisateur peut demander un renvoi de code. L'envoi est throttlé (`OTP_EMAIL_THROTTLE_DELAY` secondes) via une key redis pour éviter les abus.

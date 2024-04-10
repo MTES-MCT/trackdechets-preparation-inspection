@@ -59,6 +59,7 @@ class SiretForm(Form):
 
     def __init__(self, *ars, **kwargs):
         initial = kwargs.get("initial", {})
+        self.is_registry = kwargs.pop("is_registry", False)
         # set initial value and max attrs at form instanciation to prevent unwanted value cache
         today = dt.date.today()
         initial.update(
@@ -70,7 +71,9 @@ class SiretForm(Form):
         kwargs["initial"] = initial
         super().__init__(*ars, **kwargs)
         self.fields["start_date"].widget.attrs.update({"max": today.isoformat()})
-        self.fields["end_date"].widget.attrs.update({"max": today.isoformat()})
+        self.fields["end_date"].widget.attrs.update(
+            {"max": dt.date(day=31, month=12, year=dt.date.today().year).isoformat()}
+        )
 
     def clean(self):
         cleaned_data = super().clean()
@@ -83,13 +86,23 @@ class SiretForm(Form):
     def clean_start_date(self):
         start_date = self.cleaned_data["start_date"]
         if start_date > dt.date.today():
-            raise ValidationError("Les dates postérieures à aujourd'hui ne sont pas acceptées")
+            raise ValidationError("Les dates postérieures à aujourd'hui ne sont pas acceptéest")
         return start_date
 
     def clean_end_date(self):
         end_date = self.cleaned_data["end_date"]
-        if end_date > dt.date.today():
-            raise ValidationError("Les dates postérieures à aujourd'hui ne sont pas acceptées")
+
+        if self.is_registry:
+            current_year = dt.date.today().year
+            if end_date.year > current_year:
+                raise ValidationError(
+                    f"Les dates postérieures à {current_year} ne sont pas acceptées pour le registre"
+                )
+        else:
+            if end_date > dt.date.today():
+                raise ValidationError(
+                    "Les dates postérieures à aujourd'hui ne sont pas acceptées  pour la fiche établissement"
+                )
         return end_date
 
     def clean_siret(self):

@@ -216,17 +216,7 @@ SOCIALACCOUNT_PROVIDERS = {
                 "settings": {"server_url": WELL_KNOWN_URL, "token_auth_method": "client_secret_jwt"},
             }
         ],
-        "SCOPE": [
-            "openid",
-            "profile",
-            "email",
-            "microprofile-jwt",
-            "roles",
-            "acr",
-            "phone",
-            "address",
-            "web-origins",
-        ],
+        "SCOPE": MONAIOT_SCOPES,
     }
 }
 

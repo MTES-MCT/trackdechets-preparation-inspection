@@ -9,7 +9,10 @@ from django.urls import reverse
 MANAGER_ID = 4
 ADMIN_ID = 2
 GUN_ID = 3
-ALLOWED_PROFILES = {MANAGER_ID, ADMIN_ID, GUN_ID}
+GUN_READER_ID = 6  # administration centrale
+
+ALLOWED_PROFILES = {MANAGER_ID, ADMIN_ID, GUN_ID, GUN_READER_ID}
+ALLOWED_PERIMETER = "ICPE"
 
 
 class MonAiotDConnectAdapter(OpenIDConnectAdapter):
@@ -23,13 +26,17 @@ class MonAiotDConnectAdapter(OpenIDConnectAdapter):
         response.raise_for_status()
         extra_data = response.json()
         droits_data = extra_data.get("droits", None)
+
         if not droits_data:
             raise PermissionDenied
 
         droits = json.loads(droits_data)
         profiles = [el.get("id_profil") for el in droits]
+        perimeters = [el.get("perimetre_ic") for el in droits]
 
         if not ALLOWED_PROFILES.intersection(set(profiles)):
+            raise PermissionDenied
+        if ALLOWED_PERIMETER not in perimeters:
             raise PermissionDenied
 
         return self.get_provider().sociallogin_from_response(request, extra_data)

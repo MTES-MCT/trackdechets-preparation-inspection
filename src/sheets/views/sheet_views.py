@@ -41,10 +41,17 @@ class Prepare(FullyLoggedMixin, FormView):
         today = dt.date.today()
         self.existing_inspection = ComputedInspectionData.objects.filter(org_id=siret, created__date=today).first()
 
-    def form_valid(self, form):
+    def post(self, request, *args, **kwargs):
         self.is_registry = bool(self.request.POST.get("registry"))
         self.is_inspection = bool(self.request.POST.get("inspection"))
+        return super().post(request, *args, **kwargs)
 
+    def get_form_kwargs(self):
+        kw = super().get_form_kwargs()
+        kw.update({"is_registry": self.is_registry})
+        return kw
+
+    def form_valid(self, form):
         if self.is_inspection:
             return self.handle_inspection(form)
         if self.is_registry:

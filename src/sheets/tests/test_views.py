@@ -61,4 +61,6 @@ def test_sheet_prepare(verified_user):
     }
 
     assert form.fields["start_date"].widget.attrs == {"max": today.isoformat()}
-    assert form.fields["end_date"].widget.attrs == {"max": today.isoformat()}
+    assert form.fields["end_date"].widget.attrs == {
+        "max": dt.date(day=31, month=12, year=dt.date.today().year).isoformat()
+    }

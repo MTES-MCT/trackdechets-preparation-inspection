@@ -4,6 +4,10 @@
     {% include "content/_survey_callout.html" %}
     <div class="fr-container fr-mt-1v">
         <h3>Fiche établissement</h3>
+        <div class="fr-alert fr-alert--info fr-mb-10v">
+            <h3 class="fr-alert__title">Accès au registre</h3>
+            <p>Le téléchargement du registre est maintenant proposé en version béta.</p>
+        </div>
         <form method="post" {% url "prepare" %}>
             {% csrf_token %}
             {% if form.errors or has_errors %}
@@ -74,7 +78,7 @@
             }
 
             const today = new Date();
-            const oneYearAgo = subtractYear( new Date())
+            const oneYearAgo = subtractYear(new Date())
 
             const buttons = document.querySelectorAll('[data-period-btn]');
             const startDateInput = document.getElementById('id_start_date');
@@ -89,7 +93,7 @@
                     }
                     if (period === "this_year") {
                         endDateInput.value = toisoStr(new Date(new Date().getFullYear(), 11, 32))
-                        startDateInput.value = toisoStr(new Date(new Date().getFullYear()  , 0, 2))
+                        startDateInput.value = toisoStr(new Date(new Date().getFullYear(), 0, 2))
                     }
                     if (period === "prev_year") {
                         endDateInput.value = toisoStr(new Date(new Date().getFullYear() - 1, 11, 32))

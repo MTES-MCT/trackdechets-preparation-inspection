@@ -1,12 +1,13 @@
 from allauth.socialaccount import providers
 from allauth.socialaccount.providers.openid_connect.provider import OpenIDConnectProvider
+from django.conf import settings
 
 
 class MonaiotLoginProvider(OpenIDConnectProvider):
     id = "monaiot"
     slug = "monaiot"
     name = "monaiot Login (OpenID Connect)"
-    scopes = ("openid", "email", "phone", "profile")
+    scopes = settings.MONAIOT_SCOPES
 
 
 # https://django-allauth.readthedocs.io/en/latest/advanced.html#customizing-providers

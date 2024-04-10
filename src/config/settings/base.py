@@ -201,6 +201,7 @@ MONAIOT_SERVER_URL = env("MONAIOT_SERVER_URL")
 MONAIOT_REALM = env("MONAIOT_REALM")
 MONAIOT_CLIENT_ID = env("MONAIOT_CLIENT_ID")
 MONAIOT_SECRET = env("MONAIOT_SECRET")
+MONAIOT_SCOPES = env.list("MONAIOT_SCOPES", default=[])
 SOCIALACCOUNT_FORMS = {"signup": "aiot_provider.forms.MonAiotSignupForm"}
 
 WELL_KNOWN_URL = f"{MONAIOT_SERVER_URL}/auth/realms/{MONAIOT_REALM}/.well-known/openid-configuration"

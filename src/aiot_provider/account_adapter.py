@@ -42,7 +42,7 @@ class MonaiotSocialAccountAdapter(DefaultSocialAccountAdapter):
 
         email = sociallogin.account.extra_data.get("email", None)
         # verify we have a verified email address
-        if not (email):
+        if not email:
             return
         User = get_user_model()
         # check if given email address already exists as a verified email on

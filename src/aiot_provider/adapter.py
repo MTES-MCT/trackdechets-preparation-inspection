@@ -10,6 +10,8 @@ MANAGER_ID = 4
 ADMIN_ID = 2
 GUN_ID = 3
 GUN_READER_ID = 6  # administration centrale
+GUN_READER_ALLOWED_APPLICATION_ID = 3
+GUN_READER_ALLOWED_SERVICE_ID = 59
 
 ALLOWED_PROFILES = {MANAGER_ID, ADMIN_ID, GUN_ID, GUN_READER_ID}
 ALLOWED_PERIMETER = "ICPE"
@@ -17,7 +19,7 @@ ALLOWED_PERIMETER = "ICPE"
 
 class MonAiotDConnectAdapter(OpenIDConnectAdapter):
     def complete_login(self, request, app, token, response):
-        """Ensure userinfo carries relevant permissions to log user in"""
+        """Ensure userinfo carries relevant permissions to log user in or create their account"""
         response = (
             get_adapter()
             .get_requests_session()
@@ -31,13 +33,25 @@ class MonAiotDConnectAdapter(OpenIDConnectAdapter):
             raise PermissionDenied
 
         droits = json.loads(droits_data)
+
         profiles = [el.get("id_profil") for el in droits]
         perimeters = [el.get("perimetre_ic") for el in droits]
 
-        if not ALLOWED_PROFILES.intersection(set(profiles)):
+        matching_profiles = ALLOWED_PROFILES.intersection(set(profiles))
+
+        if not matching_profiles:
             raise PermissionDenied
         if ALLOWED_PERIMETER not in perimeters:
             raise PermissionDenied
+
+        # Gun readers require extra verification
+        if matching_profiles == {GUN_READER_ID}:
+            id_applications = [el.get("id_application") for el in droits]
+            id_nature_services = [el.get("id_nature_service") for el in droits]
+            if GUN_READER_ALLOWED_APPLICATION_ID not in id_applications:
+                raise PermissionDenied
+            if GUN_READER_ALLOWED_SERVICE_ID not in id_nature_services:
+                raise PermissionDenied
 
         return self.get_provider().sociallogin_from_response(request, extra_data)
 

@@ -27,10 +27,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
     monaiot_connexion = models.BooleanField(
-        _("Mon aiot connexion"), help_text=_("Did this user already log in with monaiot ?"), default=False
+        _("MonAIOT connexion"), help_text=_("Did this user already log in with MonAIOT ?"), default=False
     )
     monaiot_signup = models.BooleanField(
-        _("Mon aiot inscription"), help_text=_("Did this user sign up in with monaiot ?"), default=False
+        _("MonAIOT inscription"), help_text=_("Did this user sign up in with MonAIOT ?"), default=False
     )
 
     objects = UserManager()

@@ -8,9 +8,9 @@ class FullyLoggedMixin(UserPassesTestMixin):
     """
     Forbid access to :
      - non verified users (users logged with second factor)
-     - users not coming from MonAiot
+     - users not coming from MonAIOT
     Redirect them :
-        - to verifiy page if they're logged in without second factor and not coming from Monaiot
+        - to verifiy page if they're logged in without second factor and not coming from MonAIOT
         - to login page if they're not logged.
 
     """

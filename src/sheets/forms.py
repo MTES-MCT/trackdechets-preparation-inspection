@@ -33,7 +33,7 @@ class TypedDateInput(DateInput):
 class SiretForm(Form):
     siret = CharField(
         max_length=14,
-        help_text="Format: 14 chifre 123 456 789 00099",
+        help_text="Format: 14 chiffres 123 456 789 00099",
     )
     start_date = DateField(
         label="Date de début",

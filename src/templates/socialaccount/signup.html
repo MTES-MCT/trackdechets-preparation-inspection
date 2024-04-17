@@ -3,7 +3,7 @@
 {% load allauth %}
 {% block main %}
     <div class="fr-container">
-        <p>Vous allez vous connecter pour la première fois avec MonAiot</p>
+        <p>Vous allez vous connecter pour la première fois avec MonAIOT</p>
         {% url 'socialaccount_signup' as action_url %}
         {% element form form=form method="post" action=action_url %}
         {% slot body %}

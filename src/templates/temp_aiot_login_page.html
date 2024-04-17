@@ -6,7 +6,7 @@
     <div class="fr-container">
         <div class="fr-grid-row fr-grid-row--center fr-mt-4v">
             <div class="fr-col-5">
-                <h3>Connexion Mon Aiot</h3>
+                <h3>Connexion MonAIOT</h3>
                 {% if user.is_authenticated %}
                     <div style="display:flex; align-items: center">
                         Veuillez vous déconnecter&nbsp;
@@ -17,7 +17,7 @@
                     </div>
                 {% else %}
                     <p>
-                        Se connecter avec <a href="{% url "monaiot_login" "monaiot" %}">MON AIOT</a>
+                        Se connecter avec <a href="{% url "monaiot_login" "monaiot" %}">MonAIOT</a>
                     </p>
                 {% endif %}
             </div>

@@ -1,5 +1,6 @@
 from allauth.socialaccount.providers.oauth2.views import OAuth2CallbackView, OAuth2LoginView
-from django.shortcuts import render
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.views.generic import TemplateView
 
 from common.mixins import FullyLoggedMixin
@@ -28,7 +29,7 @@ def callback(request, provider_id):
 
 
 def temp_aiot_login_page(request):
-    return render(request, "temp_aiot_login_page.html")
+    return HttpResponseRedirect(reverse("login"))
 
 
 class PostMonAiotSignup(FullyLoggedMixin, TemplateView):

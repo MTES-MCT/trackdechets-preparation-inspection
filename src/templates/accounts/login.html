@@ -1,29 +1,55 @@
 {% extends 'base.html' %}
+{% load static allauth %}
 {% block title %}
     {{ _("Login") }}
 {% endblock title %}
 {% block main %}
+    <style>
+    hr{
+ 
+        transform: translateY(12px);
+ 
+    }
+    </style>
     <div class="fr-container">
         <div class="fr-grid-row fr-grid-row--center fr-mt-4v">
             <div class="fr-col-5">
-                {% include "content/_rename_banner.html" %}
-                <div></div>
                 <form action="" method="post">
                     {% csrf_token %}
                     <h2 class="text-center">{{ _("Connexion ") }}</h2>
-                    <div class="fr-alert fr-alert--warning fr-mb-3v">
-                        <h3 class="fr-alert__title">Renforcement de la sécurité</h3>
+                    <div class="fr-alert fr-alert--info fr-mb-3v">
                         <p>
-                            Désormais, pour vous connecter un code à 6 chiffre vous est envoyé par email après l'entrée
-                            de votre login et mot de passe.
+                            Désormais, les agents disposant d'un accès GUN peuvent se connecter via <strong>MonAIOT</strong>.
                         </p>
-                        <p>Ce code est a copier dans un champ qui apparaitra à la page suivante.</p>
+                        <p>La connexion habituelle par email/mot de passe et code de vérification reste disponible.</p>
                     </div>
                     {% include "forms/_form_snippet.html" with form=form %}
                     <input type="hidden" name="next" value="{{ next }}" />
                     <button class="fr-btn">{{ _("Connexion") }}</button>
                     <a href="{% url "password_reset" %}">Réinitialiser mon mot de passe</a>
                 </form>
-            </div>
+                <div class="fr-grid-row fr-grid-row--center fr-grid-row--middle fr-grid-row--gutters   fr-mt-10v">
+                    <div class="fr-col-3">
+                        <hr class="sep">
+                    </div>
+                    <div>OU</div>
+                    <div class="fr-col-3">
+                        <hr class="sep">
+                    </div>
+                </div>
+                <div class="fr-mt-10v">
+                    {% element form method="post" no_visible_fields=True action="/accounts/monaiot/login/" %}
+                    {% slot actions %}
+                    {% csrf_token %}
+                    <div class="fr-grid-row   fr-grid-row--middle  fr-grid-row--center ">
+                        <span>Se connecter avec</span>
+                        <button type="submit"  class="fr-btn fr-btn--tertiary fr-ml-1w">
+                            <img src="{% static "img/monaiot.png" %}" width="150px" alt="MonAIOT">
+                        </button>
+                    </div>
+                {% endslot %}
+            {% endelement %}
         </div>
-    {% endblock %}
+    </div>
+</div>
+{% endblock %}

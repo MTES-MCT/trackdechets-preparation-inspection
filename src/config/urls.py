@@ -26,7 +26,6 @@ urlpatterns = [
     path("", PublicHomeView.as_view(), name="public_home"),
     path("home/", PrivateHomeView.as_view(), name="private_home"),
     path("local-accounts/", include("accounts.urls")),
-    path("accounts/login/", PublicHomeView.as_view()),
     path("accounts/", include("allauth.urls")),
     path("content/", include("content.urls")),
     path("sheets/", include("sheets.urls")),

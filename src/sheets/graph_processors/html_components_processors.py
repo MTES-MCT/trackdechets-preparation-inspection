@@ -1884,6 +1884,7 @@ class FollowedWithPNTTDTableProcessor:
 
             final_df["quantity"] = final_df["quantity"].apply(lambda x: format_number_str(x, 2))
             final_df["description"] = final_df["description"].fillna("")
+            final_df = final_df.rename_axis(None, axis=0)
             self.preprocessed_df = final_df[
                 [
                     "foreign_org_id",

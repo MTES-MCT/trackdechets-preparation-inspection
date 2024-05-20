@@ -157,20 +157,17 @@ select
     waste_material_name as waste_name,
     destination_operation_code as processing_operation_code,
     status,
-    transporter_transport_mode,
     waste_pop,
     emitter_pickup_site_name as worksite_name,
     emitter_pickup_site_address as worksite_address,
     worker_company_siret,
-    emitter_is_private_individual,
-    transporter_company_siret
+    emitter_is_private_individual
 from
     trusted_zone_trackdechets.bsda
 where
     (emitter_company_siret = :siret
         or destination_company_siret = :siret
-        or worker_company_siret = :siret
-        or transporter_company_siret = :siret)
+        or worker_company_siret = :siret)
     and is_deleted = false
     and status::text not in ('DRAFT', 'INITIAL')
     and not is_draft

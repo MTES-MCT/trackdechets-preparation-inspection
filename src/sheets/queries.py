@@ -332,14 +332,15 @@ sql_get_icpe_data = """
 select
     code_aiot,
     rubrique,
-    alinea,
     quantite_totale as quantite,
-    unite,
-    nature
+    unite
 from
-    refined_zone_icpe.installations_rubriques
+    trusted_zone_icpe.installations_rubriques_2024
 where siret = :siret
-and (regime_rubrique in ('Enregistrement','Déclaration avec contrôle','Déclaration','Autorisation') or regime_rubrique is null)
+and (
+    libelle_etat_site not in ('A l’arrêt','Non construit','Projet abandonné','Sans titre')
+    and etat_administratif_rubrique = 'En vigueur' 
+    )
 """
 
 sql_get_trader_receipt_id_data = """

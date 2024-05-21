@@ -1381,7 +1381,7 @@ class WasteProcessingWithoutICPEProcessor:
                 "processing_codes": ["D10", "R1"],
             },
             {
-                "rubrique": "2718",
+                "rubrique": "2718-1",
                 "bs_types": [BSDD, BSDA, BSFF, BSDASRI],
                 "processing_codes": ["D13", "D14", "D15", "R12", "R13", "D9"],
             },

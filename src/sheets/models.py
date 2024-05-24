@@ -152,6 +152,12 @@ class ComputedInspectionData(models.Model):
     followed_with_pnttd_data = models.JSONField(default=dict)
     gistrid_stats_data = models.JSONField(default=dict)
 
+    non_dangerous_waste_quantities_graph_data = models.JSONField(default=dict)
+    non_dangerous_waste_quantities_graph = models.TextField(blank=True)
+
+    non_dangerous_waste_statements_graph_data = models.JSONField(default=dict)
+    non_dangerous_waste_statements_graph = models.TextField(blank=True)
+
     pdf = models.TextField(blank=True)
 
     created_by = models.EmailField(verbose_name=_("Created by"), blank=True)

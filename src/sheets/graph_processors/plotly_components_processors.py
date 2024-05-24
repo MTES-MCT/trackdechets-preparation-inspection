@@ -18,7 +18,7 @@ locale.setlocale(locale.LC_ALL, "fr_FR")
 
 
 class BsdQuantitiesGraph:
-    """Component with a Line Figure showing incoming and outgoing quantities of waste..
+    """Component with a Line Figure showing incoming and outgoing quantities of waste.
 
     Parameters
     ----------
@@ -52,8 +52,6 @@ class BsdQuantitiesGraph:
 
         self.incoming_data_by_month_series = []
         self.outgoing_data_by_month_series = []
-
-        self.figure = None
 
         self.figure = None
 
@@ -1577,6 +1575,371 @@ class TransportedQuantitiesGraphProcessor:
             gridcolor="#ccc",
         )
         fig.update_yaxes(exponentformat="B", tickformat=".2s", gridcolor="#ccc")
+
+        self.figure = fig
+
+    def build(self):
+        self._preprocess_bs_data()
+
+        figure = {}
+        if not self._check_data_empty():
+            self._create_figure()
+            figure = self.figure.to_json()
+
+        return figure
+
+
+class NonDangerousWasteQuantitiesGraphProcessor:
+    """Component with a Line Figure showing incoming and outgoing quantities of non dangerous waste.
+
+    Parameters
+    ----------
+    rndts_incoming_data: DataFrame
+        DataFrame containing data for incoming non dangerous waste (from RNDTS).
+    rndts_outgoing_data: DataFrame
+        DataFrame containing data for outgoing non dangerous waste (from RNDTS).
+    data_date_interval: tuple
+        Date interval to filter data.
+    """
+
+    def __init__(
+        self,
+        rndts_incoming_data: pd.DataFrame,
+        rndts_outgoing_data: pd.DataFrame,
+        data_date_interval: tuple[datetime, datetime],
+    ):
+        self.rndts_incoming_data = rndts_incoming_data
+        self.rndts_outgoing_data = rndts_outgoing_data
+        self.data_date_interval = data_date_interval
+
+        self.incoming_weight_by_month_serie = []
+        self.outgoing_weight_by_month_serie = []
+
+        self.incoming_volume_by_month_serie = []
+        self.outgoing_volume_by_month_serie = []
+
+        self.figure = None
+
+    def _preprocess_data(self) -> None:
+        if (incoming_data := self.rndts_incoming_data) is not None:
+            incoming_data = incoming_data[incoming_data["date_reception"].between(*self.data_date_interval)]
+            self.incoming_weight_by_month_serie = (
+                incoming_data[incoming_data["unite"] == "T"]
+                .groupby(pd.Grouper(key="date_reception", freq="1M"))["quantite"]
+                .sum()
+                .replace(0, np.nan)
+            )
+            self.incoming_volume_by_month_serie = (
+                incoming_data[incoming_data["unite"] == "M3"]
+                .groupby(pd.Grouper(key="date_reception", freq="1M"))["quantite"]
+                .sum()
+                .replace(0, np.nan)
+            )
+
+        if (outgoing_data := self.rndts_outgoing_data) is not None:
+            outgoing_data = outgoing_data[outgoing_data["date_expedition"].between(*self.data_date_interval)]
+
+            self.outgoing_weight_by_month_serie = (
+                outgoing_data[outgoing_data["unite"] == "T"]
+                .groupby(pd.Grouper(key="date_expedition", freq="1M"))["quantite"]
+                .sum()
+                .replace(0, np.nan)
+            )
+            self.outgoing_volume_by_month_serie = (
+                outgoing_data[outgoing_data["unite"] == "M3"]
+                .groupby(pd.Grouper(key="date_expedition", freq="1M"))["quantite"]
+                .sum()
+                .replace(0, np.nan)
+            )
+
+    def _check_data_empty(self) -> bool:
+        series = [
+            self.incoming_weight_by_month_serie,
+            self.outgoing_weight_by_month_serie,
+            self.incoming_volume_by_month_serie,
+            self.outgoing_volume_by_month_serie,
+        ]
+
+        # If DataFrames are empty then output is empty
+        if all(len(s) == 0 for s in series):
+            return True
+
+        # If preprocessed series are full of NA then output is empty
+        if all(s.isna().all() for s in series):
+            return True
+
+        # If preprocessed series are full of 0's then output is empty
+        if all((s == 0).all() for s in series):
+            return True
+
+        return False
+
+    def _create_figure(self) -> None:
+        fig = go.Figure()
+
+        lines = []  # Will store the lines graph objects
+
+        # We store the minimum date of each series to be able to configure
+        # the tick 0 of the figure
+        mins_x = []
+
+        # This is used to configure the dticks in case of low number of data points.
+        numbers_of_data_points = []
+
+        # We create two lines (for incoming and outgoing) for each quantity variable chosen
+        for variable_name, incoming_data_by_month, outgoing_data_by_month in zip(
+            ["quantite", "volumne"],
+            [
+                self.incoming_weight_by_month_serie,
+                self.incoming_volume_by_month_serie,
+            ],
+            [self.outgoing_weight_by_month_serie, self.outgoing_volume_by_month_serie],
+        ):
+            incoming_line_name = "Quantité entrante"
+            incoming_hover_text = "{} - <b>{}</b> tonnes entrantes"
+            outgoing_line_name = "Quantité sortante"
+            outgoing_hover_text = "{} - <b>{}</b> tonnes sortantes"
+            marker_line_style = "solid"
+            marker_symbol = "circle"
+            marker_size = 6
+
+            # To handle the case of volume
+            if variable_name == "volume":
+                incoming_line_name = "Volume entrant"
+                incoming_hover_text = "{} - <b>{}</b> m³ entrants"
+                outgoing_line_name = "Volume sortant"
+                outgoing_hover_text = "{} - <b>{}</b> m³ sortants"
+                marker_line_style = "dash"
+                marker_symbol = "triangle-up"
+                marker_size = 10
+
+            if len(incoming_data_by_month) > 0:
+                incoming_line = go.Scatter(
+                    x=incoming_data_by_month.index,
+                    y=incoming_data_by_month,
+                    name=incoming_line_name,
+                    mode="lines+markers",
+                    hovertext=[
+                        incoming_hover_text.format(index.strftime("%B %y").capitalize(), format_number_str(e))
+                        for index, e in incoming_data_by_month.items()
+                    ],
+                    hoverinfo="text",
+                    marker_color="#E1000F",
+                    marker_symbol=marker_symbol,
+                    marker_size=marker_size,
+                    line_dash=marker_line_style,
+                )
+                mins_x.append(incoming_data_by_month.index.min())
+                numbers_of_data_points.append(len(incoming_data_by_month))
+                lines.append(incoming_line)
+
+            if len(outgoing_data_by_month) > 0:
+                outgoing_line = go.Scatter(
+                    x=outgoing_data_by_month.index,
+                    y=outgoing_data_by_month,
+                    name=outgoing_line_name,
+                    mode="lines+markers",
+                    hovertext=[
+                        outgoing_hover_text.format(index.strftime("%B %y").capitalize(), format_number_str(e))
+                        for index, e in outgoing_data_by_month.items()
+                    ],
+                    hoverinfo="text",
+                    marker_color="#6A6AF4",
+                    marker_symbol=marker_symbol,
+                    marker_size=marker_size,
+                    line_dash=marker_line_style,
+                )
+                mins_x.append(outgoing_data_by_month.index.min())
+                numbers_of_data_points.append(len(outgoing_data_by_month))
+                lines.append(outgoing_line)
+
+        fig.add_traces(lines)
+
+        dtick = "M2"
+        if not numbers_of_data_points or max(numbers_of_data_points) < 3:
+            dtick = "M1"
+
+        tickangle = 0
+        y_legend = -0.07
+        if numbers_of_data_points and max(numbers_of_data_points) >= 15:
+            tickangle = -90
+            y_legend = -0.12
+
+        fig.update_layout(
+            margin={"t": 20, "l": 35, "r": 5},
+            legend={"orientation": "h", "y": y_legend, "x": 0},
+            legend_font_size=11,
+            legend_bgcolor="rgba(0,0,0,0)",
+            showlegend=True,
+            paper_bgcolor="#fff",
+            plot_bgcolor="rgba(0,0,0,0)",
+        )
+
+        fig.update_xaxes(
+            tickangle=tickangle,
+            tickformat="%b %y",
+            tick0=min(mins_x) if mins_x else None,
+            dtick=dtick,
+            gridcolor="#ccc",
+        )
+        fig.update_yaxes(exponentformat="B", tickformat=".2s", gridcolor="#ccc")
+
+        self.figure = fig
+
+    def build(self):
+        self._preprocess_data()
+
+        figure = {}
+        if not self._check_data_empty():
+            self._create_figure()
+            figure = self.figure.to_json()
+
+        return figure
+
+
+class NonDangerousWasteStatementsGraphProcessor:
+    """Component with a Bar Figure of incoming and outgoing RNDTS statements.
+
+     Parameters
+    ----------
+    rndts_incoming_data: DataFrame
+        DataFrame containing data for incoming non dangerous waste (from RNDTS).
+    rndts_outgoing_data: DataFrame
+        DataFrame containing data for outgoing non dangerous waste (from RNDTS).
+    data_date_interval: tuple
+        Date interval to filter data.
+    """
+
+    def __init__(
+        self,
+        rndts_incoming_data: pd.DataFrame,
+        rndts_outgoing_data: pd.DataFrame,
+        data_date_interval: tuple[datetime, datetime],
+    ) -> None:
+        self.rndts_incoming_data = rndts_incoming_data
+        self.rndts_outgoing_data = rndts_outgoing_data
+        self.data_date_interval = data_date_interval
+
+        self.statements_emitted_by_month_serie = None
+        self.statements_received_by_month_serie = None
+
+        self.figure = None
+
+    def _preprocess_bs_data(self) -> None:
+        """Preprocess raw RNDTS data to prepare it for plotting."""
+
+        if (incoming_data := self.rndts_incoming_data) is not None:
+            incoming_data = incoming_data[incoming_data["date_reception"].between(*self.data_date_interval)].dropna(
+                subset=["date_reception"]
+            )
+            self.statements_emitted_by_month_serie = incoming_data.groupby(
+                pd.Grouper(key="date_reception", freq="1M")
+            ).id.count()
+
+        if (outgoing_data := self.rndts_outgoing_data) is not None:
+            outgoing_data = self.rndts_outgoing_data
+            outgoing_data = outgoing_data[outgoing_data["date_expedition"].between(*self.data_date_interval)].dropna(
+                subset=["date_expedition"]
+            )
+            self.statements_received_by_month_serie = outgoing_data.groupby(
+                pd.Grouper(key="date_expedition", freq="1M")
+            ).id.count()
+
+    def _check_data_empty(self) -> bool:
+        if len(self.statements_emitted_by_month_serie) == len(self.statements_received_by_month_serie) == 0:
+            return True
+
+        return False
+
+    def _create_figure(self) -> None:
+        statements_emitted_by_month = self.statements_emitted_by_month_serie
+        statements_received_by_month = self.statements_received_by_month_serie
+
+        text_size = 12
+
+        statements_emitted_bars = go.Bar(
+            x=statements_emitted_by_month.index,
+            y=statements_emitted_by_month,
+            name="Déclarations de déchets non dangereux sortants",
+            hovertext=[
+                "{} - <b>{}</b> déclaration(s) de déchets non dangereux sortants".format(
+                    index.strftime("%B %y").capitalize(), e
+                )
+                for index, e in statements_emitted_by_month.items()
+            ],
+            hoverinfo="text",
+            textfont_size=text_size,
+            textposition="outside",
+            constraintext="none",
+            marker_color="#6A6AF4",
+        )
+
+        bs_received_bars = go.Bar(
+            x=statements_received_by_month.index,
+            y=statements_received_by_month,
+            name="Déclarations de déchets non dangereux entrants",
+            hovertext=[
+                "{} - <b>{}</b> déclaration(s) de déchets non dangereux entrants".format(
+                    index.strftime("%B %y").capitalize(), e
+                )
+                for index, e in statements_received_by_month.items()
+            ],
+            hoverinfo="text",
+            textfont_size=text_size,
+            textposition="outside",
+            constraintext="none",
+            marker_color="#E1000F",
+        )
+
+        if pd.isna(statements_emitted_by_month.index.min()):
+            tick0_min = statements_received_by_month.index.min()
+        elif pd.isna(statements_received_by_month.index.min()):
+            tick0_min = statements_emitted_by_month.index.min()
+        else:
+            tick0_min = min(statements_emitted_by_month.index.min(), statements_received_by_month.index.min())
+
+        # Used to store the maximum value of each line
+        # to be able to configure the height of the plotting area of the figure.
+        max_y = max(statements_emitted_by_month.max(), statements_received_by_month.max())
+
+        fig = go.Figure([statements_emitted_bars, bs_received_bars])
+
+        max_points = max(len(statements_emitted_by_month), len(statements_received_by_month))
+
+        tickangle = 0
+        y_legend = -0.07
+        if max_points >= 15:
+            tickangle = -90
+            y_legend = -0.15
+
+        fig.update_layout(
+            margin={"t": 20, "l": 35, "r": 5},
+            legend={
+                "orientation": "h",
+                "y": y_legend,
+                "x": -0.1,
+            },
+            legend_bgcolor="rgba(0,0,0,0)",
+            showlegend=True,
+            paper_bgcolor="#fff",
+            plot_bgcolor="rgba(0,0,0,0)",
+        )
+
+        ticklabelstep = 2
+        if max_points <= 3:
+            ticklabelstep = 1
+
+        fig.update_xaxes(
+            dtick=f"M{ticklabelstep}",
+            tickangle=tickangle,
+            tickformat="%b %y",
+            tick0=tick0_min,
+            ticks="outside",
+            gridcolor="#ccc",
+        )
+
+        # Range of the y axis is increased to increase the height of the plotting are of the figure
+        fig.update_yaxes(range=[0, max_y * 1.1], gridcolor="#ccc")
 
         self.figure = fig
 

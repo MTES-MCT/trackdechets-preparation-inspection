@@ -28,6 +28,7 @@ from .database import (
     get_icpe_data,
     get_icpe_item_data,
     get_linked_companies_data,
+    get_rndts_data,
 )
 from .graph_processors.html_components_processors import (
     BsdaWorkerStatsProcessor,
@@ -54,6 +55,8 @@ from .graph_processors.plotly_components_processors import (
     BsdTrackedAndRevisedProcessor,
     ICPEAnnualItemProcessor,
     ICPEDailyItemProcessor,
+    NonDangerousWasteQuantitiesGraphProcessor,
+    NonDangerousWasteStatementsGraphProcessor,
     TransportedQuantitiesGraphProcessor,
     TransporterBordereauxGraphProcessor,
     WasteOriginProcessor,
@@ -177,6 +180,7 @@ class SheetProcessor:
         for bsd_type, df in self.bs_dfs.items():
             if not len(df):
                 continue
+
             created_rectified_graph = BsdTrackedAndRevisedProcessor(
                 self.siret,
                 df,
@@ -184,8 +188,10 @@ class SheetProcessor:
                 self.revised_bs_dfs.get(bsd_type, None),
             )
             created_rectified_graph_data = created_rectified_graph.build()
+
             if created_rectified_graph_data:
                 all_bsd_data_empty = False
+
             setattr(
                 self.computed,
                 f"{bsd_type}_created_rectified_data",
@@ -427,13 +433,30 @@ class SheetProcessor:
             waste_codes_df=WASTE_CODES_DATA,
         )
         self.computed.followed_with_pnttd_data = followed_with_pnttd.build()
-        gistrid_data = get_gistrid_data(self.siret)
 
+        gistrid_data = get_gistrid_data(self.siret)
         gistrid_stats = GistridStatsProcessor(
             company_siret=self.siret,
             gistrid_data_df=gistrid_data,
         )
         self.computed.gistrid_stats_data = gistrid_stats.build()
+
+        match get_rndts_data(self.siret):
+            case (rndts_incoming_data, rndts_outgoing_data):
+                non_dangerous_waste_quantities_graph = NonDangerousWasteQuantitiesGraphProcessor(
+                    rndts_incoming_data, rndts_outgoing_data, data_date_interval
+                )
+                if non_dangerous_waste_quantities_graph:
+                    self.computed.all_bsd_data_empty = False
+
+                self.computed.non_dangerous_waste_quantities_graph_data = non_dangerous_waste_quantities_graph.build()
+
+                non_dangerous_waste_statements_graph = NonDangerousWasteStatementsGraphProcessor(
+                    rndts_incoming_data, rndts_outgoing_data, data_date_interval
+                )
+                if non_dangerous_waste_quantities_graph:
+                    self.computed.all_bsd_data_empty = False
+                self.computed.non_dangerous_waste_statements_graph_data = non_dangerous_waste_statements_graph.build()
 
         self.computed.state = ComputedInspectionData.StateChoice.COMPUTED
         self.computed.save()

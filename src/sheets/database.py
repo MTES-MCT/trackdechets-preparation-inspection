@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import Any, List, Union
 
 import pandas as pd
 from django.conf import settings
@@ -27,6 +27,8 @@ from .queries import (
     sql_get_vhu_agrement_data,
     sql_revised_bsda_query_str,
     sql_revised_bsdd_query_str,
+    sql_get_incoming_ndw_data,
+    sql_get_outgoing_ndw_data,
 )
 
 wh_engine = create_engine(settings.WAREHOUSE_URL, pool_pre_ping=True)
@@ -334,13 +336,35 @@ def get_linked_companies_data(siret: str) -> Union[pd.DataFrame, None]:
 
 
 def get_gistrid_data(siret: str) -> Union[pd.DataFrame, None]:
-    linked_companies_data = build_query(
+    gistrid_data = build_query(
         sql_get_gistrid_data_data,
         query_params={
             "siret": siret,
         },
     )
 
-    if len(linked_companies_data):
-        return linked_companies_data
+    if len(gistrid_data):
+        return gistrid_data
     return None
+
+
+def get_rndts_data(siret: str) -> Union[list[pd.DataFrame], None]:
+    rndts_incoming_data = build_query(
+        sql_get_incoming_ndw_data,
+        query_params={
+            "siret": siret,
+        },
+        date_columns=["date_reception"],
+    )
+
+    rndts_outgoing_data = build_query(
+        sql_get_outgoing_ndw_data,
+        query_params={
+            "siret": siret,
+        },
+        date_columns=["date_expedition"],
+    )
+
+    if all(len(e) == 0 for e in [rndts_incoming_data, rndts_outgoing_data]):
+        return None
+    return rndts_incoming_data, rndts_outgoing_data

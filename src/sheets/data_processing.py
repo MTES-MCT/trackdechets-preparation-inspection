@@ -38,6 +38,7 @@ from .graph_processors.html_components_processors import (
     GistridStatsProcessor,
     ICPEItemsProcessor,
     LinkedCompaniesProcessor,
+    NonDangerousWasteStatsProcessor,
     PrivateIndividualsCollectionsTableProcessor,
     QuantityOutliersTableProcessor,
     ReceiptAgrementsProcessor,
@@ -446,17 +447,23 @@ class SheetProcessor:
                 non_dangerous_waste_quantities_graph = NonDangerousWasteQuantitiesGraphProcessor(
                     rndts_incoming_data, rndts_outgoing_data, data_date_interval
                 )
-                if non_dangerous_waste_quantities_graph:
-                    self.computed.all_bsd_data_empty = False
-
                 self.computed.non_dangerous_waste_quantities_graph_data = non_dangerous_waste_quantities_graph.build()
+                if self.computed.non_dangerous_waste_quantities_graph_data:
+                    self.computed.all_bsd_data_empty = False
 
                 non_dangerous_waste_statements_graph = NonDangerousWasteStatementsGraphProcessor(
                     rndts_incoming_data, rndts_outgoing_data, data_date_interval
                 )
-                if non_dangerous_waste_quantities_graph:
-                    self.computed.all_bsd_data_empty = False
                 self.computed.non_dangerous_waste_statements_graph_data = non_dangerous_waste_statements_graph.build()
+                if self.computed.non_dangerous_waste_statements_graph_data:
+                    self.computed.all_bsd_data_empty = False
+
+                non_dangerous_waste_stats = NonDangerousWasteStatsProcessor(
+                    rndts_incoming_data, rndts_outgoing_data, data_date_interval
+                )
+                self.computed.non_dangerous_waste_stats_data = non_dangerous_waste_stats.build()
+                if self.computed.non_dangerous_waste_stats_data:
+                    self.computed.all_bsd_data_empty = False
 
         self.computed.state = ComputedInspectionData.StateChoice.COMPUTED
         self.computed.save()

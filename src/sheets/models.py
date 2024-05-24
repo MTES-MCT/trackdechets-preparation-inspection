@@ -154,9 +154,9 @@ class ComputedInspectionData(models.Model):
 
     non_dangerous_waste_quantities_graph_data = models.JSONField(default=dict)
     non_dangerous_waste_quantities_graph = models.TextField(blank=True)
-
     non_dangerous_waste_statements_graph_data = models.JSONField(default=dict)
     non_dangerous_waste_statements_graph = models.TextField(blank=True)
+    non_dangerous_waste_stats_data = models.JSONField(default=dict)
 
     pdf = models.TextField(blank=True)
 

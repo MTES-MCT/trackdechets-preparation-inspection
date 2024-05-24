@@ -1800,7 +1800,7 @@ class NonDangerousWasteQuantitiesGraphProcessor:
 class NonDangerousWasteStatementsGraphProcessor:
     """Component with a Bar Figure of incoming and outgoing RNDTS statements.
 
-     Parameters
+    Parameters
     ----------
     rndts_incoming_data: DataFrame
         DataFrame containing data for incoming non dangerous waste (from RNDTS).

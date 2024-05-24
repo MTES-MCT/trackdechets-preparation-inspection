@@ -2003,3 +2003,128 @@ class GistridStatsProcessor:
             data = self.gistrid_stats
 
         return data
+
+
+class NonDangerousWasteStatsProcessor:
+    """Component that displays aggregated data about RNDTS non dangerous waste data.
+
+    Parameters
+    ----------
+    rndts_incoming_data: DataFrame
+        DataFrame containing data for incoming non dangerous waste (from RNDTS).
+    rndts_outgoing_data: DataFrame
+        DataFrame containing data for outgoing non dangerous waste (from RNDTS).
+    data_date_interval: tuple
+        Date interval to filter data.
+    """
+
+    def __init__(
+        self,
+        rndts_incoming_data: pd.DataFrame,
+        rndts_outgoing_data: pd.DataFrame,
+        data_date_interval: tuple[datetime, datetime],
+    ) -> None:
+        self.rndts_incoming_data = rndts_incoming_data
+        self.rndts_outgoing_data = rndts_outgoing_data
+        self.data_date_interval = data_date_interval
+
+        self.stats = {
+            "total_weight_incoming": 0,
+            "total_weight_outgoing": 0,
+            "bar_size_weight_incoming": None,
+            "bar_size_weight_outgoing": None,
+            "has_weight": None,
+            "total_volume_incoming": 0,
+            "total_volume_outgoing": 0,
+            "bar_size_volume_incoming": None,
+            "bar_size_volume_outgoing": None,
+            "has_volume": None,
+            "total_statements_incoming": None,
+            "total_statements_outgoing": None,
+        }
+
+    def _check_data_empty(self) -> bool:
+        # If all values after preprocessing are empty, then output data will be empty
+        if all((e == 0) or (e is None) for e in self.stats.values()):
+            return True
+
+        return False
+
+    def _preprocess_data(self) -> None:
+        incoming_data = self.rndts_incoming_data
+        outgoing_data = self.rndts_outgoing_data
+
+        if incoming_data is not None:
+            incoming_data = incoming_data[incoming_data["date_reception"].between(*self.data_date_interval)]
+            if len(incoming_data) > 0:
+                self.stats["total_statements_incoming"] = incoming_data["id"].nunique()
+
+                for unit, key in [("T", "weight"), ("M3", "volume")]:
+                    total = incoming_data[incoming_data["unite"] == unit]["quantite"].sum()
+                    if total is not None:
+                        self.stats[f"total_{key}_incoming"] = total
+
+        if outgoing_data is not None:
+            outgoing_data = outgoing_data[outgoing_data["date_expedition"].between(*self.data_date_interval)]
+            if len(outgoing_data) > 0:
+                self.stats["total_statements_outgoing"] = outgoing_data["id"].nunique()
+
+                for unit, key in [("T", "weight"), ("M3", "volume")]:
+                    total = outgoing_data[outgoing_data["unite"] == unit]["quantite"].sum()
+                    if total is not None:
+                        self.stats[f"total_{key}_outgoing"] = total
+
+        for key in ["weight", "volume"]:
+            incoming_bar_size = 0
+            outgoing_bar_size = 0
+
+            total_quantity_incoming = self.stats[f"total_{key}_incoming"]
+            total_quantity_outgoing = self.stats[f"total_{key}_outgoing"]
+            if not (total_quantity_incoming == total_quantity_outgoing == 0):
+                # The bar sizes are relative to the largest quantity.
+                # Size is expressed as percentage of the component width.
+                if total_quantity_incoming > total_quantity_outgoing:
+                    incoming_bar_size = 100
+                    outgoing_bar_size = int(100 * (total_quantity_outgoing / total_quantity_incoming))
+                else:
+                    incoming_bar_size = int(100 * (total_quantity_incoming / total_quantity_outgoing))
+                    outgoing_bar_size = 100
+                self.stats[f"has_{key}"] = True
+            else:
+                self.stats[f"has_{key}"] = False
+            self.stats[f"bar_size_{key}_incoming"] = incoming_bar_size
+            self.stats[f"bar_size_{key}_outgoing"] = outgoing_bar_size
+
+    def build_context(self):
+        # We use the format_number_str only on variables that holds
+        # quantity values.
+
+        precisions = {
+            "total_weight_incoming": 2,
+            "total_weight_outgoing": 2,
+            "bar_size_weight_incoming": 2,
+            "bar_size_weight_outgoing": 2,
+            "total_volume_incoming": 2,
+            "total_volume_outgoing": 2,
+            "bar_size_volume_incoming": 2,
+            "bar_size_volume_outgoing": 2,
+            "total_statements_incoming": 0,
+            "total_statements_outgoing": 0,
+        }
+
+        ctx = {
+            k: format_number_str(v, precisions[k])
+            if (isinstance(v, numbers.Number) and not isinstance(v, bool))
+            else v
+            for k, v in self.stats.items()
+        }
+
+        return ctx
+
+    def build(self):
+        self._preprocess_data()
+
+        data = {}
+        if not self._check_data_empty():
+            data = self.build_context()
+        return data

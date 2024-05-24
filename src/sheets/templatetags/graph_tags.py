@@ -160,3 +160,13 @@ def render_gistrid_stats_table(computed, graph_context="web"):
         "gistrid_stats_data": computed.gistrid_stats_data,
         "graph_context": graph_context,
     }
+
+
+@register.inclusion_tag("sheets/components/rndts_stats.html")
+def render_rndts_stats(computed, graph_context="web"):
+    return_dict = {
+        "non_dangerous_waste_stats_data": computed.non_dangerous_waste_stats_data,
+        "graph_context": graph_context,
+    }
+
+    return return_dict

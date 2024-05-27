@@ -1621,6 +1621,7 @@ class NonDangerousWasteQuantitiesGraphProcessor:
         self.figure = None
 
     def _preprocess_data(self) -> None:
+        # We need to account for quantities in m³ and t
         if (incoming_data := self.rndts_incoming_data) is not None:
             incoming_data = incoming_data[incoming_data["date_reception"].between(*self.data_date_interval)]
             self.incoming_weight_by_month_serie = (

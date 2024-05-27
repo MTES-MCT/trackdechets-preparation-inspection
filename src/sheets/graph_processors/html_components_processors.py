@@ -456,8 +456,9 @@ class WasteFlowsTableProcessor:
         if len(df) > 0:
             # We compute the quantity by waste codes and incoming/outgoing categories
             df_grouped = df.groupby(["waste_code", "flow_status"], as_index=False)["quantity_received"].sum()
-            df_grouped["unit"] = "t"
+            df_grouped["unit"] = "t"  # This is to account for some wastes quantities that are measured in m³
 
+            # If there is RNDTS data, we add it to the dataframe
             for df_rndts, date_col in [
                 (self.rndts_incoming_data, "date_reception"),
                 (self.rndts_outgoing_data, "date_expedition"),
@@ -2050,6 +2051,7 @@ class NonDangerousWasteStatsProcessor:
         self.rndts_outgoing_data = rndts_outgoing_data
         self.data_date_interval = data_date_interval
 
+        # Init all statistics
         self.stats = {
             "total_weight_incoming": 0,
             "total_weight_outgoing": 0,

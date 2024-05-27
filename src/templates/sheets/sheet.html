@@ -226,19 +226,21 @@
     {% if sheet.non_dangerous_waste_quantities_graph_data %}
     <div class="row">
         <div class="cell cell--bordered cell--third">
-            <h3 class="cell__title">RNDTS - Déclarations de déchets non dangereux entrants et sortants</h3>
+            <h3 class="cell__title">Déclarations de déchets non dangereux entrants et sortants</h3>
+            <p class="fr-tag fr-tag--sm fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
             <div id="dnd_statements_graph">
                 <div class="no-data">Pas de données à afficher.</div>
             </div>
         </div>
         <div class="cell cell--bordered cell--third">
-            <h3 class="cell__title">RNDTS - Quantité de déchets non dangereux</h3>
+            <h3 class="cell__title">Quantité de déchets non dangereux</h3>
+            <p class="fr-tag fr-tag--sm fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
             <div id="dnd_quantity_graph">
                 <div class="no-data">Pas de données à afficher.</div>
             </div>
         </div>
         <div class="cell cell--bordered cell--third">
-            <h3 class="cell__title">RNDTS - Statistiques sur l'année</h3>
+            <h3 class="cell__title">Déchets Non Dangereux - Statistiques sur l'année</h3>
             {% render_rndts_stats sheet %}
         </div>
     </div>

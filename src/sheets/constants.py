@@ -41,6 +41,8 @@ PLOTLY_GRAPHS_TO_RENDER_IN_PDF = [
     "bsda_worker_quantity",
     "transporter_bordereaux_stats_graph",
     "quantities_transported_stats_graph",
+    "non_dangerous_waste_statements_graph",
+    "non_dangerous_waste_quantities_graph",
 ]
 
 

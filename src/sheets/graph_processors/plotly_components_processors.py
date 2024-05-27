@@ -1688,7 +1688,7 @@ class NonDangerousWasteQuantitiesGraphProcessor:
 
         # We create two lines (for incoming and outgoing) for each quantity variable chosen
         for variable_name, incoming_data_by_month, outgoing_data_by_month in zip(
-            ["quantite", "volumne"],
+            ["quantite", "volume"],
             [
                 self.incoming_weight_by_month_serie,
                 self.incoming_volume_by_month_serie,
@@ -1832,7 +1832,7 @@ class NonDangerousWasteStatementsGraphProcessor:
             incoming_data = incoming_data[incoming_data["date_reception"].between(*self.data_date_interval)].dropna(
                 subset=["date_reception"]
             )
-            self.statements_emitted_by_month_serie = incoming_data.groupby(
+            self.statements_received_by_month_serie = incoming_data.groupby(
                 pd.Grouper(key="date_reception", freq="1M")
             ).id.count()
 
@@ -1841,7 +1841,7 @@ class NonDangerousWasteStatementsGraphProcessor:
             outgoing_data = outgoing_data[outgoing_data["date_expedition"].between(*self.data_date_interval)].dropna(
                 subset=["date_expedition"]
             )
-            self.statements_received_by_month_serie = outgoing_data.groupby(
+            self.statements_emitted_by_month_serie = outgoing_data.groupby(
                 pd.Grouper(key="date_expedition", freq="1M")
             ).id.count()
 

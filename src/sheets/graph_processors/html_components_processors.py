@@ -378,6 +378,10 @@ class WasteFlowsTableProcessor:
     transporters_data_df : Dict[str, pd.DataFrame]
         Dictionary that contains DataFrames related to transporters. Each key in the "Bordereau type" (BSDD, BSDA...)
         and the corresponding value is a pandas DataFrame containing information about the transported waste.
+    rndts_incoming_data: DataFrame
+        DataFrame containing data for incoming non dangerous waste (from RNDTS).
+    rndts_outgoing_data: DataFrame
+        DataFrame containing data for outgoing non dangerous waste (from RNDTS).
     data_date_interval : tuple[datetime, datetime]
         Represents the date range for which the data is being processed.
         It consists of two `datetime` objects, the start date and the end date.
@@ -392,12 +396,16 @@ class WasteFlowsTableProcessor:
         company_siret: str,
         bs_data_dfs: Dict[str, pd.DataFrame],
         transporters_data_df: Dict[str, pd.DataFrame],  # Handling new multi-modal Trackdéchets feature
+        rndts_incoming_data: pd.DataFrame | None,
+        rndts_outgoing_data: pd.DataFrame | None,
         data_date_interval: tuple[datetime, datetime],
         waste_codes_df: pd.DataFrame,
         packagings_data: pd.DataFrame | None = None,
     ) -> None:
         self.bs_data_dfs = bs_data_dfs
         self.transporters_data_df = transporters_data_df
+        self.rndts_incoming_data = rndts_incoming_data
+        self.rndts_outgoing_data = rndts_outgoing_data
         self.data_date_interval = data_date_interval
         self.waste_codes_df = waste_codes_df
         self.packagings_data = packagings_data
@@ -448,6 +456,25 @@ class WasteFlowsTableProcessor:
         if len(df) > 0:
             # We compute the quantity by waste codes and incoming/outgoing categories
             df_grouped = df.groupby(["waste_code", "flow_status"], as_index=False)["quantity_received"].sum()
+            df_grouped["unit"] = "t"
+
+            for df_rndts, date_col in [
+                (self.rndts_incoming_data, "date_reception"),
+                (self.rndts_outgoing_data, "date_expedition"),
+            ]:
+                if (df_rndts is not None) and (len(df_rndts) > 0):
+                    rndts_grouped_data = (
+                        df_rndts[df_rndts[date_col].between(*self.data_date_interval)]
+                        .groupby(["code_dechet", "unite"], as_index=False)["quantite"]
+                        .sum()
+                    )
+                    rndts_grouped_data = rndts_grouped_data.rename(
+                        columns={"quantite": "quantity_received", "code_dechet": "waste_code", "unite": "unit"}
+                    )
+                    rndts_grouped_data["unit"] = rndts_grouped_data["unit"].replace({"T": "t", "M3": "m³"})
+                    rndts_grouped_data["flow_status"] = "incoming" if (date_col == "date_reception") else "outgoing"
+
+                    df_grouped = pd.concat([df_grouped, rndts_grouped_data])
 
             # We add the waste code description from the waste nomenclature
             final_df = pd.merge(
@@ -463,12 +490,7 @@ class WasteFlowsTableProcessor:
             final_df["quantity_received"] = final_df["quantity_received"].apply(lambda x: format_number_str(x, 2))
             final_df["description"] = final_df["description"].fillna("")
             self.preprocessed_df = final_df[
-                [
-                    "waste_code",
-                    "description",
-                    "flow_status",
-                    "quantity_received",
-                ]
+                ["waste_code", "description", "flow_status", "quantity_received", "unit"]
             ].sort_values(by=["waste_code", "flow_status"])
 
     def _check_empty_data(self) -> bool:

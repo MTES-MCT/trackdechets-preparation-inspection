@@ -1846,8 +1846,15 @@ class NonDangerousWasteStatementsGraphProcessor:
             ).id.count()
 
     def _check_data_empty(self) -> bool:
-        if len(self.statements_emitted_by_month_serie) == len(self.statements_received_by_month_serie) == 0:
-            return True
+        match [self.statements_emitted_by_month_serie, self.statements_received_by_month_serie]:
+            case [None, None]:
+                return True
+            case [df, None] | [None, df]:
+                if len(df) == 0:
+                    return True
+            case [df1, df2]:
+                if len(df1) == len(df2) == 0:
+                    return True
 
         return False
 

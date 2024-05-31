@@ -427,3 +427,19 @@ from
     refined_zone_gistrid.notifications_enriched n
 where (siret_notifiant = :siret or siret_installation_traitement = :siret)
 """
+
+sql_get_incoming_ndw_data = """
+SELECT 
+    *
+FROM trusted_zone_rndts.dnd_entrants
+where
+    numero_identification_declarant = :siret
+"""
+
+sql_get_outgoing_ndw_data = """
+SELECT 
+    *
+FROM trusted_zone_rndts.dnd_sortants
+where
+    numero_identification_declarant = :siret
+"""

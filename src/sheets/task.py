@@ -69,6 +69,8 @@ def render_pdf_sheet(computed_pk: str):
         "bsda_worker_quantity_graph": sheet.bsda_worker_quantity_graph,
         "bs_transported_graph": sheet.transporter_bordereaux_stats_graph,
         "bs_quantities_transported_graph": sheet.quantities_transported_stats_graph,
+        "dnd_statements_graph": sheet.non_dangerous_waste_statements_graph,
+        "dnd_quantity_graph": sheet.non_dangerous_waste_quantities_graph,
         "skip_css": True,
     }
     content = render_to_string("sheets/sheetpdf.html", ctx)

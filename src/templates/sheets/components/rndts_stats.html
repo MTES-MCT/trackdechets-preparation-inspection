@@ -142,32 +142,32 @@
 </style>
 {% if non_dangerous_waste_stats_data %}
     <div class="col-framed col-print">
-      <p class="fr-tag fr-tag--sm fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
+        <p class="fr-tag fr-tag--sm fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
         <div class="bs-stats">
-          <table>
-            <thead>
-                <tr>
-                    <th scope="col" class="table-headline"></th>
-                    <th scope="col">Entrants</th>
-                    <th scope="col">Sortants</th>
-                </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th scope="row">Nombre de déclarations</th>
-                <td>{{ non_dangerous_waste_stats_data.total_statements_incoming|default:0 }}</td>
-                <td>{{ non_dangerous_waste_stats_data.total_statements_outgoing|default:0 }}</td>
-            </tr>
-            </tbody>
-          </table>
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col" class="table-headline"></th>
+                        <th scope="col">Entrants</th>
+                        <th scope="col">Sortants</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">Nombre de déclarations</th>
+                        <td>{{ non_dangerous_waste_stats_data.total_statements_incoming|default:0 }}</td>
+                        <td>{{ non_dangerous_waste_stats_data.total_statements_outgoing|default:0 }}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
         <div class="quantities-stats">
-          {% if non_dangerous_waste_stats_data.has_weight %}
+            {% if non_dangerous_waste_stats_data.has_weight %}
                 <div class="quantity-stats">
                     <div>
                         <p class="sc-number">
                             <span class="td-font-display">{{ non_dangerous_waste_stats_data.total_weight_incoming }}</span>
-                                tonnes entrantes
+                            tonnes entrantes
                         </p>
                     </div>
                     <div>
@@ -185,38 +185,38 @@
                     <div>
                         <p class="sc-number">
                             <span class="td-font-display">{{ non_dangerous_waste_stats_data.total_weight_outgoing }}</span>
-                                tonnes sortantes
+                            tonnes sortantes
                         </p>
                     </div>
-              </div>
-              {% endif %}
-              {% if non_dangerous_waste_stats_data.has_volume %}
-              <div class="quantity-stats">
-                  <div>
-                      <p class="sc-number">
-                          <span class="td-font-display">{{ non_dangerous_waste_stats_data.total_volume_incoming }}</span>
-                          m³ entrants
-                      </p>
-                  </div>
-                  <div>
-                      <svg style="width:100%;height:45px;">
-                          <rect width="{{ non_dangerous_waste_stats_data.bar_size_volume_incoming }}%" height="20" y="0" x="0" fill="rgba(255, 0, 15, 0.7)">
-                          </rect>
-                          <rect width="100%" height="20" y="0" x="0" stroke="rgba(255, 0, 15, 1)", fill="rgba(0,0,0,0)">
-                          </rect>
-                          <rect width="{{ non_dangerous_waste_stats_data.bar_size_volume_outgoing }}%" height="20" y="25" x="0" fill="rgba(106, 106, 244, 0.7)">
-                          </rect>
-                          <rect width="100%" height="20" y="25" x="0" stroke="rgba(106, 106, 244, 1)", fill="rgba(0,0,0,0)">
-                          </rect>
-                      </svg>
-                  </div>
-                  <div>
-                      <p class="sc-number">
-                          <span class="td-font-display">{{ non_dangerous_waste_stats_data.total_volume_outgoing }}</span>
-                          m³ sortants
-                      </p>
-                  </div>
-            </div>
+                </div>
+            {% endif %}
+            {% if non_dangerous_waste_stats_data.has_volume %}
+                <div class="quantity-stats">
+                    <div>
+                        <p class="sc-number">
+                            <span class="td-font-display">{{ non_dangerous_waste_stats_data.total_volume_incoming }}</span>
+                            m³ entrants
+                        </p>
+                    </div>
+                    <div>
+                        <svg style="width:100%;height:45px;">
+                            <rect width="{{ non_dangerous_waste_stats_data.bar_size_volume_incoming }}%" height="20" y="0" x="0" fill="rgba(255, 0, 15, 0.7)">
+                            </rect>
+                            <rect width="100%" height="20" y="0" x="0" stroke="rgba(255, 0, 15, 1)", fill="rgba(0,0,0,0)">
+                            </rect>
+                            <rect width="{{ non_dangerous_waste_stats_data.bar_size_volume_outgoing }}%" height="20" y="25" x="0" fill="rgba(106, 106, 244, 0.7)">
+                            </rect>
+                            <rect width="100%" height="20" y="25" x="0" stroke="rgba(106, 106, 244, 1)", fill="rgba(0,0,0,0)">
+                            </rect>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="sc-number">
+                            <span class="td-font-display">{{ non_dangerous_waste_stats_data.total_volume_outgoing }}</span>
+                            m³ sortants
+                        </p>
+                    </div>
+                </div>
             {% endif %}
         </div>
     </div>

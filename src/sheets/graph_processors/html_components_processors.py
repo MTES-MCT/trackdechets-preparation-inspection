@@ -378,6 +378,10 @@ class WasteFlowsTableProcessor:
     transporters_data_df : Dict[str, pd.DataFrame]
         Dictionary that contains DataFrames related to transporters. Each key in the "Bordereau type" (BSDD, BSDA...)
         and the corresponding value is a pandas DataFrame containing information about the transported waste.
+    rndts_incoming_data: DataFrame
+        DataFrame containing data for incoming non dangerous waste (from RNDTS).
+    rndts_outgoing_data: DataFrame
+        DataFrame containing data for outgoing non dangerous waste (from RNDTS).
     data_date_interval : tuple[datetime, datetime]
         Represents the date range for which the data is being processed.
         It consists of two `datetime` objects, the start date and the end date.
@@ -392,12 +396,16 @@ class WasteFlowsTableProcessor:
         company_siret: str,
         bs_data_dfs: Dict[str, pd.DataFrame],
         transporters_data_df: Dict[str, pd.DataFrame],  # Handling new multi-modal Trackdéchets feature
+        rndts_incoming_data: pd.DataFrame | None,
+        rndts_outgoing_data: pd.DataFrame | None,
         data_date_interval: tuple[datetime, datetime],
         waste_codes_df: pd.DataFrame,
         packagings_data: pd.DataFrame | None = None,
     ) -> None:
         self.bs_data_dfs = bs_data_dfs
         self.transporters_data_df = transporters_data_df
+        self.rndts_incoming_data = rndts_incoming_data
+        self.rndts_outgoing_data = rndts_outgoing_data
         self.data_date_interval = data_date_interval
         self.waste_codes_df = waste_codes_df
         self.packagings_data = packagings_data
@@ -448,6 +456,26 @@ class WasteFlowsTableProcessor:
         if len(df) > 0:
             # We compute the quantity by waste codes and incoming/outgoing categories
             df_grouped = df.groupby(["waste_code", "flow_status"], as_index=False)["quantity_received"].sum()
+            df_grouped["unit"] = "t"  # This is to account for some wastes quantities that are measured in m³
+
+            # If there is RNDTS data, we add it to the dataframe
+            for df_rndts, date_col in [
+                (self.rndts_incoming_data, "date_reception"),
+                (self.rndts_outgoing_data, "date_expedition"),
+            ]:
+                if (df_rndts is not None) and (len(df_rndts) > 0):
+                    rndts_grouped_data = (
+                        df_rndts[df_rndts[date_col].between(*self.data_date_interval)]
+                        .groupby(["code_dechet", "unite"], as_index=False)["quantite"]
+                        .sum()
+                    )
+                    rndts_grouped_data = rndts_grouped_data.rename(
+                        columns={"quantite": "quantity_received", "code_dechet": "waste_code", "unite": "unit"}
+                    )
+                    rndts_grouped_data["unit"] = rndts_grouped_data["unit"].replace({"T": "t", "M3": "m³"})
+                    rndts_grouped_data["flow_status"] = "incoming" if (date_col == "date_reception") else "outgoing"
+
+                    df_grouped = pd.concat([df_grouped, rndts_grouped_data])
 
             # We add the waste code description from the waste nomenclature
             final_df = pd.merge(
@@ -463,12 +491,7 @@ class WasteFlowsTableProcessor:
             final_df["quantity_received"] = final_df["quantity_received"].apply(lambda x: format_number_str(x, 2))
             final_df["description"] = final_df["description"].fillna("")
             self.preprocessed_df = final_df[
-                [
-                    "waste_code",
-                    "description",
-                    "flow_status",
-                    "quantity_received",
-                ]
+                ["waste_code", "description", "flow_status", "quantity_received", "unit"]
             ].sort_values(by=["waste_code", "flow_status"])
 
     def _check_empty_data(self) -> bool:
@@ -2002,4 +2025,130 @@ class GistridStatsProcessor:
         if not self._check_data_empty():
             data = self.gistrid_stats
 
+        return data
+
+
+class NonDangerousWasteStatsProcessor:
+    """Component that displays aggregated data about RNDTS non dangerous waste data.
+
+    Parameters
+    ----------
+    rndts_incoming_data: DataFrame
+        DataFrame containing data for incoming non dangerous waste (from RNDTS).
+    rndts_outgoing_data: DataFrame
+        DataFrame containing data for outgoing non dangerous waste (from RNDTS).
+    data_date_interval: tuple
+        Date interval to filter data.
+    """
+
+    def __init__(
+        self,
+        rndts_incoming_data: pd.DataFrame,
+        rndts_outgoing_data: pd.DataFrame,
+        data_date_interval: tuple[datetime, datetime],
+    ) -> None:
+        self.rndts_incoming_data = rndts_incoming_data
+        self.rndts_outgoing_data = rndts_outgoing_data
+        self.data_date_interval = data_date_interval
+
+        # Init all statistics
+        self.stats = {
+            "total_weight_incoming": 0,
+            "total_weight_outgoing": 0,
+            "bar_size_weight_incoming": None,
+            "bar_size_weight_outgoing": None,
+            "has_weight": None,
+            "total_volume_incoming": 0,
+            "total_volume_outgoing": 0,
+            "bar_size_volume_incoming": None,
+            "bar_size_volume_outgoing": None,
+            "has_volume": None,
+            "total_statements_incoming": None,
+            "total_statements_outgoing": None,
+        }
+
+    def _check_data_empty(self) -> bool:
+        # If all values after preprocessing are empty, then output data will be empty
+        if all((e == 0) or (e is None) for e in self.stats.values()):
+            return True
+
+        return False
+
+    def _preprocess_data(self) -> None:
+        incoming_data = self.rndts_incoming_data
+        outgoing_data = self.rndts_outgoing_data
+
+        if incoming_data is not None:
+            incoming_data = incoming_data[incoming_data["date_reception"].between(*self.data_date_interval)]
+            if len(incoming_data) > 0:
+                self.stats["total_statements_incoming"] = incoming_data["id"].nunique()
+
+                for unit, key in [("T", "weight"), ("M3", "volume")]:
+                    total = incoming_data[incoming_data["unite"] == unit]["quantite"].sum()
+                    if total is not None:
+                        self.stats[f"total_{key}_incoming"] = total
+
+        if outgoing_data is not None:
+            outgoing_data = outgoing_data[outgoing_data["date_expedition"].between(*self.data_date_interval)]
+            if len(outgoing_data) > 0:
+                self.stats["total_statements_outgoing"] = outgoing_data["id"].nunique()
+
+                for unit, key in [("T", "weight"), ("M3", "volume")]:
+                    total = outgoing_data[outgoing_data["unite"] == unit]["quantite"].sum()
+                    if total is not None:
+                        self.stats[f"total_{key}_outgoing"] = total
+
+        for key in ["weight", "volume"]:
+            incoming_bar_size = 0
+            outgoing_bar_size = 0
+
+            total_quantity_incoming = self.stats[f"total_{key}_incoming"]
+            total_quantity_outgoing = self.stats[f"total_{key}_outgoing"]
+            if not (total_quantity_incoming == total_quantity_outgoing == 0):
+                # The bar sizes are relative to the largest quantity.
+                # Size is expressed as percentage of the component width.
+                if total_quantity_incoming > total_quantity_outgoing:
+                    incoming_bar_size = 100
+                    outgoing_bar_size = int(100 * (total_quantity_outgoing / total_quantity_incoming))
+                else:
+                    incoming_bar_size = int(100 * (total_quantity_incoming / total_quantity_outgoing))
+                    outgoing_bar_size = 100
+                self.stats[f"has_{key}"] = True
+            else:
+                self.stats[f"has_{key}"] = False
+            self.stats[f"bar_size_{key}_incoming"] = incoming_bar_size
+            self.stats[f"bar_size_{key}_outgoing"] = outgoing_bar_size
+
+    def build_context(self):
+        # We use the format_number_str only on variables that holds
+        # quantity values.
+
+        precisions = {
+            "total_weight_incoming": 2,
+            "total_weight_outgoing": 2,
+            "bar_size_weight_incoming": 2,
+            "bar_size_weight_outgoing": 2,
+            "total_volume_incoming": 2,
+            "total_volume_outgoing": 2,
+            "bar_size_volume_incoming": 2,
+            "bar_size_volume_outgoing": 2,
+            "total_statements_incoming": 0,
+            "total_statements_outgoing": 0,
+        }
+
+        ctx = {
+            k: format_number_str(v, precisions[k])
+            if (isinstance(v, numbers.Number) and not isinstance(v, bool))
+            else v
+            for k, v in self.stats.items()
+        }
+
+        return ctx
+
+    def build(self):
+        self._preprocess_data()
+
+        data = {}
+        if not self._check_data_empty():
+            data = self.build_context()
         return data

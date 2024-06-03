@@ -33,8 +33,19 @@ where
     and is_deleted = false
     and status::text not in ('DRAFT', 'INITIAL')
     and (waste_details_code ~* '.*\*$' or waste_details_pop or waste_details_is_dangerous)
-order by
-    created_at ASC;
+    -- to avoid pandas datetime overflow
+    and (
+		sent_at between '1677-09-22' and '2262-04-11'
+		or sent_at is null
+	)
+	and (
+		received_at between '1677-09-22' and '2262-04-11'
+		or received_at is null
+	)
+    and (
+		processed_at between '1677-09-22' and '2262-04-11'
+		or processed_at is null
+	)
 """
 
 sql_bsdd_non_dangerous_query_str = r"""
@@ -72,8 +83,19 @@ where
     and is_deleted = false
     and status::text not in ('DRAFT', 'INITIAL')
     and not (waste_details_code ~* '.*\*$' or waste_details_pop or waste_details_is_dangerous)
-order by
-    created_at ASC;
+    -- to avoid pandas datetime overflow
+    and (
+		sent_at between '1677-09-22' and '2262-04-11'
+		or sent_at is null
+	)
+	and (
+		received_at between '1677-09-22' and '2262-04-11'
+		or received_at is null
+	)
+    and (
+		processed_at between '1677-09-22' and '2262-04-11'
+		or processed_at is null
+	)
 """
 
 sql_bsdd_transporter_query_str = r"""
@@ -96,6 +118,11 @@ where
     and (waste_details_code like '%*'
         or waste_details_pop
         or waste_details_is_dangerous)
+    -- to avoid pandas datetime overflow
+    and (
+		taken_over_at between '1677-09-22' and '2262-04-11'
+		or taken_over_at is null
+	)
 """
 
 
@@ -119,6 +146,11 @@ where
     and not (waste_details_code like '%*'
         or waste_details_pop
         or waste_details_is_dangerous)
+    -- to avoid pandas datetime overflow
+    and (
+		taken_over_at between '1677-09-22' and '2262-04-11'
+		or taken_over_at is null
+	)
 """
 
 sql_company_query_str = """
@@ -171,8 +203,16 @@ where
     and is_deleted = false
     and status::text not in ('DRAFT', 'INITIAL')
     and not is_draft
-order by
-    created_at asc"""
+    -- to avoid pandas datetime overflow
+    and (
+		destination_reception_date between '1677-09-22' and '2262-04-11'
+		or destination_reception_date is null
+	)
+	and (
+		destination_operation_date between '1677-09-22' and '2262-04-11'
+		or destination_operation_date is null
+	)
+"""
 
 sql_bsda_transporter_query_str = r"""
 select
@@ -192,6 +232,11 @@ where
         or transporter_company_siret = :siret
     )
     and waste_code like '%*'
+    -- to avoid pandas datetime overflow
+    and (
+		transporter_transport_taken_over_at between '1677-09-22' and '2262-04-11'
+		or transporter_transport_taken_over_at is null
+	)
 """
 
 sql_bsdasri_query_str = """
@@ -221,11 +266,20 @@ where
     and is_deleted = false
     and status::text not in ('DRAFT', 'INITIAL')
     and not is_draft
-order by
-    created_at asc"""
+    -- to avoid pandas datetime overflow
+    and (
+		transporter_taken_over_at between '1677-09-22' and '2262-04-11'
+		or transporter_taken_over_at is null
+	)
+    and (
+		destination_reception_date between '1677-09-22' and '2262-04-11'
+		or destination_reception_date is null
+	)
+"""
 
 
-sql_bsff_query_str = """select
+sql_bsff_query_str = """
+select
     id,
     created_at,
     transporter_transport_taken_over_at as sent_at,
@@ -247,6 +301,15 @@ where
     and is_deleted = false
     and status::text not in ('DRAFT', 'INITIAL')
     and not is_draft
+    -- to avoid pandas datetime overflow
+    and (
+		transporter_transport_taken_over_at between '1677-09-22' and '2262-04-11'
+		or transporter_transport_taken_over_at is null
+	)
+    and (
+		destination_reception_date between '1677-09-22' and '2262-04-11'
+		or destination_reception_date is null
+	)
 """
 
 sql_bsff_packagings_query_str = """
@@ -302,6 +365,15 @@ where
     and is_deleted = false
     and  status::text not in ('DRAFT', 'INITIAL')
     and not is_draft
+    -- to avoid pandas datetime overflow
+    and (
+		transporter_transport_taken_over_at between '1677-09-22' and '2262-04-11'
+		or transporter_transport_taken_over_at is null
+	)
+    and (
+		destination_reception_date between '1677-09-22' and '2262-04-11'
+		or destination_reception_date is null
+	)
 """
 
 sql_revised_bsdd_query_str = """

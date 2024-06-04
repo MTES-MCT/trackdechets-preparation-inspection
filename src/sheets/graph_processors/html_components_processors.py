@@ -818,10 +818,9 @@ class ICPEItemsProcessor:
         if df is None:
             return
 
-        df["rubrique_alinea"] = df["rubrique"] + ("-" + df["alinea"]).fillna("")
         df["quantite"] = df["quantite"].apply(format_number_str, precision=3)
 
-        df = df.sort_values(["rubrique", "alinea"])
+        df = df.sort_values(["rubrique"])
 
         self.preprocessed_df = df
 
@@ -1358,8 +1357,8 @@ class WasteProcessingWithoutICPEProcessor:
         icpe_data = self.icpe_data
 
         if icpe_data is not None:
-            has_2760_1 = len(icpe_data[(icpe_data["rubrique"] == "2760") & (icpe_data["alinea"] == "1")]) > 0
-            has_2760_2 = len(icpe_data[(icpe_data["rubrique"] == "2760") & (icpe_data["alinea"] == "2")]) > 0
+            has_2760_1 = len(icpe_data[(icpe_data["rubrique"] == "2760-1")]) > 0
+            has_2760_2 = len(icpe_data[(icpe_data["rubrique"] == "2760-2")]) > 0
 
         if not has_2760_1:  # Means no authorization for ICPE 2760-1
             bs_2760_dfs = []
@@ -1405,7 +1404,7 @@ class WasteProcessingWithoutICPEProcessor:
                 "processing_codes": ["D10", "R1"],
             },
             {
-                "rubrique": "2718",
+                "rubrique": "2718-1",
                 "bs_types": [BSDD, BSDA, BSFF, BSDASRI],
                 "processing_codes": ["D13", "D14", "D15", "R12", "R13", "D9"],
             },

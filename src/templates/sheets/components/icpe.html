@@ -1,13 +1,12 @@
 <div {% if graph_context == "web" %}class="cell cell--bordered cell--full"{% endif %}>
     <h3>Listes des rubriques des installations associées à l'établissement</h3>
-    <p class="fr-tag fr-tag--sm fr-icon-info-fill fr-tag--icon-left">Source : GUN/Géorisques</p>
-    {% if  icpe_data %}
-        <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+    <p class="fr-tag fr-tag--sm fr-icon-info-fill fr-tag--icon-left">Source : GUN</p>
+    {% if icpe_data %}
+        <div {% if graph_context == "web" %}class="fr-table"{% endif %}>
             <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
                 <thead>
                     <tr>
                         <th scope="col">Rubrique</th>
-                        <th scope="col">Nature</th>
                         <th scope="col">Quantité autorisée</th>
                         <th scope="col">Unité</th>
                     </tr>
@@ -15,8 +14,7 @@
                 <tbody>
                     {% for row in icpe_data %}
                         <tr>
-                            <td>{{ row.rubrique_alinea }}</td>
-                            <td>{{ row.nature|default:"N/A" }}</td>
+                            <td>{{ row.rubrique }}</td>
                             <td>{{ row.quantite|default:"N/A" }}</td>
                             <td>{{ row.unite|default:"N/A" }}</td>
                         </tr>

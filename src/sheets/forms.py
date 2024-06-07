@@ -111,5 +111,5 @@ class SiretForm(Form):
         with wh_engine.connect() as con:
             companies = con.execute(prepared_query, siret=siret).all()
         if not companies:
-            raise ValidationError("Siret non trouvé")
+            raise ValidationError("Établissement non inscrit à Trackdéchets.")
         return siret

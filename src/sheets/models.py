@@ -134,8 +134,15 @@ class ComputedInspectionData(models.Model):
     icpe_2770_graph = models.TextField(blank=True)
     icpe_2790_data = models.TextField(blank=True)
     icpe_2790_graph = models.TextField(blank=True)
-    icpe_2760_data = models.TextField(blank=True)
-    icpe_2760_graph = models.TextField(blank=True)
+    icpe_2760_1_data = models.TextField(blank=True)
+    icpe_2760_1_graph = models.TextField(blank=True)
+
+    icpe_2771_data = models.TextField(blank=True)
+    icpe_2771_graph = models.TextField(blank=True)
+    icpe_2791_data = models.TextField(blank=True)
+    icpe_2791_graph = models.TextField(blank=True)
+    icpe_2760_2_data = models.TextField(blank=True)
+    icpe_2760_2_graph = models.TextField(blank=True)
 
     bs_processed_without_icpe_authorization = models.JSONField(default=dict)
 

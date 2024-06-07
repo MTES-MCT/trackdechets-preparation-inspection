@@ -236,26 +236,20 @@ class SheetProcessor:
 
         self.computed.all_bsd_data_empty = all_bsd_data_empty
 
-        icpe_2770_data = get_icpe_item_data(siret=self.siret, rubrique="2770")
-        icpe_2770_graph = ICPEDailyItemProcessor(
-            icpe_2770_data,
-        )
-        icpe_2770_graph_data = icpe_2770_graph.build()
-        setattr(self.computed, "icpe_2770_data", icpe_2770_graph_data)
-
-        icpe_2790_data = get_icpe_item_data(siret=self.siret, rubrique="2790")
-        icpe_2790_graph = ICPEDailyItemProcessor(
-            icpe_2790_data,
-        )
-        icpe_2790_graph_data = icpe_2790_graph.build()
-        setattr(self.computed, "icpe_2790_data", icpe_2790_graph_data)
-
-        icpe_2760_data = get_icpe_item_data(siret=self.siret, rubrique="2760-1")
-        icpe_2760_graph = ICPEAnnualItemProcessor(
-            icpe_2760_data,
-        )
-        icpe_2760_graph_data = icpe_2760_graph.build()
-        setattr(self.computed, "icpe_2760_data", icpe_2760_graph_data)
+        for rubrique, processor in [
+            ("2770", ICPEDailyItemProcessor),
+            ("2790", ICPEDailyItemProcessor),
+            ("2760-1", ICPEAnnualItemProcessor),
+            ("2771", ICPEDailyItemProcessor),
+            ("2791", ICPEDailyItemProcessor),
+            ("2760-2", ICPEAnnualItemProcessor),
+        ]:
+            icpe_rubrique_data = get_icpe_item_data(siret=self.siret, rubrique=rubrique)
+            icpe_rubrique_graph = processor(
+                icpe_rubrique_data,
+            )
+            icpe_rubrique_graph_data = icpe_rubrique_graph.build()
+            setattr(self.computed, f"icpe_{rubrique.replace('-','_')}_data", icpe_rubrique_graph_data)
 
     def _process_bsds(self):
         data_date_interval = (self.data_start_date, self.data_end_date)

@@ -425,9 +425,6 @@ class WasteFlowsTableProcessor:
                 df = df.merge(self.packagings_data, left_on="id", right_on="bsff_id")
                 df = df.rename(columns={"acceptation_weight": "quantity_received"})
 
-            if bs_type == BSDA:
-                df = df.rename(columns={"transporter_transport_signature_date": "sent_at"})
-
             dfs_to_concat.append(df)
 
         if len(dfs_to_concat) == 0:
@@ -1206,7 +1203,7 @@ class QuantityOutliersTableProcessor:
             DataFrame with lines with received quantity outliers removed.
         """
         df_quantity_outliers = pd.DataFrame()
-        if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA] and (transporters_df is not None):
+        if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA, BSFF] and (transporters_df is not None):
             df_with_transport = df.merge(
                 transporters_df[["bs_id", "transporter_transport_mode", "sent_at"]],
                 left_on="id",
@@ -1238,27 +1235,8 @@ class QuantityOutliersTableProcessor:
             df_quantity_outliers = df[
                 (df["quantity_received"] > 40) & (df["sent_at"].between(*self.data_date_interval))
             ]
-        elif bs_type == BSFF:
-            if packagings_data_df is not None:
-                df = df.merge(
-                    packagings_data_df["acceptation_weight"],
-                    left_on="id",
-                    right_on="bsff_id",
-                    validate="one_to_many",
-                    how="left",
-                )
-                df = df.groupby("id", as_index=False).aggregate(
-                    emitter_company_siret=pd.NamedAgg(column="emitter_company_siret", aggfunc="max"),
-                    recipient_company_siret=pd.NamedAgg(column="recipient_company_siret", aggfunc="max"),
-                    waste_code=pd.NamedAgg(column="waste_code", aggfunc="max"),
-                    waste_name=pd.NamedAgg(column="waste_name", aggfunc="max"),
-                    sent_at=pd.NamedAgg(column="sent_at", aggfunc="max"),
-                    received_at=pd.NamedAgg(column="received_at", aggfunc="max"),
-                    quantity_received=pd.NamedAgg(column="acceptation_weight", aggfunc="sum"),
-                )
-                df_quantity_outliers = df[
-                    (df["quantity_received"] > 20) & (df["sent_at"].between(*self.data_date_interval))
-                ]
+        else:
+            raise ValueError(f"BS type : {bs_type} not known.")
 
         df_quantity_outliers["bs_type"] = bs_type if bs_type != BSDD_NON_DANGEROUS else "bsdd"
         return df_quantity_outliers
@@ -1794,11 +1772,7 @@ class TransporterBordereauxStatsProcessor:
 
             if len(df) > 0:
                 quantity_col = "quantity_received"
-                id_col = "bs_id" if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA] else "id"
-                if (bs_type == BSFF) and (self.packagings_data_df is not None):
-                    df = df.merge(self.packagings_data_df, left_on="id", right_on="bsff_id")
-                    quantity_col = "acceptation_weight"
-                    id_col = "bsff_id"
+                id_col = "bs_id" if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA, BSFF] else "id"
 
                 num_bordereaux = df[id_col].nunique()
                 quantity = df[quantity_col].sum()

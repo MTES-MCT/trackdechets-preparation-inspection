@@ -19,6 +19,7 @@ from .database import (
     build_bsdd_transporter_query,
     build_bsff_packagings_query,
     build_bsff_query,
+    build_bsff_transporter_query,
     build_bsvhu_query,
     build_query_company,
     build_revised_bsda_query,
@@ -136,6 +137,7 @@ bsds_config = [
         "bsd_type": BSFF,
         "bs_data": build_bsff_query,
         "packagings_data": build_bsff_packagings_query,
+        "bs_transporter_data": build_bsff_transporter_query,
     },
     {"bsd_type": BSVHU, "bs_data": build_bsvhu_query},
 ]
@@ -403,10 +405,11 @@ class SheetProcessor:
         )
         self.computed.bsda_worker_quantity_data = bsda_worker_quantities.build()
 
+        bs_types_with_multimodal_transport = [BSDD, BSDD_NON_DANGEROUS, BSDA, BSFF]
         transporter_bordereaux_graph = TransporterBordereauxGraphProcessor(
             company_siret=self.siret,
             transporters_data_df=self.transporter_data_dfs,
-            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k not in [BSDD, BSDD_NON_DANGEROUS, BSDA]},
+            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k not in bs_types_with_multimodal_transport},
             data_date_interval=data_date_interval,
         )
         self.computed.transporter_bordereaux_stats_graph_data = transporter_bordereaux_graph.build()
@@ -414,7 +417,7 @@ class SheetProcessor:
         quantities_transported_graph = TransportedQuantitiesGraphProcessor(
             company_siret=self.siret,
             transporters_data_df=self.transporter_data_dfs,
-            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k not in [BSDD, BSDD_NON_DANGEROUS, BSDA]},
+            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k not in bs_types_with_multimodal_transport},
             data_date_interval=data_date_interval,
             packagings_data_df=self.bsff_packagings_df,
         )
@@ -423,7 +426,7 @@ class SheetProcessor:
         transporter_bordereaux_stats = TransporterBordereauxStatsProcessor(
             company_siret=self.siret,
             transporters_data_df=self.transporter_data_dfs,
-            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k not in [BSDD, BSDD_NON_DANGEROUS, BSDA]},
+            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k not in bs_types_with_multimodal_transport},
             data_date_interval=data_date_interval,
             packagings_data_df=self.bsff_packagings_df,
         )

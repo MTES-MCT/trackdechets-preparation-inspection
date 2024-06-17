@@ -81,7 +81,7 @@ class BsdQuantitiesGraph:
             & bs_data["received_at"].between(*self.data_date_interval)
         ]
 
-        # Handle the case of BSDA having transported date in separate table, to avoid use transporter data
+        # Handle the case of BSDA/BSFF having transported date in separate table, to avoid use transporter data
         sent_at_key = "sent_at" if ("sent_at" in bs_data.columns) else "transporter_transport_signature_date"
         outgoing_data = bs_data[
             (bs_data["emitter_company_siret"] == self.company_siret)
@@ -305,7 +305,7 @@ class BsdTrackedAndRevisedProcessor:
         """Preprocess raw 'bordereaux' data to prepare it for plotting."""
         bs_data = self.bs_data
 
-        # Handle the case of BSDA having transported date in separate table, to avoid use transporter data
+        # Handle the case of BSDA/BSFF having transported date in separate table, to avoid use transporter data
         sent_at_key = "sent_at" if ("sent_at" in bs_data.columns) else "transporter_transport_signature_date"
         bs_emitted = bs_data[
             (bs_data["emitter_company_siret"] == self.company_siret)
@@ -1263,7 +1263,7 @@ class TransporterBordereauxGraphProcessor:
             ]
 
             if len(df) > 0:
-                id_col = "bs_id" if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA] else "id"
+                id_col = "bs_id" if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA, BSFF] else "id"
                 df_by_month = df.groupby(pd.Grouper(key="sent_at", freq="1M"))[id_col].nunique()
                 self.transported_bordereaux_stats[bs_type] = df_by_month
 
@@ -1449,17 +1449,8 @@ class TransportedQuantitiesGraphProcessor:
             ]
 
             if len(df) > 0:
-                if (bs_type == BSFF) and (self.packagings_data_df is not None):
-                    df_by_month = (
-                        df.merge(self.packagings_data_df, left_on="id", right_on="bsff_id")
-                        .dropna(subset="acceptation_date")
-                        .groupby(pd.Grouper(key="acceptation_date", freq="1M"))["acceptation_weight"]
-                        .sum()
-                    )
-                    self.transported_quantities_stats[bs_type] = df_by_month
-                else:
-                    df_by_month = df.groupby(pd.Grouper(key="sent_at", freq="1M"))["quantity_received"].sum()
-                    self.transported_quantities_stats[bs_type] = df_by_month
+                df_by_month = df.groupby(pd.Grouper(key="sent_at", freq="1M"))["quantity_received"].sum()
+                self.transported_quantities_stats[bs_type] = df_by_month
 
     def _check_data_empty(self) -> bool:
         if all((e is None) or (len(e) == 0) for e in self.transported_quantities_stats.values()):

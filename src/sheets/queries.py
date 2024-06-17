@@ -340,6 +340,31 @@ where
 )
 """
 
+sql_bsff_transporter_query_str = r"""
+select
+    id,
+    bsda_id as bs_id,
+    transporter_transport_taken_over_at as sent_at,
+    transporter_company_siret,
+    transporter_transport_plates,
+    transporter_transport_mode,
+    acceptation_weight as quantity_received,
+    waste_code
+from
+    refined_zone_enriched.bsff_transporter_enriched
+where
+    (emitter_company_siret = :siret
+        or destination_company_siret = :siret
+        or transporter_company_siret = :siret
+    )
+    and waste_code like '%*'
+    -- to avoid pandas datetime overflow
+    and (
+		transporter_transport_taken_over_at between '1677-09-22' and '2262-04-11'
+		or transporter_transport_taken_over_at is null
+	)
+"""
+
 sql_bsvhu_query_str = """
 select
     id,

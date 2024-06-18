@@ -176,7 +176,7 @@ select
     created_at,
     emitter_emission_signature_date,
     worker_work_signature_date,
-    transporter_transport_signature_date,
+    transporter_transport_signature_date as sent_at, -- This is to handle the case when we need a "sent_at" date without using transporter data
     destination_reception_date as received_at,
     destination_operation_date as processed_at,
     emitter_company_siret,
@@ -282,16 +282,14 @@ sql_bsff_query_str = """
 select
     id,
     created_at,
-    transporter_transport_taken_over_at as sent_at,
+    transporter_transport_signature_date as sent_at, -- This is to handle the case when we need a "sent_at" date without using transporter data
     destination_reception_date as received_at,
     emitter_company_siret,
     emitter_company_address,
     destination_company_siret as recipient_company_siret,
     weight_value as waste_detail_quantity,
     waste_code,
-    status,
-    transporter_transport_mode,
-    transporter_company_siret
+    status
 from
     trusted_zone_trackdechets.bsff
 where
@@ -343,7 +341,7 @@ where
 sql_bsff_transporter_query_str = r"""
 select
     id,
-    bsda_id as bs_id,
+    bsff_id as bs_id,
     transporter_transport_taken_over_at as sent_at,
     transporter_company_siret,
     transporter_transport_plates,

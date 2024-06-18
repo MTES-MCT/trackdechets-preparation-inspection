@@ -311,11 +311,9 @@ class BsdStatsProcessor:
     def _preprocess_data(self) -> None:
         bs_data = self.bs_data
 
-        # Handle the case of BSDA having transported date in separate table, to avoid use transporter data
-        sent_at_key = "sent_at" if ("sent_at" in bs_data.columns) else "transporter_transport_signature_date"
         bs_emitted_data = bs_data[
             (bs_data["emitter_company_siret"] == self.company_siret)
-            & bs_data[sent_at_key].between(*self.data_date_interval)
+            & bs_data["sent_at"].between(*self.data_date_interval)
         ]
         bs_received_data = bs_data[
             (bs_data["recipient_company_siret"] == self.company_siret)
@@ -417,14 +415,18 @@ class WasteFlowsTableProcessor:
         siret = self.company_siret
 
         dfs_to_concat = []
-        for bs_type, df in chain(self.bs_data_dfs.items(), self.transporters_data_df.items()):
+        for bs_type, df in self.bs_data_dfs.items():
             if df is None:
                 continue
 
             if (bs_type == BSFF) and (self.packagings_data is not None):
-                df = df.merge(self.packagings_data, left_on="id", right_on="bsff_id")
+                df = df.merge(self.packagings_data, left_on="id", right_on="bsff_id", suffixes=("", "_packaging"))
                 df = df.rename(columns={"acceptation_weight": "quantity_received"})
 
+            dfs_to_concat.append(df)
+
+        # Add transporter data (for outgoing stats)
+        for _, df in self.transporters_data_df.items():
             dfs_to_concat.append(df)
 
         if len(dfs_to_concat) == 0:
@@ -630,14 +632,10 @@ class SameEmitterRecipientTableProcessor:
         self.preprocessed_df = pd.DataFrame()
 
     def _preprocess_data(self) -> None:
-        # Handle the case of BSDA having transported date in separate table, to avoid use transporter data
-        dfs_to_process = []
-        for bs_type, df in self.bs_data_dfs.items():
-            if bs_type in [BSDD, BSDD_NON_DANGEROUS]:
-                dfs_to_process.append(df)
-            elif bs_type == BSDA:
-                df = df.rename(columns={"transporter_transport_signature_date": "sent_at"})
-                dfs_to_process.append(df)
+        # This case only works on BSDD and BSDA so we filter others type of "bordereaux"
+        dfs_to_process = [
+            df for bs_type, df in self.bs_data_dfs.items() if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA]
+        ]
 
         columns_to_take = [
             "id",
@@ -1106,7 +1104,7 @@ class PrivateIndividualsCollectionsTableProcessor:
                 | (self.bsda_data_df["worker_company_siret"] == self.company_siret)
             )
             & self.bsda_data_df["emitter_is_private_individual"]
-            & self.bsda_data_df["transporter_transport_signature_date"].between(*self.data_date_interval)
+            & self.bsda_data_df["sent_at"].between(*self.data_date_interval)
         ]
 
         if len(filtered_df) > 0:
@@ -1121,7 +1119,7 @@ class PrivateIndividualsCollectionsTableProcessor:
     def _add_stats(self) -> list:
         stats = []
 
-        for e in self.preprocessed_data.sort_values("transporter_transport_signature_date").itertuples():
+        for e in self.preprocessed_data.sort_values("sent_at").itertuples():
             row = {
                 "id": e.id,
                 "recipient_company_siret": e.recipient_company_siret,
@@ -1133,9 +1131,7 @@ class PrivateIndividualsCollectionsTableProcessor:
                 "waste_code": e.waste_code,
                 "waste_name": e.waste_name,
                 "quantity": e.quantity_received if not pd.isna(e.quantity_received) else None,
-                "sent_at": e.transporter_transport_signature_date.strftime("%d/%m/%Y %H:%M")
-                if not pd.isna(e.transporter_transport_signature_date)
-                else None,
+                "sent_at": e.sent_at.strftime("%d/%m/%Y %H:%M") if not pd.isna(e.sent_at) else None,
                 "received_at  ": e.received_at.strftime("%d/%m/%Y %H:%M") if not pd.isna(e.received_at) else None,
             }
             stats.append(row)
@@ -1204,27 +1200,18 @@ class QuantityOutliersTableProcessor:
         """
         df_quantity_outliers = pd.DataFrame()
         if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA, BSFF] and (transporters_df is not None):
-            df_with_transport = df.merge(
-                transporters_df[["bs_id", "transporter_transport_mode", "sent_at"]],
-                left_on="id",
-                right_on="bs_id",
-                how="left",
-                validate="one_to_many",
-                suffixes=("", "_transport"),
-            )
+            # In this case we use transporter data
+            df_quantity_outliers = (
+                transporters_df[
+                    (transporters_df["quantity_received"] > 40)
+                    & (
+                        (transporters_df["transporter_transport_mode"] == "ROAD")
+                        | transporters_df["transporter_transport_mode"].isna()
+                    )
+                    & transporters_df["sent_at"].between(*self.data_date_interval)
+                ]
+            ).drop_duplicates("id")
 
-            date_filter = df_with_transport["sent_at"].between(*self.data_date_interval)
-            if bs_type in [BSDD, BSDD_NON_DANGEROUS]:
-                date_filter = date_filter | df_with_transport["sent_at_transport"].between(*self.data_date_interval)
-
-            df_quantity_outliers = df_with_transport[
-                (df_with_transport["quantity_received"] > 40)
-                & (
-                    (df_with_transport["transporter_transport_mode"] == "ROAD")
-                    | df_with_transport["transporter_transport_mode"].isna()
-                )
-                & date_filter
-            ].drop_duplicates("id")
         elif bs_type == BSDASRI:
             df_quantity_outliers = df[
                 (df["quantity_received"] > 20)
@@ -1654,7 +1641,7 @@ class BsdaWorkerStatsProcessor:
             df[
                 df["emitter_emission_signature_date"].between(*self.data_date_interval)
                 & df["worker_work_signature_date"].between(*self.data_date_interval)
-                & df["transporter_transport_signature_date"].between(*self.data_date_interval)
+                & df["sent_at"].between(*self.data_date_interval)
             ]
         )
         self.bsda_worker_stats["received"] = len(df[df["received_at"].between(*self.data_date_interval)])

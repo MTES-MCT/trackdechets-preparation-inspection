@@ -13,15 +13,7 @@ from .constants import (
     REGISTRY_TYPE_TRANSPORTED,
 )
 from .database import wh_engine
-
-sql_company_query_str = """
-select
-    id
- from
-    trusted_zone_trackdechets.company
-where
-    siret = :siret ;
-"""
+from .queries import sql_company_query_exists_str
 
 
 class TypedDateInput(DateInput):
@@ -107,7 +99,7 @@ class SiretForm(Form):
 
     def clean_siret(self):
         siret = self.cleaned_data["siret"]
-        prepared_query = text(sql_company_query_str)
+        prepared_query = text(sql_company_query_exists_str)
         with wh_engine.connect() as con:
             companies = con.execute(prepared_query, siret=siret).all()
         if not companies:

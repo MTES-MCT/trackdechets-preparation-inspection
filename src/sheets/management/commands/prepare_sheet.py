@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from ...task import SheetProcessor
+from sheets.data_processing import SheetProcessor
 
 
 class Command(BaseCommand):

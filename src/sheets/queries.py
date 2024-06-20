@@ -544,3 +544,12 @@ FROM trusted_zone_rndts.dnd_sortants
 where
     numero_identification_declarant = :siret
 """
+
+sql_company_query_exists_str = """
+select
+    id
+ from
+    trusted_zone_trackdechets.company
+where
+    siret = :siret ;
+"""

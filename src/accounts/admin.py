@@ -39,6 +39,7 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ("username", "email")
     list_display = [
         "email",
+        "user_type",
         "username",
         "is_staff",
         "is_superuser",
@@ -58,6 +59,7 @@ class CustomUserAdmin(UserAdmin):
                     "is_active",
                     "is_staff",
                     "is_superuser",
+                    "user_type",
                     "groups",
                     "user_permissions",
                 ),

@@ -225,7 +225,6 @@
         {# DND #}
         <h2 class="section__title" id="bs-section-title">Données des déclarations issues du RNDTS</h2>
         <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Dernière mise à jour des données : Avril 2024</p>
-
         {% if sheet.non_dangerous_waste_quantities_graph_data %}
             <div class="row">
                 <div class="cell cell--bordered cell--third">
@@ -245,11 +244,9 @@
                     {% render_rndts_stats sheet %}
                 </div>
             </div>
-
         {% else %}
-        <div class="no-data-section">PAS DE DONNÉES ISSUES DU RNDTS À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
+            <div class="no-data-section">PAS DE DONNÉES ISSUES DU RNDTS À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
         {% endif %}
-
         {# end DND #}
         {# "waste is dangerous" statements #}
         {% if sheet.waste_is_dangerous_statements_data %}

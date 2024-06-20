@@ -12,6 +12,10 @@ from .managers import UserManager
 class User(AbstractBaseUser, PermissionsMixin):
     """User models."""
 
+    class UserTypeChoice(models.TextChoices):
+        HUMAN = "HUMAN", _("Human")
+        API = "API", _("api")
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = [
         "username",
@@ -32,7 +36,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     monaiot_signup = models.BooleanField(
         _("MonAIOT inscription"), help_text=_("Did this user sign up in with MonAIOT ?"), default=False
     )
-
+    user_type = models.CharField(_("User Type"), choices=UserTypeChoice, default=UserTypeChoice.HUMAN, max_length=30)
     objects = UserManager()
 
     class Meta:
@@ -42,3 +46,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.username
+
+    @property
+    def is_api(self):
+        return self.user_type == self.UserTypeChoice.API

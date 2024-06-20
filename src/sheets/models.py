@@ -10,6 +10,10 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+PENDING = ("PENDING",)
+PROCESSED = "PROCESSED"
+ERROR = "ERROR"
+
 
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -35,6 +39,12 @@ class ComputedInspectionDataCustomManager(models.Manager):
     def mark_as_graph_rendered(self, pk):
         self.filter(pk=pk).update(state="GRAPH_RENDERED")
 
+    def by_web(self):
+        return self.filter(creation_mode="WEB")
+
+    def by_api(self):
+        return self.filter(creation_mode="API")
+
 
 class ComputedInspectionData(models.Model):
     class StateChoice(models.TextChoices):
@@ -42,6 +52,10 @@ class ComputedInspectionData(models.Model):
         COMPUTED = "COMPUTED", _("Computed")
         GRAPH_RENDERED = "GRAPH_RENDERED", _("Graph rendered")
         COMPUTED_FAILED = "COMPUTED_FAILED", _("Computation failed")
+
+    class CreationModeChoice(models.TextChoices):
+        WEB = "WEB", _("Web")
+        API = "API", _("Api")
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     state = models.CharField(
@@ -168,6 +182,12 @@ class ComputedInspectionData(models.Model):
     pdf = models.TextField(blank=True)
 
     created_by = models.EmailField(verbose_name=_("Created by"), blank=True)
+    creation_mode = models.CharField(
+        _("Creation Mode"),
+        max_length=20,
+        choices=CreationModeChoice.choices,
+        default=CreationModeChoice.WEB,
+    )
 
     objects = ComputedInspectionDataCustomManager()
 
@@ -203,6 +223,16 @@ class ComputedInspectionData(models.Model):
     @property
     def pdf_filename(self):
         return f"FI-Trackdéchets-{self.org_id}-{self.created:%d-%m-%Y}"
+
+    @property
+    def api_state(self):
+        """Match TD states"""
+        return {
+            self.StateChoice.INITIAL.name: PENDING,
+            self.StateChoice.COMPUTED.name: PENDING,
+            self.StateChoice.GRAPH_RENDERED.name: PROCESSED,
+            self.StateChoice.COMPUTED_FAILED.name: ERROR,
+        }.get(self.state)
 
 
 class RegistryDownload(models.Model):

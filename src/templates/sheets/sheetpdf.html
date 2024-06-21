@@ -46,6 +46,7 @@
                         <li>les éventuels BSD papiers non dématérialisés</li>
                         <li>les bons d’enlèvements (huiles usagées et pneus)</li>
                     </ul>
+                    
                 </div>
             </div>
             <div class="row">
@@ -55,7 +56,7 @@
             </div>
             <h2 class="section-title">Données des bordereaux de suivi dématérialisés issues de Trackdéchets</h2>
             {% if sheet.all_bsd_data_empty %}
-                <div class="no-data-section">PAS DE DONNÉES À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
+            <div class="no-data-section">PAS DE DONNÉES TRACKDÉCHETS À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
             {% endif %}
             {#  bsdd #}
             <div class="row">
@@ -206,17 +207,17 @@
                 </div>
             {% endif %}
             {# DND #}
+            <h2 class="section__title" id="bs-section-title">Données des déclarations issues du RNDTS</h2>
+            <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Dernière mise à jour des données : Avril 2024</p>
             {% if sheet.non_dangerous_waste_quantities_graph_data %}
                 <div class="row">
                     <div class="cell cell--bordered cell--third">
                         <h3 class="cell__title">Déclarations de déchets non dangereux entrants et sortants</h3>
-                        <p class="fr-tag fr-tag--sm fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
                         <img src="data:image/png;base64,{{ dnd_statements_graph }}"
                              class="cell__img">
                     </div>
                     <div class="cell cell--bordered cell--third">
                         <h3 class="cell__title">Quantité de déchets non dangereux</h3>
-                        <p class="fr-tag fr-tag--sm fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
                         <img src="data:image/png;base64,{{ dnd_quantity_graph }}"
                              class="cell__img">
                     </div>
@@ -225,6 +226,8 @@
                         {% render_rndts_stats sheet graph_context="pdf" %}
                     </div>
                 </div>
+            {% else %}
+                <div class="no-data-section">PAS DE DONNÉES ISSUES DU RNDTS À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
             {% endif %}
             {# end DND #}
             {#  "waste is dangerous" statements #}
@@ -268,7 +271,30 @@
                 </p>
                 <div class="row">
                     <div class="cell cell--bordered cell--full">
+                        <h3 class="cell__title">Données relatives à la rubrique 2760-1</h3>
+                        <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : Trackdéchets</p>
+                        {% if icpe_2760_graph %}
+                            <img src="data:image/png;base64,{{ icpe_2760_1_graph }}" class="cell__img">
+                        {% else %}
+                            <div class="no-data">Pas de données à afficher.</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="cell cell--bordered cell--full">
+                        <h3 class="cell__title">Données relatives à la rubrique 2760-2</h3>
+                        <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
+                        {% if icpe_2760_2_graph %}
+                            <img src="data:image/png;base64,{{ icpe_2760_2_graph }}" class="cell__img">
+                        {% else %}
+                            <div class="no-data">Pas de données à afficher.</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="cell cell--bordered cell--full">
                         <h3 class="cell__title">Données relatives à la rubrique 2770</h3>
+                        <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : Trackdéchets</p>
                         {% if icpe_2770_graph %}
                             <img src="data:image/png;base64,{{ icpe_2770_graph }}" class="cell__img">
                         {% else %}
@@ -278,7 +304,19 @@
                 </div>
                 <div class="row">
                     <div class="cell cell--bordered cell--full">
+                        <h3 class="cell__title">Données relatives à la rubrique 2771</h3>
+                        <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
+                        {% if icpe_2771_graph %}
+                            <img src="data:image/png;base64,{{ icpe_2771_graph }}" class="cell__img">
+                        {% else %}
+                            <div class="no-data">Pas de données à afficher.</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="cell cell--bordered cell--full">
                         <h3 class="cell__title">Données relatives à la rubrique 2790</h3>
+                        <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : Trackdéchets</p>
                         {% if icpe_2790_graph %}
                             <img src="data:image/png;base64,{{ icpe_2790_graph }}" class="cell__img">
                         {% else %}
@@ -288,9 +326,10 @@
                 </div>
                 <div class="row">
                     <div class="cell cell--bordered cell--full">
-                        <h3 class="cell__title">Données relatives à la rubrique 2760-1</h3>
-                        {% if icpe_2760_graph %}
-                            <img src="data:image/png;base64,{{ icpe_2760_graph }}" class="cell__img">
+                        <h3 class="cell__title">Données relatives à la rubrique 2791</h3>
+                        <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
+                        {% if icpe_2791_graph %}
+                            <img src="data:image/png;base64,{{ icpe_2791_graph }}" class="cell__img">
                         {% else %}
                             <div class="no-data">Pas de données à afficher.</div>
                         {% endif %}

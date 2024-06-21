@@ -57,7 +57,7 @@
             Données des bordereaux de suivi dématérialisés issues de Trackdéchets
         </h2>
         {% if sheet.all_bsd_data_empty %}
-            <div class="no-data-section">PAS DE DONNÉES À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
+            <div class="no-data-section">PAS DE DONNÉES TRACKDÉCHETS À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
         {% endif %}
         {# bsdd #}
         {% if sheet.bsdd_created_rectified_data %}
@@ -223,18 +223,19 @@
             </div>
         {% endif %}
         {# DND #}
+        <h2 class="section__title" id="bs-section-title">Données des déclarations issues du RNDTS</h2>
+        <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Dernière mise à jour des données : Avril 2024</p>
+
         {% if sheet.non_dangerous_waste_quantities_graph_data %}
             <div class="row">
                 <div class="cell cell--bordered cell--third">
                     <h3 class="cell__title">Déclarations de déchets non dangereux entrants et sortants</h3>
-                    <p class="fr-tag fr-tag--sm fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
                     <div id="dnd_statements_graph">
                         <div class="no-data">Pas de données à afficher.</div>
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
                     <h3 class="cell__title">Quantité de déchets non dangereux</h3>
-                    <p class="fr-tag fr-tag--sm fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
                     <div id="dnd_quantity_graph">
                         <div class="no-data">Pas de données à afficher.</div>
                     </div>
@@ -244,7 +245,11 @@
                     {% render_rndts_stats sheet %}
                 </div>
             </div>
+
+        {% else %}
+        <div class="no-data-section">PAS DE DONNÉES ISSUES DU RNDTS À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
         {% endif %}
+
         {# end DND #}
         {# "waste is dangerous" statements #}
         {% if sheet.waste_is_dangerous_statements_data %}
@@ -279,7 +284,26 @@
             </p>
             <div class="row">
                 <div class="cell cell--bordered cell--full">
+                    <h3 class="cell__title">Données relatives à la rubrique 2760-1</h3>
+                    <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : Trackdéchets</p>
+                    <div id="icpe_2760_1_graph">
+                        <div class="no-data">Pas de données à afficher.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="cell cell--bordered cell--full">
+                    <h3 class="cell__title">Données relatives à la rubrique 2760-2</h3>
+                    <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
+                    <div id="icpe_2760_2_graph">
+                        <div class="no-data">Pas de données à afficher.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="cell cell--bordered cell--full">
                     <h3 class="cell__title">Données relatives à la rubrique 2770</h3>
+                    <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : Trackdéchets</p>
                     <div id="icpe_2770_graph">
                         <div class="no-data">Pas de données à afficher.</div>
                     </div>
@@ -287,7 +311,17 @@
             </div>
             <div class="row">
                 <div class="cell cell--bordered cell--full">
+                    <h3 class="cell__title">Données relatives à la rubrique 2771</h3>
+                    <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
+                    <div id="icpe_2771_graph">
+                        <div class="no-data">Pas de données à afficher.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="cell cell--bordered cell--full">
                     <h3 class="cell__title">Données relatives à la rubrique 2790</h3>
+                    <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : Trackdéchets</p>
                     <div id="icpe_2790_graph">
                         <div class="no-data">Pas de données à afficher.</div>
                     </div>
@@ -295,8 +329,9 @@
             </div>
             <div class="row">
                 <div class="cell cell--bordered cell--full">
-                    <h3 class="cell__title">Données relatives à la rubrique 2760-1</h3>
-                    <div id="icpe_2760_graph">
+                    <h3 class="cell__title">Données relatives à la rubrique 2791</h3>
+                    <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
+                    <div id="icpe_2791_graph">
                         <div class="no-data">Pas de données à afficher.</div>
                     </div>
                 </div>
@@ -391,7 +426,10 @@
     const waste_origin_map_data = {{ sheet.waste_origin_map_data }};
     const icpe_2770_data = {{ sheet.icpe_2770_data }};
     const icpe_2790_data = {{ sheet.icpe_2790_data }};
-    const icpe_2760_data = {{ sheet.icpe_2760_data }};
+    const icpe_2760_1_data = {{ sheet.icpe_2760_1_data }};
+    const icpe_2771_data = {{ sheet.icpe_2771_data }};
+    const icpe_2791_data = {{ sheet.icpe_2791_data }};
+    const icpe_2760_2_data = {{ sheet.icpe_2760_2_data }};
     const bsda_worker_quantity_data = {{ sheet.bsda_worker_quantity_data }};
     const transporter_bordereaux_stats_graph_data = {{ sheet.transporter_bordereaux_stats_graph_data }};
     const quantities_transported_stats_graph_data = {{ sheet.quantities_transported_stats_graph_data }};
@@ -409,58 +447,86 @@
         }
     }
 
-    plot_configs = [{
+    plot_configs = [
+    {
         "data": bsdd_created_rectified_data,
         "target": "bsdd_emitted_corrected_graph"
-    }, {
+    }, 
+    {
         "data": bsdd_stock_data,
         "target": "bsdd_quantity_graph"
-    }, {
+    },
+    {
         "data": bsdd_non_dangerous_created_rectified_data,
         "target": "bsdd_non_dangerous_emitted_corrected_graph"
-    }, {
+    },
+    {
         "data": bsdd_non_dangerous_stock_data,
         "target": "bsdd_non_dangerous_quantity_graph"
-    }, {
+    },
+    {
         "data": bsda_created_rectified_data,
         "target": "bsda_emitted_corrected_graph"
-    }, {
+    },
+    {
         "data": bsda_stock_data,
         "target": "bsda_quantity_graph"
-    }, {
+    },
+    {
         "data": bsdasri_created_rectified_data,
         "target": "bsdasri_emitted_corrected_graph"
-    }, {
+    },
+    {
         "data": bsdasri_stock_data,
         "target": "bsdasri_quantity_graph"
-    }, {
+    },
+    {
         "data": bsff_created_rectified_data,
         "target": "bsff_emitted_corrected_graph"
-    }, {
+    },
+    {
         "data": bsff_stock_data,
         "target": "bsff_quantity_graph"
-    }, {
+    },
+    {
         "data": bsvhu_created_rectified_data,
         "target": "bsvhu_emitted_corrected_graph"
-    }, {
+    },
+    {
         "data": bsvhu_stock_data,
         "target": "bsvhu_quantity_graph"
-    }, {
+    },
+    {
         "data": waste_origin_data,
         "target": "waste_origin_graph"
-    }, {
+    },
+    {
         "data": waste_origin_map_data,
         "target": "waste_origin_map_graph"
-    }, {
+    },
+    {
         "data": icpe_2770_data,
         "target": "icpe_2770_graph"
-    }, {
+    },
+    {
         "data": icpe_2790_data,
         "target": "icpe_2790_graph"
     },
     {
-        "data": icpe_2760_data,
-        "target": "icpe_2760_graph"
+        "data": icpe_2760_1_data,
+        "target": "icpe_2760_1_graph"
+    },
+    {
+        "data": icpe_2771_data,
+        "target": "icpe_2771_graph"
+    },
+    {
+        "data": icpe_2791_data,
+        "target": "icpe_2791_graph"
+    },
+    {
+        "data": icpe_2760_2_data,
+        "target": "icpe_2760_2_graph"
     },
     {
         "data": bsda_worker_quantity_data,

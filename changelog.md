@@ -5,10 +5,18 @@ Les changements importants de Trackdéchets préparation inspection sont documen
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 et le projet suit un schéma de versioning inspiré de [Calendar Versioning](https://calver.org/).
 
+## 21/06/2024
+
+- Ajout des données ICPExRNDTS
+
+## 27/05/2024
+
+- Ajout des données du RNDTS
+
 ## 10/04/2024
 
 - Téléchargement du registre Trackdéchets
- 
+
 ## 08/04/2024
 
 - Connexion via mon aiot
@@ -16,7 +24,7 @@ et le projet suit un schéma de versioning inspiré de [Calendar Versioning](htt
 ## 28/03/2024
 
 - Ajout des révisions en cours pour chaque type de bordereau
- 
+
 ## 20/02/2024
 
 - Réorganisation de la mise en page ;
@@ -55,7 +63,7 @@ et le projet suit un schéma de versioning inspiré de [Calendar Versioning](htt
 ## 12/09/2023
 
 - Ajout d'un composant alertant lorsqu'un établissement traite des déchets dangereux
-sans avoir les bonnes rubriques ICPE ou en l'absence de données ICPE.
+  sans avoir les bonnes rubriques ICPE ou en l'absence de données ICPE.
 
 ## 06/09/2023
 
@@ -105,7 +113,7 @@ sans avoir les bonnes rubriques ICPE ou en l'absence de données ICPE.
 ## 03/05/2023
 
 - Ajout de filtre de dates sur tous les data processors pour être sûr que les données soient
-comprises dans une fenêtre d'une année glissante.
+  comprises dans une fenêtre d'une année glissante.
 
 ## 20/04/2023
 

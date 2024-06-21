@@ -8,6 +8,7 @@ et le projet suit un schéma de versioning inspiré de [Calendar Versioning](htt
 ## 21/06/2024
 
 - Ajout des données ICPExRNDTS
+- Prise en charge du transport multi-modal pour le BSFF
 
 ## 27/05/2024
 

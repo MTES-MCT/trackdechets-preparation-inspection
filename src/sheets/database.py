@@ -29,6 +29,7 @@ from .queries import (
     sql_get_vhu_agrement_data,
     sql_revised_bsda_query_str,
     sql_revised_bsdd_query_str,
+    sql_bsff_transporter_query_str,
 )
 
 wh_engine = create_engine(settings.WAREHOUSE_URL, pool_pre_ping=True)
@@ -224,6 +225,20 @@ def build_bsff_packagings_query(
         },
         date_columns=["operation_date", "acceptation_date"],
     )
+
+
+def build_bsff_transporter_query(
+    siret: str,
+):
+    df = build_query(
+        sql_bsff_transporter_query_str,
+        query_params={
+            "siret": siret,
+        },
+        date_columns=bsd_date_params,
+    )
+
+    return df
 
 
 def build_bsvhu_query(

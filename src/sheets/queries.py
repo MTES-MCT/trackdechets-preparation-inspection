@@ -104,6 +104,8 @@ select
     form_id as bs_id,
     taken_over_at as sent_at,
     transporter_company_siret,
+    emitter_company_siret,
+    recipient_company_siret,
     transporter_number_plate,
     transporter_transport_mode,
     quantity_received,
@@ -132,6 +134,8 @@ select
     form_id as bs_id,
     taken_over_at as sent_at,
     transporter_company_siret,
+    emitter_company_siret,
+    recipient_company_siret,
     transporter_number_plate,
     transporter_transport_mode,
     quantity_received,
@@ -176,7 +180,7 @@ select
     created_at,
     emitter_emission_signature_date,
     worker_work_signature_date,
-    transporter_transport_signature_date,
+    transporter_transport_signature_date as sent_at, -- This is to handle the case when we need a "sent_at" date without using transporter data
     destination_reception_date as received_at,
     destination_operation_date as processed_at,
     emitter_company_siret,
@@ -220,6 +224,8 @@ select
     bsda_id as bs_id,
     transporter_transport_taken_over_at as sent_at,
     transporter_company_siret,
+    emitter_company_siret,
+    destination_company_siret as recipient_company_siret,
     transporter_transport_plates,
     transporter_transport_mode,
     destination_reception_weight as quantity_received,
@@ -282,16 +288,14 @@ sql_bsff_query_str = """
 select
     id,
     created_at,
-    transporter_transport_taken_over_at as sent_at,
+    transporter_transport_signature_date as sent_at, -- This is to handle the case when we need a "sent_at" date without using transporter data
     destination_reception_date as received_at,
     emitter_company_siret,
     emitter_company_address,
     destination_company_siret as recipient_company_siret,
     weight_value as waste_detail_quantity,
     waste_code,
-    status,
-    transporter_transport_mode,
-    transporter_company_siret
+    status
 from
     trusted_zone_trackdechets.bsff
 where
@@ -338,6 +342,31 @@ where
         and status::text not in ('DRAFT', 'INITIAL')
             and not is_draft
 )
+"""
+
+sql_bsff_transporter_query_str = r"""
+select
+    id,
+    bsff_id as bs_id,
+    transporter_transport_taken_over_at as sent_at,
+    transporter_company_siret,
+    transporter_transport_plates,
+    transporter_transport_mode,
+    acceptation_weight as quantity_received,
+    waste_code
+from
+    refined_zone_enriched.bsff_transporter_enriched
+where
+    (emitter_company_siret = :siret
+        or destination_company_siret = :siret
+        or transporter_company_siret = :siret
+    )
+    and waste_code like '%*'
+    -- to avoid pandas datetime overflow
+    and (
+		transporter_transport_taken_over_at between '1677-09-22' and '2262-04-11'
+		or transporter_transport_taken_over_at is null
+	)
 """
 
 sql_bsvhu_query_str = """

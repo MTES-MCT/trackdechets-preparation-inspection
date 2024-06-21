@@ -1201,16 +1201,23 @@ class QuantityOutliersTableProcessor:
         df_quantity_outliers = pd.DataFrame()
         if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA, BSFF] and (transporters_df is not None):
             # In this case we use transporter data
-            df_quantity_outliers = (
-                transporters_df[
-                    (transporters_df["quantity_received"] > 40)
-                    & (
-                        (transporters_df["transporter_transport_mode"] == "ROAD")
-                        | transporters_df["transporter_transport_mode"].isna()
-                    )
-                    & transporters_df["sent_at"].between(*self.data_date_interval)
-                ]
-            ).drop_duplicates("id")
+            df_with_transport = df.merge(
+                transporters_df[["bs_id", "transporter_transport_mode", "sent_at"]],
+                left_on="id",
+                right_on="bs_id",
+                how="left",
+                validate="one_to_many",
+                suffixes=("", "_transport"),
+            )
+
+            df_quantity_outliers = df_with_transport[
+                (df_with_transport["quantity_received"] > 40)
+                & (
+                    (df_with_transport["transporter_transport_mode"] == "ROAD")
+                    | df_with_transport["transporter_transport_mode"].isna()
+                )
+                & df_with_transport["sent_at"].between(*self.data_date_interval)
+            ].drop_duplicates("id")
 
         elif bs_type == BSDASRI:
             df_quantity_outliers = df[
@@ -1614,12 +1621,6 @@ class BsdaWorkerStatsProcessor:
         if len(df) == 0:
             return
 
-        df_transporter = self.bsda_transporter_df
-        if (df_transporter is None) or (len(df_transporter) == 0):
-            return
-
-        df_transporter = df_transporter.groupby("bs_id", as_index=False).agg({"sent_at": "min"})
-
         if len(self.bsda_data_df) == 0:
             return
 
@@ -1671,7 +1672,6 @@ class BsdaWorkerStatsProcessor:
                 avg_time_to_process_from_emission.value / (1e9 * 3600 * 24)
             )
 
-        df = df.merge(df_transporter, left_on="id", right_on="bs_id", validate="one_to_one", how="left")
         df_filtered = df[
             df["processed_at"].between(*self.data_date_interval) & df["sent_at"].between(*self.data_date_interval)
         ]

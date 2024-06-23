@@ -1,7 +1,9 @@
 {% if gistrid_stats_data %}
     <div {% if graph_context == "web" %}class="cell cell--bordered cell--full"{% endif %}>
         <h3>Données issues de GISTRID</h3>
-        <p class="fr-tag fr-tag--sm fr-icon-info-fill fr-tag--icon-left">Source : GISTRID/PNTTD - Dernière mise à jour : Décembre 2023</p>
+        <p class="fr-tag fr-tag--sm fr-icon-info-fill fr-tag--icon-left">
+            Source : GISTRID/PNTTD - Dernière mise à jour : Décembre 2023
+        </p>
         <p>Cet établissement porte le numéro GISTRID {{ gistrid_stats_data.numero_gistrid }}.</p>
         {% if gistrid_stats_data.import %}
             <h4>Importations</h4>

@@ -7,8 +7,18 @@ from .models import ComputedInspectionData, RegistryDownload
 
 @admin.register(ComputedInspectionData)
 class ComputedInspectionDataAdmin(admin.ModelAdmin):
-    list_display = ["id", "org_id", "created", "get_render", "state", "created_by"]
-    list_filter = ["created"]
+    list_display = [
+        "id",
+        "org_id",
+        "created",
+        "get_render",
+        "state",
+        "data_start_date",
+        "data_end_date",
+        "creation_mode",
+        "created_by",
+    ]
+    list_filter = ["created", "creation_mode"]
     search_fields = ["org_id"]
 
     def get_render(self, obj):

@@ -29,6 +29,7 @@ django-anymail = {extras = ["sendinblue"], version = "*"}
 django-otp = "*"
 django-allauth = "*"
 httpx = "*"
+djangorestframework = "*"
 
 [dev-packages]
 ruff = "*"

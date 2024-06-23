@@ -22,6 +22,7 @@ urlpatterns = [
     ),
     path(f"{settings.ADMIN_SLUG}/login/", HttpResponseNotFound),  # disable admin logout
     path("grappelli/", include("grappelli.urls")),  # grappelli URLS
+    path(f"{settings.API_SLUG}/api/v1/", include("api.urls")),
     path(f"{settings.ADMIN_SLUG}/", admin.site.urls),
     path("", PublicHomeView.as_view(), name="public_home"),
     path("home/", PrivateHomeView.as_view(), name="private_home"),

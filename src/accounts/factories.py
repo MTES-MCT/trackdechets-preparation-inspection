@@ -21,3 +21,7 @@ class EmailDeviceFactory(factory.django.DjangoModelFactory):
 
     email = factory.Sequence(lambda n: f"email_{n}@trackdechets.test")
     user = factory.SubFactory(UserFactory)
+
+
+class ApiUserFactory(UserFactory):
+    user_type = User.UserTypeChoice.API

@@ -46,7 +46,6 @@
                         <li>les éventuels BSD papiers non dématérialisés</li>
                         <li>les bons d’enlèvements (huiles usagées et pneus)</li>
                     </ul>
-                    
                 </div>
             </div>
             <div class="row">
@@ -56,7 +55,7 @@
             </div>
             <h2 class="section-title">Données des bordereaux de suivi dématérialisés issues de Trackdéchets</h2>
             {% if sheet.all_bsd_data_empty %}
-            <div class="no-data-section">PAS DE DONNÉES TRACKDÉCHETS À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
+                <div class="no-data-section">PAS DE DONNÉES TRACKDÉCHETS À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
             {% endif %}
             {#  bsdd #}
             <div class="row">

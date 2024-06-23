@@ -1,7 +1,9 @@
 import pytest
 from django_otp import DEVICE_ID_SESSION_KEY
+from rest_framework.authtoken.models import Token
+from rest_framework.test import APIClient
 
-from accounts.factories import DEFAULT_PASSWORD, EmailDeviceFactory, UserFactory
+from accounts.factories import DEFAULT_PASSWORD, ApiUserFactory, EmailDeviceFactory, UserFactory
 
 
 @pytest.fixture()
@@ -65,3 +67,15 @@ def verified_staff(logged_in_staff):
     session.save()
 
     return client
+
+
+@pytest.fixture()
+def token_auth_api():
+    """Return a DRF api client with token auth credentials"""
+    user = ApiUserFactory()
+    api = APIClient()
+    token = Token.objects.create(user=user)
+
+    api.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+    setattr(api, "user", user)
+    return api

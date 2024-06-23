@@ -1,12 +1,12 @@
 import pytest
 
-from ..factories import EmailDeviceFactory, UserFactory
+from ..factories import ApiUserFactory, EmailDeviceFactory, UserFactory
 from ..models import User
 
 pytestmark = pytest.mark.django_db
 
 
-def test_user_factories():
+def test_user_factory():
     user = UserFactory()
     assert user.pk
     assert user.username
@@ -15,6 +15,7 @@ def test_user_factories():
     assert user.password
     assert not user.is_staff
     assert not user.is_superuser
+    assert not user.is_api
 
 
 def test_create_super_user():
@@ -34,3 +35,15 @@ def test_email_device_factories():
     device = EmailDeviceFactory()
     assert device.pk
     assert device.user.pk
+
+
+def test_api_user_factory():
+    user = ApiUserFactory()
+    assert user.pk
+    assert user.username
+    assert user.email
+    assert user.is_active
+    assert user.password
+    assert not user.is_staff
+    assert not user.is_superuser
+    assert user.is_api

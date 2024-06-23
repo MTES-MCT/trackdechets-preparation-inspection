@@ -35,6 +35,8 @@ INSTALLED_APPS = [
     "django_otp",
     "django_otp.plugins.otp_email",
     "request",  # webstats module
+    "rest_framework",
+    "rest_framework.authtoken",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -143,6 +145,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 ADMIN_SLUG = env("ADMIN_SLUG")
+API_SLUG = env("API_SLUG")
 
 AUTH_USER_MODEL = "accounts.User"
 
@@ -154,6 +157,16 @@ MEDIA_ROOT = BASE_DIR.parent / "public" / "medias"
 MEDIA_URL = "/medias/"
 
 SITE_ID = env.int("SITE_ID", 1)
+
+REST_FRAMEWORK = {
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+    ],
+    "DEFAULT_PARSER_CLASSES": [
+        "rest_framework.parsers.JSONParser",
+    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.BasicAuthentication"],
+}
 
 # path to ignore for requests stats
 REQUEST_IGNORE_PATHS = (
@@ -219,9 +232,31 @@ SOCIALACCOUNT_PROVIDERS = {
         "SCOPE": MONAIOT_SCOPES,
     }
 }
-
-
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+    ],
+    "DEFAULT_PARSER_CLASSES": [
+        "rest_framework.parsers.JSONParser",
+    ],
+}
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 
+WEB_QUEUE = "web-queue"
+API_QUEUE = "api-queue"
+
+
+# API
 TD_API_URL = env("TD_API_URL")
 TD_API_TOKEN = env("TD_API_TOKEN")
+
+# WEBHOOKS
+
+TD_WEBHOOK_URL = env("TD_WEBHOOK_URL")
+TD_WEBHOOK_TOKEN = env("TD_WEBHOOK_TOKEN")

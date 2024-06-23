@@ -66,6 +66,7 @@ from .graph_processors.plotly_components_processors import (
 )
 from .models import ComputedInspectionData
 from .utils import to_verbose_company_types
+from django.utils import timezone
 
 WASTE_CODES_DATA = load_waste_code_data()
 DEPARTEMENTS_REGION_DATA = load_departements_regions_data()
@@ -472,5 +473,9 @@ class SheetProcessor:
         self.computed.save()
 
     def process(self):
+        self.computed.processing_start = timezone.now()
+        self.computed.save()
         self._process_company_data()
         self._process_bsds()
+        self.computed.processing_end = timezone.now()
+        self.computed.save()

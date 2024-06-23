@@ -189,6 +189,12 @@ class ComputedInspectionData(models.Model):
         default=CreationModeChoice.WEB,
     )
 
+    processing_start = models.DateTimeField(_("Processing start"), blank=True, null=True)
+    processing_end = models.DateTimeField(_("Processing end"), blank=True, null=True)
+    pdf_rendering_start = models.DateTimeField(_("Pdf rendering start"), blank=True, null=True)
+    pdf_rendering_end = models.DateTimeField(_("Pdf rendering  start"), blank=True, null=True)
+
+
     objects = ComputedInspectionDataCustomManager()
 
     class Meta:

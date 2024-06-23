@@ -13,7 +13,7 @@ from .constants import PLOTLY_GRAPHS_TO_RENDER_IN_PDF
 from .data_processing import SheetProcessor
 from .models import ComputedInspectionData
 from .plotly_utils import data_to_bs64_plot
-
+from django.utils import timezone
 logger = logging.getLogger(__name__)
 
 WEB_QUEUE = "web-queue"
@@ -47,9 +47,9 @@ def prepare_sheet_fn(computed_pk):
     """
     errors = []
     processor = SheetProcessor(computed_pk)
+
     try:
         processor.process()
-
     except Exception as e:  # noqa
         current_task.update_state(state="ERROR", meta={"progress": 100})
         ComputedInspectionData.objects.mark_as_failed(computed_pk)
@@ -124,7 +124,7 @@ def render_pdf_fn(computed_pk: str, render_indiv_graph_api_fn):
     computed = ComputedInspectionData.objects.get(pk=computed_pk)
     if not computed.is_computed:
         return
-
+    computed.pdf_rendering_start = timezone.now()
     graph_rendering = group(
         (render_indiv_graph_api_fn.s(computed_pk, name) for name in PLOTLY_GRAPHS_TO_RENDER_IN_PDF)
     )
@@ -137,9 +137,10 @@ def render_pdf_fn(computed_pk: str, render_indiv_graph_api_fn):
     ComputedInspectionData.objects.mark_as_graph_rendered(pk=computed_pk)
     try:
         render_pdf_sheet_fn(computed_pk)
+
     except Exception as e:  # noqa
         current_task.update_state(state="ERROR", meta={"progress": 100})
         return {"errors": "Error"}
-
+    computed.pdf_rendering_end = timezone.now()
     current_task.update_state(state="DONE", meta={"progress": 100})
     return {"errors": errors, "redirect": "pdf"}

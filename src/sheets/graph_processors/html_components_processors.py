@@ -1201,8 +1201,12 @@ class QuantityOutliersTableProcessor:
         df_quantity_outliers = pd.DataFrame()
         if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA, BSFF] and (transporters_df is not None):
             # In this case we use transporter data
+
+            # Old 'bordereaux' data could contain quantity_received, we want to use the one from transport data
+            df = df.drop(columns=["quantity_received"], errors="ignore")
+
             df_with_transport = df.merge(
-                transporters_df[["bs_id", "transporter_transport_mode", "sent_at"]],
+                transporters_df[["bs_id", "transporter_transport_mode", "sent_at", "quantity_received"]],
                 left_on="id",
                 right_on="bs_id",
                 how="left",

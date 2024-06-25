@@ -227,10 +227,15 @@ class SheetPdfHtml(FullyLoggedMixin, DetailView):
                 "waste_origin_map_graph": self.object.waste_origin_map_graph,
                 "icpe_2770_graph": self.object.icpe_2770_graph,
                 "icpe_2790_graph": self.object.icpe_2790_graph,
-                "icpe_2760_graph": self.object.icpe_2760_graph,
+                "icpe_2760_1_graph": self.object.icpe_2760_1_graph,
+                "icpe_2771_graph": self.object.icpe_2771_graph,
+                "icpe_2791_graph": self.object.icpe_2791_graph,
+                "icpe_2760_2_graph": self.object.icpe_2760_2_graph,
                 "bsda_worker_quantity_graph": self.object.bsda_worker_quantity_graph,
-                "bs_transported_graph": self.object.transporter_bordereaux_stats_graph,
-                "bs_quantities_transported_graph": self.object.quantities_transported_stats_graph,
+                "transporter_bordereaux_stats_graph": self.object.transporter_bordereaux_stats_graph,
+                "quantities_transported_stats_graph": self.object.quantities_transported_stats_graph,
+                "non_dangerous_waste_statements_graph": self.object.non_dangerous_waste_statements_graph,
+                "non_dangerous_waste_quantities_graph": self.object.non_dangerous_waste_quantities_graph,
             }
         )
         return ctx

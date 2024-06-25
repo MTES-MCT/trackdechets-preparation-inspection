@@ -37,14 +37,11 @@
                 {% render_agreements sheet %}
             </div>
             <div class="cell cell--bordered cell--third">
-                <p>Les données pour cet établissement peuvent être consultées sur Trackdéchets</p>
-                <p>
-                    Elles comprennent les bordereaux de suivi de déchets (BSD) dématérialisés, mais ne comprennent pas
-                    :
-                </p>
+                <p>Les données présentes dans cette fiche proviennent de différentes sources :</p>
                 <ul>
-                    <li>les éventuels BSD papiers non dématérialisés</li>
-                    <li>les bons d’enlèvements (huiles usagées et pneus)</li>
+                    <li>Trackdéchets (mise à jour chaque nuit) ;</li>
+                    <li>l'outil GUN (dernière mise à jour : janvier 2024) ;</li>
+                    <li>le RNDTS (dernière mise à jour : avril 2024).</li>
                 </ul>
             </div>
         </div>
@@ -205,6 +202,7 @@
             </div>
         {% endif %}
         {# end BSDA worker stats #}
+        {# transporter #}
         {% if sheet.transporter_bordereaux_stats_graph_data %}
             <div class="row">
                 <div class="cell cell--bordered cell--third">
@@ -222,6 +220,12 @@
                 <div class="cell cell--bordered cell--third">{% render_transported_bordereaux_stats_data sheet %}</div>
             </div>
         {% endif %}
+        {# end transporter #}
+        {# "waste is dangerous" statements #}
+        {% if sheet.waste_is_dangerous_statements_data %}
+            <div class="cell cell--bordered cell--half">{% render_waste_is_dangerous_statements sheet %}</div>
+        {% endif %}
+        {# end "waste is dangerous" statements #}
         {# DND #}
         <h2 class="section__title" id="bs-section-title">Données des déclarations issues du RNDTS</h2>
         <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Dernière mise à jour des données : Avril 2024</p>
@@ -248,11 +252,6 @@
             <div class="no-data-section">PAS DE DONNÉES ISSUES DU RNDTS À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
         {% endif %}
         {# end DND #}
-        {# "waste is dangerous" statements #}
-        {% if sheet.waste_is_dangerous_statements_data %}
-            <div class="cell cell--bordered cell--half">{% render_waste_is_dangerous_statements sheet %}</div>
-        {% endif %}
-        {# end "waste is dangerous" statements #}
         <h2 class="section__title">Déchets sur site (théorique)</h2>
         <div class="row">
             <div class="cell cell--bordered cell--third">

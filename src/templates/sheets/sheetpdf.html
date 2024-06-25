@@ -36,15 +36,11 @@
                     {% render_agreements sheet %}
                 </div>
                 <div class="cell cell--third">
-                    <p class="pdf-text">Les données pour cet établissement peuvent être consultées sur Trackdéchets</p>
-                    <p class="pdf-text">
-                        Elles comprennent les bordereaux de suivi de déchets (BSD) dématérialisés, mais ne comprennent
-                        pas
-                        :
-                    </p>
+                    <p class="pdf-text">Les données présentes dans cette fiche proviennent de différentes sources :</p>
                     <ul class="pdf-text">
-                        <li>les éventuels BSD papiers non dématérialisés</li>
-                        <li>les bons d’enlèvements (huiles usagées et pneus)</li>
+                        <li>Trackdéchets (mise à jour chaque nuit) ;</li>
+                        <li>l'outil GUN (dernière mise à jour : janvier 2024) ;</li>
+                        <li>le RNDTS (dernière mise à jour : avril 2024).</li>
                     </ul>
                 </div>
             </div>
@@ -188,6 +184,7 @@
                 </div>
             {% endif %}
             {# end BSDA worker stats #}
+            {# transporter #}
             {% if sheet.transporter_bordereaux_stats_graph_data %}
                 <div class="row">
                     <div class="cell cell--bordered cell--third">
@@ -205,6 +202,12 @@
                     </div>
                 </div>
             {% endif %}
+            {# end transporter #}
+            {#  "waste is dangerous" statements #}
+            {% if sheet.waste_is_dangerous_statements_data %}
+                <div>{% render_waste_is_dangerous_statements sheet graph_context="pdf" %}</div>
+            {% endif %}
+            {# end "waste is dangerous" statements #}
             {# DND #}
             <h2 class="section__title" id="bs-section-title">Données des déclarations issues du RNDTS</h2>
             <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Dernière mise à jour des données : Avril 2024</p>
@@ -229,11 +232,6 @@
                 <div class="no-data-section">PAS DE DONNÉES ISSUES DU RNDTS À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
             {% endif %}
             {# end DND #}
-            {#  "waste is dangerous" statements #}
-            {% if sheet.waste_is_dangerous_statements_data %}
-                <div>{% render_waste_is_dangerous_statements sheet graph_context="pdf" %}</div>
-            {% endif %}
-            {# end "waste is dangerous" statements #}
             {#  on site #}
             <h2 class="section__title">Déchets sur site (théorique)</h2>
             <div class="row">
@@ -385,26 +383,28 @@
         {# Appendices section #}
         <section class="vertical">
             <h2 class="section__title">Annexes</h2>
-            {#  quantity outliers table #}
-            <div>{% render_quantity_outliers_table sheet graph_context="pdf" %}</div>
-            {# end quantity outliers table #}
             {# input/output #}
             <div>
                 <h3>Liste des déchets entrants, sortants et transportés</h3>
                 {% render_waste_flows_table sheet graph_context="pdf" %}
             </div>
             {# endinput/output #}
+            {#  quantity outliers table #}
+            <div>{% render_quantity_outliers_table sheet graph_context="pdf" %}</div>
+            {# end quantity outliers table #}
         </section>
-        <section class="horizontal">
-            {# bsd canceled table #}
-            <div>{% render_bsd_canceled_table sheet graph_context="pdf" %}</div>
-            {# end bsd canceled table #}
-            {# same emitter recipient table #}
-            <div>{% render_same_emitter_recipient_table sheet graph_context="pdf" %}</div>
-            {# end same emitter recipient table #}
-            {#  private indivudals collections table #}
-            <div>{% render_private_individuals_collections_table sheet graph_context="pdf" %}</div>
-            {#  end private indivudals collections table #}
-        </section>
+        {% if render_bsd_canceled_table or render_same_emitter_recipient_table or render_private_individuals_collections_table %}
+            <section class="horizontal">
+                {# bsd canceled table #}
+                <div>{% render_bsd_canceled_table sheet graph_context="pdf" %}</div>
+                {# end bsd canceled table #}
+                {# same emitter recipient table #}
+                <div>{% render_same_emitter_recipient_table sheet graph_context="pdf" %}</div>
+                {# end same emitter recipient table #}
+                {#  private indivudals collections table #}
+                <div>{% render_private_individuals_collections_table sheet graph_context="pdf" %}</div>
+                {#  end private indivudals collections table #}
+            </section>
+        {% endif %}
     </div>
 {% endblock %}

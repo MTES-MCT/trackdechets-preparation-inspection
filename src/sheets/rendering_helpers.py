@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
+from django.utils import timezone
 from weasyprint import CSS, HTML
 from weasyprint.text.fonts import FontConfiguration
 
@@ -13,7 +14,7 @@ from .constants import PLOTLY_GRAPHS_TO_RENDER_IN_PDF
 from .data_processing import SheetProcessor
 from .models import ComputedInspectionData
 from .plotly_utils import data_to_bs64_plot
-from django.utils import timezone
+
 logger = logging.getLogger(__name__)
 
 WEB_QUEUE = "web-queue"
@@ -125,6 +126,7 @@ def render_pdf_fn(computed_pk: str, render_indiv_graph_api_fn):
     if not computed.is_computed:
         return
     computed.pdf_rendering_start = timezone.now()
+    computed.save()
     graph_rendering = group(
         (render_indiv_graph_api_fn.s(computed_pk, name) for name in PLOTLY_GRAPHS_TO_RENDER_IN_PDF)
     )

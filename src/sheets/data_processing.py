@@ -1,6 +1,7 @@
 from typing import Dict, List, Tuple
 
 import pandas as pd
+from django.utils import timezone
 
 from .constants import BSDA, BSDASRI, BSDD, BSDD_NON_DANGEROUS, BSFF, BSVHU
 from .data_extract import (
@@ -66,7 +67,6 @@ from .graph_processors.plotly_components_processors import (
 )
 from .models import ComputedInspectionData
 from .utils import to_verbose_company_types
-from django.utils import timezone
 
 WASTE_CODES_DATA = load_waste_code_data()
 DEPARTEMENTS_REGION_DATA = load_departements_regions_data()
@@ -470,6 +470,7 @@ class SheetProcessor:
             self.computed.all_bsd_data_empty = False
 
         self.computed.state = ComputedInspectionData.StateChoice.COMPUTED
+
         self.computed.save()
 
     def process(self):
@@ -478,4 +479,4 @@ class SheetProcessor:
         self._process_company_data()
         self._process_bsds()
         self.computed.processing_end = timezone.now()
-        self.computed.save()
+        ComputedInspectionData.objects.mark_as_computed(self.computed.pk)

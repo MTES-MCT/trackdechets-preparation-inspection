@@ -1,7 +1,7 @@
 import json
 
 from allauth.socialaccount.adapter import get_adapter
-from allauth.socialaccount.providers.openid_connect.views import OpenIDConnectOAuth2Adapter
+from allauth.socialaccount.providers.openid_connect.views import OpenIDConnectAdapter
 from allauth.utils import build_absolute_uri
 from django.core.exceptions import PermissionDenied
 from django.urls import reverse
@@ -17,9 +17,10 @@ ALLOWED_PROFILES = {MANAGER_ID, ADMIN_ID, GUN_ID, GUN_READER_ID}
 ALLOWED_PERIMETER = "ICPE"
 
 
-class MonAiotDConnectAdapter(OpenIDConnectOAuth2Adapter):
+class MonAiotDConnectAdapter(OpenIDConnectAdapter):
     def complete_login(self, request, app, token, response):
         """Ensure userinfo carries relevant permissions to log user in or create their account"""
+
         response = (
             get_adapter()
             .get_requests_session()

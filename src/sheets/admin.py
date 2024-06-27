@@ -17,6 +17,8 @@ class ComputedInspectionDataAdmin(admin.ModelAdmin):
         "data_end_date",
         "creation_mode",
         "created_by",
+        "processing_duration",
+        "pdf_rendering_duration",
     ]
     list_filter = ["created", "creation_mode"]
     search_fields = ["org_id"]

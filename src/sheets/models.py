@@ -36,8 +36,13 @@ class ComputedInspectionDataCustomManager(models.Manager):
         self.filter(pk=pk).update(state="COMPUTED_FAILED")
         notify_admins(pk)
 
+    def mark_as_computed(self, pk):
+        now = timezone.now()
+        self.filter(pk=pk).update(state="COMPUTED", processing_end=now)
+
     def mark_as_graph_rendered(self, pk):
-        self.filter(pk=pk).update(state="GRAPH_RENDERED")
+        now = timezone.now()
+        self.filter(pk=pk).update(state="GRAPH_RENDERED", pdf_rendering_end=now)
 
     def by_web(self):
         return self.filter(creation_mode="WEB")
@@ -189,6 +194,11 @@ class ComputedInspectionData(models.Model):
         default=CreationModeChoice.WEB,
     )
 
+    processing_start = models.DateTimeField(_("Processing start"), blank=True, null=True)
+    processing_end = models.DateTimeField(_("Processing end"), blank=True, null=True)
+    pdf_rendering_start = models.DateTimeField(_("Pdf rendering start"), blank=True, null=True)
+    pdf_rendering_end = models.DateTimeField(_("Pdf rendering  start"), blank=True, null=True)
+
     objects = ComputedInspectionDataCustomManager()
 
     class Meta:
@@ -233,6 +243,18 @@ class ComputedInspectionData(models.Model):
             self.StateChoice.GRAPH_RENDERED.name: PROCESSED,
             self.StateChoice.COMPUTED_FAILED.name: ERROR,
         }.get(self.state)
+
+    @property
+    def processing_duration(self):
+        if self.processing_start and self.processing_end:
+            return self.processing_end - self.processing_start
+        return None
+
+    @property
+    def pdf_rendering_duration(self):
+        if self.pdf_rendering_start and self.pdf_rendering_end:
+            return self.pdf_rendering_end - self.pdf_rendering_start
+        return None
 
 
 class RegistryDownload(models.Model):

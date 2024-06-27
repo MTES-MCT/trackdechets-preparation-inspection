@@ -1,6 +1,7 @@
 from typing import Dict, List, Tuple
 
 import pandas as pd
+from django.utils import timezone
 
 from .constants import BSDA, BSDASRI, BSDD, BSDD_NON_DANGEROUS, BSFF, BSVHU
 from .data_extract import (
@@ -469,8 +470,13 @@ class SheetProcessor:
             self.computed.all_bsd_data_empty = False
 
         self.computed.state = ComputedInspectionData.StateChoice.COMPUTED
+
         self.computed.save()
 
     def process(self):
+        self.computed.processing_start = timezone.now()
+        self.computed.save()
         self._process_company_data()
         self._process_bsds()
+        self.computed.processing_end = timezone.now()
+        ComputedInspectionData.objects.mark_as_computed(self.computed.pk)

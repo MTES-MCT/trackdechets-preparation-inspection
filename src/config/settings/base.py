@@ -232,6 +232,7 @@ SOCIALACCOUNT_PROVIDERS = {
         "SCOPE": MONAIOT_SCOPES,
     }
 }
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
@@ -251,7 +252,6 @@ CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 WEB_QUEUE = "web-queue"
 API_QUEUE = "api-queue"
 
-
 # API
 TD_API_URL = env("TD_API_URL")
 TD_API_TOKEN = env("TD_API_TOKEN")
@@ -260,3 +260,9 @@ TD_API_TOKEN = env("TD_API_TOKEN")
 
 TD_WEBHOOK_URL = env("TD_WEBHOOK_URL")
 TD_WEBHOOK_TOKEN = env("TD_WEBHOOK_TOKEN")
+
+# Web  stats
+
+REQUEST_IGNORE_PATHS = [
+    "^sheets/compute-fragment/",
+]

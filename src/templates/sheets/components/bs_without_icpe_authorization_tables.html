@@ -1,3 +1,4 @@
+{% load utils %}
 <ul>
     {% if bs_data_2760.bs_list %}
         <li>
@@ -64,7 +65,7 @@
                                 <td>{{ row.bs_type|upper }}</td>
                                 <td>{{ row.operation_code }}</td>
                                 <td>{{ row.processed_at|default:"N/A" }}</td>
-                                <td>{{ row.quantity|default:"N/A" }}</td>
+                                <td>{{ row.quantity|default:"N/A"|number|safe }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -105,7 +106,7 @@
                                 <td>{{ row.bs_type|upper }}</td>
                                 <td>{{ row.operation_code }}</td>
                                 <td>{{ row.processed_at|default:"N/A" }}</td>
-                                <td>{{ row.quantity|default:"N/A" }}</td>
+                                <td>{{ row.quantity|default:"N/A"|number|safe }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -146,7 +147,7 @@
                                 <td>{{ row.bs_type|upper }}</td>
                                 <td>{{ row.operation_code }}</td>
                                 <td>{{ row.processed_at|default:"N/A" }}</td>
-                                <td>{{ row.quantity|default:"N/A" }}</td>
+                                <td>{{ row.quantity|default:"N/A"|number|safe }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

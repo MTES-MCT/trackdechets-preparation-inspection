@@ -1,3 +1,4 @@
+{% load utils %}
 <style>
     .single-stat {
         margin-top: 5%;
@@ -18,31 +19,31 @@
                 <tr>
                     <td>Signés par le producteur</td>
                     <td class="td--right">
-                        <span class="fr-text--bold">{{ bsda_worker_stats_data.signed_producer }}</span>
+                        <span class="fr-text--bold">{{ bsda_worker_stats_data.signed_producer|number|safe }}</span>
                     </td>
                 </tr>
                 <tr>
                     <td>Signés par le producteur et l'entreprise de travaux</td>
                     <td class="td--right">
-                        <span class="fr-text--bold">{{ bsda_worker_stats_data.signed_worker }}</span>
+                        <span class="fr-text--bold">{{ bsda_worker_stats_data.signed_worker|number|safe }}</span>
                     </td>
                 </tr>
                 <tr>
                     <td>Signés par le producteur, l'entreprise de travaux et le transporteur</td>
                     <td class="td--right">
-                        <span class="fr-text--bold">{{ bsda_worker_stats_data.signed_transporter }}</span>
+                        <span class="fr-text--bold">{{ bsda_worker_stats_data.signed_transporter|number|safe }}</span>
                     </td>
                 </tr>
                 <tr>
                     <td>Reçus</td>
                     <td class="td--right">
-                        <span class="fr-text--bold">{{ bsda_worker_stats_data.received }}</span>
+                        <span class="fr-text--bold">{{ bsda_worker_stats_data.received|number|safe }}</span>
                     </td>
                 </tr>
                 <tr>
                     <td>Traités</td>
                     <td class="td--right">
-                        <span class="fr-text--bold">{{ bsda_worker_stats_data.processed }}</span>
+                        <span class="fr-text--bold">{{ bsda_worker_stats_data.processed|number|safe }}</span>
                     </td>
                 </tr>
             </tbody>

@@ -1,3 +1,4 @@
+{% load utils %}
 <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
     <div style="margin: 5px;">
         <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : Trackdéchets et RNDTS</p>
@@ -27,7 +28,7 @@
                             N/A
                         {% endif %}
                     </td>
-                    <td class="td--right">{{ row.quantity_received }} {{ row.unit }}</td>
+                    <td class="td--right">{{ row.quantity_received|number|safe }} {{ row.unit }}</td>
                 </tr>
             {% endfor %}
         </tbody>

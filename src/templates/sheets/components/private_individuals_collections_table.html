@@ -1,3 +1,4 @@
+{% load utils %}
 {% if private_individuals_collections_data %}
     <h3>Liste des collectes chez les particuliers</h3>
     <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
@@ -52,7 +53,7 @@
                         <td>{{ row.worksite_address|default:"N/A" }}</td>
                         <td>{{ row.waste_code }}</td>
                         <td>{{ row.waste_name }}</td>
-                        <td class="td--right">{{ row.quantity|default:"N/A" }}</td>
+                        <td class="td--right">{{ row.quantity|number|safe|default:"N/A" }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

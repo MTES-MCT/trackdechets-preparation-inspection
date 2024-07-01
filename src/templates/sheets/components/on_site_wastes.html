@@ -1,3 +1,4 @@
+{% load utils %}
 <h3 class="cell__title">Déchets entreposés sur site actuellement</h3>
 {% if sheet.storage_data %}
     <div>Ces données ne comprennent pas les stocks éventuels avant la période.</div>
@@ -12,7 +13,7 @@
                     {% for row in storage_data.stored_waste %}
                         <tr>
                             <td style="white-space: nowrap">
-                                <span>{{ row.quantity_received }}&nbsp;t</span>
+                                <span>{{ row.quantity_received|number|safe }}&nbsp;t</span>
                             </td>
                             <td>{{ row.code }} - {{ row.description }}</td>
                         </tr>

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load graph_tags %}
+{% load utils %}
 {% block main %}
     <div class="fr-container sheet">
         <h1>{{ sheet.company_name }}</h1>
@@ -221,6 +222,27 @@
             </div>
         {% endif %}
         {# end transporter #}
+        {# eco-organisme #}
+        {% if sheet.eco_organisme_bordereaux_graph_data %}
+            <div class="row">
+                <div class="cell cell--bordered cell--third">
+                    <h3 class="cell__title">Éco-organisme - Nombre de mentions sur les bordereaux</h3>
+                    <div id="eo_bordereaux_graph">
+                        <div class="no-data">Pas de données à afficher.</div>
+                    </div>
+                </div>
+                <div class="cell cell--bordered cell--third">
+                    <h3 class="cell__title">Éco-organisme - Quantités</h3>
+                    <div id="eo_quantities_graph">
+                        <div class="no-data">Pas de données à afficher.</div>
+                    </div>
+                </div>
+                <div class="cell cell--bordered cell--third">
+                    {% render_intermediary_bordereaux_stats_data sheet.eco_organisme_bordereaux_stats_data %}
+                </div>
+            </div>
+        {% endif %}
+        {# end eco-organisme #}
         {# "waste is dangerous" statements #}
         {% if sheet.waste_is_dangerous_statements_data %}
             <div class="cell cell--bordered cell--half">{% render_waste_is_dangerous_statements sheet %}</div>
@@ -431,6 +453,9 @@
     const quantities_transported_stats_graph_data = {{ sheet.quantities_transported_stats_graph_data }};
     const non_dangerous_waste_quantities_graph_data = {{ sheet.non_dangerous_waste_quantities_graph_data }};
     const non_dangerous_waste_statements_graph_data = {{ sheet.non_dangerous_waste_statements_graph_data }};
+    const eco_organisme_bordereaux_graph = {{ sheet.eco_organisme_bordereaux_graph_data }};
+    const eco_organisme_quantities_graph = {{ sheet.eco_organisme_quantities_graph_data }};
+
     {% endautoescape %}
     </script>
     <script>
@@ -543,6 +568,15 @@
     {
         "data": non_dangerous_waste_statements_graph_data,
         "target": "dnd_statements_graph"
+    },
+    {
+        "data": eco_organisme_bordereaux_graph,
+        "target": "eo_bordereaux_graph"
+    }
+    ,
+    {
+        "data": eco_organisme_quantities_graph,
+        "target": "eo_quantities_graph"
     }
     ];
 

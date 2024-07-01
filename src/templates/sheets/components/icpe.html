@@ -1,3 +1,4 @@
+{% load utils %}
 <div {% if graph_context == "web" %}class="cell cell--bordered cell--full"{% endif %}>
     <h3>Listes des rubriques des installations associées à l'établissement</h3>
     <p class="fr-tag fr-tag--sm fr-icon-info-fill fr-tag--icon-left">Source : GUN</p>
@@ -15,8 +16,8 @@
                     {% for row in icpe_data %}
                         <tr>
                             <td>{{ row.rubrique }}</td>
-                            <td>{{ row.quantite|default:"N/A" }}</td>
-                            <td>{{ row.unite|default:"N/A" }}</td>
+                            <td>{{ row.quantite|default:"N/A"|number|safe }}</td>
+                            <td>{{ row.unite|default:"N/A"|number|safe }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

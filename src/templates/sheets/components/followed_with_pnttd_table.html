@@ -1,3 +1,4 @@
+{% load utils %}
 {% if followed_with_pnttd_data %}
     <div {% if graph_context == "web" %}class="cell cell--bordered cell--full"{% endif %}>
         <h3>Données Trackdéchets</h3>
@@ -25,7 +26,7 @@
                             <td>{{ row.description }}</td>
                             <td>{{ row.next_destination_processing_operation }}</td>
                             <td class="td--right">
-                                <b>{{ row.quantity }}</b>
+                                <b>{{ row.quantity|number|safe }}</b>
                             </td>
                         </tr>
                     {% endfor %}

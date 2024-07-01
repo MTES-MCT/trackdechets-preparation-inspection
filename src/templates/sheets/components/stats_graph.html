@@ -1,3 +1,4 @@
+{% load utils %}
 <style>
 
   .sc-number {
@@ -154,19 +155,19 @@
                 <tbody>
                     <tr>
                         <th scope="row">Total</th>
-                        <td>{{ emitted_bs_stats.total }}</td>
-                        <td>{{ received_bs_stats.total }}</td>
+                        <td>{{ emitted_bs_stats.total|number|safe }}</td>
+                        <td>{{ received_bs_stats.total|number|safe }}</td>
                     </tr>
                     <tr>
                         <th scope="row">Archivés</th>
-                        <td>{{ emitted_bs_stats.archived }}</td>
-                        <td>{{ received_bs_stats.archived }}</td>
+                        <td>{{ emitted_bs_stats.archived|number|safe }}</td>
+                        <td>{{ received_bs_stats.archived|number|safe }}</td>
                     </tr>
                     {% if bsd_type == "bsff" %}
                         <tr>
                             <th scope="row">Nombre de contenants</th>
-                            <td>{{ emitted_bs_stats.total_packagings }}</td>
-                            <td>{{ received_bs_stats.total_packagings }}</td>
+                            <td>{{ emitted_bs_stats.total_packagings|number|safe }}</td>
+                            <td>{{ received_bs_stats.total_packagings|number|safe }}</td>
                         </tr>
                     {% endif %}
                     <tr>
@@ -174,21 +175,21 @@
                     </tr>
                     <tr>
                         <th scope="row">Nombre</th>
-                        <td>{{ emitted_bs_stats.processed_in_more_than_one_month_count }}</td>
-                        <td>{{ received_bs_stats.processed_in_more_than_one_month_count }}</td>
+                        <td>{{ emitted_bs_stats.processed_in_more_than_one_month_count|number|safe }}</td>
+                        <td>{{ received_bs_stats.processed_in_more_than_one_month_count|number|safe }}</td>
                     </tr>
                     <tr>
                         <th scope="row">Temps moyen de traitement</th>
                         <td>
                             {% if emitted_bs_stats.processed_in_more_than_one_month_avg_processing_time %}
-                                {{ emitted_bs_stats.processed_in_more_than_one_month_avg_processing_time }}
+                                {{ emitted_bs_stats.processed_in_more_than_one_month_avg_processing_time|number|safe }}
                             {% else %}
                                 N/A
                             {% endif %}
                         </td>
                         <td>
                             {% if received_bs_stats.processed_in_more_than_one_month_avg_processing_time %}
-                                {{ received_bs_stats.processed_in_more_than_one_month_avg_processing_time }}
+                                {{ received_bs_stats.processed_in_more_than_one_month_avg_processing_time|number|safe }}
                             {% else %}
                                 N/A
                             {% endif %}
@@ -197,21 +198,21 @@
                     {% if bsd_type == "bsff" %}
                         <tr>
                             <th scope="row">Nombre de contenants</th>
-                            <td>{{ emitted_bs_stats.processed_in_more_than_one_month_packagings_count }}</td>
-                            <td>{{ received_bs_stats.processed_in_more_than_one_month_packagings_count }}</td>
+                            <td>{{ emitted_bs_stats.processed_in_more_than_one_month_packagings_count|number|safe }}</td>
+                            <td>{{ received_bs_stats.processed_in_more_than_one_month_packagings_count|number|safe }}</td>
                         </tr>
                         <tr>
                             <th scope="row">Temps moyen de traitement - contenants</th>
                             <td>
-                                {% if emitted_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time %}
-                                    {{ emitted_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time }}
+                                {% if emitted_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time|number|safe %}
+                                    {{ emitted_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time|number|safe }}
                                 {% else %}
                                     N/A
                                 {% endif %}
                             </td>
                             <td>
-                                {% if received_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time %}
-                                    {{ received_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time }}
+                                {% if received_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time|number|safe %}
+                                    {{ received_bs_stats.processed_in_more_than_one_month_packagings_avg_processing_time|number|safe }}
                                 {% else %}
                                     N/A
                                 {% endif %}
@@ -222,9 +223,9 @@
             </table>
         </div>
         <div class="revised-bs-count">
-            <span class="td-font-lead">{{ revised_bs_count }}</span>bordereaux corrigés
+            <span class="td-font-lead">{{ revised_bs_count|number|safe }}</span>bordereaux corrigés
             {% if pending_revisions_count %}
-                et <span class="td-font-lead">{{ pending_revisions_count }}</span>demandes de révision en cours ⏳
+                et <span class="td-font-lead">{{ pending_revisions_count|number|safe }}</span>demandes de révision en cours ⏳
             {% endif %}
         </div>
         <div class="quantities-stats">
@@ -232,7 +233,7 @@
                 <div class="quantity-stats">
                     <div>
                         <p class="sc-number">
-                            <span class="td-font-display">{{ v.total_quantity_incoming }}</span>
+                            <span class="td-font-display">{{ v.total_quantity_incoming|number|safe }}</span>
                             {% if k == "volume" %}
                                 m³ entrants
                             {% else %}
@@ -254,7 +255,7 @@
                     </div>
                     <div>
                         <p class="sc-number">
-                            <span class="td-font-display">{{ v.total_quantity_outgoing }}</span>
+                            <span class="td-font-display">{{ v.total_quantity_outgoing|number|safe }}</span>
                             {% if k == "volume" %}
                                 m³ sortants
                             {% else %}
@@ -266,7 +267,7 @@
             {% endfor %}
             {% if weight_volume_ratio %}
                 <div>
-                    Ratio masse/volume : <span class="td-font-lead">{{ weight_volume_ratio }}</span> kg/m³
+                    Ratio masse/volume : <span class="td-font-lead">{{ weight_volume_ratio|number|safe }}</span> kg/m³
                 </div>
             {% endif %}
         </div>

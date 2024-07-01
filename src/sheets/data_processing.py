@@ -484,6 +484,8 @@ class SheetProcessor:
             data_date_interval=data_date_interval,
         )
         self.computed.eco_organisme_bordereaux_graph_data = eco_organisme_bordereaux_graph.build()
+        if self.computed.eco_organisme_bordereaux_graph_data:
+            self.computed.all_bsd_data_empty = False
 
         eco_organisme_quantities_graph = IntermediaryBordereauxQuantitiesGraphProcessor(
             company_siret=self.siret,
@@ -492,6 +494,8 @@ class SheetProcessor:
             data_date_interval=data_date_interval,
         )
         self.computed.eco_organisme_quantities_graph_data = eco_organisme_quantities_graph.build()
+        if self.computed.eco_organisme_bordereaux_graph_data:
+            self.computed.all_bsd_data_empty = False
 
         eco_organisme_bordereaux_stats = IntermediaryBordereauxStatsProcessor(
             company_siret=self.siret,
@@ -500,6 +504,8 @@ class SheetProcessor:
             data_date_interval=data_date_interval,
         )
         self.computed.eco_organisme_bordereaux_stats_data = eco_organisme_bordereaux_stats.build()
+        if self.computed.eco_organisme_bordereaux_graph_data:
+            self.computed.all_bsd_data_empty = False
 
         self.computed.state = ComputedInspectionData.StateChoice.COMPUTED
 

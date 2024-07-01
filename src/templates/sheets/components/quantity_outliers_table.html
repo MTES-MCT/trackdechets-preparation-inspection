@@ -1,3 +1,4 @@
+{% load utils %}
 {% if quantity_outliers_data %}
     <h3>Liste des bordereaux avec des quantités aberrantes</h3>
     <div>
@@ -41,7 +42,7 @@
                         <td>{{ row.received_at|default:"N/A" }}</td>
                         <td>{{ row.waste_code }}</td>
                         <td>{{ row.waste_name }}</td>
-                        <td class="td--right">{{ row.quantity }}</td>
+                        <td class="td--right">{{ row.quantity|number|safe }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

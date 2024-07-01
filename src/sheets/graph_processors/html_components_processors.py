@@ -2159,7 +2159,6 @@ class IntermediaryBordereauxStatsProcessor:
     def _preprocess_bs_data(self) -> None:
         """Preprocess raw 'bordereaux' data to prepare it for plotting."""
         bs_data_dfs = self.bs_data_dfs
-        transporter_data_dfs = self.transporters_data_df
 
         for bs_type, df in bs_data_dfs.items():
             if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA]:

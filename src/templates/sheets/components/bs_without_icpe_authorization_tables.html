@@ -63,7 +63,7 @@
                     de la rubrique
                 {% endif %}
                 {{ data.missing_rubriques }},
-                pour autant, vous trouverez ci-aprés la liste de <b>{{ data.stats.total_statements }}</b> bordereau{{ data.stats.total_statements|pluralize:"x" }} dont l'établissement, destinataire,
+                pour autant, vous trouverez ci-aprés la liste de <b>{{ data.stats.total_statements }}</b> déclaration{{ data.stats.total_statements }} dont l'établissement, destinataire,
                 a indiqué {{ data.found_processing_codes }} comme traitement.
             </p>
             <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
@@ -84,7 +84,7 @@
                                 <td>{{ row.waste_code|default:"N/A" }}</td>
                                 <td>{{ row.waste_name|default:"N/A" }}</td>
                                 <td>{{ row.operation_code|default:"N/A" }}</td>
-                                <td>{{ row.quantity|default:"N/A" }}</td>
+                                <td>{{ row.quantity|default:"N/A"|number|safe  }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

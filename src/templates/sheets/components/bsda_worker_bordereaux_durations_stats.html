@@ -1,3 +1,4 @@
+{% load utils %}
 <style>
     .single-stat {
         margin-top: 5%;
@@ -19,19 +20,19 @@
                 <tr>
                     <td>Entre la signature par l'émétteur et le traitement</td>
                     <td class="td--right">
-                        <span class="fr-text--bold">{{ bsda_worker_stats_data.avg_processing_time_from_emission|default:"N/A" }}j</span>
+                        <span class="fr-text--bold">{{ bsda_worker_stats_data.avg_processing_time_from_emission|default:"N/A"|number|safe }}j</span>
                     </td>
                     <td class="td--right">
-                        <span class="fr-text--bold">{{ bsda_worker_stats_data.max_processing_time_from_emission|default:"N/A" }}j</span>
+                        <span class="fr-text--bold">{{ bsda_worker_stats_data.max_processing_time_from_emission|default:"N/A"|number|safe }}j</span>
                     </td>
                 </tr>
                 <tr>
                     <td>Entre la prise en charge par le transporteur et le traitement</td>
                     <td class="td--right">
-                        <span class="fr-text--bold">{{ bsda_worker_stats_data.avg_processing_time_from_sending|default:"N/A" }}j</span>
+                        <span class="fr-text--bold">{{ bsda_worker_stats_data.avg_processing_time_from_sending|default:"N/A"|number|safe }}j</span>
                     </td>
                     <td class="td--right">
-                        <span class="fr-text--bold">{{ bsda_worker_stats_data.max_processing_time_from_sending|default:"N/A" }}j</span>
+                        <span class="fr-text--bold">{{ bsda_worker_stats_data.max_processing_time_from_sending|default:"N/A"|number|safe }}j</span>
                     </td>
                 </tr>
             </tbody>

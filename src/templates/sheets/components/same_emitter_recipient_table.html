@@ -1,3 +1,4 @@
+{% load utils %}
 {% if same_emitter_recipient_data %}
     <h3>Liste des bordereaux pour lesquels l'établissement s'est positionné en tant qu'émetteur et destinataire</h3>
     <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
@@ -30,7 +31,7 @@
                         <td>{{ row.worksite_address }}</td>
                         <td>{{ row.waste_code }}</td>
                         <td>{{ row.waste_name }}</td>
-                        <td class="td--right">{{ row.quantity_received|default:"N/A" }}</td>
+                        <td class="td--right">{{ row.quantity_received|default:"N/A"|number|safe }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('sheets', '0048_computedinspectiondata_pdf_rendering_end_and_more'),
+        ('sheets', '0049_alter_computedinspectiondata_options'),
     ]
 
     operations = [

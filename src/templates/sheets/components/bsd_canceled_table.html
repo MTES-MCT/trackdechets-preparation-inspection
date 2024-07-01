@@ -1,3 +1,4 @@
+{% load utils %}
 {% if bsd_canceled_data %}
     <h3>Liste des bordereaux annulés</h3>
     <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
@@ -43,7 +44,7 @@
                         <td>{{ row.waste_name }}</td>
                         <td class="td--right">
                             {% if row.quantity_received %}
-                                {{ row.quantity_received }}
+                                {{ row.quantity_received|number|safe }}
                             {% else %}
                                 N/A
                             {% endif %}

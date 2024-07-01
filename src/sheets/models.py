@@ -184,6 +184,12 @@ class ComputedInspectionData(models.Model):
     non_dangerous_waste_statements_graph = models.TextField(blank=True)
     non_dangerous_waste_stats_data = models.JSONField(default=dict)
 
+    eco_organisme_bordereaux_graph_data = models.JSONField(default=dict)
+    eco_organisme_bordereaux_graph = models.TextField(blank=True)
+    eco_organisme_quantities_graph_data = models.JSONField(default=dict)
+    eco_organisme_quantities_graph = models.TextField(blank=True)
+    eco_organisme_bordereaux_stats_data = models.JSONField(default=dict)
+
     pdf = models.TextField(blank=True)
 
     created_by = models.EmailField(verbose_name=_("Created by"), blank=True)

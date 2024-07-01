@@ -90,6 +90,8 @@ def render_pdf_sheet_fn(computed_pk: str):
         "bs_quantities_transported_graph": sheet.quantities_transported_stats_graph,
         "dnd_statements_graph": sheet.non_dangerous_waste_statements_graph,
         "dnd_quantity_graph": sheet.non_dangerous_waste_quantities_graph,
+        "eo_bordereaux_graph": sheet.eco_organisme_bordereaux_graph,
+        "eo_quantities_graph": sheet.eco_organisme_quantities_graph,
         "skip_css": True,
     }
     content = render_to_string("sheets/sheetpdf.html", ctx)

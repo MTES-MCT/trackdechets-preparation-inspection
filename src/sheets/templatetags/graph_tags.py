@@ -170,3 +170,11 @@ def render_rndts_stats(computed, graph_context="web"):
     }
 
     return return_dict
+
+
+@register.inclusion_tag("sheets/components/intermediary_bordereaux_stats.html")
+def render_intermediary_bordereaux_stats_data(stats, graph_context="web"):
+    return {
+        "bordereaux_stats_data": stats,
+        "graph_context": graph_context,
+    }

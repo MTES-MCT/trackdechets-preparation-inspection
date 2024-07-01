@@ -24,6 +24,7 @@ from .database import (
     build_bsvhu_query,
     build_query_company,
     build_revised_bsda_query,
+    build_revised_bsdasri_query,
     build_revised_bsdd_query,
     get_agreement_data,
     get_gistrid_data,
@@ -133,7 +134,11 @@ bsds_config = [
         "bs_revised_data": build_revised_bsda_query,
         "bs_transporter_data": build_bsda_transporter_query,
     },
-    {"bsd_type": BSDASRI, "bs_data": build_bsdasri_query},
+    {
+        "bsd_type": BSDASRI,
+        "bs_data": build_bsdasri_query,
+        "bs_revised_data": build_revised_bsdasri_query,
+    },
     {
         "bsd_type": BSFF,
         "bs_data": build_bsff_query,

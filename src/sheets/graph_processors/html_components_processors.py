@@ -562,7 +562,6 @@ class BsdCanceledTableProcessor:
                     "emitter_company_siret",
                     "recipient_company_siret",
                     "waste_code",
-                    "waste_name",
                     "updated_at",
                     "comment",
                 ]
@@ -570,6 +569,10 @@ class BsdCanceledTableProcessor:
                 # Human-friendly id is stored in the readable_id column in the case of BSDDs
                 if "readable_id" in bs_data.columns:
                     columns_to_take.append("readable_id")
+
+                # BSDASRI does not have waste name
+                if "waste_name" in bs_data.columns:
+                    columns_to_take.append("waste_name")
 
                 temp_df = pd.merge(
                     cancellations,

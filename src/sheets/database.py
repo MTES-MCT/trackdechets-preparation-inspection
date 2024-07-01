@@ -30,6 +30,7 @@ from .queries import (
     sql_get_vhu_agrement_data,
     sql_revised_bsda_query_str,
     sql_revised_bsdd_query_str,
+    sql_revised_bsdasri_query_str,
 )
 
 wh_engine = create_engine(settings.WAREHOUSE_URL, pool_pre_ping=True)
@@ -201,6 +202,20 @@ def build_bsdasri_query(
         },
         date_columns=bsd_date_params,
     )
+
+
+def build_revised_bsdasri_query(
+    company_id: str,
+):
+    df = build_query(
+        sql_revised_bsdasri_query_str,
+        query_params={
+            "company_id": company_id,
+        },
+        date_columns=bsd_date_params,
+    )
+
+    return df
 
 
 def build_bsff_query(

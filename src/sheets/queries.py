@@ -429,6 +429,18 @@ from trusted_zone_trackdechets.bsda_revision_request
 where authoring_company_id = :company_id
 """
 
+sql_revised_bsdasri_query_str = """
+select id,
+    bsdasri_id as bs_id,
+    status,
+    created_at,
+    updated_at,
+    comment,
+    is_canceled
+from trusted_zone_trackdechets.bsdasri_revision_request
+where authoring_company_id = :company_id
+"""
+
 sql_get_icpe_data = """
 select
     code_aiot,

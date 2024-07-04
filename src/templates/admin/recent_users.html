@@ -1,0 +1,23 @@
+{% extends "grappelli/dashboard/module.html" %}
+{% load i18n %}
+{% block module_content %}
+    <div class="grp-module">
+        {% if module.children %}
+            <ul class="grp-listing-small">
+                {% for user in module.children %}
+                    <li class="grp-row">
+                        <a href="{% url "admin:accounts_user_change"  user.pk %}">{{ user.email }}
+                            {% if user.monaiot_signup %}(MonAIOT){% endif %}
+                        </a>
+                        <br>
+                        {{ user.date_joined }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="grp-row">
+                <p>{% trans 'None Available' %}</p>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

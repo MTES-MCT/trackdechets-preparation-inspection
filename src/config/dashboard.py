@@ -33,7 +33,7 @@ class RecentSheets(modules.DashboardModule):
     Module that lists the recent created sheetsr.
     """
 
-    title = _("Dernières fiches")
+    title = _("Dernières fiches établissement")
     template = "admin/recent_sheets.html"
     limit = 10
     include_list = None

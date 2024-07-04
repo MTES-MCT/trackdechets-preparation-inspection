@@ -22,14 +22,15 @@ DEBUG = env("DEBUG")
 # Application definition
 
 INSTALLED_APPS = [
-    "grappelli",
-    "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
+    "grappelli.dashboard",
+    "grappelli",
+    "django.contrib.admin",
     "anymail",
     "defender",
     "django_otp",
@@ -191,6 +192,7 @@ LOGOUT_REDIRECT_URL = "private_home"
 PASSWORD_RESET_TIMEOUT = 3600 * 12  # 12 hours
 
 GRAPPELLI_ADMIN_TITLE = "Trackdéchets - Inspection"
+GRAPPELLI_INDEX_DASHBOARD = "config.dashboard.CustomIndexDashboard"
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "sender@test.fr"

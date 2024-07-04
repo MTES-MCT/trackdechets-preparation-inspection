@@ -1,0 +1,21 @@
+{% extends "grappelli/dashboard/module.html" %}
+{% load i18n %}
+{% block module_content %}
+    <div class="grp-module">
+        {% if module.children %}
+            <ul class="grp-listing-small">
+                {% for sheet in module.children %}
+                    <li class="grp-row">
+                        <a href="{% url "admin:sheets_computedinspectiondata_change"  sheet.pk %}">{{ sheet.org_id }} {{ sheet.get_creation_mode_display }}</a>
+                        <br>
+                        {{ user.date_joined }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="grp-row">
+                <p>{% trans 'None Available' %}</p>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

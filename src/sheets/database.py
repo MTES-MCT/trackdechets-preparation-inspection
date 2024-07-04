@@ -29,8 +29,8 @@ from .queries import (
     sql_get_transporter_receipt_id_data_str,
     sql_get_vhu_agrement_data,
     sql_revised_bsda_query_str,
-    sql_revised_bsdd_query_str,
     sql_revised_bsdasri_query_str,
+    sql_revised_bsdd_query_str,
 )
 
 wh_engine = create_engine(settings.WAREHOUSE_URL, pool_pre_ping=True)

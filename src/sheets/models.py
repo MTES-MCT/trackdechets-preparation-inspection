@@ -202,8 +202,8 @@ class ComputedInspectionData(models.Model):
     objects = ComputedInspectionDataCustomManager()
 
     class Meta:
-        verbose_name = _("Fiche d'inspection")
-        verbose_name_plural = _("Fiches d'inspection")
+        verbose_name = _("Fiche établissement")
+        verbose_name_plural = _("Fiches établissement")
         ordering = ("-created",)
         app_label = "sheets"
 

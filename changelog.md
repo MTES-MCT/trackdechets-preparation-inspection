@@ -7,6 +7,10 @@ et le projet suit un schéma de versioning inspiré de [Calendar Versioning](htt
 
 ## 01/07/2024
 
+- Ajout des alertes de traitements de déchets sans rubrique ICPE pour les déclarations aux RNDTS
+
+## 01/07/2024
+
 - Ajout des requêtes de révision pour les BSDASRI
 
 ## 23/06/2024

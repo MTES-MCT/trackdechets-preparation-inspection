@@ -52,7 +52,7 @@ from .graph_processors.html_components_processors import (
     TransporterBordereauxStatsProcessor,
     WasteFlowsTableProcessor,
     WasteIsDangerousStatementsProcessor,
-    WasteProcessingWithoutICPEProcessor,
+    WasteProcessingWithoutICPERubriqueProcessor,
 )
 from .graph_processors.plotly_components_processors import (
     BsdaWorkerQuantityProcessor,
@@ -394,8 +394,8 @@ class SheetProcessor:
         )
         self.computed.quantity_outliers_data = quantity_outliers_table.build()
 
-        waste_processing_without_icpe_data = WasteProcessingWithoutICPEProcessor(
-            self.siret, self.bs_dfs, icpe_data, data_date_interval
+        waste_processing_without_icpe_data = WasteProcessingWithoutICPERubriqueProcessor(
+            self.siret, self.bs_dfs, rndts_incoming_data, icpe_data, data_date_interval
         )
         self.computed.bs_processed_without_icpe_authorization = waste_processing_without_icpe_data.build()
 

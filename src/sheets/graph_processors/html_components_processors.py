@@ -1296,7 +1296,7 @@ class QuantityOutliersTableProcessor:
         return []
 
 
-class WasteProcessingWithoutICPEProcessor:
+class WasteProcessingWithoutICPERubriqueProcessor:
     """Component that detects when waste is processed without having a 'rubrique' in ICPE data.
 
     Parameters
@@ -1305,6 +1305,8 @@ class WasteProcessingWithoutICPEProcessor:
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bs_data_dfs: dict
         Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
+    ndts_incoming_data: DataFrame
+        DataFrame containing data for incoming non dangerous waste (from RNDTS).
     icpe_data: pd.DataFrame
         DataFrame containing the list of authorized 'rubriques'.
     data_date_interval : tuple[datetime, datetime]
@@ -1318,17 +1320,22 @@ class WasteProcessingWithoutICPEProcessor:
         self,
         company_siret: str,
         bs_data_dfs: Dict[str, pd.DataFrame],
+        rndts_incoming_data: pd.DataFrame | None,
         icpe_data: pd.DataFrame | None,
         data_date_interval: tuple[datetime, datetime],
         packagings_data_df: pd.DataFrame | None = None,
     ) -> None:
         self.siret = company_siret
         self.bs_data_dfs = bs_data_dfs
+        self.rndts_incoming_data = rndts_incoming_data
         self.icpe_data = icpe_data
         self.data_date_interval = data_date_interval
         self.packagings_data_df = packagings_data_df
 
-        self.preprocessed_data = {k: None for k in ["2760", "2770", "2790", "2718"]}
+        self.preprocessed_data = {
+            "dangerous": [],
+            "non_dangerous": [],
+        }
 
     def _preprocess_data_multi_rubriques(self) -> None:
         has_2760_1 = False
@@ -1337,7 +1344,7 @@ class WasteProcessingWithoutICPEProcessor:
 
         if icpe_data is not None:
             has_2760_1 = len(icpe_data[(icpe_data["rubrique"] == "2760-1")]) > 0
-            has_2760_2 = len(icpe_data[(icpe_data["rubrique"] == "2760-2")]) > 0
+            has_2760_2 = len(icpe_data[icpe_data["rubrique"].isin(["2760-2", "2760-2-a", "2760-2-b"])]) > 0
 
         if not has_2760_1:  # Means no authorization for ICPE 2760-1
             bs_2760_dfs = []
@@ -1365,31 +1372,47 @@ class WasteProcessingWithoutICPEProcessor:
 
             if len(bs_2760_dfs) > 0:
                 bs_df = pd.concat(bs_2760_dfs)  # Creates the list of bordereaux
-                self.preprocessed_data["2760"] = {
-                    "bs_list": bs_df,
-                    "stats": {
-                        "total_bs": len(bs_df),  # Total number of bordereaux
-                        "total_quantity": format_number_str(
-                            bs_df["quantity_received"].sum(), 2
-                        ),  # Total quantity processed
-                    },
-                }
+                self.preprocessed_data["dangerous"].append(
+                    {
+                        "missing_rubriques": "2760-1, 2760-2",
+                        "num_missing_rubrique": 2,
+                        "found_processing_codes": "D5",
+                        "num_found_processing_codes": 1,
+                        "bs_list": bs_df,
+                        "stats": {
+                            "total_bs": len(bs_df),  # Total number of bordereaux
+                            "total_quantity": format_number_str(
+                                bs_df["quantity_received"].sum(), 2
+                            ),  # Total quantity processed
+                        },
+                    }
+                )
 
     def _preprocess_data_single_rubrique(self) -> None:
         configs = [
             {
                 "rubrique": "2770",
-                "bs_types": [BSDD, BSDA, BSFF, BSDASRI, BSVHU],
+                "data": [
+                    (bs_type, df)
+                    for bs_type, df in self.bs_data_dfs.items()
+                    if bs_type in [BSDD, BSDA, BSFF, BSDASRI, BSVHU]
+                ],
                 "processing_codes": ["D10", "R1"],
             },
             {
                 "rubrique": "2718-1",
-                "bs_types": [BSDD, BSDA, BSFF, BSDASRI],
+                "data": [
+                    (bs_type, df) for bs_type, df in self.bs_data_dfs.items() if bs_type in [BSDD, BSDA, BSFF, BSDASRI]
+                ],
                 "processing_codes": ["D13", "D14", "D15", "R12", "R13", "D9"],
             },
             {
                 "rubrique": "2790",
-                "bs_types": [BSDD, BSDA, BSFF, BSDASRI, BSVHU],
+                "data": [
+                    (bs_type, df)
+                    for bs_type, df in self.bs_data_dfs.items()
+                    if bs_type in [BSDD, BSDA, BSFF, BSDASRI, BSVHU]
+                ],
                 "processing_codes": [
                     "D8",
                     "D9F",
@@ -1408,86 +1431,202 @@ class WasteProcessingWithoutICPEProcessor:
             rubrique = config["rubrique"]
 
             has_rubrique = False
-
             icpe_data = self.icpe_data
             if icpe_data is not None:
                 has_rubrique = len(icpe_data[icpe_data["rubrique"] == rubrique]) > 0
 
             if not has_rubrique:
-                bs_dfs = []
+                df_to_process = config["data"]
 
-                df_to_process = [
-                    (bs_type, df) for bs_type, df in self.bs_data_dfs.items() if bs_type in config["bs_types"]
-                ]
-                for bs_type, df in df_to_process:
-                    if len(df) == 0:
-                        continue
+                bs_filtered_df = self._preprocess_and_filter_bs_list(
+                    self.siret,
+                    df_to_process,
+                    config["processing_codes"],
+                    self.data_date_interval,
+                    self.packagings_data_df,
+                )
 
-                    df_filtered = pd.DataFrame()
-                    if bs_type != BSFF:
-                        df_filtered = df[
-                            (df["recipient_company_siret"] == self.siret)
-                            & (df["processing_operation_code"].isin(config["processing_codes"]))
-                            & (df["processed_at"].between(*self.data_date_interval))
-                        ]
-                    else:
-                        if (self.packagings_data_df is not None) and (len(self.packagings_data_df) > 0):
-                            df = df.merge(
-                                self.packagings_data_df[
-                                    [
-                                        "bsff_id",
-                                        "acceptation_weight",
-                                        "operation_date",
-                                        "operation_code",
-                                    ]
-                                ],
-                                left_on="id",
-                                right_on="bsff_id",
-                                validate="one_to_many",
-                            )
-                            df = df[
-                                (df["recipient_company_siret"] == self.siret)
-                                & (df["operation_code"].isin(config["processing_codes"]))
-                                & (df["operation_date"].between(*self.data_date_interval))
-                            ]
-                            df_filtered = df.groupby("id", as_index=False).agg(
-                                {
-                                    "processing_operation_code": pd.NamedAgg(column="operation_code", aggfunc="max"),
-                                    "processed_at": pd.NamedAgg(column="operation_date", aggfunc="max"),
-                                    "quantity_received": pd.NamedAgg(column="acceptation_weight", aggfunc="sum"),
-                                }
-                            )
+                if len(bs_filtered_df) > 0:
+                    found_processing_codes = bs_filtered_df["processing_operation_code"].unique()
+                    self.preprocessed_data["dangerous"].append(
+                        {
+                            "bs_list": bs_filtered_df,  # Creates the list of bordereaux
+                            "missing_rubriques": rubrique,
+                            "num_missing_rubriques": 1,
+                            "found_processing_codes": ", ".join(found_processing_codes),
+                            "num_found_processing_codes": len(found_processing_codes),
+                            "stats": {
+                                "total_bs": format_number_str(len(bs_filtered_df), 0),  # Total number of bordereaux
+                                "total_quantity": format_number_str(
+                                    bs_filtered_df["quantity_received"].sum(), 2
+                                ),  # Total quantity processed
+                            },
+                        }
+                    )
 
-                    if len(df_filtered) > 0:
-                        df_filtered["bs_type"] = bs_type.upper()
-                        bs_dfs.append(df_filtered)
+    def _preprocess_non_dangerous_rubriques(self) -> None:
+        rndts_data_df = self.rndts_incoming_data
 
-                if len(bs_dfs):
-                    bs_df = pd.concat(bs_dfs)
-                    self.preprocessed_data[rubrique] = {
-                        "bs_list": bs_df,  # Creates the list of bordereaux
+        if rndts_data_df is None:
+            return
+
+        rndts_data_df = rndts_data_df[
+            (rndts_data_df["numero_identification_declarant"] == self.siret)
+            & rndts_data_df["date_reception"].between(*self.data_date_interval)
+        ]
+
+        if len(rndts_data_df) == 0:
+            return
+
+        rubriques_mapping = [
+            {
+                "rubriques": ["2760-2"],
+                "processing_codes": ["D5"],
+            },
+            {
+                "rubriques": ["2771"],
+                "processing_codes": [
+                    "D9",
+                    "D10",
+                ],
+            },
+            {
+                "rubriques": ["2771", "2791"],
+                "processing_codes": [
+                    "D9",
+                    "R1",
+                    "R2",
+                    "R5",
+                    "R7",
+                ],
+            },
+            {
+                "rubriques": ["2791"],
+                "processing_codes": [
+                    "D8",
+                    "R3",
+                    "R4",
+                    "R8",
+                    "R12",
+                ],
+            },
+        ]
+
+        for mapping in rubriques_mapping:
+            rubriques = mapping["rubriques"]
+
+            has_rubrique = False
+            icpe_data_df = self.icpe_data
+            missing_rubriques = rubriques
+            if icpe_data_df is not None:
+                # To handle the case of rubriques with trailing "-a" or trailing "-b", we use only the 6 first characters
+                missing_rubriques = set(rubriques) - set(icpe_data_df["rubrique"].str[:6].unique())
+                has_rubrique = len(missing_rubriques) == 0
+
+            if has_rubrique:
+                continue
+
+            processing_codes = mapping["processing_codes"]
+
+            filtered_rndts_data_df = rndts_data_df[rndts_data_df["code_traitement"].isin(processing_codes)]
+
+            if len(filtered_rndts_data_df) > 0:
+                found_processing_codes = filtered_rndts_data_df["code_traitement"].unique().tolist()
+
+                self.preprocessed_data["non_dangerous"].append(
+                    {
+                        "missing_rubriques": ", ".join(missing_rubriques),
+                        "num_missing_rubriques": len(missing_rubriques),
+                        "found_processing_codes": ", ".join(found_processing_codes),
+                        "num_found_processing_codes": len(found_processing_codes),
+                        "statements_list": filtered_rndts_data_df.sort_values(
+                            "date_reception"
+                        ),  # Creates the list of statements
                         "stats": {
-                            "total_bs": len(bs_df),  # Total number of bordereaux
+                            "total_statements": format_number_str(
+                                len(filtered_rndts_data_df), 0
+                            ),  # Total number of bordereaux
                             "total_quantity": format_number_str(
-                                bs_df["quantity_received"].sum(), 2
+                                filtered_rndts_data_df["quantite"].sum(), 2
                             ),  # Total quantity processed
                         },
                     }
+                )
+
+    @staticmethod
+    def _preprocess_and_filter_bs_list(
+        siret: str,
+        dfs_to_process: list[tuple[str, pd.DataFrame]],
+        processing_codes: list[str],
+        data_date_interval: tuple[datetime, datetime],
+        packagings_data_df: pd.DataFrame | None,
+    ) -> pd.DataFrame:
+        bs_dfs = []
+        for bs_type, df in dfs_to_process:
+            if len(df) == 0:
+                continue
+
+            if bs_type != BSFF:
+                df_filtered = df[
+                    (df["recipient_company_siret"] == siret)
+                    & (df["processing_operation_code"].isin(processing_codes))
+                    & (df["processed_at"].between(*data_date_interval))
+                ]
+            else:
+                if (packagings_data_df is not None) and (len(packagings_data_df) > 0):
+                    df = df.merge(
+                        packagings_data_df[
+                            [
+                                "bsff_id",
+                                "acceptation_weight",
+                                "operation_date",
+                                "operation_code",
+                            ]
+                        ],
+                        left_on="id",
+                        right_on="bsff_id",
+                        validate="one_to_many",
+                    )
+                    df = df[
+                        (df["recipient_company_siret"] == siret)
+                        & (df["operation_code"].isin(processing_codes))
+                        & (df["operation_date"].between(*data_date_interval))
+                    ]
+                    df_filtered = df.groupby("id", as_index=False).agg(
+                        {
+                            "processing_operation_code": pd.NamedAgg(column="operation_code", aggfunc="max"),
+                            "processed_at": pd.NamedAgg(column="operation_date", aggfunc="max"),
+                            "quantity_received": pd.NamedAgg(column="acceptation_weight", aggfunc="sum"),
+                        }  # type: ignore
+                    )  # type: ignore
+
+            if (
+                len(df_filtered) > 0
+            ):  # If condition is met, it means we found borderaux without the company having the "rubrique"
+                df_filtered["bs_type"] = bs_type.upper()
+                bs_dfs.append(df_filtered)
+
+        concat_df = pd.DataFrame()
+        if len(bs_dfs) > 0:
+            concat_df = pd.concat(bs_dfs).sort_values(["bs_type", "processed_at"])
+
+        return concat_df
 
     def _preprocess_data(self) -> None:
         self._preprocess_data_multi_rubriques()
         self._preprocess_data_single_rubrique()
+        self._preprocess_non_dangerous_rubriques()
 
     def _check_data_empty(self) -> bool:
-        if all(e == {} for e in self.preprocessed_data.values()):
+        if all(len(e) == 0 for e in self.preprocessed_data.values()):
             return True
 
         return False
 
-    def _add_stats(self) -> list:
-        stats = {}
+    def _add_stats(self) -> dict[str, list]:
+        stats = {"dangerous": [], "non_dangerous": []}
 
-        for rubrique, item in self.preprocessed_data.items():
+        for item in self.preprocessed_data["dangerous"]:
             if not item:
                 continue
             df = item["bs_list"]
@@ -1510,11 +1649,24 @@ class WasteProcessingWithoutICPEProcessor:
                         else None,
                     }
                     rows.append(row)
-                stats[rubrique] = {"bs_list": rows, "stats": item["stats"]}
+                stats["dangerous"].append({**item, "bs_list": rows})
 
+        for item in self.preprocessed_data["non_dangerous"]:
+            df = item["statements_list"]
+            rows = []
+            for e in df.itertuples():
+                row = {
+                    "waste_code": e.code_dechet,
+                    "waste_name": e.denomination_usuelle,
+                    "operation_code": e.code_traitement,
+                    "quantity": format_number_str(e.quantite, 3) if not pd.isna(e.quantite) else None,
+                    "received_at": e.date_reception.strftime("%d/%m/%Y") if not pd.isna(e.date_reception) else None,
+                }
+                rows.append(row)
+            stats["non_dangerous"].append({**item, "statements_list": rows})
         return stats
 
-    def build(self) -> list:
+    def build(self) -> dict:
         self._preprocess_data()
 
         if not self._check_data_empty():

@@ -354,7 +354,7 @@
                     </div>
                 </div>
             </div>
-            {% if sheet.bs_processed_without_icpe_authorization %}
+            {% if sheet.bs_processed_without_icpe_authorization.dangerous or sheet.bs_processed_without_icpe_authorization.non_dangerous %}
                 <div class="row">
                     <div class="cell cell--bordered cell--full">
                         <div class="fr-alert fr-alert--warning">

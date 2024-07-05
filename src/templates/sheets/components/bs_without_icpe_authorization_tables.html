@@ -2,11 +2,17 @@
 <ul>
     {% for data in dangerous_data %}
         <li>
-            <span class="fr-text--lead">Rubrique{{ data.num_missing_rubriques|pluralize }} {{ data.missing_rubriques }} </span>
+            <span class="fr-text--lead">Rubrique{{ data.num_missing_rubriques|pluralize }} {{ data.missing_rubriques }}</span>
         </li>
         {% if data.stats.total_bs <= 30 %}
             <p>
-                L'installation ne dispose pas à notre connaissance {% if data.num_missing_rubriques > 1 %}des rubriques {% else %}de la rubrique {% endif %} {{ data.missing_rubriques }},
+                L'installation ne dispose pas à notre connaissance
+                {% if data.num_missing_rubriques > 1 %}
+                    des rubriques
+                {% else %}
+                    de la rubrique
+                {% endif %}
+                {{ data.missing_rubriques }},
                 pour autant, vous trouverez ci-aprés la liste de <b>{{ data.stats.total_bs }}</b> bordereau{{ data.stats.total_bs|pluralize:"x" }} dont l'établissement, destinataire, a indiqué {{ data.found_processing_codes }} comme traitement.
             </p>
             <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
@@ -33,7 +39,13 @@
             </div>
         {% else %}
             <p>
-                L'installation ne dispose pas à notre connaissance {% if data.num_missing_rubriques > 1 %}des rubriques {% else %}de la rubrique {% endif %} {{ data.missing_rubriques }},
+                L'installation ne dispose pas à notre connaissance
+                {% if data.num_missing_rubriques > 1 %}
+                    des rubriques
+                {% else %}
+                    de la rubrique
+                {% endif %}
+                {{ data.missing_rubriques }},
                 pour autant, l'établissement a indiqué {{ data.found_processing_codes }} comme traitement pour <b>{{ data.stats.total_bs }}</b> bordereau{{ data.stats.total_bs|pluralize:"x" }} soit un total de <b>{{ data.stats.total_quantity }}</b> tonnes traitées.
             </p>
         {% endif %}
@@ -44,7 +56,13 @@
         </li>
         {% if data.stats.total_statements <= 30 %}
             <p>
-                L'installation ne dispose pas à notre connaissance {% if data.num_missing_rubriques > 1 %}des rubriques {% else %}de la rubrique {% endif %} {{ data.missing_rubriques }},
+                L'installation ne dispose pas à notre connaissance
+                {% if data.num_missing_rubriques > 1 %}
+                    des rubriques
+                {% else %}
+                    de la rubrique
+                {% endif %}
+                {{ data.missing_rubriques }},
                 pour autant, vous trouverez ci-aprés la liste de <b>{{ data.stats.total_statements }}</b> bordereau{{ data.stats.total_statements|pluralize:"x" }} dont l'établissement, destinataire,
                 a indiqué {{ data.found_processing_codes }} comme traitement.
             </p>
@@ -74,7 +92,13 @@
             </div>
         {% else %}
             <p>
-                L'installation ne dispose pas à notre connaissance {% if data.num_missing_rubriques > 1 %}des rubriques {% else %}de la rubrique {% endif %} {{ data.missing_rubriques }},
+                L'installation ne dispose pas à notre connaissance
+                {% if data.num_missing_rubriques > 1 %}
+                    des rubriques
+                {% else %}
+                    de la rubrique
+                {% endif %}
+                {{ data.missing_rubriques }},
                 pour autant, l'établissement a indiqué {{ data.found_processing_codes }} comme traitement pour <b>{{ data.stats.total_statements }}</b> déclaration{{ data.stats.total_statements|pluralize:"s" }} de déchets non dangereux soit un total de <b>{{ data.stats.total_quantity }}</b> tonnes reçues.
             </p>
         {% endif %}

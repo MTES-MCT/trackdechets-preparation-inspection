@@ -1,3 +1,4 @@
+{% load utils %}
 <h3 class="cell__title">Déclaration de déchets dangereux avec code déchet non dangereux</h3>
 {% if waste_is_dangerous_statements_data %}
     <p>L'établissement a déclaré des déchets comme étant dangereux pour les codes déchets non dangereux suivants :</p>
@@ -17,10 +18,10 @@
                         <td>{{ row.waste_code }}</td>
                         <td class="td--right">{{ row.description }}</td>
                         <td class="td--right">
-                            <span class="fr-text--bold">{{ row.count }}</span>
+                            <span class="fr-text--bold">{{ row.count|number|safe }}</span>
                         </td>
                         <td class="td--right">
-                            <span class="fr-text--bold">{{ row.quantity }}</span>t
+                            <span class="fr-text--bold">{{ row.quantity|number|safe }}</span>t
                         </td>
                     </tr>
                 {% endfor %}

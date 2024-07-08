@@ -24,12 +24,15 @@ select
     next_destination_company_name,
     next_destination_company_country,
     next_destination_company_vat_number,
-    next_destination_processing_operation
+    next_destination_processing_operation,
+    eco_organisme_siret
  from
     trusted_zone_trackdechets.bsdd
 where
     (emitter_company_siret = :siret
-    or recipient_company_siret = :siret)
+    or recipient_company_siret = :siret
+    or eco_organisme_siret = :siret
+    )
     and is_deleted = false
     and status::text not in ('DRAFT', 'INITIAL')
     and (waste_details_code ~* '.*\*$' or waste_details_pop or waste_details_is_dangerous)
@@ -74,12 +77,14 @@ select
     next_destination_company_name,
     next_destination_company_country,
     next_destination_company_vat_number,
-    next_destination_processing_operation
+    next_destination_processing_operation,
+    eco_organisme_siret
  from
     trusted_zone_trackdechets.bsdd
 where
     (emitter_company_siret = :siret
-    or recipient_company_siret = :siret)
+    or recipient_company_siret = :siret
+    or eco_organisme_siret = :siret)
     and is_deleted = false
     and status::text not in ('DRAFT', 'INITIAL')
     and not (waste_details_code ~* '.*\*$' or waste_details_pop or waste_details_is_dangerous)
@@ -106,6 +111,7 @@ select
     transporter_company_siret,
     emitter_company_siret,
     recipient_company_siret,
+    eco_organisme_siret,
     transporter_number_plate,
     transporter_transport_mode,
     quantity_received,
@@ -113,9 +119,11 @@ select
 from
     refined_zone_enriched.bsdd_transporter_enriched
 where
-    (emitter_company_siret = :siret
+    (
+        emitter_company_siret = :siret
         or recipient_company_siret = :siret
         or transporter_company_siret = :siret
+        or eco_organisme_siret = :siret
     )
     and (waste_details_code like '%*'
         or waste_details_pop
@@ -136,6 +144,7 @@ select
     transporter_company_siret,
     emitter_company_siret,
     recipient_company_siret,
+    eco_organisme_siret,
     transporter_number_plate,
     transporter_transport_mode,
     quantity_received,
@@ -143,9 +152,11 @@ select
 from
     refined_zone_enriched.bsdd_transporter_enriched
 where
-    (emitter_company_siret = :siret
+    (
+        emitter_company_siret = :siret
         or recipient_company_siret = :siret
         or transporter_company_siret = :siret
+        or eco_organisme_siret = :siret
     )
     and not (waste_details_code like '%*'
         or waste_details_pop
@@ -197,13 +208,17 @@ select
     emitter_pickup_site_name as worksite_name,
     emitter_pickup_site_address as worksite_address,
     worker_company_siret,
-    emitter_is_private_individual
+    emitter_is_private_individual,
+    eco_organisme_siret
 from
     trusted_zone_trackdechets.bsda
 where
-    (emitter_company_siret = :siret
+    (
+        emitter_company_siret = :siret
         or destination_company_siret = :siret
-        or worker_company_siret = :siret)
+        or worker_company_siret = :siret
+        or eco_organisme_siret = :siret    
+    )
     and is_deleted = false
     and status::text not in ('DRAFT', 'INITIAL')
     and not is_draft
@@ -225,6 +240,7 @@ select
     transporter_transport_taken_over_at as sent_at,
     transporter_company_siret,
     emitter_company_siret,
+    eco_organisme_siret,
     destination_company_siret as recipient_company_siret,
     transporter_transport_plates,
     transporter_transport_mode,
@@ -236,6 +252,7 @@ where
     (emitter_company_siret = :siret
         or destination_company_siret = :siret
         or transporter_company_siret = :siret
+        or eco_organisme_siret = :siret
     )
     and waste_code like '%*'
     -- to avoid pandas datetime overflow
@@ -262,13 +279,17 @@ select
     destination_operation_code as processing_operation_code,
     status,
     transporter_transport_mode,
-    transporter_company_siret
+    transporter_company_siret,
+    eco_organisme_siret
 from
         trusted_zone_trackdechets.bsdasri
 where
-    (emitter_company_siret = :siret
+    (
+        emitter_company_siret = :siret
         or destination_company_siret = :siret
-        or transporter_company_siret = :siret)
+        or transporter_company_siret = :siret
+        or eco_organisme_siret = :siret
+        )
     and is_deleted = false
     and status::text not in ('DRAFT', 'INITIAL')
     and not is_draft

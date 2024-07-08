@@ -1,3 +1,4 @@
+{% load utils %}
 {% if gistrid_stats_data %}
     <div {% if graph_context == "web" %}class="cell cell--bordered cell--full"{% endif %}>
         <h3>Données issues de GISTRID</h3>
@@ -32,7 +33,7 @@
                                 <td>{{ row.codes_operations }}</td>
                                 <td>{{ row.nombre_transferts }}</td>
                                 <td class="td--right">
-                                    <b>{{ row.quantites_recues }}</b>
+                                    <b>{{ row.quantites_recues|number|safe }}</b>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -67,7 +68,7 @@
                                 <td>{{ row.codes_operations }}</td>
                                 <td>{{ row.nombre_transferts }}</td>
                                 <td class="td--right">
-                                    <b>{{ row.quantites_recues }}</b>
+                                    <b>{{ row.quantites_recues|number|safe }}</b>
                                 </td>
                             </tr>
                         {% endfor %}

@@ -40,6 +40,7 @@ from .graph_processors.html_components_processors import (
     FollowedWithPNTTDTableProcessor,
     GistridStatsProcessor,
     ICPEItemsProcessor,
+    IntermediaryBordereauxStatsProcessor,
     LinkedCompaniesProcessor,
     NonDangerousWasteStatsProcessor,
     PrivateIndividualsCollectionsTableProcessor,
@@ -59,6 +60,8 @@ from .graph_processors.plotly_components_processors import (
     BsdTrackedAndRevisedProcessor,
     ICPEAnnualItemProcessor,
     ICPEDailyItemProcessor,
+    IntermediaryBordereauxCountsGraphProcessor,
+    IntermediaryBordereauxQuantitiesGraphProcessor,
     NonDangerousWasteQuantitiesGraphProcessor,
     NonDangerousWasteStatementsGraphProcessor,
     TransportedQuantitiesGraphProcessor,
@@ -472,6 +475,36 @@ class SheetProcessor:
         )
         self.computed.non_dangerous_waste_stats_data = non_dangerous_waste_stats.build()
         if self.computed.non_dangerous_waste_stats_data:
+            self.computed.all_bsd_data_empty = False
+
+        eco_organisme_bordereaux_graph = IntermediaryBordereauxCountsGraphProcessor(
+            company_siret=self.siret,
+            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k in [BSDD, BSDD_NON_DANGEROUS, BSDA, BSDASRI]},
+            transporters_data_df=self.transporter_data_dfs,
+            data_date_interval=data_date_interval,
+        )
+        self.computed.eco_organisme_bordereaux_graph_data = eco_organisme_bordereaux_graph.build()
+        if self.computed.eco_organisme_bordereaux_graph_data:
+            self.computed.all_bsd_data_empty = False
+
+        eco_organisme_quantities_graph = IntermediaryBordereauxQuantitiesGraphProcessor(
+            company_siret=self.siret,
+            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k in [BSDD, BSDD_NON_DANGEROUS, BSDA, BSDASRI]},
+            transporters_data_df=self.transporter_data_dfs,
+            data_date_interval=data_date_interval,
+        )
+        self.computed.eco_organisme_quantities_graph_data = eco_organisme_quantities_graph.build()
+        if self.computed.eco_organisme_bordereaux_graph_data:
+            self.computed.all_bsd_data_empty = False
+
+        eco_organisme_bordereaux_stats = IntermediaryBordereauxStatsProcessor(
+            company_siret=self.siret,
+            bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k in [BSDD, BSDD_NON_DANGEROUS, BSDA, BSDASRI]},
+            transporters_data_df=self.transporter_data_dfs,
+            data_date_interval=data_date_interval,
+        )
+        self.computed.eco_organisme_bordereaux_stats_data = eco_organisme_bordereaux_stats.build()
+        if self.computed.eco_organisme_bordereaux_graph_data:
             self.computed.all_bsd_data_empty = False
 
         self.computed.state = ComputedInspectionData.StateChoice.COMPUTED

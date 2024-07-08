@@ -5,13 +5,14 @@ Les changements importants de Trackdéchets préparation inspection sont documen
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 et le projet suit un schéma de versioning inspiré de [Calendar Versioning](https://calver.org/).
 
+
+## 08/07/2024
+
+- Ajout des alertes de traitements de déchets sans rubrique ICPE pour les déclarations aux RNDTS
+
 ## 04/07/2024
 
 - Amélioration du dashboard
-
-## 01/07/2024
-
-- Ajout des alertes de traitements de déchets sans rubrique ICPE pour les déclarations aux RNDTS
 
 ## 01/07/2024
 

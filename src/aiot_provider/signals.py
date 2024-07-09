@@ -41,6 +41,7 @@ def mon_aiot_post_signup_callback(*args, **kwargs):
     except KeyError:
         return
     ser = slg.serialize()
+
     try:
         extra_data = ser["account"]["extra_data"]
         provider = ser["account"]["provider"]

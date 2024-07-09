@@ -25,6 +25,18 @@ def test_home(verified_user):
     assert "Aidez-nous à améliorer cet outil" in res.content.decode()
 
 
+@pytest.mark.parametrize("get_client", ["verified_client", "logged_monaiot_client"], indirect=True)
+def test_home_aiot_user(get_client):
+    url = reverse("private_home")
+    res = get_client.get(url)
+    assert res.status_code == 200
+    assert "Préparer une fiche" in res.content.decode()
+
+    assert "Interface d'administration équipe" not in res.content.decode()
+
+    assert "Aidez-nous à améliorer cet outil" in res.content.decode()
+
+
 def test_home_for_staff(verified_staff):
     url = reverse("private_home")
     res = verified_staff.get(url)
@@ -49,9 +61,10 @@ def test_sheet_prepare_deny_anon(anon_client):
     assert res.status_code == 302
 
 
-def test_sheet_prepare(verified_user):
+@pytest.mark.parametrize("get_client", ["verified_client", "logged_monaiot_client"], indirect=True)
+def test_sheet_prepare(get_client):
     url = reverse("prepare")
-    res = verified_user.get(url)
+    res = get_client.get(url)
     assert res.status_code == 200
     form = res.context["form"]
     today = dt.date.today()

@@ -197,10 +197,6 @@ class Prepare(SecondFactorMixin, FormView):
         today = dt.date.today()
         self.existing_inspection = ComputedInspectionData.objects.filter(org_id=siret, created__date=today).first()
 
-    # def form_invalid(self, form):
-    #     breakpoint()
-    #     return super().form_invalid(form)
-
     def form_valid(self, form):
         self.is_registry = bool(self.request.POST.get("registry"))
         self.is_inspection = bool(self.request.POST.get("inspection"))

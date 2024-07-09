@@ -35,24 +35,29 @@ class MonAiotDConnectAdapter(OpenIDConnectAdapter):
 
         droits = json.loads(droits_data)
 
-        profiles = [el.get("id_profil") for el in droits]
-        perimeters = [el.get("perimetre_ic") for el in droits]
+        access_granted = False
+        for droit in droits:
+            id_profil = droit.get("id_profil")
+            perimetre_ic = droit.get("perimetre_ic")
+            id_application = droit.get("id_application")
+            id_nature_service = droit.get("id_nature_service")
+            if id_profil in ALLOWED_PROFILES and perimetre_ic == ALLOWED_PERIMETER:
+                access_granted = True
+                matching_profile = id_profil
+            else:
+                continue
 
-        matching_profiles = ALLOWED_PROFILES.intersection(set(profiles))
+            # Gun readers require extra verification
+            if matching_profile == GUN_READER_ID:
+                if id_application != GUN_READER_ALLOWED_APPLICATION_ID:
+                    access_granted = False
+                if id_nature_service != GUN_READER_ALLOWED_SERVICE_ID:
+                    access_granted = False
 
-        if not matching_profiles:
-            raise PermissionDenied
-        if ALLOWED_PERIMETER not in perimeters:
+        if not access_granted:
             raise PermissionDenied
 
         # Gun readers require extra verification
-        if matching_profiles == {GUN_READER_ID}:
-            id_applications = [el.get("id_application") for el in droits]
-            id_nature_services = [el.get("id_nature_service") for el in droits]
-            if GUN_READER_ALLOWED_APPLICATION_ID not in id_applications:
-                raise PermissionDenied
-            if GUN_READER_ALLOWED_SERVICE_ID not in id_nature_services:
-                raise PermissionDenied
 
         return self.get_provider().sociallogin_from_response(request, extra_data)
 

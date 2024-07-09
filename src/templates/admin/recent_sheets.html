@@ -6,9 +6,9 @@
             <ul class="grp-listing-small">
                 {% for sheet in module.children %}
                     <li class="grp-row">
-                        <a href="{% url "admin:sheets_computedinspectiondata_change"  sheet.pk %}">{{ sheet.org_id }} {{ sheet.get_creation_mode_display }}</a>
+                        <a href="{% url "admin:sheets_computedinspectiondata_change"  sheet.pk %}">{{ sheet.org_id }}   {{ sheet.company_name }} </a>
                         <br>
-                        {{ user.date_joined }}
+                        {{ sheet.created }} ({{ sheet.get_creation_mode_display }})
                     </li>
                 {% endfor %}
             </ul>

@@ -564,18 +564,35 @@ where (siret_notifiant = :siret or siret_installation_traitement = :siret)
 
 sql_get_incoming_ndw_data = """
 SELECT 
-    *
+    id,
+    numero_identification_declarant,
+    code_dechet,
+    denomination_usuelle,
+    quantite,
+    unite,
+    date_reception,
+    heure_pesee,
+    code_traitement
 FROM trusted_zone_rndts.dnd_entrants
 where
     numero_identification_declarant = :siret
+    and status <> 'CANCELED'
 """
 
 sql_get_outgoing_ndw_data = """
 SELECT 
-    *
+    id,
+    numero_identification_declarant,
+    code_dechet,
+    denomination_usuelle,
+    quantite,
+    unite,
+    date_expedition,
+    code_traitement
 FROM trusted_zone_rndts.dnd_sortants
 where
     numero_identification_declarant = :siret
+    and status <> 'CANCELED'
 """
 
 sql_company_query_exists_str = """

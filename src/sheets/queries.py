@@ -573,10 +573,9 @@ SELECT
     date_reception,
     heure_pesee,
     code_traitement
-FROM trusted_zone_rndts.dnd_entrants
+FROM trusted_zone_rndts.dnd_entrant
 where
     numero_identification_declarant = :siret
-    and status <> 'CANCELED'
 """
 
 sql_get_outgoing_ndw_data = """
@@ -589,10 +588,9 @@ SELECT
     unite,
     date_expedition,
     code_traitement
-FROM trusted_zone_rndts.dnd_sortants
+FROM trusted_zone_rndts.dnd_sortant
 where
     numero_identification_declarant = :siret
-    and status <> 'CANCELED'
 """
 
 sql_company_query_exists_str = """

@@ -3,7 +3,7 @@ from django_otp.plugins.otp_email.models import EmailDevice
 
 from .models import User
 
-DEFAULT_PASSWORD = "passpass"
+DEFAULT_PASSWORD = "passpass"  # nosec
 
 
 class UserFactory(factory.django.DjangoModelFactory):

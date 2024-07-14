@@ -2,3 +2,5 @@
 target-version = "py311"
 line-length = 119
 extend-exclude = ["migrations"]
+[tool.bandit]
+exclude_dirs = ["tests", "/config/settings/dev.py"]

@@ -1,5 +1,7 @@
 import base64
 import logging
+import os
+import tempfile
 
 from celery import current_task, group
 from django.conf import settings
@@ -105,15 +107,22 @@ def render_pdf_sheet_fn(computed_pk: str):
         font_config=font_config,
         base_url=f"{settings.BASE_URL}/static/css/",
     )
-    tmp_pdf_path = f"/tmp/{sheet.pk}.pdf"
+    # tmp_pdf_path = f"/tmp/{sheet.pk}.pdf"
+    #
+    # html.write_pdf(tmp_pdf_path, stylesheets=[css], font_config=font_config)
 
-    html.write_pdf(tmp_pdf_path, stylesheets=[css], font_config=font_config)
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+        html.write_pdf(tmp, stylesheets=[css], font_config=font_config)
 
-    with open(tmp_pdf_path, "rb") as f:
+    with open(tmp.name, "rb") as f:
         encoded_string = base64.b64encode(f.read()).decode("ascii")
         sheet.pdf = encoded_string
         sheet.save()
-    # delete tmp
+
+    try:
+        os.remove(tmp.name)
+    except FileNotFoundError:
+        pass
 
 
 def render_pdf_fn(computed_pk: str, render_indiv_graph_api_fn):

@@ -49,7 +49,8 @@ def mon_aiot_post_signup_callback(*args, **kwargs):
         request = kwargs.get("request")
     except KeyError:
         return
-    assert provider == "monaiot"
+    if provider != "monaiot":
+        return
     now = timezone.now()
     ts = dt.datetime.timestamp(now)
     account_authentication_methods = [{"method": "socialaccount", "at": ts, "provider": "monaiot", "uid": sub}]

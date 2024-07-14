@@ -13,7 +13,8 @@ class MonaiotAccountAdapter(DefaultAccountAdapter):
         that URLs passed explicitly (e.g. by passing along a `next`
         GET parameter) take precedence over the value returned here.
         """
-        assert request.user.is_authenticated
+        if not request.user.is_authenticated:
+            raise Exception("Not authenticated")
 
         return resolve_url(redirect_url)
 

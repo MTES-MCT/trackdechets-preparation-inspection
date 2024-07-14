@@ -61,6 +61,9 @@ jobs:
       - name: Ruff Formatting
         run: pipenv run ruff format --check .
 
+      - name: Bandit security checks
+        run: pipenv run bandit --exit-zero -c pyproject.toml  -r src
+
       - name: Run Tests
         working-directory: src
         run: |

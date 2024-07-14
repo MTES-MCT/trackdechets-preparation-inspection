@@ -91,6 +91,12 @@ Utiliser :
     $ ./lint.sh
 ```
 
+Linter de scanning de sécurité
+
+```
+    $ bandit -c pyproject.toml -r
+```
+
 ## Licence
 
 Le code source du logiciel est publié sous licence [MIT](https://fr.wikipedia.org/wiki/Licence_MIT).

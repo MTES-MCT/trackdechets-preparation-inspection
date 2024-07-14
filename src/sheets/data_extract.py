@@ -49,7 +49,7 @@ def load_waste_code_data() -> pd.DataFrame:
     """
 
     df = pd.read_csv(CSV_FILES_DIR / "code_dechets.csv", dtype="str", index_col="code")
-    assert df.index.is_unique
+    assert df.index.is_unique  # nosec
 
     return df
 

@@ -9,6 +9,7 @@ et le projet suit un schéma de versioning inspiré de [Calendar Versioning](htt
 ## 15/07/2024
 
 - Ajout d'un linter de sécurité (bandit) et correction des points relevés
+- Ajout de tests du workflow mon aiot
 
 ## 08/07/2024
 

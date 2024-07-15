@@ -3,7 +3,7 @@ from .base import *  # noqa
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "inspection_test",
+        "NAME": "plop",
         "USER": "postgres",
         "PASSWORD": "admin",
         "HOST": "localhost",
@@ -21,8 +21,24 @@ MESSAGE_RECIPIENTS = ["lorem@ipsum.lol"]
 
 OTP_EMAIL_TOKEN_VALIDITY = 600
 
-MONAIOT_SERVER_URL = "https://lorem.test"
+MONAIOT_SERVER_URL = "http://lorem.test"
 MONAIOT_REALM = "realm"
 MONAIOT_CLIENT_ID = "td"
 MONAIOT_SECRET = "xyz"
-CSRF_TRUSTED_ORIGINS = ["https://url.test"]
+CSRF_TRUSTED_ORIGINS = ["http://url.test"]
+
+WELL_KNOWN_URL = f"{MONAIOT_SERVER_URL}/auth/realms/{MONAIOT_REALM}/.well-known/openid-configuration"
+SOCIALACCOUNT_PROVIDERS = {
+    "monaiot": {
+        "APPS": [
+            {
+                "provider_id": "monaiot",
+                "name": "monaiot",
+                "client_id": MONAIOT_CLIENT_ID,
+                "secret": MONAIOT_SECRET,
+                "settings": {"server_url": WELL_KNOWN_URL, "token_auth_method": "client_secret_jwt"},
+            }
+        ],
+        "SCOPE": ["openid"],
+    }
+}

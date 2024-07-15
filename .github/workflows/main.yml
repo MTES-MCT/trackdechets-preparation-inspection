@@ -69,7 +69,7 @@ jobs:
         run: |
           pipenv run pytest
         env:
-          DJANGO_SETTINGS_MODULE: core.settings.test
+          DJANGO_SETTINGS_MODULE: config.settings.test
           DATABASE_URL: postgresql://admin:postgres@localhost/inspection_test
           WAREHOUSE_URL: postgresql://admin:postgres@localhost/tdwarehouse_test
           DEFENDER_REDIS_URL: redis://localhost:6379/0

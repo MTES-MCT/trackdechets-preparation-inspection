@@ -1906,7 +1906,7 @@ class TransporterBordereauxStatsProcessor:
         }
 
     def _preprocess_bs_data(self) -> None:
-        """Preprocess raw 'bordereaux' data to prepare it for plotting."""
+        """Preprocess raw 'bordereaux' data to prepare it to be displayed."""
         transporter_data_dfs = self.transporters_data_df
         bs_data_dfs = self.bs_data_dfs
 
@@ -2076,7 +2076,7 @@ class GistridStatsProcessor:
         self.gistrid_stats = {}
 
     def _preprocess_gistrid_data(self) -> None:
-        """Preprocess raw 'bordereaux' data to prepare it for plotting."""
+        """Preprocess raw 'bordereaux' data to prepare it to be displayed."""
         df = self.gistrid_data_df
         if (df is None) or (len(df) == 0):
             return
@@ -2309,7 +2309,7 @@ class IntermediaryBordereauxStatsProcessor:
         }
 
     def _preprocess_bs_data(self) -> None:
-        """Preprocess raw 'bordereaux' data to prepare it for plotting."""
+        """Preprocess raw 'bordereaux' data to prepare it to be displayed."""
         bs_data_dfs = self.bs_data_dfs
 
         for bs_type, df in bs_data_dfs.items():
@@ -2350,6 +2350,111 @@ class IntermediaryBordereauxStatsProcessor:
 
     def build(self):
         self._preprocess_bs_data()
+
+        data = {}
+        if not self._check_data_empty():
+            data = self.bordereaux_stats
+
+        return data
+
+
+class IncineratorOutgoingWasteProcessor:
+    """Component that aggregate data to show a table of outgoing dangerous and non dangerous waste for incinerators.
+
+    Parameters
+    ----------
+    company_siret: str
+        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
+    bs_data_dfs: dict
+        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
+    icpe_data: DataFrame
+        DataFrame containing list of ICPE authorized items
+    rndts_outgoing_data: DataFrame
+        DataFrame containing data for outgoing non dangerous waste (from RNDTS).
+    data_date_interval: tuple
+        Date interval to filter data.
+    """
+
+    def __init__(
+        self,
+        company_siret: str,
+        bs_data_dfs: Dict[str, pd.DataFrame],
+        transporters_data_df: Dict[str, pd.DataFrame],  # Handling new multi-modal Trackdéchets feature
+        icpe_data: pd.DataFrame,
+        rndts_outgoing_data: pd.DataFrame,
+        data_date_interval: tuple[datetime, datetime],
+    ) -> None:
+        self.company_siret = company_siret
+        self.bs_data_dfs = bs_data_dfs
+        self.transporters_data_df = transporters_data_df
+        self.icpe_data = icpe_data
+        self.rndts_outgoing_data = rndts_outgoing_data
+        self.data_date_interval = data_date_interval
+
+        self.preprocessed_data = {"dangerous": pd.DataFrame(), "non_dangerous": pd.DataFrame()}
+
+    def _preprocess_bs_data(self) -> None:
+        """Preprocess raw 'bordereaux' data to prepare it to be displayed."""
+        bs_data_dfs = self.bs_data_dfs
+
+        dfs_to_concat = []
+        for bs_type, df in bs_data_dfs.items():
+            if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA]:
+                transport_df = self.transporters_data_df.get(bs_type)
+
+                if (transport_df is None) or len(transport_df) == 0:
+                    continue
+
+                df.drop(
+                    columns=["sent_at"], errors="ignore", inplace=True
+                )  # To avoid column duplication with transport data
+
+                df = df.merge(
+                    transport_df[["bs_id", "sent_at"]],
+                    left_on="id",
+                    right_on="bs_id",
+                    how="left",
+                    validate="one_to_many",
+                )
+
+            df = df[
+                df["sent_at"].between(*self.data_date_interval) & (df["emitter_company_siret"] == self.company_siret)
+            ]
+            df = df.drop_duplicates("id")
+
+            if len(df) > 0:
+                dfs_to_concat.append(df)
+
+            concat_df = pd.concat(dfs_to_concat)
+
+            aggregated_data_df = concat_df.groupby(
+                ["waste_code", "destination_company_siret", "processing_opration"]
+            ).aggregate(
+                quantity=pd.NamedAgg(column="quantity_received", aggfunc="sum"),
+                waste_name=pd.NamedAgg(column="waste_name", aggfunc="max"),
+            )
+
+            self.preprocessed_data["dangerous"] = aggregated_data_df
+
+    def _preprocess_rndts_statements_data(self) -> None:
+        """Preprocess raw RNDTS statements data to prepare it to be displayed."""
+        rndts_data = self.rndts_outgoing_data
+
+        aggregated_data = rndts_data.groupby()
+
+    def _preprocess_data(self):
+        if "2771" in self.icpe_data["rubrique"].unique():
+            self._preprocess_bs_data()
+            self._preprocess_rndts_statements_data()
+
+    def _check_data_empty(self) -> bool:
+        if all((e is None) or (e == {}) for e in self.preprocessed_data.values()):
+            return True
+
+        return False
+
+    def build(self):
+        self._preprocess_data()
 
         data = {}
         if not self._check_data_empty():

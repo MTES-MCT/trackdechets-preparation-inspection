@@ -3,8 +3,15 @@ import sentry_sdk
 from .base import *  # noqa
 from .base import env
 
-SESSION_COOKIE_AGE = 60 * 60 * 12  # 12 hours
+SESSION_COOKIE_AGE = 60 * 60 * 4  # 4 hours
+
 SESSION_COOKIE_SECURE = True
+
+SECURE_SSL_REDIRECT = True
+
+CSRF_COOKIE_SECURE = True
+
+SECURE_BROWSER_XSS_FILTER = True
 
 SECRET_KEY = env("SECRET_KEY")
 

@@ -69,7 +69,7 @@
             <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
                 <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
                     <thead>
-                         <tr>
+                        <tr>
                             <th scope="col">Date réception</th>
                             <th scope="col">Codé déchet</th>
                             <th scope="col">Dénomination usuelle</th>
@@ -84,7 +84,7 @@
                                 <td>{{ row.waste_code|default:"N/A" }}</td>
                                 <td>{{ row.waste_name|default:"N/A" }}</td>
                                 <td>{{ row.operation_code|default:"N/A" }}</td>
-                                <td>{{ row.quantity|default:"N/A"|number|safe  }}</td>
+                                <td>{{ row.quantity|default:"N/A"|number|safe }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

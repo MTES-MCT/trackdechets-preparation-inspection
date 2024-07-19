@@ -2380,8 +2380,8 @@ class IncineratorOutgoingWasteProcessor:
         company_siret: str,
         bs_data_dfs: Dict[str, pd.DataFrame],
         transporters_data_df: Dict[str, pd.DataFrame],  # Handling new multi-modal Trackdéchets feature
-        icpe_data: pd.DataFrame,
-        rndts_outgoing_data: pd.DataFrame,
+        icpe_data: pd.DataFrame | None,
+        rndts_outgoing_data: pd.DataFrame | None,
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
@@ -2427,37 +2427,97 @@ class IncineratorOutgoingWasteProcessor:
 
             concat_df = pd.concat(dfs_to_concat)
 
-            aggregated_data_df = concat_df.groupby(
-                ["waste_code", "destination_company_siret", "processing_opration"]
-            ).aggregate(
-                quantity=pd.NamedAgg(column="quantity_received", aggfunc="sum"),
-                waste_name=pd.NamedAgg(column="waste_name", aggfunc="max"),
+            aggregated_data_df = (
+                concat_df.groupby(
+                    ["waste_code", "recipient_company_siret", "processing_operation_code"], as_index=False
+                )
+                .aggregate(
+                    quantity=pd.NamedAgg(column="quantity_received", aggfunc="sum"),
+                    waste_name=pd.NamedAgg(column="waste_name", aggfunc="max"),
+                )
+                .sort_values(by=["waste_code", "recipient_company_siret", "quantity"], ascending=[True, True, False])
             )
 
-            self.preprocessed_data["dangerous"] = aggregated_data_df
+            if len(aggregated_data_df) > 0:
+                self.preprocessed_data["dangerous"] = aggregated_data_df
 
     def _preprocess_rndts_statements_data(self) -> None:
         """Preprocess raw RNDTS statements data to prepare it to be displayed."""
         rndts_data = self.rndts_outgoing_data
 
-        aggregated_data = rndts_data.groupby()
+        if (rndts_data is None) or (len(rndts_data) == 0):
+            return
+
+        aggregated_data_df = (
+            rndts_data[
+                (rndts_data["numero_identification_declarant"] == self.company_siret)
+                & (rndts_data["date_expedition"].between(*self.data_date_interval))
+            ]
+            .groupby(["code_dechet", "destinataire_numero_identification", "code_traitement", "unite"], as_index=False)
+            .agg(
+                quantite=pd.NamedAgg(column="quantite", aggfunc="sum"),
+                denomination_usuelle=pd.NamedAgg(column="denomination_usuelle", aggfunc="max"),
+            )
+            .sort_values(
+                by=["code_dechet", "destinataire_numero_identification", "quantite"], ascending=[True, True, False]
+            )
+        )
+
+        if len(aggregated_data_df) > 0:
+            self.preprocessed_data["non_dangerous"] = aggregated_data_df
+
+    def is_incinerator(self, dangerous_waste: bool) -> bool:
+        rubrique = "2770" if dangerous_waste else "2771"
+        icpe_data = self.icpe_data
+        if (icpe_data is None) or (len(icpe_data) == 0):
+            return False
+
+        return (icpe_data["rubrique"] == rubrique).any()
 
     def _preprocess_data(self):
-        if "2771" in self.icpe_data["rubrique"].unique():
+        if self.is_incinerator(dangerous_waste=True):
             self._preprocess_bs_data()
+        if self.is_incinerator(dangerous_waste=False):
             self._preprocess_rndts_statements_data()
 
     def _check_data_empty(self) -> bool:
-        if all((e is None) or (e == {}) for e in self.preprocessed_data.values()):
+        if all((e is None) or (len(e) == 0) for e in self.preprocessed_data.values()):
             return True
 
         return False
+
+    def _serialize_stats(self) -> dict:
+        res = {"dangerous": [], "non_dangerous": []}
+
+        for _, row in self.preprocessed_data["dangerous"].iterrows():
+            res["dangerous"].append(
+                {
+                    "waste_code": row.waste_code,
+                    "waste_name": row.waste_name,
+                    "destination_company_siret": row.recipient_company_siret,
+                    "processing_opration": row.processing_operation_code,
+                    "quantity": format_number_str(row.quantity, 2),
+                }
+            )
+
+        for _, row in self.preprocessed_data["non_dangerous"].iterrows():
+            res["non_dangerous"].append(
+                {
+                    "waste_code": row.code_dechet,
+                    "waste_name": row.denomination_usuelle,
+                    "destination_company_siret": row.destinataire_numero_identification,
+                    "unit": row.unite,
+                    "processing_opration": row.code_traitement,
+                    "quantity": format_number_str(row.quantite, 2),
+                }
+            )
+        return res
 
     def build(self):
         self._preprocess_data()
 
         data = {}
         if not self._check_data_empty():
-            data = self.bordereaux_stats
+            data = self._serialize_stats()
 
         return data

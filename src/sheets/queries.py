@@ -587,7 +587,9 @@ SELECT
     quantite,
     unite,
     date_expedition,
-    code_traitement
+    code_traitement,
+    destinataire_numero_identification,
+    destinataire_raison_sociale
 FROM trusted_zone_rndts.dnd_sortant
 where
     numero_identification_declarant = :siret

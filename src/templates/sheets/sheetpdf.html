@@ -413,18 +413,19 @@
             <div>{% render_quantity_outliers_table sheet graph_context="pdf" %}</div>
             {# end quantity outliers table #}
         </section>
-        {% if render_bsd_canceled_table or render_same_emitter_recipient_table or render_private_individuals_collections_table %}
-            <section class="horizontal">
-                {# bsd canceled table #}
-                <div>{% render_bsd_canceled_table sheet graph_context="pdf" %}</div>
-                {# end bsd canceled table #}
-                {# same emitter recipient table #}
-                <div>{% render_same_emitter_recipient_table sheet graph_context="pdf" %}</div>
-                {# end same emitter recipient table #}
-                {#  private indivudals collections table #}
-                <div>{% render_private_individuals_collections_table sheet graph_context="pdf" %}</div>
-                {#  end private indivudals collections table #}
-            </section>
-        {% endif %}
+        <section class="horizontal">
+            {# bsd canceled table #}
+            <div>{% render_bsd_canceled_table sheet graph_context="pdf" %}</div>
+            {# end bsd canceled table #}
+            {# same emitter recipient table #}
+            <div>{% render_same_emitter_recipient_table sheet graph_context="pdf" %}</div>
+            {# end same emitter recipient table #}
+            {#  private indivudals collections table #}
+            <div>{% render_private_individuals_collections_table sheet graph_context="pdf" %}</div>
+            {#  end private indivudals collections table #}
+            {# start incinerator #}
+            <div>{% render_incinerator_outgoing_waste_table sheet graph_context="pdf" %}</div>
+            {# end incinerator #}
+        </section>
     </div>
 {% endblock %}

@@ -177,3 +177,12 @@ def render_intermediary_bordereaux_stats_data(stats, graph_context="web"):
         "bordereaux_stats_data": stats,
         "graph_context": graph_context,
     }
+
+
+@register.inclusion_tag("sheets/components/incinerator_outgoing_waste_table.html")
+def render_incinerator_outgoing_waste_table(computed, graph_context="web"):
+    return {
+        "dangerous_data": computed.incinerator_outgoing_waste_data["dangerous"],
+        "non_dangerous_data": computed.incinerator_outgoing_waste_data["non_dangerous"],
+        "graph_context": graph_context,
+    }

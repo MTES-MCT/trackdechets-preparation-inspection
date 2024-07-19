@@ -1068,23 +1068,23 @@ class BsdaWorkerQuantityProcessor:
         if len(bsda_data) == 0:
             return
 
-        self.quantities_signed_by_worker_by_month = (
-            bsda_data[bsda_data["worker_work_signature_date"].between(*self.data_date_interval)]
-            .groupby(pd.Grouper(key="worker_work_signature_date", freq="1M"))["waste_details_quantity"]
-            .sum()
-        )
+        bsda_data_filtered = bsda_data[bsda_data["worker_work_signature_date"].between(*self.data_date_interval)]
+        if len(bsda_data_filtered) > 0:
+            self.quantities_signed_by_worker_by_month = bsda_data_filtered.groupby(
+                pd.Grouper(key="worker_work_signature_date", freq="1M")
+            )["waste_details_quantity"].sum()
 
-        self.quantities_transported_by_month = (
-            bsda_data[bsda_data["sent_at"].between(*self.data_date_interval)]
-            .groupby(pd.Grouper(key="sent_at", freq="1M"))["quantity_received"]
-            .sum()
-        )
+        bsda_data_filtered = bsda_data[bsda_data["sent_at"].between(*self.data_date_interval)]
+        if len(bsda_data_filtered) > 0:
+            self.quantities_transported_by_month = bsda_data_filtered.groupby(pd.Grouper(key="sent_at", freq="1M"))[
+                "quantity_received"
+            ].sum()
 
-        self.quantities_processed_by_month = (
-            bsda_data[bsda_data["processed_at"].between(*self.data_date_interval)]
-            .groupby(pd.Grouper(key="processed_at", freq="1M"))["quantity_received"]
-            .sum()
-        )
+        bsda_data_filtered = bsda_data[bsda_data["processed_at"].between(*self.data_date_interval)]
+        if len(bsda_data_filtered) > 0:
+            self.quantities_processed_by_month = bsda_data_filtered.groupby(pd.Grouper(key="processed_at", freq="1M"))[
+                "quantity_received"
+            ].sum()
 
     def _check_data_empty(self) -> bool:
         if all(

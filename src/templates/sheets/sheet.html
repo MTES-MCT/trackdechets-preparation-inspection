@@ -389,7 +389,9 @@
                 </div>
             {% endif %}
         {% endif %}
+        {# start traceability break #}
         <div class="row">{% render_traceabilty_break sheet %}</div>
+        {# end traceability break #}
         {# end ICPE #}
         {# Transborder section #}
         <h2 class="section__title">Données relatives aux échanges transfrontaliers</h2>
@@ -422,6 +424,9 @@
         {#  quantity outliers table #}
         <div>{% render_quantity_outliers_table sheet %}</div>
         {# end quantity outliers table #}
+        {# start incinerator #}
+        <div>{% render_incinerator_outgoing_waste_table sheet %}</div>
+        {# end incinerator #}
         {# end Appendices section #}
     </div>
 {% endblock %}

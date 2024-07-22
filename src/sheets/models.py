@@ -190,6 +190,8 @@ class ComputedInspectionData(models.Model):
     eco_organisme_quantities_graph = models.TextField(blank=True)
     eco_organisme_bordereaux_stats_data = models.JSONField(default=dict)
 
+    incinerator_outgoing_waste_data = models.JSONField(default=dict)
+
     pdf = models.TextField(blank=True)
 
     created_by = models.EmailField(verbose_name=_("Created by"), blank=True)

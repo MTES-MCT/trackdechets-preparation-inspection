@@ -40,6 +40,7 @@ from .graph_processors.html_components_processors import (
     FollowedWithPNTTDTableProcessor,
     GistridStatsProcessor,
     ICPEItemsProcessor,
+    IncineratorOutgoingWasteProcessor,
     IntermediaryBordereauxStatsProcessor,
     LinkedCompaniesProcessor,
     NonDangerousWasteStatsProcessor,
@@ -506,6 +507,11 @@ class SheetProcessor:
         self.computed.eco_organisme_bordereaux_stats_data = eco_organisme_bordereaux_stats.build()
         if self.computed.eco_organisme_bordereaux_graph_data:
             self.computed.all_bsd_data_empty = False
+
+        incinerator_outgoing_waste_data = IncineratorOutgoingWasteProcessor(
+            self.siret, self.bs_dfs, self.transporter_data_dfs, icpe_data, rndts_outgoing_data, data_date_interval
+        )
+        self.computed.incinerator_outgoing_waste_data = incinerator_outgoing_waste_data.build()
 
         self.computed.state = ComputedInspectionData.StateChoice.COMPUTED
 

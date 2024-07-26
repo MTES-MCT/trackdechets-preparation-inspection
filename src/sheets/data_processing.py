@@ -31,7 +31,7 @@ from .database import (
     get_icpe_data,
     get_icpe_item_data,
     get_linked_companies_data,
-    get_rndts_data,
+    get_rndts_ndw_data,
 )
 from .graph_processors.html_components_processors import (
     BsdaWorkerStatsProcessor,
@@ -302,11 +302,8 @@ class SheetProcessor:
 
         icpe_data = get_icpe_data(self.computed.org_id)
 
-        rndts_incoming_data, rndts_outgoing_data = None, None
-        match get_rndts_data(self.siret):
-            case (incoming_df, outgoing_df):
-                rndts_incoming_data = incoming_df
-                rndts_outgoing_data = outgoing_df
+        rndts_data = {"dnd_incoming": None, "dnd_outgoing": None, "texs_incoming:": None, "texs_outgoing": None}
+        rndts_incoming_data, rndts_outgoing_data = get_rndts_ndw_data(self.siret)
 
         icpe_processor = ICPEItemsProcessor(
             self.computed.org_id,

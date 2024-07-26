@@ -378,7 +378,7 @@ def get_gistrid_data(siret: str) -> Union[pd.DataFrame, None]:
     return None
 
 
-def get_rndts_data(siret: str) -> Union[list[pd.DataFrame], None]:
+def get_rndts_ndw_data(siret: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     rndts_incoming_data = build_query(
         sql_get_incoming_ndw_data,
         query_params={
@@ -395,6 +395,4 @@ def get_rndts_data(siret: str) -> Union[list[pd.DataFrame], None]:
         date_columns=["date_expedition"],
     )
 
-    if all(len(e) == 0 for e in [rndts_incoming_data, rndts_outgoing_data]):
-        return None
     return rndts_incoming_data, rndts_outgoing_data

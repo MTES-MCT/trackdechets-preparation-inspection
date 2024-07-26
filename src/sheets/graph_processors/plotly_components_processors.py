@@ -1589,8 +1589,8 @@ class NonDangerousWasteQuantitiesGraphProcessor:
 
     def __init__(
         self,
-        rndts_incoming_data: pd.DataFrame,
-        rndts_outgoing_data: pd.DataFrame,
+        rndts_incoming_data: pd.DataFrame | None,
+        rndts_outgoing_data: pd.DataFrame | None,
         data_date_interval: tuple[datetime, datetime],
     ):
         self.rndts_incoming_data = rndts_incoming_data

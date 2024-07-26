@@ -1565,7 +1565,7 @@ class WasteProcessingWithoutICPERubriqueProcessor:
         for bs_type, df in dfs_to_process:
             if len(df) == 0:
                 continue
-
+            df_filtered = pd.DataFrame()
             if bs_type != BSFF:
                 df_filtered = df[
                     (df["recipient_company_siret"] == siret)

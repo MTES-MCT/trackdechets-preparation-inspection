@@ -31,7 +31,10 @@ from .database import (
     get_icpe_data,
     get_icpe_item_data,
     get_linked_companies_data,
+<<<<<<< HEAD
     get_rndts_excavated_land_data,
+=======
+>>>>>>> c276767 (Refactores data processing module)
     get_rndts_ndw_data,
 )
 from .graph_processors.html_components_processors import (
@@ -245,6 +248,8 @@ class SheetProcessor:
         )
         self.rndts_data["excavated_land_incoming"] = rndts_excavated_land_incoming_data
         self.rndts_data["excavated_land_outgoing"] = rndts_excavated_land_outgoing_data
+
+
 
     def _process_company_data(self):
         company_data_df = self.company_data
@@ -566,7 +571,7 @@ class SheetProcessor:
         self.computed.excavated_land_stats_data = excavated_land_stats.build()
         if self.computed.excavated_land_stats_data:
             self.all_rndts_data_empty = False
-
+            
         eco_organisme_bordereaux_stats = IntermediaryBordereauxStatsProcessor(
             company_siret=self.siret,
             bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k in [BSDD, BSDD_NON_DANGEROUS, BSDA, BSDASRI]},

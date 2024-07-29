@@ -19,6 +19,8 @@ BSDASRI = "bsdasri"
 BSFF = "bsff"
 BSVHU = "bsvhu"
 
+BS_TYPES_WITH_MULTIMODAL_TRANSPORT = [BSDD, BSDD_NON_DANGEROUS, BSDA, BSFF]
+
 
 PLOTLY_GRAPHS_TO_RENDER_IN_PDF = [
     "bsdd_created_rectified",

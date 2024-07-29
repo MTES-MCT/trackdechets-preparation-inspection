@@ -1990,6 +1990,7 @@ class IntermediaryBordereauxCountsGraphProcessor:
         bs_data_dfs = self.bs_data_dfs
 
         for bs_type, df in bs_data_dfs.items():
+            df = df.copy()
             if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA]:
                 transport_df = self.transporters_data_df.get(bs_type)
 
@@ -2176,6 +2177,7 @@ class IntermediaryBordereauxQuantitiesGraphProcessor:
         bs_data_dfs = self.bs_data_dfs
 
         for bs_type, df in bs_data_dfs.items():
+            df = df.copy()
             if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA]:
                 transport_df = self.transporters_data_df.get(bs_type)
 

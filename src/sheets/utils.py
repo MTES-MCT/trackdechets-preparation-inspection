@@ -3,7 +3,7 @@ import re
 import numpy as np
 import pandas as pd
 
-from sheets.constants import COMPANY_TYPES
+from sheets.constants import COMPANY_TYPES, BSDASRI, BSFF
 
 
 def get_code_departement(postal_code: str) -> str:
@@ -33,3 +33,12 @@ def format_number_str(input_number: float, precision: int = 2) -> str:
 
 def to_verbose_company_types(db_company_types):
     return list({COMPANY_TYPES.get(ct) for ct in db_company_types if ct in COMPANY_TYPES.keys()})
+
+
+def get_quantity_variable_names(bs_type):
+    quantity_variables = ["quantity_received"]
+    if bs_type == BSDASRI:
+        quantity_variables = ["quantity_received", "volume"]
+    if bs_type == BSFF:
+        quantity_variables = ["acceptation_weight"]
+    return quantity_variables

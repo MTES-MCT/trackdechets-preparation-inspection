@@ -803,7 +803,7 @@ class ICPEItemsProcessor:
     def __init__(
         self,
         company_siret: str,
-        icpe_data: pd.DataFrame,
+        icpe_data: pd.DataFrame | None,
     ) -> None:
         self.company_siret = company_siret
         self.icpe_data = icpe_data
@@ -1688,14 +1688,14 @@ class LinkedCompaniesProcessor:
     def __init__(
         self,
         company_siret: str,
-        linked_companies_data: pd.DataFrame,
+        linked_companies_data: pd.DataFrame | None,
     ) -> None:
         self.company_siret = company_siret
         self.linked_companies_data = linked_companies_data
 
         self.preprocessed_df = None
 
-    def _preprocess_data(self) -> List[Dict[str, Any]]:
+    def _preprocess_data(self):
         df = self.linked_companies_data
         if df is None:
             return

@@ -278,7 +278,7 @@ def build_query_company(siret, date_params=None):
     )
 
 
-company_query_config = [
+company_agreements_query_config = [
     {
         "name": "Récépissé Transporteur",
         "column": "transporter_receipt_id",
@@ -310,7 +310,7 @@ company_query_config = [
 def get_agreement_data(company_data_df: pd.DataFrame) -> dict:
     res = {}
 
-    for config in company_query_config:
+    for config in company_agreements_query_config:
         try:
             id_ = company_data_df[config["column"]].item()
         except ValueError:
@@ -378,7 +378,7 @@ def get_gistrid_data(siret: str) -> Union[pd.DataFrame, None]:
     return None
 
 
-def get_rndts_data(siret: str) -> Union[list[pd.DataFrame], None]:
+def get_rndts_ndw_data(siret: str) -> tuple[pd.DataFrame | None, pd.DataFrame | None]:
     rndts_incoming_data = build_query(
         sql_get_incoming_ndw_data,
         query_params={
@@ -396,5 +396,5 @@ def get_rndts_data(siret: str) -> Union[list[pd.DataFrame], None]:
     )
 
     if all(len(e) == 0 for e in [rndts_incoming_data, rndts_outgoing_data]):
-        return None
+        return None, None
     return rndts_incoming_data, rndts_outgoing_data

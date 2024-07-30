@@ -231,25 +231,45 @@
             {# DND #}
             <h2 class="section__title" id="bs-section-title">Données des déclarations issues du RNDTS</h2>
             <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Dernière mise à jour des données : Avril 2024</p>
-            {% if sheet.non_dangerous_waste_quantities_graph_data %}
-                <div class="row">
-                    <div class="cell cell--bordered cell--third">
-                        <h3 class="cell__title">Déclarations de déchets non dangereux entrants et sortants</h3>
-                        <img src="data:image/png;base64,{{ dnd_statements_graph }}"
-                             class="cell__img">
-                    </div>
-                    <div class="cell cell--bordered cell--third">
-                        <h3 class="cell__title">Quantité de déchets non dangereux</h3>
-                        <img src="data:image/png;base64,{{ dnd_quantity_graph }}"
-                             class="cell__img">
-                    </div>
-                    <div class="cell cell--bordered cell--third">
-                        <h3 class="cell__title">Déchets Non Dangereux - Statistiques sur l'année</h3>
-                        {% render_rndts_stats sheet graph_context="pdf" %}
-                    </div>
-                </div>
-            {% else %}
+            {% if sheet.all_rndts_data_empty %}
                 <div class="no-data-section">PAS DE DONNÉES ISSUES DU RNDTS À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
+            {% else %}
+                {% if sheet.non_dangerous_waste_quantities_graph_data %}
+                    <div class="row">
+                        <div class="cell cell--bordered cell--third">
+                            <h3 class="cell__title">Déclarations de déchets non dangereux entrants et sortants</h3>
+                            <img src="data:image/png;base64,{{ dnd_statements_graph }}"
+                                class="cell__img">
+                        </div>
+                        <div class="cell cell--bordered cell--third">
+                            <h3 class="cell__title">Quantité de déchets non dangereux</h3>
+                            <img src="data:image/png;base64,{{ dnd_quantity_graph }}"
+                                class="cell__img">
+                        </div>
+                        <div class="cell cell--bordered cell--third">
+                            <h3 class="cell__title">Déchets Non Dangereux - Statistiques sur l'année</h3>
+                            {% render_rndts_stats sheet.non_dangerous_waste_stats_data graph_context="pdf" %}
+                        </div>
+                    </div>
+                {% endif %}
+                {% if sheet.excavated_land_quantities_graph_data %}
+                    <div class="row">
+                        <div class="cell cell--bordered cell--third">
+                            <h3 class="cell__title">Déclarations de Terres Excavées et Sédiments</h3>
+                            <img src="data:image/png;base64,{{ excavated_land_statements_graph }}"
+                                class="cell__img">
+                        </div>
+                        <div class="cell cell--bordered cell--third">
+                            <h3 class="cell__title">Quantité de de Terres Excavées et Sédiments</h3>
+                            <img src="data:image/png;base64,{{ excavated_land_quantity_graph }}"
+                                class="cell__img">
+                        </div>
+                        <div class="cell cell--bordered cell--third">
+                            <h3 class="cell__title">Terres Exacavées et Sédiments - Statistiques sur l'année</h3>
+                            {% render_rndts_stats sheet.excavated_land_stats_data graph_context="pdf" %}
+                        </div>
+                    </div>
+                {% endif %}
             {% endif %}
             {# end DND #}
             {#  on site #}

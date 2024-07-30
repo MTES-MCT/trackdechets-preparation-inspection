@@ -48,6 +48,8 @@ PLOTLY_GRAPHS_TO_RENDER_IN_PDF = [
     "quantities_transported_stats_graph",
     "non_dangerous_waste_statements_graph",
     "non_dangerous_waste_quantities_graph",
+    "excavated_land_statements_graph",
+    "excavated_land_quantities_graph",
     "eco_organisme_bordereaux_graph",
     "eco_organisme_quantities_graph",
 ]

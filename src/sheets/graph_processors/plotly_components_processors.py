@@ -502,7 +502,8 @@ class WasteOriginProcessor:
         # The postal code is extracted from the address field using a simple regex
         concat_df["cp"] = concat_df["emitter_company_address"].str.extract(r"([0-9]{5})", expand=False)
         concat_df["code_dep"] = concat_df["cp"].apply(get_code_departement)
-
+        if concat_df["code_dep"].isna().all():
+            return
         # 'Bordereau' data is merged with INSEE geographical data
         concat_df = pd.merge(
             concat_df,
@@ -653,6 +654,10 @@ class WasteOriginsMapProcessor:
         # The postal code is extracted from the address field using a simple regex
         concat_df["cp"] = concat_df["emitter_company_address"].str.extract(r"([0-9]{5})", expand=False)
         concat_df["code_dep"] = concat_df["cp"].apply(get_code_departement)
+
+        if concat_df["code_dep"].isna().all():
+            return
+
         concat_df = pd.merge(
             concat_df,
             self.departements_regions_df,

@@ -8,6 +8,7 @@ et le projet suit un schéma de versioning inspiré de [Calendar Versioning](htt
 ## 30/07/2024
 
 - Ajout de composants dédiés aux Terres Excavées et Sédiments
+- Ajout des sous-profils pour les installations TTR et de traitement de déchets
 
 ## 22/07/2024
 

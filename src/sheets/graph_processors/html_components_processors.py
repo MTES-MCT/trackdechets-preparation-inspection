@@ -2147,7 +2147,7 @@ class GistridStatsProcessor:
         return data
 
 
-class NonDangerousWasteStatsProcessor:
+class RNDTSStatsProcessor:
     """Component that displays aggregated data about RNDTS non dangerous waste data.
 
     Parameters

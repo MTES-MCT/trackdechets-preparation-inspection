@@ -31,6 +31,7 @@ from .database import (
     get_icpe_data,
     get_icpe_item_data,
     get_linked_companies_data,
+    get_rndts_excavated_land_data,
     get_rndts_ndw_data,
 )
 from .graph_processors.html_components_processors import (
@@ -43,7 +44,7 @@ from .graph_processors.html_components_processors import (
     IncineratorOutgoingWasteProcessor,
     IntermediaryBordereauxStatsProcessor,
     LinkedCompaniesProcessor,
-    NonDangerousWasteStatsProcessor,
+    RNDTSStatsProcessor,
     PrivateIndividualsCollectionsTableProcessor,
     QuantityOutliersTableProcessor,
     ReceiptAgrementsProcessor,
@@ -63,8 +64,8 @@ from .graph_processors.plotly_components_processors import (
     ICPEDailyItemProcessor,
     IntermediaryBordereauxCountsGraphProcessor,
     IntermediaryBordereauxQuantitiesGraphProcessor,
-    NonDangerousWasteQuantitiesGraphProcessor,
-    NonDangerousWasteStatementsGraphProcessor,
+    RNDTSQuantitiesGraphProcessor,
+    RNDTSStatementsGraphProcessor,
     TransportedQuantitiesGraphProcessor,
     TransporterBordereauxGraphProcessor,
     WasteOriginProcessor,
@@ -165,6 +166,7 @@ class SheetProcessor:
         self.company_data = pd.DataFrame()
 
         self.all_bsd_data_empty = True
+        self.all_rndts_data_empty = True
 
         self.company_id = None
         self.receipts_agreements_data = {}
@@ -175,7 +177,12 @@ class SheetProcessor:
         self.bsff_packagings_df = None
         self.icpe_data = None
         self.icpe_rubriques_data = {}
-        self.rndts_data = {"ndw_incoming": None, "ndw_outgoing": None, "texs_incoming:": None, "texs_outgoing": None}
+        self.rndts_data = {
+            "ndw_incoming": None,
+            "ndw_outgoing": None,
+            "excavated_land_incoming:": None,
+            "excavated_land_outgoing": None,
+        }
 
     def _extract_data(self):
         self._extract_company_data()
@@ -232,6 +239,12 @@ class SheetProcessor:
         rndts_ndw_incoming_data, rndts_ndw_outgoing_data = get_rndts_ndw_data(self.siret)
         self.rndts_data["ndw_incoming"] = rndts_ndw_incoming_data
         self.rndts_data["ndw_outgoing"] = rndts_ndw_outgoing_data
+
+        rndts_excavated_land_incoming_data, rndts_excavated_land_outgoing_data = get_rndts_excavated_land_data(
+            self.siret
+        )
+        self.rndts_data["excavated_land_incoming"] = rndts_excavated_land_incoming_data
+        self.rndts_data["excavated_land_outgoing"] = rndts_excavated_land_outgoing_data
 
     def _process_company_data(self):
         company_data_df = self.company_data
@@ -342,19 +355,36 @@ class SheetProcessor:
             icpe_rubrique_graph_data = icpe_rubrique_graph.build()
             setattr(self.computed, f"icpe_{rubrique.replace('-','_')}_data", icpe_rubrique_graph_data)
 
-        non_dangerous_waste_quantities_graph = NonDangerousWasteQuantitiesGraphProcessor(
+        non_dangerous_waste_quantities_graph = RNDTSQuantitiesGraphProcessor(
             self.rndts_data["ndw_incoming"], self.rndts_data["ndw_outgoing"], data_date_interval
         )
         self.computed.non_dangerous_waste_quantities_graph_data = non_dangerous_waste_quantities_graph.build()
         if self.computed.non_dangerous_waste_quantities_graph_data:
-            self.all_bsd_data_empty = False
+            self.all_rndts_data_empty = False
 
-        non_dangerous_waste_statements_graph = NonDangerousWasteStatementsGraphProcessor(
-            self.rndts_data["ndw_incoming"], self.rndts_data["ndw_outgoing"], data_date_interval
+        non_dangerous_waste_statements_graph = RNDTSStatementsGraphProcessor(
+            self.rndts_data["ndw_incoming"], self.rndts_data["ndw_outgoing"], "non_dangerous_waste", data_date_interval
         )
         self.computed.non_dangerous_waste_statements_graph_data = non_dangerous_waste_statements_graph.build()
         if self.computed.non_dangerous_waste_statements_graph_data:
-            self.all_bsd_data_empty = False
+            self.all_rndts_data_empty = False
+
+        excavated_land_quantities_graph = RNDTSQuantitiesGraphProcessor(
+            self.rndts_data["excavated_land_incoming"], self.rndts_data["excavated_land_outgoing"], data_date_interval
+        )
+        self.computed.excavated_land_quantities_graph_data = excavated_land_quantities_graph.build()
+        if self.computed.excavated_land_quantities_graph_data:
+            self.all_rndts_data_empty = False
+
+        excavated_land_statements_graph = RNDTSStatementsGraphProcessor(
+            self.rndts_data["excavated_land_incoming"],
+            self.rndts_data["excavated_land_outgoing"],
+            "excavated_land",
+            data_date_interval,
+        )
+        self.computed.excavated_land_statements_graph_data = excavated_land_statements_graph.build()
+        if self.computed.excavated_land_statements_graph_data:
+            self.all_rndts_data_empty = False
 
         eco_organisme_bordereaux_graph = IntermediaryBordereauxCountsGraphProcessor(
             company_siret=self.siret,
@@ -523,12 +553,19 @@ class SheetProcessor:
         )
         self.computed.gistrid_stats_data = gistrid_stats.build()
 
-        non_dangerous_waste_stats = NonDangerousWasteStatsProcessor(
+        non_dangerous_waste_stats = RNDTSStatsProcessor(
             self.rndts_data["ndw_incoming"], self.rndts_data["ndw_outgoing"], data_date_interval
         )
         self.computed.non_dangerous_waste_stats_data = non_dangerous_waste_stats.build()
         if self.computed.non_dangerous_waste_stats_data:
-            self.all_bsd_data_empty = False
+            self.all_rndts_data_empty = False
+
+        excavated_land_stats = RNDTSStatsProcessor(
+            self.rndts_data["excavated_land_incoming"], self.rndts_data["excavated_land_outgoing"], data_date_interval
+        )
+        self.computed.excavated_land_stats_data = excavated_land_stats.build()
+        if self.computed.excavated_land_stats_data:
+            self.all_rndts_data_empty = False
 
         eco_organisme_bordereaux_stats = IntermediaryBordereauxStatsProcessor(
             company_siret=self.siret,
@@ -564,6 +601,7 @@ class SheetProcessor:
         self._build_components()
 
         self.computed.all_bsd_data_empty = self.all_bsd_data_empty
+        self.computed.all_rndts_data_empty = self.all_rndts_data_empty
 
         self.computed.processing_end = timezone.now()
 

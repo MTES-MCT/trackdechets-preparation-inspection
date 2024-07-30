@@ -184,6 +184,14 @@ class ComputedInspectionData(models.Model):
     non_dangerous_waste_statements_graph = models.TextField(blank=True)
     non_dangerous_waste_stats_data = models.JSONField(default=dict)
 
+    excavated_land_quantities_graph_data = models.JSONField(default=dict)
+    excavated_land_quantities_graph = models.TextField(blank=True)
+    excavated_land_statements_graph_data = models.JSONField(default=dict)
+    excavated_land_statements_graph = models.TextField(blank=True)
+    excavated_land_stats_data = models.JSONField(default=dict)
+
+    all_rndts_data_empty = models.BooleanField(default=True)
+
     eco_organisme_bordereaux_graph_data = models.JSONField(default=dict)
     eco_organisme_bordereaux_graph = models.TextField(blank=True)
     eco_organisme_quantities_graph_data = models.JSONField(default=dict)

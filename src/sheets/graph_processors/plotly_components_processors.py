@@ -1859,9 +1859,7 @@ class RNDTSStatementsGraphProcessor:
 
         text_size = 12
 
-        hover_suffix = (
-            "déchets non dangereux" if self.statement_type == "non_dangerous_waste" else "terres excavées et sédiments"
-        )
+        hover_suffix = "déchets non dangereux" if self.statement_type == "non_dangerous_waste" else "TEXS"
 
         statements_emitted_bars = go.Bar(
             x=statements_emitted_by_month.index,

@@ -31,10 +31,7 @@ from .database import (
     get_icpe_data,
     get_icpe_item_data,
     get_linked_companies_data,
-<<<<<<< HEAD
     get_rndts_excavated_land_data,
-=======
->>>>>>> c276767 (Refactores data processing module)
     get_rndts_ndw_data,
 )
 from .graph_processors.html_components_processors import (
@@ -171,6 +168,7 @@ class SheetProcessor:
         self.all_bsd_data_empty = True
         self.all_rndts_data_empty = True
 
+
         self.company_id = None
         self.receipts_agreements_data = {}
         self.linked_companies_data = None
@@ -249,8 +247,7 @@ class SheetProcessor:
         self.rndts_data["excavated_land_incoming"] = rndts_excavated_land_incoming_data
         self.rndts_data["excavated_land_outgoing"] = rndts_excavated_land_outgoing_data
 
-
-
+       
     def _process_company_data(self):
         company_data_df = self.company_data
         company_values = self.company_data.iloc[0]
@@ -416,7 +413,6 @@ class SheetProcessor:
 
         for bs_type, df in self.bs_dfs.items():
             quantity_variables = get_quantity_variable_names(bs_type)
-
             packaging_data = None
             if bs_type == BSFF:
                 packaging_data = self.bsff_packagings_df
@@ -571,7 +567,7 @@ class SheetProcessor:
         self.computed.excavated_land_stats_data = excavated_land_stats.build()
         if self.computed.excavated_land_stats_data:
             self.all_rndts_data_empty = False
-            
+
         eco_organisme_bordereaux_stats = IntermediaryBordereauxStatsProcessor(
             company_siret=self.siret,
             bs_data_dfs={k: v for k, v in self.bs_dfs.items() if k in [BSDD, BSDD_NON_DANGEROUS, BSDA, BSDASRI]},
@@ -607,6 +603,7 @@ class SheetProcessor:
 
         self.computed.all_bsd_data_empty = self.all_bsd_data_empty
         self.computed.all_rndts_data_empty = self.all_rndts_data_empty
+
 
         self.computed.processing_end = timezone.now()
 

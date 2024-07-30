@@ -382,6 +382,7 @@ def get_gistrid_data(siret: str) -> Union[pd.DataFrame, None]:
 
 def get_rndts_ndw_data(siret: str) -> tuple[pd.DataFrame | None, pd.DataFrame | None]:
     rndts_ndw_incoming_data = build_query(
+
         sql_get_incoming_ndw_data,
         query_params={
             "siret": siret,
@@ -422,3 +423,4 @@ def get_rndts_excavated_land_data(siret: str) -> tuple[pd.DataFrame | None, pd.D
     if all(len(e) == 0 for e in [rndts_excavated_land_incoming_data, rndts_excavated_land_outgoing_data]):
         return None, None
     return rndts_excavated_land_incoming_data, rndts_excavated_land_outgoing_data
+

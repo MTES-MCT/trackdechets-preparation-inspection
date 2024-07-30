@@ -3,7 +3,7 @@ from typing import Dict, List, Tuple
 import pandas as pd
 from django.utils import timezone
 
-from .constants import BSDA, BSDASRI, BSDD, BSDD_NON_DANGEROUS, BSFF, BSVHU, BS_TYPES_WITH_MULTIMODAL_TRANSPORT
+from .constants import BS_TYPES_WITH_MULTIMODAL_TRANSPORT, BSDA, BSDASRI, BSDD, BSDD_NON_DANGEROUS, BSFF, BSVHU
 from .data_extract import (
     load_and_preprocess_regions_geographical_data,
     load_departements_regions_data,
@@ -44,10 +44,10 @@ from .graph_processors.html_components_processors import (
     IncineratorOutgoingWasteProcessor,
     IntermediaryBordereauxStatsProcessor,
     LinkedCompaniesProcessor,
-    RNDTSStatsProcessor,
     PrivateIndividualsCollectionsTableProcessor,
     QuantityOutliersTableProcessor,
     ReceiptAgrementsProcessor,
+    RNDTSStatsProcessor,
     SameEmitterRecipientTableProcessor,
     StorageStatsProcessor,
     TraceabilityInterruptionsProcessor,
@@ -168,7 +168,6 @@ class SheetProcessor:
         self.all_bsd_data_empty = True
         self.all_rndts_data_empty = True
 
-
         self.company_id = None
         self.receipts_agreements_data = {}
         self.linked_companies_data = None
@@ -247,7 +246,6 @@ class SheetProcessor:
         self.rndts_data["excavated_land_incoming"] = rndts_excavated_land_incoming_data
         self.rndts_data["excavated_land_outgoing"] = rndts_excavated_land_outgoing_data
 
-       
     def _process_company_data(self):
         company_data_df = self.company_data
         company_values = self.company_data.iloc[0]
@@ -603,7 +601,6 @@ class SheetProcessor:
 
         self.computed.all_bsd_data_empty = self.all_bsd_data_empty
         self.computed.all_rndts_data_empty = self.all_rndts_data_empty
-
 
         self.computed.processing_end = timezone.now()
 

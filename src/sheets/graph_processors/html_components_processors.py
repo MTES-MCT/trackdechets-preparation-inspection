@@ -376,10 +376,8 @@ class WasteFlowsTableProcessor:
     transporters_data_df : Dict[str, pd.DataFrame]
         Dictionary that contains DataFrames related to transporters. Each key in the "Bordereau type" (BSDD, BSDA...)
         and the corresponding value is a pandas DataFrame containing information about the transported waste.
-    rndts_incoming_data: DataFrame
-        DataFrame containing data for incoming non dangerous waste (from RNDTS).
-    rndts_outgoing_data: DataFrame
-        DataFrame containing data for outgoing non dangerous waste (from RNDTS).
+    rndts_data: dict of DataFrames
+        DataFrame containing RNDTS statements data.
     data_date_interval : tuple[datetime, datetime]
         Represents the date range for which the data is being processed.
         It consists of two `datetime` objects, the start date and the end date.
@@ -394,16 +392,14 @@ class WasteFlowsTableProcessor:
         company_siret: str,
         bs_data_dfs: Dict[str, pd.DataFrame],
         transporters_data_df: Dict[str, pd.DataFrame],  # Handling new multi-modal Trackdéchets feature
-        rndts_incoming_data: pd.DataFrame | None,
-        rndts_outgoing_data: pd.DataFrame | None,
+        rndts_data: dict[str, pd.DataFrame | None],
         data_date_interval: tuple[datetime, datetime],
         waste_codes_df: pd.DataFrame,
         packagings_data: pd.DataFrame | None = None,
     ) -> None:
         self.bs_data_dfs = bs_data_dfs
         self.transporters_data_df = transporters_data_df
-        self.rndts_incoming_data = rndts_incoming_data
-        self.rndts_outgoing_data = rndts_outgoing_data
+        self.rndts_data = rndts_data
         self.data_date_interval = data_date_interval
         self.waste_codes_df = waste_codes_df
         self.packagings_data = packagings_data
@@ -458,11 +454,18 @@ class WasteFlowsTableProcessor:
             df_grouped["unit"] = "t"  # This is to account for some wastes quantities that are measured in m³
 
             # If there is RNDTS data, we add it to the dataframe
-            for df_rndts, date_col in [
-                (self.rndts_incoming_data, "date_reception"),
-                (self.rndts_outgoing_data, "date_expedition"),
+            for key, date_col in [
+                ("ndw_incoming", "date_reception"),
+                ("ndw_outgoing", "date_expedition"),
+                ("excavated_land_incoming", "date_reception"),
+                ("excavated_land_outgoing", "date_expedition"),
             ]:
+                df_rndts = self.rndts_data[key]
                 if (df_rndts is not None) and (len(df_rndts) > 0):
+                    # Handle missing waste code for some excavated land statements
+                    if "excavated_land" in key:
+                        df_rndts["code_dechet"].fillna("17 05 04")
+
                     rndts_grouped_data = (
                         df_rndts[df_rndts[date_col].between(*self.data_date_interval)]
                         .groupby(["code_dechet", "unite"], as_index=False)["quantite"]

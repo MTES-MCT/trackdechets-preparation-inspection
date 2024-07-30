@@ -25,7 +25,21 @@
                 <p>Établissement inscrit depuis le {{ sheet.company_created_at|date:"d/m/Y" }}.</p>
                 <p class="fr-text--bold">Profils établissements renseignés sur Trackdéchets :</p>
                 <ul>
-                    {% for profile in sheet.company_profiles %}<li>{{ profile }}</li>{% endfor %}
+                    {% for profile in sheet.company_profiles %}
+                        {% if profile == "Usine de traitement" and sheet.company_waste_processor_profiles %}
+                            <li>{{ profile }} :</li>
+                            <ul>
+                                {% for sub_profile in sheet.company_waste_processor_profiles %}<li>{{ sub_profile }}</li>{% endfor %}
+                            </ul>
+                        {% elif profile == "Tri Transit Regroupement (TTR)" and sheet.company_collector_profiles %}
+                            <li>{{ profile }} :</li>
+                            <ul>
+                                {% for sub_profile in sheet.company_collector_profiles %}<li>{{ sub_profile }}</li>{% endfor %}
+                            </ul>
+                        {% else %}
+                            <li>{{ profile }}</li>
+                        {% endif %}
+                    {% endfor %}
                 </ul>
                 <p>{{ sheet.company_address }}</p>
                 <p>

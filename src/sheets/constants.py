@@ -12,6 +12,25 @@ COMPANY_TYPES = {
     "CREMATORIUM": "Crématorium",
 }
 
+WASTE_PROCESSOR_TYPES = {
+    "DANGEROUS_WASTES_INCINERATION": "Incinération de déchets dangereux",
+    "NON_DANGEROUS_WASTES_INCINERATION": "Incinération de déchets non dangereux",
+    "CREMATION": "Crémation",
+    "DANGEROUS_WASTES_STORAGE": "Installation de stockage de déchets dangereux",
+    "NON_DANGEROUS_WASTES_STORAGE": "Installation de stockage de déchets non dangereux (y compris casiers dédiés amiante, plâtre)",
+    "INERT_WASTES_STORAGE": "Installation de stockage de déchets inertes",
+    "OTHER_DANGEROUS_WASTES": "Autres traitements de déchets dangereux",
+    "OTHER_NON_DANGEROUS_WASTES": "Autres traitement de déchets non dangereux",
+}
+
+COLLECTOR_TYPES = {
+    "NON_DANGEROUS_WASTES": "Déchets non Dangereux (Rubriques 2713, 2714, 2715, 2716)",
+    "DANGEROUS_WASTES": "Déchets Dangereux (Rubrique 2718)",
+    "DEEE_WASTES": "Déchets DEEE (Rubrique 2711)",
+    "OTHER_NON_DANGEROUS_WASTES": "Autres cas déchets non dangereux (Rubrique 2731)",
+    "OTHER_DANGEROUS_WASTES": "Autres cas déchets dangereux (Rubriques 2719, 2792-1, 2793-1, 2793-2, 2797-1, 2798)",
+}
+
 BSDD = "bsdd"
 BSDD_NON_DANGEROUS = "bsdd_non_dangerous"
 BSDA = "bsda"

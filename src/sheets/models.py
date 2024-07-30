@@ -78,6 +78,16 @@ class ComputedInspectionData(models.Model):
         blank=True,
         default=list,
     )
+    company_collector_profiles = ArrayField(
+        models.CharField(_("Company collector profiles"), max_length=255),
+        blank=True,
+        default=list,
+    )
+    company_waste_processor_profiles = ArrayField(
+        models.CharField(_("Company waste processor profiles"), max_length=255),
+        blank=True,
+        default=list,
+    )
     company_address = models.CharField(_("Company address"), max_length=255, blank=True)
     company_created_at = models.DateTimeField(_("Company created at"), default=timezone.now)
     created = models.DateTimeField(_("Created"), default=timezone.now)

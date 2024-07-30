@@ -72,7 +72,12 @@ from .graph_processors.plotly_components_processors import (
     WasteOriginsMapProcessor,
 )
 from .models import ComputedInspectionData
-from .utils import get_quantity_variable_names, to_verbose_company_types
+from .utils import (
+    get_quantity_variable_names,
+    to_verbose_collector_types,
+    to_verbose_company_types,
+    to_verbose_waste_processor_types,
+)
 
 WASTE_CODES_DATA = load_waste_code_data()
 DEPARTEMENTS_REGION_DATA = load_departements_regions_data()
@@ -253,6 +258,10 @@ class SheetProcessor:
         self.computed.company_name = company_values.get("name")
         self.computed.company_address = company_values.get("address")
         self.computed.company_profiles = to_verbose_company_types(company_values.get("company_types"))
+        self.computed.company_collector_profiles = to_verbose_collector_types(company_values.get("collector_types"))
+        self.computed.company_waste_processor_profiles = to_verbose_waste_processor_types(
+            company_values.get("waste_processor_types")
+        )
         self.computed.company_created_at = company_values.get("created_at")
 
         self.computed.save()

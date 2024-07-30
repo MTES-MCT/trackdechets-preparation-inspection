@@ -3,7 +3,7 @@ import re
 import numpy as np
 import pandas as pd
 
-from sheets.constants import BSDASRI, BSFF, COMPANY_TYPES
+from sheets.constants import BSDASRI, BSFF, COLLECTOR_TYPES, COMPANY_TYPES, WASTE_PROCESSOR_TYPES
 
 
 def get_code_departement(postal_code: str) -> str:
@@ -32,7 +32,19 @@ def format_number_str(input_number: float, precision: int = 2) -> str:
 
 
 def to_verbose_company_types(db_company_types):
-    return list({COMPANY_TYPES.get(ct) for ct in db_company_types if ct in COMPANY_TYPES.keys()})
+    return [COMPANY_TYPES.get(ct) for ct in db_company_types if ct in COMPANY_TYPES.keys()]
+
+
+def to_verbose_collector_types(db_collector_types):
+    if db_collector_types is None:
+        return []
+    return [COLLECTOR_TYPES.get(ct) for ct in db_collector_types if ct in COLLECTOR_TYPES.keys()]
+
+
+def to_verbose_waste_processor_types(db_waste_processor_types):
+    if db_waste_processor_types is None:
+        return []
+    return [WASTE_PROCESSOR_TYPES.get(ct) for ct in db_waste_processor_types if ct in WASTE_PROCESSOR_TYPES.keys()]
 
 
 def get_quantity_variable_names(bs_type):

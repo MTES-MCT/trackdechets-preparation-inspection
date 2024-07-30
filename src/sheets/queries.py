@@ -180,7 +180,9 @@ select id,
     eco_organisme_agreements,
     broker_receipt_id,
     vhu_agrement_demolisseur_id,
-    vhu_agrement_broyeur_id
+    vhu_agrement_broyeur_id,
+    collector_types,
+    waste_processor_types
 from trusted_zone_trackdechets.company c
 where c.siret = :siret
 """

@@ -22,8 +22,10 @@ from .queries import (
     sql_get_gistrid_data_data,
     sql_get_icpe_data,
     sql_get_icpe_item_data,
+    sql_get_incoming_excavated_land_data,
     sql_get_incoming_ndw_data,
     sql_get_linked_companies_data,
+    sql_get_outgoing_excavated_land_data,
     sql_get_outgoing_ndw_data,
     sql_get_trader_receipt_id_data,
     sql_get_transporter_receipt_id_data_str,
@@ -379,7 +381,7 @@ def get_gistrid_data(siret: str) -> Union[pd.DataFrame, None]:
 
 
 def get_rndts_ndw_data(siret: str) -> tuple[pd.DataFrame | None, pd.DataFrame | None]:
-    rndts_incoming_data = build_query(
+    rndts_ndw_incoming_data = build_query(
         sql_get_incoming_ndw_data,
         query_params={
             "siret": siret,
@@ -387,7 +389,7 @@ def get_rndts_ndw_data(siret: str) -> tuple[pd.DataFrame | None, pd.DataFrame | 
         date_columns=["date_reception"],
     )
 
-    rndts_outgoing_data = build_query(
+    rndts_ndw_outgoing_data = build_query(
         sql_get_outgoing_ndw_data,
         query_params={
             "siret": siret,
@@ -395,6 +397,28 @@ def get_rndts_ndw_data(siret: str) -> tuple[pd.DataFrame | None, pd.DataFrame | 
         date_columns=["date_expedition"],
     )
 
-    if all(len(e) == 0 for e in [rndts_incoming_data, rndts_outgoing_data]):
+    if all(len(e) == 0 for e in [rndts_ndw_incoming_data, rndts_ndw_outgoing_data]):
         return None, None
-    return rndts_incoming_data, rndts_outgoing_data
+    return rndts_ndw_incoming_data, rndts_ndw_outgoing_data
+
+
+def get_rndts_excavated_land_data(siret: str) -> tuple[pd.DataFrame | None, pd.DataFrame | None]:
+    rndts_excavated_land_incoming_data = build_query(
+        sql_get_incoming_excavated_land_data,
+        query_params={
+            "siret": siret,
+        },
+        date_columns=["date_reception"],
+    )
+
+    rndts_excavated_land_outgoing_data = build_query(
+        sql_get_outgoing_excavated_land_data,
+        query_params={
+            "siret": siret,
+        },
+        date_columns=["date_expedition"],
+    )
+
+    if all(len(e) == 0 for e in [rndts_excavated_land_incoming_data, rndts_excavated_land_outgoing_data]):
+        return None, None
+    return rndts_excavated_land_incoming_data, rndts_excavated_land_outgoing_data

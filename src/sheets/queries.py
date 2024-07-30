@@ -571,7 +571,6 @@ SELECT
     quantite,
     unite,
     date_reception,
-    heure_pesee,
     code_traitement
 FROM trusted_zone_rndts.dnd_entrant
 where
@@ -591,6 +590,39 @@ SELECT
     destinataire_numero_identification,
     destinataire_raison_sociale
 FROM trusted_zone_rndts.dnd_sortant
+where
+    numero_identification_declarant = :siret
+"""
+
+
+sql_get_incoming_excavated_land_data = """
+SELECT 
+    id,
+    numero_identification_declarant,
+    code_dechet,
+    denomination_usuelle,
+    quantite,
+    unite,
+    date_reception,
+    code_traitement
+FROM trusted_zone_rndts.texs_entrant
+where
+    numero_identification_declarant = :siret
+"""
+
+sql_get_outgoing_excavated_land_data = """
+SELECT 
+    id,
+    numero_identification_declarant,
+    code_dechet,
+    denomination_usuelle,
+    quantite,
+    unite,
+    date_expedition,
+    code_traitement,
+    destinataire_numero_identification,
+    destinataire_raison_sociale
+FROM trusted_zone_rndts.texs_sortant
 where
     numero_identification_declarant = :siret
 """

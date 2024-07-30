@@ -2,7 +2,7 @@ import json
 import locale
 from datetime import datetime
 from itertools import chain
-from typing import Dict
+from typing import Dict, Literal
 
 import geopandas as gpd
 import numpy as np
@@ -1574,7 +1574,7 @@ class TransportedQuantitiesGraphProcessor:
         return figure
 
 
-class NonDangerousWasteQuantitiesGraphProcessor:
+class RNDTSQuantitiesGraphProcessor:
     """Component with a Line Figure showing incoming and outgoing quantities of non dangerous waste.
 
     Parameters
@@ -1589,8 +1589,8 @@ class NonDangerousWasteQuantitiesGraphProcessor:
 
     def __init__(
         self,
-        rndts_incoming_data: pd.DataFrame,
-        rndts_outgoing_data: pd.DataFrame,
+        rndts_incoming_data: pd.DataFrame | None,
+        rndts_outgoing_data: pd.DataFrame | None,
         data_date_interval: tuple[datetime, datetime],
     ):
         self.rndts_incoming_data = rndts_incoming_data
@@ -1783,7 +1783,7 @@ class NonDangerousWasteQuantitiesGraphProcessor:
         return figure
 
 
-class NonDangerousWasteStatementsGraphProcessor:
+class RNDTSStatementsGraphProcessor:
     """Component with a Bar Figure of incoming and outgoing RNDTS statements.
 
     Parameters
@@ -1792,18 +1792,22 @@ class NonDangerousWasteStatementsGraphProcessor:
         DataFrame containing data for incoming non dangerous waste (from RNDTS).
     rndts_outgoing_data: DataFrame
         DataFrame containing data for outgoing non dangerous waste (from RNDTS).
+    statement_type: str
+        Type of statement used as input, either non dangerous waste statements or excavated lands statements.
     data_date_interval: tuple
         Date interval to filter data.
     """
 
     def __init__(
         self,
-        rndts_incoming_data: pd.DataFrame,
-        rndts_outgoing_data: pd.DataFrame,
+        rndts_incoming_data: pd.DataFrame | None,
+        rndts_outgoing_data: pd.DataFrame | None,
+        statement_type: Literal["non_dangerous_waste"] | Literal["excavated_land"],
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.rndts_incoming_data = rndts_incoming_data
         self.rndts_outgoing_data = rndts_outgoing_data
+        self.statement_type = statement_type
         self.data_date_interval = data_date_interval
 
         self.statements_emitted_by_month_serie = None
@@ -1850,13 +1854,17 @@ class NonDangerousWasteStatementsGraphProcessor:
 
         text_size = 12
 
+        hover_suffix = (
+            "déchets non dangereux" if self.statement_type == "non_dangerous_waste" else "terres excavées et sédiments"
+        )
+
         statements_emitted_bars = go.Bar(
             x=statements_emitted_by_month.index,
             y=statements_emitted_by_month,
-            name="Déclarations de déchets non dangereux sortants",
+            name=f"Déclarations de {hover_suffix}",
             hovertext=[
-                "{} - <b>{}</b> déclaration(s) de déchets non dangereux sortants".format(
-                    index.strftime("%B %y").capitalize(), e
+                "{} - <b>{}</b> déclaration(s) sortante(s) de {}".format(
+                    index.strftime("%B %y").capitalize(), e, hover_suffix
                 )
                 for index, e in statements_emitted_by_month.items()
             ],
@@ -1870,11 +1878,9 @@ class NonDangerousWasteStatementsGraphProcessor:
         bs_received_bars = go.Bar(
             x=statements_received_by_month.index,
             y=statements_received_by_month,
-            name="Déclarations de déchets non dangereux entrants",
+            name=f"Déclarations de {hover_suffix}",
             hovertext=[
-                "{} - <b>{}</b> déclaration(s) de déchets non dangereux entrants".format(
-                    index.strftime("%B %y").capitalize(), e
-                )
+                "{} - <b>{}</b> déclaration(s) de {}".format(index.strftime("%B %y").capitalize(), e, hover_suffix)
                 for index, e in statements_received_by_month.items()
             ],
             hoverinfo="text",

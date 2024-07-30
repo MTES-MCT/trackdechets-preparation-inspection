@@ -162,9 +162,9 @@ def render_gistrid_stats_table(computed, graph_context="web"):
 
 
 @register.inclusion_tag("sheets/components/rndts_stats.html")
-def render_rndts_stats(computed, graph_context="web"):
+def render_rndts_stats(rndts_data, graph_context="web"):
     return_dict = {
-        "non_dangerous_waste_stats_data": computed.non_dangerous_waste_stats_data,
+        "rndts_stats_data": rndts_data,
         "graph_context": graph_context,
     }
 

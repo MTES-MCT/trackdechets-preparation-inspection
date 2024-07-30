@@ -2147,7 +2147,7 @@ class GistridStatsProcessor:
         return data
 
 
-class NonDangerousWasteStatsProcessor:
+class RNDTSStatsProcessor:
     """Component that displays aggregated data about RNDTS non dangerous waste data.
 
     Parameters
@@ -2182,8 +2182,8 @@ class NonDangerousWasteStatsProcessor:
             "bar_size_volume_incoming": None,
             "bar_size_volume_outgoing": None,
             "has_volume": None,
-            "total_statements_incoming": None,
-            "total_statements_outgoing": None,
+            "total_statements_incoming": 0,
+            "total_statements_outgoing": 0,
         }
 
     def _check_data_empty(self) -> bool:

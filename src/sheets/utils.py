@@ -3,7 +3,7 @@ import re
 import numpy as np
 import pandas as pd
 
-from sheets.constants import COMPANY_TYPES, BSDASRI, BSFF
+from sheets.constants import BSDASRI, BSFF, COMPANY_TYPES
 
 
 def get_code_departement(postal_code: str) -> str:

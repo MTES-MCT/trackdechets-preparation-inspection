@@ -1602,46 +1602,52 @@ class RNDTSQuantitiesGraphProcessor:
         self.rndts_outgoing_data = rndts_outgoing_data
         self.data_date_interval = data_date_interval
 
-        self.incoming_weight_by_month_serie = []
-        self.outgoing_weight_by_month_serie = []
+        self.incoming_weight_by_month_serie = pd.Series()
+        self.outgoing_weight_by_month_serie = pd.Series()
 
-        self.incoming_volume_by_month_serie = []
-        self.outgoing_volume_by_month_serie = []
+        self.incoming_volume_by_month_serie = pd.Series()
+        self.outgoing_volume_by_month_serie = pd.Series()
 
         self.figure = None
 
     def _preprocess_data(self) -> None:
         # We need to account for quantities in m³ and t
-        if (incoming_data := self.rndts_incoming_data) is not None:
-            incoming_data = incoming_data[incoming_data["date_reception"].between(*self.data_date_interval)]
-            self.incoming_weight_by_month_serie = (
-                incoming_data[incoming_data["unite"] == "T"]
-                .groupby(pd.Grouper(key="date_reception", freq="1M"))["quantite"]
-                .sum()
-                .replace(0, np.nan)
-            )
-            self.incoming_volume_by_month_serie = (
-                incoming_data[incoming_data["unite"] == "M3"]
-                .groupby(pd.Grouper(key="date_reception", freq="1M"))["quantite"]
-                .sum()
-                .replace(0, np.nan)
-            )
 
-        if (outgoing_data := self.rndts_outgoing_data) is not None:
+        incoming_data = self.rndts_incoming_data
+        if (incoming_data is not None) and (len(incoming_data) > 0):
+            incoming_data = incoming_data[incoming_data["date_reception"].between(*self.data_date_interval)]
+
+            if len(incoming_data) > 0:
+                self.incoming_weight_by_month_serie = (
+                    incoming_data[incoming_data["unite"] == "T"]
+                    .groupby(pd.Grouper(key="date_reception", freq="1M"))["quantite"]
+                    .sum()
+                    .replace(0, np.nan)
+                )
+                self.incoming_volume_by_month_serie = (
+                    incoming_data[incoming_data["unite"] == "M3"]
+                    .groupby(pd.Grouper(key="date_reception", freq="1M"))["quantite"]
+                    .sum()
+                    .replace(0, np.nan)
+                )
+
+        outgoing_data = self.rndts_outgoing_data
+        if (outgoing_data is not None) and (len(outgoing_data) > 0):
             outgoing_data = outgoing_data[outgoing_data["date_expedition"].between(*self.data_date_interval)]
 
-            self.outgoing_weight_by_month_serie = (
-                outgoing_data[outgoing_data["unite"] == "T"]
-                .groupby(pd.Grouper(key="date_expedition", freq="1M"))["quantite"]
-                .sum()
-                .replace(0, np.nan)
-            )
-            self.outgoing_volume_by_month_serie = (
-                outgoing_data[outgoing_data["unite"] == "M3"]
-                .groupby(pd.Grouper(key="date_expedition", freq="1M"))["quantite"]
-                .sum()
-                .replace(0, np.nan)
-            )
+            if len(outgoing_data) > 0:
+                self.outgoing_weight_by_month_serie = (
+                    outgoing_data[outgoing_data["unite"] == "T"]
+                    .groupby(pd.Grouper(key="date_expedition", freq="1M"))["quantite"]
+                    .sum()
+                    .replace(0, np.nan)
+                )
+                self.outgoing_volume_by_month_serie = (
+                    outgoing_data[outgoing_data["unite"] == "M3"]
+                    .groupby(pd.Grouper(key="date_expedition", freq="1M"))["quantite"]
+                    .sum()
+                    .replace(0, np.nan)
+                )
 
     def _check_data_empty(self) -> bool:
         series = [
@@ -1807,7 +1813,7 @@ class RNDTSStatementsGraphProcessor:
         self,
         rndts_incoming_data: pd.DataFrame | None,
         rndts_outgoing_data: pd.DataFrame | None,
-        statement_type: Literal["non_dangerous_waste"] | Literal["excavated_land"],
+        statement_type: Literal["non_dangerous_waste"] | Literal["excavated_land"] | Literal["ssd"],
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.rndts_incoming_data = rndts_incoming_data
@@ -1823,22 +1829,27 @@ class RNDTSStatementsGraphProcessor:
     def _preprocess_bs_data(self) -> None:
         """Preprocess raw RNDTS data to prepare it for plotting."""
 
-        if (incoming_data := self.rndts_incoming_data) is not None:
+        incoming_data = self.rndts_incoming_data
+        if (incoming_data is not None) and (len(incoming_data) > 0):
             incoming_data = incoming_data[incoming_data["date_reception"].between(*self.data_date_interval)].dropna(
                 subset=["date_reception"]
             )
-            self.statements_received_by_month_serie = incoming_data.groupby(
-                pd.Grouper(key="date_reception", freq="1M")
-            ).id.count()
 
-        if (outgoing_data := self.rndts_outgoing_data) is not None:
-            outgoing_data = self.rndts_outgoing_data
+            if len(incoming_data) > 0:
+                self.statements_received_by_month_serie = incoming_data.groupby(
+                    pd.Grouper(key="date_reception", freq="1M")
+                ).id.count()
+
+        outgoing_data = self.rndts_outgoing_data
+        if (outgoing_data is not None) and (len(outgoing_data) > 0):
             outgoing_data = outgoing_data[outgoing_data["date_expedition"].between(*self.data_date_interval)].dropna(
                 subset=["date_expedition"]
             )
-            self.statements_emitted_by_month_serie = outgoing_data.groupby(
-                pd.Grouper(key="date_expedition", freq="1M")
-            ).id.count()
+
+            if len(outgoing_data) > 0:
+                self.statements_emitted_by_month_serie = outgoing_data.groupby(
+                    pd.Grouper(key="date_expedition", freq="1M")
+                ).id.count()
 
     def _check_data_empty(self) -> bool:
         match [self.statements_emitted_by_month_serie, self.statements_received_by_month_serie]:
@@ -1859,54 +1870,70 @@ class RNDTSStatementsGraphProcessor:
 
         text_size = 12
 
-        hover_suffix = "déchets non dangereux" if self.statement_type == "non_dangerous_waste" else "TEXS"
-
-        statements_emitted_bars = go.Bar(
-            x=statements_emitted_by_month.index,
-            y=statements_emitted_by_month,
-            name=f"Déclarations de {hover_suffix}",
-            hovertext=[
-                "{} - <b>{}</b> déclaration(s) sortante(s) de {}".format(
-                    index.strftime("%B %y").capitalize(), e, hover_suffix
-                )
-                for index, e in statements_emitted_by_month.items()
-            ],
-            hoverinfo="text",
-            textfont_size=text_size,
-            textposition="outside",
-            constraintext="none",
-            marker_color="#6A6AF4",
-        )
-
-        bs_received_bars = go.Bar(
-            x=statements_received_by_month.index,
-            y=statements_received_by_month,
-            name=f"Déclarations de {hover_suffix}",
-            hovertext=[
-                "{} - <b>{}</b> déclaration(s) de {}".format(index.strftime("%B %y").capitalize(), e, hover_suffix)
-                for index, e in statements_received_by_month.items()
-            ],
-            hoverinfo="text",
-            textfont_size=text_size,
-            textposition="outside",
-            constraintext="none",
-            marker_color="#E1000F",
-        )
-
-        if pd.isna(statements_emitted_by_month.index.min()):
-            tick0_min = statements_received_by_month.index.min()
-        elif pd.isna(statements_received_by_month.index.min()):
-            tick0_min = statements_emitted_by_month.index.min()
-        else:
-            tick0_min = min(statements_emitted_by_month.index.min(), statements_received_by_month.index.min())
-
+        bars = []
+        ticks0 = []
+        nums_points = []
         # Used to store the maximum value of each line
         # to be able to configure the height of the plotting area of the figure.
-        max_y = max(statements_emitted_by_month.max(), statements_received_by_month.max())
+        max_y = 0
 
-        fig = go.Figure([statements_emitted_bars, bs_received_bars])
+        match self.statement_type:
+            case "déchets non dangereux":
+                hover_suffix = "déchets non dangereux"
+            case "excavated_land":
+                hover_suffix = "TEXS"
+            case "ssd":
+                hover_suffix = "sorties de statut de déchet"
+            case _:
+                hover_suffix = ""
 
-        max_points = max(len(statements_emitted_by_month), len(statements_received_by_month))
+        if (statements_emitted_by_month is not None) and (len(statements_emitted_by_month) > 0):
+            statements_emitted_bars = go.Bar(
+                x=statements_emitted_by_month.index,
+                y=statements_emitted_by_month,
+                name=f"Déclarations de {hover_suffix}",
+                hovertext=[
+                    "{} - <b>{}</b> déclaration(s) sortante(s) de {}".format(
+                        index.strftime("%B %y").capitalize(), e, hover_suffix
+                    )
+                    for index, e in statements_emitted_by_month.items()
+                ],
+                hoverinfo="text",
+                textfont_size=text_size,
+                textposition="outside",
+                constraintext="none",
+                marker_color="#6A6AF4",
+            )
+            ticks0.append(statements_emitted_by_month.index.min())
+            max_y = max(max_y, statements_emitted_by_month.max())
+            nums_points.append(len(statements_emitted_by_month))
+            bars.append(statements_emitted_bars)
+
+        if (statements_received_by_month is not None) and (len(statements_received_by_month) > 0):
+            statements_received_bars = go.Bar(
+                x=statements_received_by_month.index,
+                y=statements_received_by_month,
+                name=f"Déclarations de {hover_suffix}",
+                hovertext=[
+                    "{} - <b>{}</b> déclaration(s) de {}".format(index.strftime("%B %y").capitalize(), e, hover_suffix)
+                    for index, e in statements_received_by_month.items()
+                ],
+                hoverinfo="text",
+                textfont_size=text_size,
+                textposition="outside",
+                constraintext="none",
+                marker_color="#E1000F",
+            )
+            ticks0.append(statements_received_by_month.index.min())
+            max_y = max(max_y, statements_received_by_month.max())
+            nums_points.append(len(statements_received_by_month))
+            bars.append(statements_received_bars)
+
+        tick0_min = min(ticks0)
+
+        fig = go.Figure(bars)
+
+        max_points = max(nums_points)
 
         tickangle = 0
         y_legend = -0.07

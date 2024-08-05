@@ -1,0 +1,176 @@
+{% load utils %}
+<style>
+
+  .sc-number {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-right: 0.5rem;
+    margin-bottom:0;
+  }
+
+  .sc-medium-number {
+    font-size: 2rem;
+    margin-right: 10px;
+  }
+
+  .sc-primary {
+    margin-top: 1rem;
+  }
+
+  .sc-secondary {
+    margin-bottom: 10%;
+  }
+
+
+  .sc-secondary p {
+    margin: 0
+  }
+
+
+  .sc-bar-number-outgoing p, .sc-bar-number-stock p {
+    margin: 0;
+  }
+
+
+  .sc-bar-number-outgoing-2 {
+    vertical-align: top;
+    display: inline-block;
+    width: 49%;
+  }
+
+  .sc-bar-number-stock-2 {
+    vertical-align: top;
+    display: inline-block;
+    width: 49%;
+    text-align: right;
+  }
+
+
+  #layout-container.printing .sc-stock-item {
+    margin: 15px 0;
+  }
+
+
+  #layout-container.printing #sc-total-stock {
+    margin: 15px 0;
+  }
+
+  #sc-total-stock span {
+    font-size: 4em;
+    font-weight: 300;
+    margin-right: 15px;
+  }
+
+
+  .sc-bs-outliers-list > li {
+    margin: 0;
+  }
+
+
+  .sc-bs-outlier-list-header > * {
+    margin: 0;
+  }
+
+  .sc-bs-outliers-item > * {
+    margin-bottom: 0;
+  }
+
+
+  .sc-icpe-item-list > li {
+    padding: 10px;
+    border: 2px solid #6A6A6A;
+    background-color: #F9F8F6;
+    margin-bottom: 10px;
+    border-radius: 16px;
+    page-break-inside: avoid;
+  }
+
+
+  #sc-tr-list > li {
+    margin-top: 15px;
+  }
+
+
+  .sc-tr-quantity > span {
+    font-weight: 700;
+  }
+
+
+  .sc-tr-item-info > div:nth-child(1n+2) {
+    margin-left: 10%;
+  }
+
+
+  .sc-item-quantity-authorized span, .sc-onsite-quantity span {
+    font-size: x-large;
+
+  }
+
+  .bs-stats {
+    margin-bottom: 15px;
+  }
+
+  th[scope='row'] {
+    text-align: left;
+    width: 50%;
+  }
+
+  th[scope='col'] {
+    text-align: left;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  th[scope='col'].table-headline {
+    text-align: center;
+  }
+
+  .revised-bs-count {
+    margin-bottom: 20px;
+  }
+  .revised-bs-count span {
+    margin-right: 5px;
+    
+  }
+
+  .quantities-stats > :nth-child(n+2) {
+    margin-top: 30px;
+  }
+
+
+</style>
+{% if ssd_stats_data %}
+    <div class="col-framed col-print">
+        <div class="bs-stats">
+          <p><span>Nombres total de déclarations :</span><span class="td-font-lead"> {{ ssd_stats_data.total_statements_outgoing|default:0|number|safe }}</span></p>
+        </div>
+        <div class="quantities-stats">
+            {% if ssd_stats_data.has_weight %}
+                <div class="quantity-stats">
+                    <div>
+                        <p class="sc-number">
+                            <span class="td-font-display">{{ ssd_stats_data.total_weight_outgoing|number|safe }}</span>
+                            tonnes sortantes
+                        </p>
+                    </div>
+                </div>
+            {% endif %}
+            {% if ssd_stats_data.has_volume %}
+                <div class="quantity-stats">
+                    <div>
+                        <p class="sc-number">
+                            <span class="td-font-display">{{ ssd_stats_data.total_volume_outgoing|number|safe }}</span>
+                            m³ sortants
+                        </p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% else %}
+    <div class="sc-primary">
+        <span>Pas de données</span>
+    </div>
+{% endif %}

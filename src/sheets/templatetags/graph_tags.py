@@ -171,6 +171,15 @@ def render_rndts_stats(rndts_data, graph_context="web"):
     return return_dict
 
 
+@register.inclusion_tag("sheets/components/ssd_stats.html")
+def render_ssd_stats(ssd_data):
+    return_dict = {
+        "ssd_stats_data": ssd_data,
+    }
+
+    return return_dict
+
+
 @register.inclusion_tag("sheets/components/intermediary_bordereaux_stats.html")
 def render_intermediary_bordereaux_stats_data(stats, graph_context="web"):
     return {

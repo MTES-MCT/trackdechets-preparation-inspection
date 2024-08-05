@@ -5,6 +5,10 @@ Les changements importants de Trackdéchets préparation inspection sont documen
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 et le projet suit un schéma de versioning inspiré de [Calendar Versioning](https://calver.org/).
 
+## 05/08/2024
+
+- Mise à jour de la notice
+- 
 ## 30/07/2024
 
 - Ajout de composants dédiés aux Terres Excavées et Sédiments

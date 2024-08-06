@@ -1878,7 +1878,7 @@ class RNDTSStatementsGraphProcessor:
         max_y = 0
 
         match self.statement_type:
-            case "déchets non dangereux":
+            case "non_dangerous_waste":
                 hover_suffix = "déchets non dangereux"
             case "excavated_land":
                 hover_suffix = "TEXS"

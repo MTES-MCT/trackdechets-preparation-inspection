@@ -144,7 +144,9 @@
 {% if ssd_stats_data %}
     <div class="col-framed col-print">
         <div class="bs-stats">
-          <p><span>Nombres total de déclarations :</span><span class="td-font-lead"> {{ ssd_stats_data.total_statements_outgoing|default:0|number|safe }}</span></p>
+            <p>
+                <span>Nombres total de déclarations :</span><span class="td-font-lead">{{ ssd_stats_data.total_statements_outgoing|default:0|number|safe }}</span>
+            </p>
         </div>
         <div class="quantities-stats">
             {% if ssd_stats_data.has_weight %}

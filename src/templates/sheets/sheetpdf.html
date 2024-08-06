@@ -285,23 +285,23 @@
                     </div>
                 {% endif %}
                 {% if sheet.ssd_quantities_graph_data %}
-                <div class="row">
-                    <div class="cell cell--bordered cell--third">
-                        <h3 class="cell__title">Déclarations de Sorties de Statut de Déchet</h3>
-                        <img src="data:image/png;base64,{{ ssd_statements_graph }}"
+                    <div class="row">
+                        <div class="cell cell--bordered cell--third">
+                            <h3 class="cell__title">Déclarations de Sorties de Statut de Déchet</h3>
+                            <img src="data:image/png;base64,{{ ssd_statements_graph }}"
                                  class="cell__img">
-                    </div>
-                    <div class="cell cell--bordered cell--third">
-                        <h3 class="cell__title">Quantité de Sorties de Statut de Déchet</h3>
-                        <img src="data:image/png;base64,{{ ssd_quantity_graph }}"
+                        </div>
+                        <div class="cell cell--bordered cell--third">
+                            <h3 class="cell__title">Quantité de Sorties de Statut de Déchet</h3>
+                            <img src="data:image/png;base64,{{ ssd_quantity_graph }}"
                                  class="cell__img">
+                        </div>
+                        <div class="cell cell--bordered cell--third">
+                            <h3 class="cell__title">Sorties de Statut de Déchet - Statistiques sur l'année</h3>
+                            {% render_ssd_stats sheet.ssd_stats_data %}
+                        </div>
                     </div>
-                    <div class="cell cell--bordered cell--third">
-                        <h3 class="cell__title">Sorties de Statut de Déchet - Statistiques sur l'année</h3>
-                        {% render_ssd_stats sheet.ssd_stats_data %}
-                    </div>
-                </div>
-            {% endif %}
+                {% endif %}
             {% endif %}
             {# end DND #}
             {#  on site #}

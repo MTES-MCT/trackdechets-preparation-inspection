@@ -27,13 +27,13 @@ from .queries import (
     sql_get_linked_companies_data,
     sql_get_outgoing_excavated_land_data,
     sql_get_outgoing_ndw_data,
+    sql_get_ssd_data,
     sql_get_trader_receipt_id_data,
     sql_get_transporter_receipt_id_data_str,
     sql_get_vhu_agrement_data,
     sql_revised_bsda_query_str,
     sql_revised_bsdasri_query_str,
     sql_revised_bsdd_query_str,
-    sql_get_ssd_data,
 )
 
 wh_engine = create_engine(settings.WAREHOUSE_URL, pool_pre_ping=True)

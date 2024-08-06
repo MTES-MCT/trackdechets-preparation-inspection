@@ -1,36 +1,37 @@
 {% load utils %}
+<h3>Liste des déchets entrants, sortants et transportés</h3>
 <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
-    <div style="margin: 5px;">
-        <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : Trackdéchets et RNDTS</p>
-    </div>
-    <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
-        <thead>
-            <tr>
-                <th scope="col">Code déchet</th>
-                <th scope="col">Description</th>
-                <th scope="col">Type de flux</th>
-                <th scope="col">Quantité&nbsp;(t)</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in waste_flows_data %}
+    <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : Trackdéchets</p>
+    <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+        <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
+            <thead>
                 <tr>
-                    <td>{{ row.waste_code }}</td>
-                    <td>{{ row.description }}</td>
-                    <td>
-                        {% if row.flow_status == "incoming" %}
-                            ➜Entrant
-                        {% elif row.flow_status == "outgoing" %}
-                            Sortant➜
-                        {% elif row.flow_status == "transported" %}
-                            Transporté 🚛
-                        {% else %}
-                            N/A
-                        {% endif %}
-                    </td>
-                    <td class="td--right">{{ row.quantity_received|number|safe }} {{ row.unit }}</td>
+                    <th scope="col">Code déchet</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Type de flux</th>
+                    <th scope="col">Quantité&nbsp;(t)</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for row in waste_flows_data %}
+                    <tr>
+                        <td>{{ row.waste_code }}</td>
+                        <td>{{ row.description }}</td>
+                        <td>
+                            {% if row.flow_status == "incoming" %}
+                                ➜Entrant
+                            {% elif row.flow_status == "outgoing" %}
+                                Sortant➜
+                            {% elif row.flow_status == "transported" %}
+                                Transporté 🚛
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td class="td--right">{{ row.quantity_received|number|safe }} {{ row.unit }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>

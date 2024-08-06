@@ -274,13 +274,31 @@
                                  class="cell__img">
                         </div>
                         <div class="cell cell--bordered cell--third">
-                            <h3 class="cell__title">Quantité de de Terres Excavées et Sédiments</h3>
+                            <h3 class="cell__title">Quantité de Terres Excavées et Sédiments</h3>
                             <img src="data:image/png;base64,{{ excavated_land_quantity_graph }}"
                                  class="cell__img">
                         </div>
                         <div class="cell cell--bordered cell--third">
                             <h3 class="cell__title">Terres Exacavées et Sédiments - Statistiques sur l'année</h3>
                             {% render_rndts_stats sheet.excavated_land_stats_data graph_context="pdf" %}
+                        </div>
+                    </div>
+                {% endif %}
+                {% if sheet.ssd_quantities_graph_data %}
+                    <div class="row">
+                        <div class="cell cell--bordered cell--third">
+                            <h3 class="cell__title">Déclarations de Sorties de Statut de Déchet</h3>
+                            <img src="data:image/png;base64,{{ ssd_statements_graph }}"
+                                 class="cell__img">
+                        </div>
+                        <div class="cell cell--bordered cell--third">
+                            <h3 class="cell__title">Quantité de Sorties de Statut de Déchet</h3>
+                            <img src="data:image/png;base64,{{ ssd_quantity_graph }}"
+                                 class="cell__img">
+                        </div>
+                        <div class="cell cell--bordered cell--third">
+                            <h3 class="cell__title">Sorties de Statut de Déchet - Statistiques sur l'année</h3>
+                            {% render_ssd_stats sheet.ssd_stats_data %}
                         </div>
                     </div>
                 {% endif %}
@@ -438,10 +456,7 @@
         <section class="vertical">
             <h2 class="section__title">Annexes</h2>
             {# input/output #}
-            <div>
-                <h3>Liste des déchets entrants, sortants et transportés</h3>
-                {% render_waste_flows_table sheet graph_context="pdf" %}
-            </div>
+            {% render_waste_flows_table sheet graph_context="pdf" %}
             {# endinput/output #}
             {#  quantity outliers table #}
             <div>{% render_quantity_outliers_table sheet graph_context="pdf" %}</div>
@@ -460,6 +475,9 @@
             {# start incinerator #}
             <div>{% render_incinerator_outgoing_waste_table sheet graph_context="pdf" %}</div>
             {# end incinerator #}
+            {# start ssd table #}
+            <div>{% render_ssd_table sheet graph_context="pdf" %}</div>
+            {# end ssd table #}
         </section>
     </div>
 {% endblock %}

@@ -298,7 +298,7 @@
                         </div>
                     </div>
                     <div class="cell cell--bordered cell--third">
-                        <h3 class="cell__title">Quantité de de Terres Excavées et Sédiments</h3>
+                        <h3 class="cell__title">Quantité de Terres Excavées et Sédiments</h3>
                         <div id="excavated_land_quantity_graph">
                             <div class="no-data">Pas de données à afficher.</div>
                         </div>
@@ -306,6 +306,26 @@
                     <div class="cell cell--bordered cell--third">
                         <h3 class="cell__title">Terres Exacavées et Sédiments - Statistiques sur l'année</h3>
                         {% render_rndts_stats sheet.excavated_land_stats_data %}
+                    </div>
+                </div>
+            {% endif %}
+            {% if sheet.ssd_quantities_graph_data %}
+                <div class="row">
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">Déclarations de Sorties de Statut de Déchet</h3>
+                        <div id="ssd_statements_graph">
+                            <div class="no-data">Pas de données à afficher.</div>
+                        </div>
+                    </div>
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">Quantité de Sorties de Statut de Déchet</h3>
+                        <div id="ssd_quantity_graph">
+                            <div class="no-data">Pas de données à afficher.</div>
+                        </div>
+                    </div>
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">Sorties de Statut de Déchet - Statistiques sur l'année</h3>
+                        {% render_ssd_stats sheet.ssd_stats_data %}
                     </div>
                 </div>
             {% endif %}
@@ -445,7 +465,6 @@
         {# Appendices section #}
         <h2 class="section__title">Annexes</h2>
         {# input/output #}
-        <h3>Liste des déchets entrants, sortants et transportés</h3>
         <div>{% render_waste_flows_table sheet %}</div>
         {# end input/output #}
         {# bsd canceled table #}
@@ -463,6 +482,9 @@
         {# start incinerator #}
         <div>{% render_incinerator_outgoing_waste_table sheet %}</div>
         {# end incinerator #}
+        {# start ssd table #}
+        <div>{% render_ssd_table sheet %}</div>
+        {# end ssd table #}
         {# end Appendices section #}
     </div>
 {% endblock %}
@@ -497,6 +519,8 @@
     const non_dangerous_waste_statements_graph_data = {{ sheet.non_dangerous_waste_statements_graph_data }};
     const excavated_land_quantities_graph_data = {{ sheet.excavated_land_quantities_graph_data }};
     const excavated_land_statements_graph_data = {{ sheet.excavated_land_statements_graph_data }};
+    const ssd_quantities_graph_data = {{ sheet.ssd_quantities_graph_data }};
+    const ssd_statements_graph_data = {{ sheet.ssd_statements_graph_data }};
     const eco_organisme_bordereaux_graph = {{ sheet.eco_organisme_bordereaux_graph_data }};
     const eco_organisme_quantities_graph = {{ sheet.eco_organisme_quantities_graph_data }};
     {% endautoescape %}
@@ -621,10 +645,17 @@
         "target": "excavated_land_statements_graph"
     },
     {
+        "data": ssd_quantities_graph_data,
+        "target": "ssd_quantity_graph"
+    },
+    {
+        "data": ssd_statements_graph_data,
+        "target": "ssd_statements_graph"
+    },
+    {
         "data": eco_organisme_bordereaux_graph,
         "target": "eo_bordereaux_graph"
-    }
-    ,
+    },
     {
         "data": eco_organisme_quantities_graph,
         "target": "eo_quantities_graph"

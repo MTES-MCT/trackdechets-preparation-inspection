@@ -541,7 +541,7 @@ where
     substring(c.siret for 9) = substring(:siret for 9)
 """
 
-sql_get_gistrid_data_data = """
+sql_get_gistrid_data = """
 select
     n.numero_notification,
     n.type_dossier,
@@ -625,6 +625,23 @@ SELECT
     destinataire_numero_identification,
     destinataire_raison_sociale
 FROM trusted_zone_rndts.texs_sortant
+where
+    numero_identification_declarant = :siret
+"""
+
+sql_get_ssd_data = """
+SELECT 
+    id,
+    numero_identification_declarant,
+    code_dechet,
+    denomination_usuelle,
+    quantite,
+    unite,
+    date_expedition,
+    code_traitement,
+    destinataire_numero_identification,
+    destinataire_raison_sociale
+FROM trusted_zone_rndts.sorties_statut_dechet
 where
     numero_identification_declarant = :siret
 """

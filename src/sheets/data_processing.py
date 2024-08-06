@@ -33,6 +33,7 @@ from .database import (
     get_linked_companies_data,
     get_rndts_excavated_land_data,
     get_rndts_ndw_data,
+    get_ssd_data,
 )
 from .graph_processors.html_components_processors import (
     BsdaWorkerStatsProcessor,
@@ -49,6 +50,7 @@ from .graph_processors.html_components_processors import (
     ReceiptAgrementsProcessor,
     RNDTSStatsProcessor,
     SameEmitterRecipientTableProcessor,
+    SSDProcessor,
     StorageStatsProcessor,
     TraceabilityInterruptionsProcessor,
     TransporterBordereauxStatsProcessor,
@@ -187,6 +189,7 @@ class SheetProcessor:
             "ndw_outgoing": None,
             "excavated_land_incoming:": None,
             "excavated_land_outgoing": None,
+            "ssd_data": None,
         }
 
     def _extract_data(self):
@@ -250,6 +253,7 @@ class SheetProcessor:
         )
         self.rndts_data["excavated_land_incoming"] = rndts_excavated_land_incoming_data
         self.rndts_data["excavated_land_outgoing"] = rndts_excavated_land_outgoing_data
+        self.rndts_data["ssd_data"] = get_ssd_data(self.siret)
 
     def _process_company_data(self):
         company_data_df = self.company_data
@@ -393,6 +397,21 @@ class SheetProcessor:
         )
         self.computed.excavated_land_statements_graph_data = excavated_land_statements_graph.build()
         if self.computed.excavated_land_statements_graph_data:
+            self.all_rndts_data_empty = False
+
+        ssd_quantities_graph = RNDTSQuantitiesGraphProcessor(None, self.rndts_data["ssd_data"], data_date_interval)
+        self.computed.ssd_quantities_graph_data = ssd_quantities_graph.build()
+        if self.computed.ssd_quantities_graph_data:
+            self.all_rndts_data_empty = False
+
+        ssd_statements_graph = RNDTSStatementsGraphProcessor(
+            None,
+            self.rndts_data["ssd_data"],
+            "ssd",
+            data_date_interval,
+        )
+        self.computed.ssd_statements_graph_data = ssd_statements_graph.build()
+        if self.computed.ssd_statements_graph_data:
             self.all_rndts_data_empty = False
 
         eco_organisme_bordereaux_graph = IntermediaryBordereauxCountsGraphProcessor(
@@ -572,6 +591,16 @@ class SheetProcessor:
         )
         self.computed.excavated_land_stats_data = excavated_land_stats.build()
         if self.computed.excavated_land_stats_data:
+            self.all_rndts_data_empty = False
+
+        ssd_stats = RNDTSStatsProcessor(None, self.rndts_data["ssd_data"], data_date_interval)
+        self.computed.ssd_stats_data = ssd_stats.build()
+        if self.computed.ssd_stats_data:
+            self.all_rndts_data_empty = False
+
+        ssd_table = SSDProcessor(self.siret, self.rndts_data["ssd_data"], data_date_interval)
+        self.computed.ssd_table_data = ssd_table.build()
+        if self.computed.ssd_table_data:
             self.all_rndts_data_empty = False
 
         eco_organisme_bordereaux_stats = IntermediaryBordereauxStatsProcessor(

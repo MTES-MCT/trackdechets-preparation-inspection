@@ -465,7 +465,6 @@
         {# Appendices section #}
         <h2 class="section__title">Annexes</h2>
         {# input/output #}
-        <h3>Liste des déchets entrants, sortants et transportés</h3>
         <div>{% render_waste_flows_table sheet %}</div>
         {# end input/output #}
         {# bsd canceled table #}
@@ -483,6 +482,9 @@
         {# start incinerator #}
         <div>{% render_incinerator_outgoing_waste_table sheet %}</div>
         {# end incinerator #}
+        {# start ssd table #}
+        <div>{% render_ssd_table sheet %}</div>
+        {# end ssd table #}
         {# end Appendices section #}
     </div>
 {% endblock %}

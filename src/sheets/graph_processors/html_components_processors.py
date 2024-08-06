@@ -2524,3 +2524,79 @@ class IncineratorOutgoingWasteProcessor:
             data = self._serialize_stats()
 
         return data
+
+
+class SSDProcessor:
+    """Component that aggregate data to show a table of SSD quantities by waste code.
+
+    Parameters
+    ----------
+    company_siret: str
+        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
+    ssd_data: DataFrame
+        DataFrame containing list of ssd statements.
+    data_date_interval: tuple
+        Date interval to filter data.
+    """
+
+    def __init__(
+        self,
+        company_siret: str,
+        ssd_data: pd.DataFrame | None,
+        data_date_interval: tuple[datetime, datetime],
+    ) -> None:
+        self.company_siret = company_siret
+        self.ssd_data = ssd_data
+        self.data_date_interval = data_date_interval
+
+        self.preprocessed_data = pd.DataFrame()
+
+    def _preprocess_data(self) -> None:
+        """Preprocess raw 'bordereaux' data to prepare it to be displayed."""
+        ssd_data_df = self.ssd_data
+
+        if ssd_data_df is None:
+            return
+
+        ssd_data = ssd_data_df[
+            (ssd_data_df["numero_identification_declarant"] == self.company_siret)
+            & (ssd_data_df["date_expedition"].between(*self.data_date_interval))
+        ]
+
+        if len(ssd_data) > 0:
+            ssd_data_agg = ssd_data.groupby(["code_dechet", "unite"], as_index=False).agg(
+                quantite=pd.NamedAgg(column="quantite", aggfunc="sum"),
+                denomination_usuelle=pd.NamedAgg(column="denomination_usuelle", aggfunc="max"),
+            )
+
+            self.preprocessed_data = ssd_data_agg
+
+    def _check_data_empty(self) -> bool:
+        if len(self.preprocessed_data) == 0:
+            return True
+
+        return False
+
+    def _serialize_stats(self) -> list[dict]:
+        res = []
+
+        for _, row in self.preprocessed_data.iterrows():
+            res.append(
+                {
+                    "waste_code": row.code_dechet,
+                    "waste_name": row.denomination_usuelle,
+                    "quantity": format_number_str(row.quantite, 2),
+                    "unit": row.unite,
+                }
+            )
+
+        return res
+
+    def build(self):
+        self._preprocess_data()
+
+        data = {}
+        if not self._check_data_empty():
+            data = self._serialize_stats()
+
+        return data

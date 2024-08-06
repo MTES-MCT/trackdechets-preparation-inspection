@@ -456,10 +456,7 @@
         <section class="vertical">
             <h2 class="section__title">Annexes</h2>
             {# input/output #}
-            <div>
-                <h3>Liste des déchets entrants, sortants et transportés</h3>
-                {% render_waste_flows_table sheet graph_context="pdf" %}
-            </div>
+            {% render_waste_flows_table sheet graph_context="pdf" %}
             {# endinput/output #}
             {#  quantity outliers table #}
             <div>{% render_quantity_outliers_table sheet graph_context="pdf" %}</div>
@@ -478,6 +475,9 @@
             {# start incinerator #}
             <div>{% render_incinerator_outgoing_waste_table sheet graph_context="pdf" %}</div>
             {# end incinerator #}
+            {# start ssd table #}
+            <div>{% render_ssd_table sheet graph_context="pdf" %}</div>
+            {# end ssd table #}
         </section>
     </div>
 {% endblock %}

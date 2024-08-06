@@ -176,7 +176,15 @@ def render_ssd_stats(ssd_data):
     return_dict = {
         "ssd_stats_data": ssd_data,
     }
+    return return_dict
 
+
+@register.inclusion_tag("sheets/components/ssd_table.html")
+def render_ssd_table(computed, graph_context="web"):
+    return_dict = {
+        "ssd_data": computed.ssd_table_data,
+        "graph_context": graph_context,
+    }
     return return_dict
 
 

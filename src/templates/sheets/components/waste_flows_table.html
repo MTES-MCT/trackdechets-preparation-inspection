@@ -1,8 +1,8 @@
 {% load utils %}
+<h3>Liste des déchets entrants, sortants et transportés</h3>
 <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
-    <div style="margin: 5px;">
-        <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : Trackdéchets et RNDTS</p>
-    </div>
+    <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : Trackdéchets</p>
+    <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
     <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
         <thead>
             <tr>
@@ -33,4 +33,5 @@
             {% endfor %}
         </tbody>
     </table>
+</div>
 </div>

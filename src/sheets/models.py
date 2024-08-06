@@ -207,6 +207,7 @@ class ComputedInspectionData(models.Model):
     ssd_statements_graph_data = models.JSONField(default=dict)
     ssd_statements_graph = models.TextField(blank=True)
     ssd_stats_data = models.JSONField(default=dict)
+    ssd_table_data = models.JSONField(default=dict)
 
     eco_organisme_bordereaux_graph_data = models.JSONField(default=dict)
     eco_organisme_bordereaux_graph = models.TextField(blank=True)

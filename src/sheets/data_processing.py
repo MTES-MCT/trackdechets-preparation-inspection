@@ -49,6 +49,7 @@ from .graph_processors.html_components_processors import (
     QuantityOutliersTableProcessor,
     ReceiptAgrementsProcessor,
     RNDTSStatsProcessor,
+    SSDProcessor,
     SameEmitterRecipientTableProcessor,
     StorageStatsProcessor,
     TraceabilityInterruptionsProcessor,
@@ -595,6 +596,11 @@ class SheetProcessor:
         ssd_stats = RNDTSStatsProcessor(None, self.rndts_data["ssd_data"], data_date_interval)
         self.computed.ssd_stats_data = ssd_stats.build()
         if self.computed.ssd_stats_data:
+            self.all_rndts_data_empty = False
+
+        ssd_table = SSDProcessor(self.siret, self.rndts_data["ssd_data"], data_date_interval)
+        self.computed.ssd_table_data = ssd_table.build()
+        if self.computed.ssd_table_data:
             self.all_rndts_data_empty = False
 
         eco_organisme_bordereaux_stats = IntermediaryBordereauxStatsProcessor(

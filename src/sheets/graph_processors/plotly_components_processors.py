@@ -1692,9 +1692,9 @@ class RNDTSQuantitiesGraphProcessor:
             ],
             [self.outgoing_weight_by_month_serie, self.outgoing_volume_by_month_serie],
         ):
-            incoming_line_name = "Quantité entrante"
+            incoming_line_name = "Quantité entrante (t)"
             incoming_hover_text = "{} - <b>{}</b> tonnes entrantes"
-            outgoing_line_name = "Quantité sortante"
+            outgoing_line_name = "Quantité sortante (t)"
             outgoing_hover_text = "{} - <b>{}</b> tonnes sortantes"
             marker_line_style = "solid"
             marker_symbol = "circle"
@@ -1702,9 +1702,9 @@ class RNDTSQuantitiesGraphProcessor:
 
             # To handle the case of volume
             if variable_name == "volume":
-                incoming_line_name = "Volume entrant"
+                incoming_line_name = "Volume entrant (m³)"
                 incoming_hover_text = "{} - <b>{}</b> m³ entrants"
-                outgoing_line_name = "Volume sortant"
+                outgoing_line_name = "Volume sortant (m³)"
                 outgoing_hover_text = "{} - <b>{}</b> m³ sortants"
                 marker_line_style = "dash"
                 marker_symbol = "triangle-up"

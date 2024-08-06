@@ -2568,6 +2568,8 @@ class SSDProcessor:
                 quantite=pd.NamedAgg(column="quantite", aggfunc="sum"),
                 denomination_usuelle=pd.NamedAgg(column="denomination_usuelle", aggfunc="max"),
             )
+            ssd_data_agg["unite"] = ssd_data_agg["unite"].str.lower()
+            ssd_data_agg = ssd_data_agg.sort_values(["code_dechet", "unite"])
 
             self.preprocessed_data = ssd_data_agg
 

@@ -1804,7 +1804,7 @@ class RNDTSStatementsGraphProcessor:
     rndts_outgoing_data: DataFrame
         DataFrame containing data for outgoing non dangerous waste (from RNDTS).
     statement_type: str
-        Type of statement used as input, either non dangerous waste statements or excavated lands statements.
+        Type of statement used as input, either non dangerous waste statements, excavated lands statements or ssd.
     data_date_interval: tuple
         Date interval to filter data.
     """

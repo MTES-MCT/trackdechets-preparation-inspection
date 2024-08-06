@@ -255,6 +255,7 @@ where
         or destination_company_siret = :siret
         or transporter_company_siret = :siret
         or eco_organisme_siret = :siret
+        or worker_company_siret = :siret
     )
     and waste_code like '%*'
     -- to avoid pandas datetime overflow

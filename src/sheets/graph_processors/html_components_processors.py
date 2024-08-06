@@ -1188,7 +1188,7 @@ class QuantityOutliersTableProcessor:
         bs_type: str,
         transporters_df: pd.DataFrame | None,
         packagings_data_df: pd.DataFrame | None,
-    ) -> pd.DataFrame:
+    ) -> pd.DataFrame | None:
         """Get lines from 'bordereau' DataFrame with inconsistent received quantity.
         The rules to identify outliers in received quantity are business rules and may be tweaked in the future.
 
@@ -1240,7 +1240,8 @@ class QuantityOutliersTableProcessor:
                 (df["quantity_received"] > 40) & (df["sent_at"].between(*self.data_date_interval))
             ]
         else:
-            raise ValueError(f"BS type : {bs_type} not known.")
+            #
+            return
 
         df_quantity_outliers["bs_type"] = bs_type if bs_type != BSDD_NON_DANGEROUS else "bsdd"
         return df_quantity_outliers
@@ -1258,7 +1259,7 @@ class QuantityOutliersTableProcessor:
             transporters_df = self.transporters_data_df.get(bs_type, None)
             df_outliers = self.get_quantity_outliers(df, bs_type, transporters_df, packagings_data_df)
 
-            if len(df_outliers) != 0:
+            if (df_outliers is not None) and (len(df_outliers) != 0):
                 if bs_type in [BSDD, BSDD_NON_DANGEROUS]:
                     df_outliers["id"] = df_outliers["readable_id"]
 
@@ -1819,6 +1820,7 @@ class BsdaWorkerStatsProcessor:
         df_filtered = df[
             df["processed_at"].between(*self.data_date_interval)
             & df["emitter_emission_signature_date"].between(*self.data_date_interval)
+            & df["worker_work_signature_date"].between(*self.data_date_interval)
         ]
         times_to_process_from_emission = df_filtered["processed_at"] - df_filtered["emitter_emission_signature_date"]
         max_time_to_process_from_emission = times_to_process_from_emission.max()
@@ -1835,9 +1837,11 @@ class BsdaWorkerStatsProcessor:
             )
 
         df_filtered = df[
-            df["processed_at"].between(*self.data_date_interval) & df["sent_at"].between(*self.data_date_interval)
+            df["processed_at"].between(*self.data_date_interval)
+            & df["sent_at"].between(*self.data_date_interval)
+            & df["worker_work_signature_date"].between(*self.data_date_interval)
         ]
-        times_to_process_from_sending = df["processed_at"] - df["sent_at"]
+        times_to_process_from_sending = df_filtered["processed_at"] - df_filtered["sent_at"]
         max_time_to_process_from_sending = times_to_process_from_sending.max()
         avg_time_to_process_from_sending = times_to_process_from_sending.mean()
 

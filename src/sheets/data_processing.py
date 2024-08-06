@@ -547,6 +547,8 @@ class SheetProcessor:
             data_date_interval=data_date_interval,
         )
         self.computed.bsda_worker_stats_data = bsda_worker_stats.build()
+        if self.computed.bsda_worker_stats_data:
+            self.all_bsd_data_empty = False
 
         bsda_worker_quantities = BsdaWorkerQuantityProcessor(
             company_siret=self.siret,
@@ -563,6 +565,8 @@ class SheetProcessor:
             packagings_data_df=self.bsff_packagings_df,
         )
         self.computed.transporter_bordereaux_stats_data = transporter_bordereaux_stats.build()
+        if self.computed.transporter_bordereaux_stats_data:
+            self.all_bsd_data_empty = False
 
         followed_with_pnttd = FollowedWithPNTTDTableProcessor(
             company_siret=self.siret,

@@ -18,6 +18,7 @@ def callback(request, provider_id):
     view = OAuth2CallbackView.adapter_view(MonAiotDConnectAdapter(request, provider_id))
 
     res = view(request)
+
     user = request.user
     if user.is_anonymous:
         return res

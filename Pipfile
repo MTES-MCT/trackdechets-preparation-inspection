@@ -28,7 +28,7 @@ weasyprint = "*"
 sentry-sdk = {extras = ["django"], version = "*"}
 django-anymail = {extras = ["sendinblue"], version = "*"}
 django-otp = "*"
-django-allauth = "==0.61.1"
+django-allauth = "== 64.0.0"
 httpx = "*"
 djangorestframework = "*"
 

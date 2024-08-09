@@ -169,13 +169,6 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.BasicAuthentication"],
 }
 
-# path to ignore for requests stats
-REQUEST_IGNORE_PATHS = (
-    rf"^{ADMIN_SLUG}/",
-    r"/sheets/compute-fragment/",
-    r"/static/",
-    r"favicon.ico",
-)
 
 # defender
 REDIS_URL = env.str("REDIS_URL", "redis://localhost:6379/0")
@@ -204,6 +197,7 @@ OTP_EMAIL_BODY_HTML_TEMPLATE_PATH = "emails/second_factor/second_factor.html"
 OTP_EMAIL_THROTTLE_DELAY = 300  # s
 
 # allauth monaiot
+SOCIALACCOUNT_ONLY = True
 ACCOUNT_ADAPTER = "aiot_provider.account_adapter.MonaiotAccountAdapter"
 SOCIALACCOUNT_ADAPTER = "aiot_provider.account_adapter.MonaiotSocialAccountAdapter"
 SOCIALACCOUNT_ENABLED = True
@@ -263,8 +257,10 @@ TD_API_TOKEN = env("TD_API_TOKEN")
 TD_WEBHOOK_URL = env("TD_WEBHOOK_URL")
 TD_WEBHOOK_TOKEN = env("TD_WEBHOOK_TOKEN")
 
-# Web  stats
-
-REQUEST_IGNORE_PATHS = [
-    "^sheets/compute-fragment/",
-]
+# Web  stats:  path to ignore
+REQUEST_IGNORE_PATHS = (
+    rf"^{ADMIN_SLUG}/",
+    r"/sheets/compute-fragment/",
+    r"/static/",
+    r"favicon.ico",
+)

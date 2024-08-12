@@ -121,7 +121,7 @@ def test_data_preprocessing(sample_data, date_interval):
     processor._preprocess_data()
 
     assert processor.preprocessed_data is not None
-    assert len(processor.preprocessed_data) == 2  # Only 1 row should match the company_siret
+    assert len(processor.preprocessed_data) == 2  # Only 2 rows should match the company_siret
 
 
 def test_build_output(sample_data, date_interval):
@@ -135,11 +135,11 @@ def test_build_output(sample_data, date_interval):
 
     result = processor.build()
 
-    assert len(result) == 2  # Only 1 row should match both private individual and company_siret
+    assert len(result) == 2  # Only 2 rows should match both private individual and company_siret
     assert result[0]["id"] == 1
     assert result[0]["quantity"] == 20
     assert result[0]["sent_at"] == "09/08/2024 00:00"  # Converted to string format
 
     assert result[1]["id"] == 4
     assert result[1]["quantity"] == 11
-    assert result[1]["sent_at"] == "14/08/2024 00:00"  # Converted to string format
+    assert result[1]["sent_at"] == "14/08/2024 00:00"

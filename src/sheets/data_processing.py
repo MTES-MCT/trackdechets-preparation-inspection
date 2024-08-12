@@ -502,6 +502,7 @@ class SheetProcessor:
         waste_is_dangerous_statements = WasteIsDangerousStatementsProcessor(
             self.siret,
             self.bs_dfs[BSDD],
+            self.transporter_data_dfs.get(BSDD),
             WASTE_CODES_DATA,
             data_date_interval,
         )
@@ -517,6 +518,7 @@ class SheetProcessor:
 
         same_emitter_recipient_table = SameEmitterRecipientTableProcessor(
             self.bs_dfs,
+            self.transporter_data_dfs,
             data_date_interval,
         )
         self.computed.same_emitter_recipient_data = same_emitter_recipient_table.build()
@@ -524,6 +526,7 @@ class SheetProcessor:
         private_individuals_collections_table = PrivateIndividualsCollectionsTableProcessor(
             self.siret,
             self.bs_dfs[BSDA],
+            self.transporter_data_dfs.get(BSDA),
             data_date_interval,
         )
         self.computed.private_individuals_collections_data = private_individuals_collections_table.build()
@@ -543,7 +546,7 @@ class SheetProcessor:
         bsda_worker_stats = BsdaWorkerStatsProcessor(
             company_siret=self.siret,
             bsda_data_df=self.bs_dfs[BSDA],
-            bsda_transporter_df=self.transporter_data_dfs.get(BSDA),
+            bsda_transporters_data_df=self.transporter_data_dfs.get(BSDA),
             data_date_interval=data_date_interval,
         )
         self.computed.bsda_worker_stats_data = bsda_worker_stats.build()
@@ -553,6 +556,7 @@ class SheetProcessor:
         bsda_worker_quantities = BsdaWorkerQuantityProcessor(
             company_siret=self.siret,
             bsda_data_df=self.bs_dfs[BSDA],
+            bsda_transporters_data_df=self.transporter_data_dfs.get(BSDA),
             data_date_interval=data_date_interval,
         )
         self.computed.bsda_worker_quantity_data = bsda_worker_quantities.build()

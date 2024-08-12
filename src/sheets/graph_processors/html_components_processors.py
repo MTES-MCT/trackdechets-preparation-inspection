@@ -9,7 +9,7 @@ import pandas as pd
 
 from sheets.utils import format_number_str
 
-from ..constants import BSDA, BSDASRI, BSDD, BSDD_NON_DANGEROUS, BSFF, BSVHU
+from ..constants import BS_TYPES_WITH_MULTIMODAL_TRANSPORT, BSDA, BSDASRI, BSDD, BSDD_NON_DANGEROUS, BSFF, BSVHU
 
 # classes returning a context to be rendered in a non-plotly template
 
@@ -415,14 +415,41 @@ class WasteFlowsTableProcessor:
             if df is None:
                 continue
 
-            if (bs_type == BSFF) and (self.packagings_data is not None):
-                df = df.merge(self.packagings_data, left_on="id", right_on="bsff_id", suffixes=("", "_packaging"))
-                df = df.rename(columns={"acceptation_weight": "quantity_received"})
+            df = df.copy()
 
-            dfs_to_concat.append(df)
+            # Handling multimodal
+            if bs_type in BS_TYPES_WITH_MULTIMODAL_TRANSPORT:
+                transport_df = self.transporters_data_df.get(bs_type)
 
-        # Add transporter data (for outgoing stats)
-        for _, df in self.transporters_data_df.items():
+                if transport_df is not None:
+                    df.drop(
+                        columns=["sent_at", "quantity_received"],
+                        errors="ignore",
+                        inplace=True,
+                    )  # To avoid column duplication with transport data
+
+                    df = df.merge(
+                        transport_df[["bs_id", "sent_at", "quantity_received", "transporter_company_siret"]],
+                        left_on="id",
+                        right_on="bs_id",
+                        how="left",
+                        validate="one_to_many",
+                    )
+
+                    df = df.groupby("id", as_index=False).agg(
+                        {
+                            "emitter_company_siret": "max",
+                            "recipient_company_siret": "max",
+                            "transporter_company_siret": lambda x: x.fillna(
+                                value=""
+                            ).max(),  # Handle missing values being NA instead of None
+                            "sent_at": "min",
+                            "received_at": "min",
+                            "waste_code": "max",
+                            "quantity_received": "max",
+                        }
+                    )
+
             dfs_to_concat.append(df)
 
         if len(dfs_to_concat) == 0:
@@ -622,6 +649,9 @@ class SameEmitterRecipientTableProcessor:
     ----------
     bs_data_dfs: dict
         Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
+    transporters_data_df : Dict[str, pd.DataFrame]
+        Dictionary that contains DataFrames related to transporters. Each key in the "Bordereau type" (BSDD, BSDA...)
+        and the corresponding value is a pandas DataFrame containing information about the transported waste.
     data_date_interval : tuple[datetime, datetime]
         Represents the date range for which the data is being processed.
         It consists of two `datetime` objects, the start date and the end date.
@@ -630,18 +660,22 @@ class SameEmitterRecipientTableProcessor:
     def __init__(
         self,
         bs_data_dfs: Dict[str, pd.DataFrame],
+        transporters_data_dfs: Dict[str, pd.DataFrame],
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.bs_data_dfs = bs_data_dfs
+        self.transporters_data_dfs = transporters_data_dfs
         self.data_date_interval = data_date_interval
 
         self.preprocessed_df = pd.DataFrame()
 
     def _preprocess_data(self) -> None:
         # This case only works on BSDD and BSDA so we filter others type of "bordereaux"
-        dfs_to_process = [
-            df for bs_type, df in self.bs_data_dfs.items() if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA]
-        ]
+        dfs_to_process = {
+            bs_type: df.copy()
+            for bs_type, df in self.bs_data_dfs.items()
+            if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA]
+        }
 
         columns_to_take = [
             "id",
@@ -653,9 +687,35 @@ class SameEmitterRecipientTableProcessor:
             "waste_name",
             "worksite_name",
             "worksite_address",
+            "emitter_company_siret",
+            "recipient_company_siret",
         ]
         dfs_processed = []
-        for df in dfs_to_process:
+
+        for bs_type, df in dfs_to_process.items():
+            transport_df = self.transporters_data_dfs.get(bs_type)
+
+            if (df is None) or (transport_df is None):
+                continue
+
+            # Handling multimodal
+            df.drop(
+                columns=["sent_at", "quantity_received", "transporter_company_siret"],
+                errors="ignore",
+                inplace=True,
+            )  # To avoid column duplication with transport data
+
+            df = df.merge(
+                transport_df[["bs_id", "sent_at", "quantity_received", "transporter_company_siret"]],
+                left_on="id",
+                right_on="bs_id",
+                how="left",
+                validate="one_to_many",
+            )
+
+            df = df.groupby("id", as_index=False).agg(
+                {c: ("min" if c in ["sent_at", "received_at"] else "max") for c in columns_to_take if c in df.columns}
+            )
             same_emitter_recipient_df = df[
                 (df["emitter_company_siret"] == df["recipient_company_siret"])
                 & df["worksite_address"].notna()
@@ -949,6 +1009,8 @@ class WasteIsDangerousStatementsProcessor:
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bsdd_data: DataFrame
         DataFrame containing bsdd data.
+    bsdd_transporters_data : DataFrame
+        DataFrames containing information about the transported BSDD waste.
     waste_codes_df: DataFrame
         DataFrame containing list of waste codes with their descriptions.
     data_date_interval : tuple[datetime, datetime]
@@ -960,26 +1022,56 @@ class WasteIsDangerousStatementsProcessor:
         self,
         company_siret: str,
         bsdd_data: pd.DataFrame,
+        bsdd_transporters_data: pd.DataFrame | None,
         waste_codes_df: pd.DataFrame,
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
 
         self.bsdd_data = bsdd_data
+        self.bsdd_transporters_data = bsdd_transporters_data
         self.waste_codes_df = waste_codes_df
         self.data_date_interval = data_date_interval
 
         self.preprocessed_data = None
 
     def _preprocess_data(self) -> None:
-        if self.bsdd_data is None:
+        if (self.bsdd_data is None) or (self.bsdd_transporters_data is None):
             return
 
-        df_filtered = self.bsdd_data[
-            self.bsdd_data["is_dangerous"]
-            & (self.bsdd_data["emitter_company_siret"] == self.company_siret)
-            & (~self.bsdd_data["waste_code"].str.contains(pat=r".*\*$"))
-            & (self.bsdd_data["sent_at"].between(*self.data_date_interval))
+        df = self.bsdd_data.copy()
+        transport_df = self.bsdd_transporters_data
+
+        # Handling multimodal
+        df.drop(
+            columns=["sent_at", "quantity_received"],
+            errors="ignore",
+            inplace=True,
+        )  # To avoid column duplication with transport data
+
+        df = df.merge(
+            transport_df[["bs_id", "sent_at", "quantity_received", "transporter_company_siret"]],
+            left_on="id",
+            right_on="bs_id",
+            how="left",
+            validate="one_to_many",
+        )
+
+        df = df.groupby("id", as_index=False).agg(
+            {
+                "is_dangerous": "max",
+                "emitter_company_siret": "max",
+                "waste_code": "max",
+                "sent_at": "min",
+                "quantity_received": "max",
+            }
+        )
+
+        df_filtered = df[
+            df["is_dangerous"]
+            & (df["emitter_company_siret"] == self.company_siret)
+            & (~df["waste_code"].str.contains(pat=r".*\*$"))
+            & (df["sent_at"].between(*self.data_date_interval))
         ]
 
         if len(df_filtered) == 0:
@@ -1082,6 +1174,8 @@ class PrivateIndividualsCollectionsTableProcessor:
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bsda_data_df: DataFrame
         Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
+    bsda_transporters_data_df : DataFrame
+        DataFrames containing information about the transported BSDA waste.
     data_date_interval : tuple[datetime, datetime]
         Represents the date range for which the data is being processed.
         It consists of two `datetime` objects, the start date and the end date.
@@ -1091,26 +1185,62 @@ class PrivateIndividualsCollectionsTableProcessor:
         self,
         company_siret: str,
         bsda_data_df: pd.DataFrame,
+        bsda_transporters_data_df: pd.DataFrame | None,
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
-
+        self.bsda_transporters_data_df = bsda_transporters_data_df
         self.bsda_data_df = bsda_data_df
         self.data_date_interval = data_date_interval
 
         self.preprocessed_data = None
 
     def _preprocess_data(self) -> None:
-        if self.bsda_data_df is None:
+        df = self.bsda_data_df.copy()
+        transport_df = self.bsda_transporters_data_df
+
+        if (df is None) or (transport_df is None):
             return
 
-        filtered_df = self.bsda_data_df[
+        # Handling multimodal
+        df.drop(
+            columns=["sent_at", "quantity_received"],
+            errors="ignore",
+            inplace=True,
+        )  # To avoid column duplication with transport data
+
+        df = df.merge(
+            transport_df[["bs_id", "sent_at", "quantity_received", "transporter_company_siret"]],
+            left_on="id",
+            right_on="bs_id",
+            how="left",
+            validate="one_to_many",
+        )
+
+        df = df.groupby("id", as_index=False).agg(
+            {
+                "emitter_is_private_individual": "max",
+                "recipient_company_siret": "max",
+                "worker_company_siret": "max",
+                "emitter_company_name": "max",
+                "emitter_company_address": "max",
+                "worksite_name": "max",
+                "worksite_address": "max",
+                "waste_code": "max",
+                "waste_name": "max",
+                "quantity_received": "max",
+                "sent_at": "min",
+                "received_at": "min",
+            }
+        )
+
+        filtered_df = df[
             (
-                (self.bsda_data_df["recipient_company_siret"] == self.company_siret)
-                | (self.bsda_data_df["worker_company_siret"] == self.company_siret)
+                (df["recipient_company_siret"] == self.company_siret)
+                | (df["worker_company_siret"] == self.company_siret)
             )
-            & self.bsda_data_df["emitter_is_private_individual"]
-            & self.bsda_data_df["sent_at"].between(*self.data_date_interval)
+            & df["emitter_is_private_individual"]
+            & df["sent_at"].between(*self.data_date_interval)
         ]
 
         if len(filtered_df) > 0:
@@ -1129,16 +1259,16 @@ class PrivateIndividualsCollectionsTableProcessor:
             row = {
                 "id": e.id,
                 "recipient_company_siret": e.recipient_company_siret,
-                "worker_company_siret": e.worker_company_siret,
+                "worker_company_siret": e.worker_company_siret if not pd.isna(e.worker_company_siret) else None,
                 "emitter_company_name": e.emitter_company_name,
                 "emitter_company_address": e.emitter_company_address,
-                "worksite_name": e.worksite_name,
-                "worksite_address": e.worksite_address,
+                "worksite_name": e.worksite_name if not pd.isna(e.worksite_name) else None,
+                "worksite_address": e.worksite_address if not pd.isna(e.worksite_address) else None,
                 "waste_code": e.waste_code,
                 "waste_name": e.waste_name,
                 "quantity": e.quantity_received if not pd.isna(e.quantity_received) else None,
                 "sent_at": e.sent_at.strftime("%d/%m/%Y %H:%M") if not pd.isna(e.sent_at) else None,
-                "received_at  ": e.received_at.strftime("%d/%m/%Y %H:%M") if not pd.isna(e.received_at) else None,
+                "received_at": e.received_at.strftime("%d/%m/%Y %H:%M") if not pd.isna(e.received_at) else None,
             }
             stats.append(row)
         return stats
@@ -1748,6 +1878,8 @@ class BsdaWorkerStatsProcessor:
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bsda_data_df: DataFrame
         DataFrame containing BSDA data.
+    bsda_transporters_data_df : DataFrame
+        DataFrames containing information about the transported BSDA waste.
     data_date_interval: tuple
         Date interval to filter data.
     """
@@ -1756,11 +1888,11 @@ class BsdaWorkerStatsProcessor:
         self,
         company_siret: str,
         bsda_data_df: pd.DataFrame,
-        bsda_transporter_df: pd.DataFrame,
+        bsda_transporters_data_df: pd.DataFrame | None,
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.bsda_data_df = bsda_data_df
-        self.bsda_transporter_df = bsda_transporter_df
+        self.bsda_transporters_data_df = bsda_transporters_data_df
         self.data_date_interval = data_date_interval
         self.company_siret = company_siret
 

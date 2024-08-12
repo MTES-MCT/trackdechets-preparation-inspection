@@ -1044,6 +1044,8 @@ class BsdaWorkerQuantityProcessor:
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bsda_data_df: DataFrame
         DataFrame containing BSDA data.
+    bsda_transporters_data_df : DataFrame
+        DataFrames containing information about the transported BSDA waste.
     data_date_interval: tuple
         Date interval to filter data.
     """
@@ -1052,10 +1054,12 @@ class BsdaWorkerQuantityProcessor:
         self,
         company_siret: str,
         bsda_data_df: pd.DataFrame,
+        bsda_transporters_data_df: pd.DataFrame | None,
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
         self.bsda_data = bsda_data_df
+        self.bsda_transporters_data_df = bsda_transporters_data_df
         self.data_date_interval = data_date_interval
 
         self.quantities_signed_by_worker_by_month = None
@@ -1066,7 +1070,37 @@ class BsdaWorkerQuantityProcessor:
 
     def _preprocess_bs_data(self) -> None:
         """Preprocess raw 'bordereaux' data to prepare it for plotting."""
-        bsda_data = self.bsda_data
+        bsda_data = self.bsda_data.copy()
+        transport_df = self.bsda_transporters_data_df
+
+        if (bsda_data is None) or (transport_df is None):
+            return
+
+        # Handling multimodal
+        bsda_data.drop(
+            columns=["sent_at", "quantity_received"],
+            errors="ignore",
+            inplace=True,
+        )  # To avoid column duplication with transport data
+
+        bsda_data = bsda_data.merge(
+            transport_df[["bs_id", "sent_at", "quantity_received", "transporter_company_siret"]],
+            left_on="id",
+            right_on="bs_id",
+            how="left",
+            validate="one_to_many",
+        )
+
+        bsda_data = bsda_data.groupby("id", as_index=False).agg(
+            {
+                "worker_company_siret": "max",
+                "quantity_received": "max",
+                "waste_details_quantity": "max",
+                "sent_at": "min",
+                "processed_at": "min",
+                "worker_work_signature_date": "min",
+            }
+        )
 
         bsda_data = bsda_data[bsda_data["worker_company_siret"] == self.company_siret]
 

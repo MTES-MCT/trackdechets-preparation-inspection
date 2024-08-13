@@ -1,0 +1,68 @@
+{% load utils %}
+<style>
+    .single-stat {
+        margin-top: 5%;
+        font-size: 0.8rem;
+    }
+</style>
+<h3 class="cell__title">Statistiques en tant que transporteur</h3>
+{% if rndts_transporter_stats_data %}
+    <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
+        <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
+            <thead>
+                <tr>
+                    <th class="table-headline" scope="col">Type de Registre</th>
+                    <th scope="col">Nombre de déclarations</th>
+                    <th scope="col">Masse transportée (tonnes)</th>
+                    <th scope="col">Volume transporté (m³)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>DND - entrant</td>
+                    <td>{{ rndts_transporter_stats_data.ndw_incoming.count|default:"0"|number|safe }}</td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ rndts_transporter_stats_data.ndw_incoming.mass_quantity|default:"0"|number|safe }}</span>
+                    </td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ rndts_transporter_stats_data.ndw_incoming.volume_quantity|default:"0"|number|safe }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>DND - sortant</td>
+                    <td>{{ rndts_transporter_stats_data.ndw_outgoing.count|default:"0"|number|safe }}</td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ rndts_transporter_stats_data.ndw_outgoing.mass_quantity|default:"0"|number|safe }}</span>
+                    </td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ rndts_transporter_stats_data.ndw_outgoing.volume_quantity|default:"0"|number|safe }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>TEXS - entrant</td>
+                    <td>{{ rndts_transporter_stats_data.excavated_land_incoming.count|default:"0"|number|safe }}</td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ rndts_transporter_stats_data.excavated_land_incoming.mass_quantity|default:"0"|number|safe }}</span>
+                    </td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ rndts_transporter_stats_data.excavated_land_incoming.volume_quantity|default:"0"|number|safe }}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>TEXS - sortant</td>
+                    <td>{{ rndts_transporter_stats_data.excavated_land_outgoing.count|default:"0"|number|safe }}</td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ rndts_transporter_stats_data.excavated_land_outgoing.mass_quantity|default:"0"|number|safe }}</span>
+                    </td>
+                    <td class="td--right">
+                        <span class="fr-text--bold">{{ rndts_transporter_stats_data.excavated_land_outgoing.volume_quantity|default:"0"|number|safe }}</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="sc-primary">
+        <span>Pas de données</span>
+    </div>
+{% endif %}

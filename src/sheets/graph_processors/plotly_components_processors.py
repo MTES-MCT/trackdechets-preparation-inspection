@@ -1618,6 +1618,8 @@ class RNDTSQuantitiesGraphProcessor:
 
     Parameters
     ----------
+    company_siret: str
+        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     rndts_incoming_data: DataFrame
         DataFrame containing data for incoming non dangerous waste (from RNDTS).
     rndts_outgoing_data: DataFrame
@@ -1628,10 +1630,12 @@ class RNDTSQuantitiesGraphProcessor:
 
     def __init__(
         self,
+        company_siret: str,
         rndts_incoming_data: pd.DataFrame | None,
         rndts_outgoing_data: pd.DataFrame | None,
         data_date_interval: tuple[datetime, datetime],
     ):
+        self.company_siret = company_siret
         self.rndts_incoming_data = rndts_incoming_data
         self.rndts_outgoing_data = rndts_outgoing_data
         self.data_date_interval = data_date_interval
@@ -1649,7 +1653,10 @@ class RNDTSQuantitiesGraphProcessor:
 
         incoming_data = self.rndts_incoming_data
         if (incoming_data is not None) and (len(incoming_data) > 0):
-            incoming_data = incoming_data[incoming_data["date_reception"].between(*self.data_date_interval)]
+            incoming_data = incoming_data[
+                (incoming_data["date_reception"].between(*self.data_date_interval))
+                & (incoming_data["numero_identification_declarant"] == self.company_siret)
+            ]
 
             if len(incoming_data) > 0:
                 self.incoming_weight_by_month_serie = (
@@ -1667,7 +1674,10 @@ class RNDTSQuantitiesGraphProcessor:
 
         outgoing_data = self.rndts_outgoing_data
         if (outgoing_data is not None) and (len(outgoing_data) > 0):
-            outgoing_data = outgoing_data[outgoing_data["date_expedition"].between(*self.data_date_interval)]
+            outgoing_data = outgoing_data[
+                outgoing_data["date_expedition"].between(*self.data_date_interval)
+                & (outgoing_data["numero_identification_declarant"] == self.company_siret)
+            ]
 
             if len(outgoing_data) > 0:
                 self.outgoing_weight_by_month_serie = (
@@ -1833,6 +1843,8 @@ class RNDTSStatementsGraphProcessor:
 
     Parameters
     ----------
+    company_siret: str
+        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     rndts_incoming_data: DataFrame
         DataFrame containing data for incoming non dangerous waste (from RNDTS).
     rndts_outgoing_data: DataFrame
@@ -1845,11 +1857,13 @@ class RNDTSStatementsGraphProcessor:
 
     def __init__(
         self,
+        company_siret: str,
         rndts_incoming_data: pd.DataFrame | None,
         rndts_outgoing_data: pd.DataFrame | None,
         statement_type: Literal["non_dangerous_waste"] | Literal["excavated_land"] | Literal["ssd"],
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
+        self.company_siret = company_siret
         self.rndts_incoming_data = rndts_incoming_data
         self.rndts_outgoing_data = rndts_outgoing_data
         self.statement_type = statement_type
@@ -1865,9 +1879,10 @@ class RNDTSStatementsGraphProcessor:
 
         incoming_data = self.rndts_incoming_data
         if (incoming_data is not None) and (len(incoming_data) > 0):
-            incoming_data = incoming_data[incoming_data["date_reception"].between(*self.data_date_interval)].dropna(
-                subset=["date_reception"]
-            )
+            incoming_data = incoming_data[
+                incoming_data["date_reception"].between(*self.data_date_interval)
+                & (incoming_data["numero_identification_declarant"] == self.company_siret)
+            ].dropna(subset=["date_reception"])
 
             if len(incoming_data) > 0:
                 self.statements_received_by_month_serie = incoming_data.groupby(
@@ -1876,9 +1891,10 @@ class RNDTSStatementsGraphProcessor:
 
         outgoing_data = self.rndts_outgoing_data
         if (outgoing_data is not None) and (len(outgoing_data) > 0):
-            outgoing_data = outgoing_data[outgoing_data["date_expedition"].between(*self.data_date_interval)].dropna(
-                subset=["date_expedition"]
-            )
+            outgoing_data = outgoing_data[
+                outgoing_data["date_expedition"].between(*self.data_date_interval)
+                & (outgoing_data["numero_identification_declarant"] == self.company_siret)
+            ].dropna(subset=["date_expedition"])
 
             if len(outgoing_data) > 0:
                 self.statements_emitted_by_month_serie = outgoing_data.groupby(
@@ -2384,6 +2400,371 @@ class IntermediaryBordereauxQuantitiesGraphProcessor:
 
     def build(self):
         self._preprocess_bs_data()
+
+        figure = {}
+        if not self._check_data_empty():
+            self._create_figure()
+            figure = self.figure.to_json()
+
+        return figure
+
+
+class RNDTSTransporterStatementsStatsGraphProcessor:
+    """Component with a Bar Figure showing monthly number of RNDTS statements as transporter company.
+
+    Parameters
+    ----------
+    company_siret: str
+        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
+    rndts_data: dict
+        Dict with key being the 'RNDTS' data type and values the DataFrame containing the statements data.
+    data_date_interval: tuple
+        Date interval to filter data.
+    """
+
+    def __init__(
+        self,
+        company_siret: str,
+        rndts_data: Dict[str, pd.DataFrame],
+        data_date_interval: tuple[datetime, datetime],
+    ) -> None:
+        self.company_siret = company_siret
+        self.rndts_data = rndts_data
+        self.data_date_interval = data_date_interval
+
+        self.transported_statements_stats = {
+            "ndw_incoming": None,
+            "ndw_outgoing": None,
+            "excavated_land_incoming": None,
+            "excavated_land_outgoing": None,
+        }
+
+        self.figure = None
+
+    def _preprocess_data(self) -> None:
+        """Preprocess raw 'bordereaux' data to prepare it for plotting."""
+        rndts_data = self.rndts_data
+
+        for key, date_col in [
+            ("ndw_incoming", "date_reception"),
+            ("ndw_outgoing", "date_expedition"),
+            ("excavated_land_incoming", "date_reception"),
+            ("excavated_land_outgoing", "date_expedition"),
+        ]:
+            df = rndts_data[key]
+
+            if df is None:
+                continue
+
+            df = df[
+                df[date_col].between(*self.data_date_interval)
+                & (df["numeros_indentification_transporteurs"].apply(lambda x: self.company_siret in x))
+            ]
+
+            if len(df) > 0:
+                df_by_month = df.groupby(pd.Grouper(key=date_col, freq="1M"))["id"].nunique()
+                self.transported_statements_stats[key] = df_by_month
+
+    def _check_data_empty(self) -> bool:
+        if all((e is None) or (len(e) == 0) for e in self.transported_statements_stats.values()):
+            return True
+
+        return False
+
+    def _create_figure(self) -> None:
+        bars = []
+
+        configs = [
+            {
+                "data": self.transported_statements_stats["ndw_incoming"],
+                "name": "DND transportés (entrant)",
+                "hover_suffix": "déclaration(s) de DND transportés (registre entrant)",
+            },
+            {
+                "data": self.transported_statements_stats["ndw_outgoing"],
+                "name": "DND transportés (sortant)",
+                "hover_suffix": "déclaration(s) de DND transportés (registre sortant)",
+            },
+            {
+                "data": self.transported_statements_stats["excavated_land_incoming"],
+                "name": "TEXS transportés (entrant)",
+                "hover_suffix": "déclaration(s) de TEXS transportés (registre entrant)",
+            },
+            {
+                "data": self.transported_statements_stats["excavated_land_outgoing"],
+                "name": "TEXS transportés (sortant)",
+                "hover_suffix": "déclaration(s) de TEXS transportés (registre sortant)",
+            },
+        ]
+
+        tick0_min = None
+        max_y = None
+        max_points = 0
+        for config in configs:
+            data = config["data"]
+            hover_suffix = config["hover_suffix"]
+            if data is not None and len(data) > 0:
+                bars.append(
+                    go.Bar(
+                        x=data.index,
+                        y=data,
+                        text=data,
+                        texttemplate="%{text:.0s}",
+                        textposition="auto",
+                        name=config["name"],
+                        hovertext=[
+                            f"{index.strftime('%B %y').capitalize()} - <b>{format_number_str(e,2)}</b> {hover_suffix}"
+                            for index, e in data.items()
+                        ],
+                        hoverinfo="text",
+                    )
+                )
+                min_ = data.index.min()
+                if (tick0_min is None) or (min_ < tick0_min):
+                    tick0_min = min_
+
+                max_ = data.max()
+                if (max_y is None) or (max_ < max_y):
+                    max_y = max_
+
+                if len(data) > max_points:
+                    max_points = len(data)
+
+        fig = go.Figure(bars)
+
+        tickangle = 0
+        y_legend = -0.07
+        if max_points >= 15:
+            tickangle = -90
+            y_legend = -0.15
+
+        dtick = "M2"
+        if not max_points or max_points < 3:
+            dtick = "M1"
+
+        tickangle = 0
+        y_legend = -0.07
+        if max_points and max_points >= 15:
+            tickangle = -90
+            y_legend = -0.12
+
+        fig.update_layout(
+            margin={"t": 20, "l": 35, "r": 5},
+            legend={"orientation": "h", "y": y_legend, "x": 0},
+            legend_font_size=11,
+            legend_bgcolor="rgba(0,0,0,0)",
+            showlegend=True,
+            paper_bgcolor="#fff",
+            plot_bgcolor="rgba(0,0,0,0)",
+            barmode="stack",
+            margin_pad=5,
+        )
+
+        fig.update_xaxes(
+            tickangle=tickangle,
+            tickformat="%b %y",
+            tick0=tick0_min,
+            dtick=dtick,
+            gridcolor="#ccc",
+        )
+        fig.update_yaxes(exponentformat="B", tickformat=".2s", gridcolor="#ccc")
+
+        self.figure = fig
+
+    def build(self):
+        self._preprocess_data()
+
+        figure = {}
+        if not self._check_data_empty():
+            self._create_figure()
+            figure = self.figure.to_json()
+
+        return figure
+
+
+class RNDTSTransporterQuantitiesGraphProcessor:
+    """Component with a Bar Figure showing monthly number of RNDTS waste quantitied transported.
+
+    Parameters
+    ----------
+    company_siret: str
+        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
+    rndts_data: dict
+        Dict with key being the 'RNDTS' data type and values the DataFrame containing the statements data.
+    data_date_interval: tuple
+        Date interval to filter data.
+    """
+
+    def __init__(
+        self,
+        company_siret: str,
+        rndts_data: Dict[str, pd.DataFrame],
+        data_date_interval: tuple[datetime, datetime],
+    ) -> None:
+        self.company_siret = company_siret
+        self.rndts_data = rndts_data
+        self.data_date_interval = data_date_interval
+
+        self.transported_quantities_stats = {
+            "ndw_incoming": {"T": None, "M3": None},
+            "ndw_outgoing": {"T": None, "M3": None},
+            "excavated_land_incoming": {"T": None, "M3": None},
+            "excavated_land_outgoing": {"T": None, "M3": None},
+        }
+
+        self.figure = None
+
+    def _preprocess_data(self) -> None:
+        """Preprocess raw 'bordereaux' data to prepare it for plotting."""
+        rndts_data = self.rndts_data
+
+        for key, date_col in [
+            ("ndw_incoming", "date_reception"),
+            ("ndw_outgoing", "date_expedition"),
+            ("excavated_land_incoming", "date_reception"),
+            ("excavated_land_outgoing", "date_expedition"),
+        ]:
+            df = rndts_data[key]
+
+            if df is None:
+                continue
+
+            for unit in ["T", "M3"]:  # Handle multiple units
+                df = df[
+                    (df["unite"] == unit)
+                    & df[date_col].between(*self.data_date_interval)
+                    & (df["numeros_indentification_transporteurs"].apply(lambda x: self.company_siret in x))
+                ]
+
+                if len(df) > 0:
+                    df_by_month = df.groupby(pd.Grouper(key=date_col, freq="1M"))["quantite"].sum()
+                    self.transported_quantities_stats[key][unit] = df_by_month
+
+    def _check_data_empty(self) -> bool:
+        if all((e is None) or (len(e) == 0) for e in self.transported_quantities_stats.values()):
+            return True
+
+        return False
+
+    def _create_figure(self) -> None:
+        bars = []
+
+        configs = [
+            {
+                "data": self.transported_quantities_stats["ndw_incoming"],
+                "name": "DND transportés (entrant)",
+                "hover_suffix": "de DND transportés (registre entrant)",
+            },
+            {
+                "data": self.transported_quantities_stats["ndw_outgoing"],
+                "name": "DND transportés (sortant)",
+                "hover_suffix": "de DND transportés (registre sortant)",
+            },
+            {
+                "data": self.transported_quantities_stats["excavated_land_incoming"],
+                "name": "TEXS transportés (entrant)",
+                "hover_suffix": "de TEXS transportés (registre entrant)",
+            },
+            {
+                "data": self.transported_quantities_stats["excavated_land_outgoing"],
+                "name": "TEXS transportés (sortant)",
+                "hover_suffix": "de TEXS transportés (registre sortant)",
+            },
+        ]
+
+        tick0_min = None
+        max_y = None
+        max_points = 0
+        for config in configs:
+            data = config["data"]
+            hover_suffix = config["hover_suffix"]
+            if data != {}:
+                for unit, data_df in data.items():
+                    if (data_df is None) or len(data_df) == 0:
+                        continue
+
+                    unit_str = "t"
+                    unit_name_str = "masse"
+                    marker_line_style = "solid"
+                    marker_symbol = "circle"
+                    marker_size = 6
+                    if unit == "M3":
+                        unit_str = "m³"
+                        unit_name_str = "volume"
+                        marker_line_style = "dash"
+                        marker_symbol = "triangle-up"
+                        marker_size = 10
+
+                    bars.append(
+                        go.Scatter(
+                            x=data_df.index,
+                            y=data_df,
+                            name=f"{unit_name_str.capitalize()} de {config['name']}",
+                            mode="lines+markers",
+                            hovertext=[
+                                f"{index.strftime('%B %y').capitalize()} - <b>{format_number_str(e,2)}<b>{unit_str} {hover_suffix}"
+                                for index, e in data_df.items()
+                            ],
+                            hoverinfo="text",
+                            stackgroup="one",
+                            line_dash=marker_line_style,
+                            marker_symbol=marker_symbol,
+                            marker_size=marker_size,
+                        )
+                    )
+                    min_ = data_df.index.min()
+                    if (tick0_min is None) or (min_ < tick0_min):
+                        tick0_min = min_
+
+                    max_ = data_df.max()
+                    if (max_y is None) or (max_ < max_y):
+                        max_y = max_
+
+                    if len(data_df) > max_points:
+                        max_points = len(data_df)
+
+        fig = go.Figure(bars)
+
+        tickangle = 0
+        y_legend = -0.07
+        if max_points >= 15:
+            tickangle = -90
+            y_legend = -0.15
+
+        dtick = "M2"
+        if not max_points or max_points < 3:
+            dtick = "M1"
+
+        tickangle = 0
+        y_legend = -0.07
+        if max_points and max_points >= 15:
+            tickangle = -90
+            y_legend = -0.12
+
+        fig.update_layout(
+            margin={"t": 20, "l": 35, "r": 5},
+            legend={"orientation": "h", "y": y_legend, "x": 0},
+            legend_font_size=11,
+            legend_bgcolor="rgba(0,0,0,0)",
+            showlegend=True,
+            paper_bgcolor="#fff",
+            plot_bgcolor="rgba(0,0,0,0)",
+            margin_pad=5,
+        )
+
+        fig.update_xaxes(
+            tickangle=tickangle,
+            tickformat="%b %y",
+            tick0=tick0_min,
+            dtick=dtick,
+            gridcolor="#ccc",
+        )
+        fig.update_yaxes(exponentformat="B", tickformat=".2s", gridcolor="#ccc", ticksuffix="t")
+
+        self.figure = fig
+
+    def build(self):
+        self._preprocess_data()
 
         figure = {}
         if not self._check_data_empty():

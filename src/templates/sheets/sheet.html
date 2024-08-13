@@ -329,6 +329,23 @@
                     </div>
                 </div>
             {% endif %}
+            {% if sheet.rndts_transporter_statement_stats_graph_data %}
+            <div class="row">
+                <div class="cell cell--bordered cell--third">
+                    <h3 class="cell__title">Déclarations transportées</h3>
+                    <div id="rndts_statements_transported_graph">
+                        <div class="no-data">Pas de données à afficher.</div>
+                    </div>
+                </div>
+                <div class="cell cell--bordered cell--third">
+                    <h3 class="cell__title">Quantité de déchets non dangereux transportés</h3>
+                    <div id="rndts_quantities_transported_graph">
+                        <div class="no-data">Pas de données à afficher.</div>
+                    </div>
+                </div>
+                <div class="cell cell--bordered cell--third">{% render_rndts_transporter_stats sheet %}</div>
+            </div>
+        {% endif %}
         {% endif %}
         {# end DND #}
         <h2 class="section__title">Déchets sur site (théorique)</h2>
@@ -523,6 +540,8 @@
     const ssd_statements_graph_data = {{ sheet.ssd_statements_graph_data }};
     const eco_organisme_bordereaux_graph = {{ sheet.eco_organisme_bordereaux_graph_data }};
     const eco_organisme_quantities_graph = {{ sheet.eco_organisme_quantities_graph_data }};
+    const rndts_transporter_statement_stats_graph = {{ sheet.rndts_transporter_statement_stats_graph_data }};
+    const rndts_transporter_quantities_graph = {{ sheet.rndts_transporter_quantities_graph_data }};
     {% endautoescape %}
     </script>
     <script>
@@ -659,6 +678,14 @@
     {
         "data": eco_organisme_quantities_graph,
         "target": "eo_quantities_graph"
+    },
+    {
+        "data": rndts_transporter_statement_stats_graph,
+        "target": "rndts_statements_transported_graph"
+    },
+    {
+        "data": rndts_transporter_quantities_graph,
+        "target": "rndts_quantities_transported_graph"
     }
     ];
 

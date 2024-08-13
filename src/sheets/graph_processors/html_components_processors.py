@@ -488,19 +488,23 @@ class WasteFlowsTableProcessor:
                 ("excavated_land_outgoing", "date_expedition"),
             ]:
                 df_rndts = self.rndts_data[key]
+
                 if (df_rndts is not None) and (len(df_rndts) > 0):
                     # Handle missing waste code for some excavated land statements
                     if "excavated_land" in key:
                         df_rndts["code_dechet"].fillna("17 05 04")
 
                     rndts_grouped_data = (
-                        df_rndts[df_rndts[date_col].between(*self.data_date_interval)]
+                        df_rndts[
+                            df_rndts[date_col].between(*self.data_date_interval)
+                            & (df_rndts["numero_identification_declarant"] == self.company_siret)
+                        ]
                         .groupby(["code_dechet", "unite"], as_index=False)["quantite"]
                         .sum()
                     )
                     rndts_grouped_data = rndts_grouped_data.rename(
                         columns={"quantite": "quantity_received", "code_dechet": "waste_code", "unite": "unit"}
-                    )
+                    )  # type: ignore
                     rndts_grouped_data["unit"] = rndts_grouped_data["unit"].replace({"T": "t", "M3": "m³"})
                     rndts_grouped_data["flow_status"] = "incoming" if (date_col == "date_reception") else "outgoing"
 
@@ -2291,6 +2295,8 @@ class RNDTSStatsProcessor:
 
     Parameters
     ----------
+    company_siret: str
+        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     rndts_incoming_data: DataFrame
         DataFrame containing data for incoming non dangerous waste (from RNDTS).
     rndts_outgoing_data: DataFrame
@@ -2301,10 +2307,12 @@ class RNDTSStatsProcessor:
 
     def __init__(
         self,
+        company_siret: str,
         rndts_incoming_data: pd.DataFrame,
         rndts_outgoing_data: pd.DataFrame,
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
+        self.company_siret = company_siret
         self.rndts_incoming_data = rndts_incoming_data
         self.rndts_outgoing_data = rndts_outgoing_data
         self.data_date_interval = data_date_interval
@@ -2337,7 +2345,10 @@ class RNDTSStatsProcessor:
         outgoing_data = self.rndts_outgoing_data
 
         if incoming_data is not None:
-            incoming_data = incoming_data[incoming_data["date_reception"].between(*self.data_date_interval)]
+            incoming_data = incoming_data[
+                incoming_data["date_reception"].between(*self.data_date_interval)
+                & (incoming_data["numero_identification_declarant"] == self.company_siret)
+            ]
             if len(incoming_data) > 0:
                 self.stats["total_statements_incoming"] = incoming_data["id"].nunique()
 
@@ -2347,7 +2358,10 @@ class RNDTSStatsProcessor:
                         self.stats[f"total_{key}_incoming"] = total
 
         if outgoing_data is not None:
-            outgoing_data = outgoing_data[outgoing_data["date_expedition"].between(*self.data_date_interval)]
+            outgoing_data = outgoing_data[
+                outgoing_data["date_expedition"].between(*self.data_date_interval)
+                & (outgoing_data["numero_identification_declarant"] == self.company_siret)
+            ]
             if len(outgoing_data) > 0:
                 self.stats["total_statements_outgoing"] = outgoing_data["id"].nunique()
 
@@ -2736,5 +2750,79 @@ class SSDProcessor:
         data = {}
         if not self._check_data_empty():
             data = self._serialize_stats()
+
+        return data
+
+
+class RNDTSTransporterStatsProcessor:
+    """Component that compute statistics about number of RDNTS statements as transporter company and corresponding quantities.
+
+    Parameters
+    ----------
+    company_siret: str
+        SIRET number of the establishment for which the data is displayed (used for data preprocessing).
+    rndts_data: dict
+        Dict with key being the 'RNDTS' data type and values the DataFrame containing the statements data.
+    data_date_interval: tuple
+        Date interval to filter data.
+    """
+
+    def __init__(
+        self,
+        company_siret: str,
+        rndts_data: Dict[str, pd.DataFrame],
+        data_date_interval: tuple[datetime, datetime],
+    ) -> None:
+        self.company_siret = company_siret
+        self.rndts_data = rndts_data
+        self.data_date_interval = data_date_interval
+
+        self.transported_statements_stats = {
+            "ndw_incoming": {},
+            "ndw_outgoing": {},
+            "excavated_land_incoming": {},
+            "excavated_land_outgoing": {},
+        }
+
+    def _preprocess_bs_data(self) -> None:
+        """Preprocess raw 'bordereaux' data to prepare it to be displayed."""
+
+        rndts_data = self.rndts_data
+
+        for key, date_col in [
+            ("ndw_incoming", "date_reception"),
+            ("ndw_outgoing", "date_expedition"),
+            ("excavated_land_incoming", "date_reception"),
+            ("excavated_land_outgoing", "date_expedition"),
+        ]:
+            df = rndts_data[key]
+            if df is None:
+                continue
+
+            df = df[
+                df[date_col].between(*self.data_date_interval)
+                & (df["numeros_indentification_transporteurs"].apply(lambda x: self.company_siret in x))
+            ]
+
+            if len(df) > 0:
+                num_statements = df["id"].nunique()
+                mass_quantity = df[df["unite"] == "T"]["quantite"].sum()
+                volume_quantity = df[df["unite"] == "M3"]["quantite"].sum()
+                self.transported_statements_stats[key]["count"] = num_statements
+                self.transported_statements_stats[key]["mass_quantity"] = format_number_str(mass_quantity, 2)
+                self.transported_statements_stats[key]["volume_quantity"] = format_number_str(volume_quantity, 2)
+
+    def _check_data_empty(self) -> bool:
+        if all((e is None) or (e == {}) for e in self.transported_statements_stats.values()):
+            return True
+
+        return False
+
+    def build(self):
+        self._preprocess_bs_data()
+
+        data = {}
+        if not self._check_data_empty():
+            data = self.transported_statements_stats
 
         return data

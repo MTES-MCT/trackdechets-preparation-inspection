@@ -131,7 +131,7 @@ class AiotOpenIDConnectTests(OpenIDConnectTests, TestCase):
         self.assertEqual(sa_count, 0)
         self.assertEqual(User.objects.count(), 0)
 
-    def test_login_auto_signup_suceeds(self):
+    def test_login_auto_signup_succeeds(self):
         self.userinfo_content = {
             "sub": "f:9f5e9937-1de6-4edc-bc5a-5e69c84b797f:xxxx",
             "name": "Jean VALJEAN",

@@ -85,3 +85,8 @@ jobs:
           CSRF_TRUSTED_ORIGINS: "https://url.test"
           TD_API_URL: http://api.test
           TD_API_TOKEN: xyz"
+          AWS_BUCKET_NAME: plop
+          AWS_S3_REGION_NAME: fr-par
+          AWS_S3_ENDPOINT_URL: "https://s3.fr-par.scw.cloud"
+          AWS_ACCESS_KEY_ID: "XYZ"
+          AWS_SECRET_ACCESS_KEY: "xyz2"

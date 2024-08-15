@@ -6,6 +6,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import DetailView, FormView, TemplateView
 
+from common.constants import STATE_DONE, STATE_RUNNING
 from common.mixins import FullyLoggedMixin
 from config.celery_app import app
 
@@ -130,10 +131,6 @@ class RenderingView(ComputingView):
             }
         )
         return ctx
-
-
-STATE_RUNNING = "running"
-STATE_DONE = "done"
 
 
 class FragmentResultView(FullyLoggedMixin, TemplateView):

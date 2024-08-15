@@ -31,6 +31,7 @@ django-otp = "*"
 django-allauth = "== 64.0.0"
 httpx = "*"
 djangorestframework = "*"
+"django-storages[s3]" = "*"
 
 [dev-packages]
 ruff = "*"
@@ -41,6 +42,7 @@ django-debug-toolbar = "*"
 django-extensions = "*"
 ipykernel = "*"
 bandit = "*"
+mypy = "*"
 
 [requires]
 python_version = "3.11"

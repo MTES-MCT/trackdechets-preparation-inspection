@@ -1,0 +1,24 @@
+{% if state != "done" %}
+    <div hx-get="{% url "pdf_bundle_processing_fragment" task_id bundle_pk %}"
+         hx-trigger="every 500ms"
+         hx-swap="outerHTML">{% include "spinner.html" with message=True %}</div>
+{% endif %}
+{% if state == "done" %}
+    {% if not errors %}
+        <div class="fr-container fr-mt-1v">
+            <p class="center">👍 Génération effectuée…</p>
+        </div>
+        <script>
+            window.setTimeout(function () {
+                window.location.href = "{% url "roadcontrol_pdf_bundle_result" bundle_pk %}";
+            }, 1500);
+   
+        </script>
+    {% else %}
+        <div class="fr-container fr-mt-1v">
+            <p>
+                💥 Une erreur est survenue -  <a href="{% url "prepare" %}">Préparer une autre fiche</a>
+            </p>
+        </div>
+    {% endif %}
+{% endif %}

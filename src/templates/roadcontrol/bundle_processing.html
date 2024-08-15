@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load static %}
+{% block main %}
+    <div class="container">
+        {% if task_id %}
+            {% include "roadcontrol/partials/_prepare_bundle.html" %}
+        {% else %}
+            <p>ok</p>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,27 @@
+from sqlalchemy.sql import text
+
+from sheets.database import wh_engine
+
+sql_company_query_data_str = """
+select
+    name, address, contact, contact_email, contact_phone 
+ from
+    trusted_zone_trackdechets.company
+where
+    siret = :siret ;
+"""
+
+
+def get_company_data_fn(siret):
+    prepared_query = text(sql_company_query_data_str)
+    with wh_engine.connect() as con:
+        companies = con.execute(prepared_query, siret=siret).all()
+
+    company = companies[0]
+    return {
+        "company_name": company[0] or "",
+        "company_address": company[1] or "",
+        "company_contact": company[2] or "",
+        "company_email": company[3 or ""],
+        "company_phone": company[4] or "",
+    }

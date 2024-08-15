@@ -5,204 +5,230 @@
 /* Skip most font variants for performance */
 
 @font-face {
-  font-family: "Marianne";
-  font-style: normal;
-  font-weight: 500;
-  src: url(fonts/Marianne-Medium.woff) format("woff");
+    font-family: "Marianne";
+    font-style: normal;
+    font-weight: 500;
+    src: url(fonts/Marianne-Medium.woff) format("woff");
 }
 
 
 html {
-  font-family: Marianne, sans-serif;
+    font-family: Marianne, sans-serif;
 }
 
 body {
-  width: 100%;
-  font-size: 10pt;
+    width: 100%;
+    font-size: 10pt;
 }
 
 /* print */
 @page {
-  counter-increment: page;
+    counter-increment: page;
 
-  @top-center {
-    content: "Cette fiche peut comporter des données à caractère confidentiel - diffusion restreinte";
-    font-size: 10pt;
-    color: #444;
-  }
+    @top-center {
+        content: "Cette fiche peut comporter des données à caractère confidentiel - diffusion restreinte";
+        font-size: 10pt;
+        color: #444;
+    }
 
-  @top-right {
-    content: "Page "counter(page) " sur "counter(pages);
-    font-size: 10pt;
-    color: #444;
-  }
+    @top-right {
+        content: "Page " counter(page) " sur " counter(pages);
+        font-size: 10pt;
+        color: #444;
+    }
 }
 
 @page vertical {
-  size: A4 portrait;
-  margin: 5mm;
+    size: A4 portrait;
+    margin: 5mm;
 }
 
 @page horizontal {
-  size: A4 landscape;
-  margin: 5mm;
+    size: A4 landscape;
+    margin: 5mm;
 }
 
 
 .vertical {
-  page: vertical;
+    page: vertical;
 }
 
 
 .horizontal {
-  page: horizontal;
+    page: horizontal;
 }
 
 .pagebreak {
-  page-break-before: always;
+    page-break-before: always;
 }
 
 /*reset*/
 ul {
-  padding-left: 2rem;
+    padding-left: 2rem;
 }
 
 /* typo utilities */
 .bold {
-  font-weight: bold;
+    font-weight: bold;
 }
 
 .pdf-text {
-  font-size: 9pt;
+    font-size: 9pt;
 
 }
 
 /*  Margin utilities */
 
 .mb-0 {
-  margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .mt-0 {
-  margin-top: 0;
+    margin-top: 0;
 }
 
 /*header*/
 .header__text {
-  display: inline-block;
-  margin-left: 5mm;
+    display: inline-block;
+    margin-left: 5mm;
 }
 
 .header {
-  display: inline-block;
-  align-items: center;
-  margin-top: 1mm;
-  margin-bottom: 3mm;
+    display: inline-block;
+    align-items: center;
+    margin-top: 1mm;
+    margin-bottom: 3mm;
 }
 
 .header img {
-  margin-right: 1cm;
+    margin-right: 1cm;
 }
 
 /*layout*/
 .row {
-  display: block;
-  width: 100%;
-  margin-bottom: 3mm;
+    display: block;
+    width: 100%;
+    margin-bottom: 3mm;
 }
 
 
 .header__title, .header__company {
-  font-size: 20pt;
-  margin: 0;
-  line-height: 1.2;
+    font-size: 20pt;
+    margin: 0;
+    line-height: 1.2;
 }
 
 
 /* cells */
 .cell {
-  display: inline-block;
-  vertical-align: top;
-  border-left: 3px solid #e3e3fd;
-  padding: 1mm 2mm;
+    display: inline-block;
+    vertical-align: top;
+    border-left: 3px solid #e3e3fd;
+    padding: 1mm 2mm;
 }
 
 .cell:not(:first-child) {
-  margin-left: 3mm;
+    margin-left: 3mm;
 }
 
-.cell>* {
-  margin-top: 0;
+.cell > * {
+    margin-top: 0;
 }
 
 .cell--full {
-  width: 100%;
+    width: 100%;
 }
 
 .cell--third {
-  width: 30%;
+    width: 30%;
 }
 
 .cell--bordered {
-  border: 1px solid #e3e3fd;
-  border-left: 5px solid #e3e3fd
+    border: 1px solid #e3e3fd;
+    border-left: 5px solid #e3e3fd
 }
 
 .cell__img {
-  width: 100%;
+    width: 100%;
 }
 
 .cell__title {
-  font-size: 11pt;
-  font-weight: 500;
+    font-size: 11pt;
+    font-weight: 500;
 }
 
 /* Sections */
 .no-data-section {
-  text-align: center;
-  margin-bottom: 10px;
+    text-align: center;
+    margin-bottom: 10px;
 }
 
 /* Tables*/
 .pdf-table {
-  border: 1px solid #ccc;
-  border-collapse: collapse;
-  font-size: 12px;
+    border: 1px solid #ccc;
+    border-collapse: collapse;
+    font-size: 12px;
 }
 
 .pdf-table thead th {
-  border: 1px solid #ccc;
-  padding: 0 6px;
+    border: 1px solid #ccc;
+    padding: 0 6px;
 }
 
 .pdf-table tbody tr {
-  border: 1px solid #ccc;
+    border: 1px solid #ccc;
 
 }
 
 .pdf-table tbody tr:nth-child(even) {
-  background-color: #f2f2f2;
+    background-color: #f2f2f2;
 }
 
 .pdf-table tbody td {
-  border: 1px solid #ccc;
-  padding: 3px 6px;
+    border: 1px solid #ccc;
+    padding: 3px 6px;
 
 }
 
 .td--right {
-  text-align: right;
+    text-align: right;
 }
 
 /*Typography*/
 
 .td-font-lead {
-  font-size: 12pt;
-  font-weight: 700;
+    font-size: 12pt;
+    font-weight: 700;
 }
 
 .td-font-display {
-  font-size: 14pt;
-  font-weight: 700;
-  margin-right: 0.5rem;
+    font-size: 14pt;
+    font-weight: 700;
+    margin-right: 0.5rem;
+}
+
+/* Road control */
+.vehicle-info {
+
+
+    border: 1px solid #111;
+    padding: 2mm;
+    width: 14cm;
+}
+
+.vehicle-info__title {
+    margin: 0;
+}
+
+.vehicle-info__label {
+    display: inline-block;
+    width: 5cm;
+    text-align: right;
+    margin-right: 2mm;
+    vertical-align: top;
+}
+
+.vehicle-info__value {
+    display: inline-block;
+    width: 8.5cm;
 }

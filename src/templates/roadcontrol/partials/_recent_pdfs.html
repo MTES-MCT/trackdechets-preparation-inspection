@@ -1,0 +1,25 @@
+<div class="fr-table fr-table--bordered">
+    <table>
+        <thead>
+            <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Établissement</th>
+                <th scope="col">Immatriculation</th>
+                <th scope="col">PDF/ZIP</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for download in recent_downloads %}
+                <tr>
+                    <td>{{ download.created_at }}</td>
+                    <td>{{ download.company_name }} {{ download.company_siret }}</td>
+                    <td>{{ download.transporter_plate }}</td>
+                    <td>
+                        <a href="{{ download.pdf.url }}{{ bundle.zip_file.url }}"
+                           class="fr-btn fr-btn--tertiary fr-icon-download-line "></a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

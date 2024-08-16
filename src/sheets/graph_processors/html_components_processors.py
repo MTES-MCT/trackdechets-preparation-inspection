@@ -2816,7 +2816,7 @@ class RNDTSTransporterStatsProcessor:
     def __init__(
         self,
         company_siret: str,
-        rndts_data: Dict[str, pd.DataFrame],
+        rndts_data: Dict[str, pd.DataFrame | None],
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
@@ -2842,7 +2842,7 @@ class RNDTSTransporterStatsProcessor:
             ("excavated_land_outgoing", "date_expedition"),
         ]:
             df = rndts_data[key]
-            if df is None:
+            if (df is None) or (len(df) == 0):
                 continue
 
             df = df[

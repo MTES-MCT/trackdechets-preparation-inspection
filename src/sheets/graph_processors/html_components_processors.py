@@ -407,7 +407,7 @@ class WasteFlowsTableProcessor:
 
         self.preprocessed_df = None
 
-    def _preprocess_data(self) -> None:
+    def _preprocess_bs_data(self) -> pd.DataFrame | None:
         siret = self.company_siret
 
         dfs_to_concat = []
@@ -476,56 +476,102 @@ class WasteFlowsTableProcessor:
         df = df.dropna(subset="flow_status")
 
         if len(df) > 0:
-            # We compute the quantity by waste codes and incoming/outgoing categories
-            df_grouped = df.groupby(["waste_code", "flow_status"], as_index=False)["quantity_received"].sum()
-            df_grouped["unit"] = "t"  # This is to account for some wastes quantities that are measured in m³
+            # We compute the quantity by waste codes and incoming/outgoing/transported categories
+            df_grouped = df.groupby(["waste_code", "flow_status"], as_index=False).agg({"quantity_received": "sum"})
+            df_grouped["unit"] = "t"
 
-            # If there is RNDTS data, we add it to the dataframe
-            for key, date_col in [
-                ("ndw_incoming", "date_reception"),
-                ("ndw_outgoing", "date_expedition"),
-                ("excavated_land_incoming", "date_reception"),
-                ("excavated_land_outgoing", "date_expedition"),
-            ]:
-                df_rndts = self.rndts_data[key]
+            return df_grouped
 
-                if (df_rndts is not None) and (len(df_rndts) > 0):
-                    # Handle missing waste code for some excavated land statements
-                    if "excavated_land" in key:
-                        df_rndts["code_dechet"].fillna("17 05 04")
+        return None
 
-                    rndts_grouped_data = (
-                        df_rndts[
-                            df_rndts[date_col].between(*self.data_date_interval)
-                            & (df_rndts["numero_identification_declarant"] == self.company_siret)
-                        ]
-                        .groupby(["code_dechet", "unite"], as_index=False)["quantite"]
-                        .sum()
-                    )
-                    rndts_grouped_data = rndts_grouped_data.rename(
-                        columns={"quantite": "quantity_received", "code_dechet": "waste_code", "unite": "unit"}
-                    )  # type: ignore
-                    rndts_grouped_data["unit"] = rndts_grouped_data["unit"].replace({"T": "t", "M3": "m³"})
+    def _preprocess_rndts_data(self) -> pd.DataFrame | None:
+        # If there is RNDTS data, we add it to the dataframe
+        df_to_group = []
+        for key, date_col in [
+            ("ndw_incoming", "date_reception"),
+            ("ndw_outgoing", "date_expedition"),
+            ("excavated_land_incoming", "date_reception"),
+            ("excavated_land_outgoing", "date_expedition"),
+        ]:
+            df_rndts = self.rndts_data[key]
+
+            if (df_rndts is not None) and (len(df_rndts) > 0):
+                df_rndts = df_rndts.rename(
+                    columns={"quantite": "quantity_received", "code_dechet": "waste_code", "unite": "unit"}
+                )
+
+                df_rndts["unit"] = df_rndts["unit"].replace({"T": "t", "M3": "m³"})
+                # Handle missing waste code for some excavated land statements
+                if "excavated_land" in key:
+                    df_rndts["waste_code"].fillna("17 05 04")
+
+                rndts_grouped_data = (
+                    df_rndts[
+                        df_rndts[date_col].between(*self.data_date_interval)
+                        & (df_rndts["numero_identification_declarant"] == self.company_siret)
+                    ]
+                    .groupby(["waste_code", "unit"], as_index=False)["quantity_received"]
+                    .sum()
+                )  # We group also by unit to account for some wastes quantities that are measured in m³
+
+                if len(rndts_grouped_data) > 0:
                     rndts_grouped_data["flow_status"] = "incoming" if (date_col == "date_reception") else "outgoing"
+                    df_to_group.append(rndts_grouped_data)
 
-                    df_grouped = pd.concat([df_grouped, rndts_grouped_data])
+                # Transport data
+                rndts_grouped_data = (
+                    df_rndts[
+                        df_rndts[date_col].between(*self.data_date_interval)
+                        & (df_rndts["numeros_indentification_transporteurs"].apply(lambda x: self.company_siret in x))
+                    ]
+                    .groupby(["waste_code", "unit"], as_index=False)["quantity_received"]
+                    .sum()
+                )
 
-            # We add the waste code description from the waste nomenclature
-            final_df = pd.merge(
-                df_grouped,
-                self.waste_codes_df,
-                left_on="waste_code",
-                right_index=True,
-                how="left",
-                validate="many_to_one",
-            )
+                if len(rndts_grouped_data) > 0:
+                    rndts_grouped_data["flow_status"] = (
+                        "transported_incoming" if (date_col == "date_reception") else "transported_outgoing"
+                    )
+                    df_to_group.append(rndts_grouped_data)
 
-            final_df = final_df[final_df["quantity_received"] > 0]
-            final_df["quantity_received"] = final_df["quantity_received"].apply(lambda x: format_number_str(x, 2))
-            final_df["description"] = final_df["description"].fillna("")
-            self.preprocessed_df = final_df[
-                ["waste_code", "description", "flow_status", "quantity_received", "unit"]
-            ].sort_values(by=["waste_code", "flow_status"])
+        res = None
+        if len(df_to_group) > 0:
+            res = pd.concat(df_to_group)
+
+        return res
+
+    def _preprocess_data(self):
+        bs_grouped_data = self._preprocess_bs_data()
+        rndts_grouped_data = self._preprocess_rndts_data()
+
+        df_grouped = pd.DataFrame()
+        match (bs_grouped_data, rndts_grouped_data):
+            case (None, None):
+                return
+            case (pd.DataFrame(), pd.DataFrame()):
+                df_grouped = pd.concat([bs_grouped_data, rndts_grouped_data])
+            case (df, None) | (None, df):
+                df_grouped = df
+            case _:
+                raise ValueError()
+
+        # We add the waste code description from the waste nomenclature
+        final_df = pd.merge(
+            df_grouped,
+            self.waste_codes_df,
+            left_on="waste_code",
+            right_index=True,
+            how="left",
+            validate="many_to_one",
+        )
+
+        final_df = final_df[final_df["quantity_received"] > 0]
+        final_df["quantity_received"] = final_df["quantity_received"].apply(lambda x: format_number_str(x, 2))
+        final_df["description"] = final_df["description"].fillna("")
+
+        self.preprocessed_df = final_df[
+            ["waste_code", "description", "flow_status", "quantity_received", "unit"]
+        ].sort_values(by=["waste_code", "flow_status"])
 
     def _check_empty_data(self) -> bool:
         if self.preprocessed_df is None:

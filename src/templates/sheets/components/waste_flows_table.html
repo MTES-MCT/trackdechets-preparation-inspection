@@ -24,6 +24,10 @@
                                 Sortant➜
                             {% elif row.flow_status == "transported" %}
                                 Transporté 🚛
+                            {% elif row.flow_status == "transported_incoming" %}
+                                Transporté (registre entrant) 🚛
+                            {% elif row.flow_status == "transported_outgoing" %}
+                                Transporté (registre sortant) 🚛
                             {% else %}
                                 N/A
                             {% endif %}

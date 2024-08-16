@@ -571,7 +571,7 @@ class WasteFlowsTableProcessor:
 
         self.preprocessed_df = final_df[
             ["waste_code", "description", "flow_status", "quantity_received", "unit"]
-        ].sort_values(by=["waste_code", "flow_status"])
+        ].sort_values(by=["waste_code", "flow_status", "unit"], ascending=[True, True, False])
 
     def _check_empty_data(self) -> bool:
         if self.preprocessed_df is None:

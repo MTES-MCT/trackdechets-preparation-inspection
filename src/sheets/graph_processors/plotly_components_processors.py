@@ -1929,10 +1929,13 @@ class RNDTSStatementsGraphProcessor:
 
         match self.statement_type:
             case "non_dangerous_waste":
+                name = "DND"
                 hover_suffix = "déchets non dangereux"
             case "excavated_land":
+                name = "TEXS"
                 hover_suffix = "TEXS"
             case "ssd":
+                name = "SSD"
                 hover_suffix = "sorties de statut de déchet"
             case _:
                 hover_suffix = ""
@@ -1941,7 +1944,7 @@ class RNDTSStatementsGraphProcessor:
             statements_emitted_bars = go.Bar(
                 x=statements_emitted_by_month.index,
                 y=statements_emitted_by_month,
-                name=f"Déclarations de {hover_suffix}",
+                name=f"{name} - sortant",
                 hovertext=[
                     "{} - <b>{}</b> déclaration(s) sortante(s) de {}".format(
                         index.strftime("%B %y").capitalize(), e, hover_suffix
@@ -1963,7 +1966,7 @@ class RNDTSStatementsGraphProcessor:
             statements_received_bars = go.Bar(
                 x=statements_received_by_month.index,
                 y=statements_received_by_month,
-                name=f"Déclarations de {hover_suffix}",
+                name=f"{name} - entrant",
                 hovertext=[
                     "{} - <b>{}</b> déclaration(s) de {}".format(index.strftime("%B %y").capitalize(), e, hover_suffix)
                     for index, e in statements_received_by_month.items()

@@ -90,7 +90,12 @@ def sample_data():
         BSFF: pd.DataFrame(
             {
                 "bs_id": [8, 5, 6, 2],
-                "transporter_company_siret": ["56789012345678", "56789012345678", "97654321098765", "12345678901234"],
+                "transporter_company_siret": [
+                    "56789012345678",
+                    "56789012345678",
+                    "12345678901234",
+                    "12345678901234",
+                ],  # The third is to test the case where the company as emitted and transported the same waste (multiple flow status)
                 "sent_at": [
                     datetime(2023, 1, 10),
                     datetime(2023, 3, 15),
@@ -100,6 +105,19 @@ def sample_data():
             }
         ),
     }
+
+    packagings_data = pd.DataFrame(
+        {
+            "bsff_id": [8, 5, 6, 2],
+            "acceptation_weight": [3, 1, 2.4, 5],
+            "acceptation_date": [
+                datetime(2023, 2, 1),
+                datetime(2023, 4, 20),
+                datetime(2023, 6, 10),
+                datetime(2023, 6, 10),
+            ],
+        }
+    )
 
     rndts_data = {
         "ndw_incoming": pd.DataFrame(
@@ -154,19 +172,6 @@ def sample_data():
 
     waste_codes_df = load_waste_code_data()
 
-    packagings_data = pd.DataFrame(
-        {
-            "bsff_id": [8, 5, 6, 2],
-            "acceptation_weight": [3, 1, 2.4, 5],
-            "acceptation_date": [
-                datetime(2023, 2, 1),
-                datetime(2023, 4, 20),
-                datetime(2023, 6, 10),
-                datetime(2023, 6, 10),
-            ],
-        }
-    )
-
     return {
         "bs_data_dfs": bs_data_dfs,
         "transporters_data_df": transporters_data_df,
@@ -217,7 +222,7 @@ def test_preprocess_bs_data(sample_data):
                 "outgoing",
                 "transported",
             ],
-            "quantity_received": [30.0, 30.0, 9.3, 19.0, 12.5, 10.0, 32.0, 3.0, 1.0, 2.4, 5.0],
+            "quantity_received": [30.0, 30.0, 9.3, 19.0, 12.5, 10.0, 32.0, 3.0, 1.0, 2.4, 7.4],
             "unit": ["t", "t", "t", "t", "t", "t", "t", "t", "t", "t", "t"],
         }
     )

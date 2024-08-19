@@ -437,8 +437,10 @@ class WasteFlowsTableProcessor:
                         df = df.rename(columns={"acceptation_weight": "quantity_received"})
 
                     transport_columns_to_take = ["bs_id", "sent_at", "transporter_company_siret"]
-                    if not bs_type == BSFF:
+
+                    if not bs_type == BSFF:  # BSFF stores quantity in packagings data
                         transport_columns_to_take.append("quantity_received")
+
                     df = df.merge(
                         transport_df[transport_columns_to_take],
                         left_on="id",
@@ -471,18 +473,19 @@ class WasteFlowsTableProcessor:
         # We create a column to differentiate incoming waste from
         # outgoing and transported waste.
         df["flow_status"] = pd.NA
-        df.loc[
-            (df["emitter_company_siret"] == siret) & df["sent_at"].between(*self.data_date_interval),
-            "flow_status",
-        ] = "outgoing"
-        df.loc[
-            (df["recipient_company_siret"] == siret) & df["received_at"].between(*self.data_date_interval),
-            "flow_status",
-        ] = "incoming"
-        df.loc[
-            (df["transporter_company_siret"] == siret) & df["sent_at"].between(*self.data_date_interval),
-            "flow_status",
-        ] = "transported"
+
+        # We determine each "flow type", a 'bordereau' can have several flow status (e.g a company that emit and also transport)
+        dfs_to_concat = []
+        for siret_key, date_key, flow_type in [
+            ("emitter_company_siret", "sent_at", "outgoing"),
+            ("recipient_company_siret", "received_at", "incoming"),
+            ("transporter_company_siret", "sent_at", "transported"),
+        ]:
+            temp_df = df[(df[siret_key] == siret) & df[date_key].between(*self.data_date_interval)].copy()
+            temp_df["flow_status"] = flow_type
+            dfs_to_concat.append(temp_df)
+
+        df = pd.concat(dfs_to_concat)
         df = df.dropna(subset="flow_status")
 
         if len(df) > 0:

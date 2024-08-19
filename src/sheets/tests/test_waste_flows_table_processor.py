@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -9,6 +10,8 @@ from sheets.data_extract import load_waste_code_data
 from ..graph_processors.html_components_processors import (
     WasteFlowsTableProcessor,
 )  # Adjust the import to your actual module
+
+EXPECTED_FILES_PATH = Path(__file__).parent.resolve() / "expected"
 
 
 @pytest.fixture
@@ -296,31 +299,11 @@ def test_preprocess_data(sample_data):
     processor._preprocess_data()
     preprocessed_df = processor.preprocessed_df
 
+    expected_output = pd.read_csv(
+        EXPECTED_FILES_PATH / "waste_flow_preprocessed_data_expected.csv", keep_default_na=False, dtype=str
+    )
     assert preprocessed_df is not None
-    assert len(preprocessed_df) == 12  # 6 from bs_data and 6 from rndts_data
-    assert (
-        preprocessed_df["waste_code"]
-        .isin(
-            [
-                "01 01 01",
-                "01 01 02",
-                "01 01 03",
-                "02 01 01",
-                "02 01 02",
-                "02 01 03",
-                "03 01 01",
-                "03 01 02",
-                "03 01 03",
-                "04 01 01",
-                "04 01 02",
-                "04 01 03",
-            ]
-        )
-        .all()
-    )
-    assert (
-        preprocessed_df["description"].isin(["Waste A", "Waste B", "Waste C", "Waste D", "Waste E", "Waste F"]).all()
-    )
+    assert preprocessed_df.equals(expected_output)
 
 
 def test_empty_data():

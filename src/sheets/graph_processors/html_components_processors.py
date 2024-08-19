@@ -550,6 +550,7 @@ class WasteFlowsTableProcessor:
         res = None
         if len(df_to_group) > 0:
             res = pd.concat(df_to_group)
+            res = res.reset_index(drop=True)
 
         return res
 
@@ -581,10 +582,13 @@ class WasteFlowsTableProcessor:
         final_df = final_df[final_df["quantity_received"] > 0]
         final_df["quantity_received"] = final_df["quantity_received"].apply(lambda x: format_number_str(x, 2))
         final_df["description"] = final_df["description"].fillna("")
+        final_df = (
+            final_df[["waste_code", "description", "flow_status", "quantity_received", "unit"]]
+            .sort_values(by=["waste_code", "flow_status", "unit"], ascending=[True, True, False])
+            .reset_index(drop=True)
+        )
 
-        self.preprocessed_df = final_df[
-            ["waste_code", "description", "flow_status", "quantity_received", "unit"]
-        ].sort_values(by=["waste_code", "flow_status", "unit"], ascending=[True, True, False])
+        self.preprocessed_df = final_df
 
     def _check_empty_data(self) -> bool:
         if self.preprocessed_df is None:

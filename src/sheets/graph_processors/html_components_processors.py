@@ -422,14 +422,25 @@ class WasteFlowsTableProcessor:
                 transport_df = self.transporters_data_df.get(bs_type)
 
                 if transport_df is not None:
-                    df.drop(
+                    df = df.drop(
                         columns=["sent_at", "quantity_received"],
                         errors="ignore",
-                        inplace=True,
                     )  # To avoid column duplication with transport data
 
+                    if (bs_type == BSFF) and (self.packagings_data is not None):
+                        df = df.merge(
+                            self.packagings_data[["bsff_id", "acceptation_weight", "acceptation_date"]],
+                            left_on="id",
+                            right_on="bsff_id",
+                            validate="one_to_many",
+                        )
+                        df = df.rename(columns={"acceptation_weight": "quantity_received"})
+
+                    transport_columns_to_take = ["bs_id", "sent_at", "transporter_company_siret"]
+                    if not bs_type == BSFF:
+                        transport_columns_to_take.append("quantity_received")
                     df = df.merge(
-                        transport_df[["bs_id", "sent_at", "quantity_received", "transporter_company_siret"]],
+                        transport_df[transport_columns_to_take],
                         left_on="id",
                         right_on="bs_id",
                         how="left",
@@ -453,7 +464,6 @@ class WasteFlowsTableProcessor:
             dfs_to_concat.append(df)
 
         if len(dfs_to_concat) == 0:
-            self.preprocessed_df = pd.DataFrame()
             return
 
         df = pd.concat(dfs_to_concat)
@@ -493,7 +503,7 @@ class WasteFlowsTableProcessor:
             ("excavated_land_incoming", "date_reception"),
             ("excavated_land_outgoing", "date_expedition"),
         ]:
-            df_rndts = self.rndts_data[key]
+            df_rndts = self.rndts_data.get(key)
 
             if (df_rndts is not None) and (len(df_rndts) > 0):
                 df_rndts = df_rndts.rename(

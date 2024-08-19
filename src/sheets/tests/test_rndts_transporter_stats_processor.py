@@ -1,6 +1,8 @@
-import pytest
-import pandas as pd
 from datetime import datetime
+
+import pandas as pd
+import pytest
+
 from ..graph_processors.html_components_processors import RNDTSTransporterStatsProcessor
 
 

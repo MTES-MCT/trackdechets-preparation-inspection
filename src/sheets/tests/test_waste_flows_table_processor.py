@@ -1,10 +1,11 @@
-import pytest
-import pandas as pd
-import numpy as np
 from datetime import datetime
 
-from sheets.constants import BSDD, BSDA, BSFF
+import pandas as pd
+import pytest
+
+from sheets.constants import BSDA, BSDD, BSFF
 from sheets.data_extract import load_waste_code_data
+
 from ..graph_processors.html_components_processors import (
     WasteFlowsTableProcessor,
 )  # Adjust the import to your actual module

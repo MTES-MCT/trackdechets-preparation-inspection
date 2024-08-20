@@ -88,7 +88,7 @@
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">BSD dangereux sur l'année</h3>
+                    <h3 class="cell__title">BSD dangereux sur la période</h3>
                     {% stats_graph sheet "bsdd" %}
                 </div>
             </div>
@@ -110,7 +110,7 @@
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">BSD de déchets non dangereux sur l'année</h3>
+                    <h3 class="cell__title">BSD de déchets non dangereux sur la période</h3>
                     {% stats_graph sheet "bsdd_non_dangerous" %}
                 </div>
             </div>
@@ -132,7 +132,7 @@
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">BSD Amiante sur l'année</h3>
+                    <h3 class="cell__title">BSD Amiante sur la période</h3>
                     {% stats_graph sheet "bsda" %}
                 </div>
             </div>
@@ -154,7 +154,7 @@
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">BS DASRI sur l'année</h3>
+                    <h3 class="cell__title">BS DASRI sur la période</h3>
                     {% stats_graph sheet "bsdasri" %}
                 </div>
             </div>
@@ -176,7 +176,7 @@
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">BS Fluides Frigorigènes sur l'année</h3>
+                    <h3 class="cell__title">BS Fluides Frigorigènes sur la période</h3>
                     {% stats_graph sheet "bsff" %}
                 </div>
             </div>
@@ -198,7 +198,7 @@
                     </div>
                 </div>
                 <div class="cell cell--bordered cell--third">
-                    <h3 class="cell__title">BS VHU sur l'année</h3>
+                    <h3 class="cell__title">BS VHU sur la période</h3>
                     {% stats_graph sheet "bsvhu" %}
                 </div>
             </div>
@@ -265,7 +265,7 @@
         {# end "waste is dangerous" statements #}
         {# DND #}
         <h2 class="section__title" id="bs-section-title">Données des déclarations issues du RNDTS</h2>
-        <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Dernière mise à jour des données : Début Juillet 2024</p>
+        <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left fr-m-1w">Dernière mise à jour des données : Début Juillet 2024</p>
         {% if sheet.all_rndts_data_empty %}
             <div class="no-data-section">PAS DE DONNÉES ISSUES DU RNDTS À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
         {% else %}
@@ -284,7 +284,7 @@
                         </div>
                     </div>
                     <div class="cell cell--bordered cell--third">
-                        <h3 class="cell__title">Déchets Non Dangereux - Statistiques sur l'année</h3>
+                        <h3 class="cell__title">Déchets Non Dangereux - Statistiques sur la période</h3>
                         {% render_rndts_stats sheet.non_dangerous_waste_stats_data %}
                     </div>
                 </div>
@@ -304,7 +304,7 @@
                         </div>
                     </div>
                     <div class="cell cell--bordered cell--third">
-                        <h3 class="cell__title">Terres Exacavées et Sédiments - Statistiques sur l'année</h3>
+                        <h3 class="cell__title">Terres Exacavées et Sédiments - Statistiques sur la période</h3>
                         {% render_rndts_stats sheet.excavated_land_stats_data %}
                     </div>
                 </div>
@@ -324,9 +324,26 @@
                         </div>
                     </div>
                     <div class="cell cell--bordered cell--third">
-                        <h3 class="cell__title">Sorties de Statut de Déchet - Statistiques sur l'année</h3>
+                        <h3 class="cell__title">Sorties de Statut de Déchet - Statistiques sur la période</h3>
                         {% render_ssd_stats sheet.ssd_stats_data %}
                     </div>
+                </div>
+            {% endif %}
+            {% if sheet.rndts_transporter_statement_stats_graph_data %}
+                <div class="row">
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">Déclarations transportées</h3>
+                        <div id="rndts_statements_transported_graph">
+                            <div class="no-data">Pas de données à afficher.</div>
+                        </div>
+                    </div>
+                    <div class="cell cell--bordered cell--third">
+                        <h3 class="cell__title">Quantité de déchets non dangereux transportés</h3>
+                        <div id="rndts_quantities_transported_graph">
+                            <div class="no-data">Pas de données à afficher.</div>
+                        </div>
+                    </div>
+                    <div class="cell cell--bordered cell--third">{% render_rndts_transporter_stats sheet %}</div>
                 </div>
             {% endif %}
         {% endif %}
@@ -523,6 +540,8 @@
     const ssd_statements_graph_data = {{ sheet.ssd_statements_graph_data }};
     const eco_organisme_bordereaux_graph = {{ sheet.eco_organisme_bordereaux_graph_data }};
     const eco_organisme_quantities_graph = {{ sheet.eco_organisme_quantities_graph_data }};
+    const rndts_transporter_statement_stats_graph = {{ sheet.rndts_transporter_statement_stats_graph_data }};
+    const rndts_transporter_quantities_graph = {{ sheet.rndts_transporter_quantities_graph_data }};
     {% endautoescape %}
     </script>
     <script>
@@ -659,6 +678,14 @@
     {
         "data": eco_organisme_quantities_graph,
         "target": "eo_quantities_graph"
+    },
+    {
+        "data": rndts_transporter_statement_stats_graph,
+        "target": "rndts_statements_transported_graph"
+    },
+    {
+        "data": rndts_transporter_quantities_graph,
+        "target": "rndts_quantities_transported_graph"
     }
     ];
 

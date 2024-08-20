@@ -49,6 +49,7 @@ from .graph_processors.html_components_processors import (
     QuantityOutliersTableProcessor,
     ReceiptAgrementsProcessor,
     RNDTSStatsProcessor,
+    RNDTSTransporterStatsProcessor,
     SameEmitterRecipientTableProcessor,
     SSDProcessor,
     StorageStatsProcessor,
@@ -68,6 +69,8 @@ from .graph_processors.plotly_components_processors import (
     IntermediaryBordereauxQuantitiesGraphProcessor,
     RNDTSQuantitiesGraphProcessor,
     RNDTSStatementsGraphProcessor,
+    RNDTSTransporterQuantitiesGraphProcessor,
+    RNDTSTransporterStatementsStatsGraphProcessor,
     TransportedQuantitiesGraphProcessor,
     TransporterBordereauxGraphProcessor,
     WasteOriginProcessor,
@@ -369,27 +372,35 @@ class SheetProcessor:
             setattr(self.computed, f"icpe_{rubrique.replace('-','_')}_data", icpe_rubrique_graph_data)
 
         non_dangerous_waste_quantities_graph = RNDTSQuantitiesGraphProcessor(
-            self.rndts_data["ndw_incoming"], self.rndts_data["ndw_outgoing"], data_date_interval
+            self.siret, self.rndts_data["ndw_incoming"], self.rndts_data["ndw_outgoing"], data_date_interval
         )
         self.computed.non_dangerous_waste_quantities_graph_data = non_dangerous_waste_quantities_graph.build()
         if self.computed.non_dangerous_waste_quantities_graph_data:
             self.all_rndts_data_empty = False
 
         non_dangerous_waste_statements_graph = RNDTSStatementsGraphProcessor(
-            self.rndts_data["ndw_incoming"], self.rndts_data["ndw_outgoing"], "non_dangerous_waste", data_date_interval
+            self.siret,
+            self.rndts_data["ndw_incoming"],
+            self.rndts_data["ndw_outgoing"],
+            "non_dangerous_waste",
+            data_date_interval,
         )
         self.computed.non_dangerous_waste_statements_graph_data = non_dangerous_waste_statements_graph.build()
         if self.computed.non_dangerous_waste_statements_graph_data:
             self.all_rndts_data_empty = False
 
         excavated_land_quantities_graph = RNDTSQuantitiesGraphProcessor(
-            self.rndts_data["excavated_land_incoming"], self.rndts_data["excavated_land_outgoing"], data_date_interval
+            self.siret,
+            self.rndts_data["excavated_land_incoming"],
+            self.rndts_data["excavated_land_outgoing"],
+            data_date_interval,
         )
         self.computed.excavated_land_quantities_graph_data = excavated_land_quantities_graph.build()
         if self.computed.excavated_land_quantities_graph_data:
             self.all_rndts_data_empty = False
 
         excavated_land_statements_graph = RNDTSStatementsGraphProcessor(
+            self.siret,
             self.rndts_data["excavated_land_incoming"],
             self.rndts_data["excavated_land_outgoing"],
             "excavated_land",
@@ -399,12 +410,15 @@ class SheetProcessor:
         if self.computed.excavated_land_statements_graph_data:
             self.all_rndts_data_empty = False
 
-        ssd_quantities_graph = RNDTSQuantitiesGraphProcessor(None, self.rndts_data["ssd_data"], data_date_interval)
+        ssd_quantities_graph = RNDTSQuantitiesGraphProcessor(
+            self.siret, None, self.rndts_data["ssd_data"], data_date_interval
+        )
         self.computed.ssd_quantities_graph_data = ssd_quantities_graph.build()
         if self.computed.ssd_quantities_graph_data:
             self.all_rndts_data_empty = False
 
         ssd_statements_graph = RNDTSStatementsGraphProcessor(
+            self.siret,
             None,
             self.rndts_data["ssd_data"],
             "ssd",
@@ -412,6 +426,20 @@ class SheetProcessor:
         )
         self.computed.ssd_statements_graph_data = ssd_statements_graph.build()
         if self.computed.ssd_statements_graph_data:
+            self.all_rndts_data_empty = False
+
+        rndts_transporter_statements_stats_graph = RNDTSTransporterStatementsStatsGraphProcessor(
+            self.siret, self.rndts_data, data_date_interval
+        )
+        self.computed.rndts_transporter_statement_stats_graph_data = rndts_transporter_statements_stats_graph.build()
+        if self.computed.rndts_transporter_statement_stats_graph_data:
+            self.all_rndts_data_empty = False
+
+        rndts_transporter_quantities_graph = RNDTSTransporterQuantitiesGraphProcessor(
+            self.siret, self.rndts_data, data_date_interval
+        )
+        self.computed.rndts_transporter_quantities_graph_data = rndts_transporter_quantities_graph.build()
+        if self.computed.rndts_transporter_quantities_graph_data:
             self.all_rndts_data_empty = False
 
         eco_organisme_bordereaux_graph = IntermediaryBordereauxCountsGraphProcessor(
@@ -588,20 +616,23 @@ class SheetProcessor:
         self.computed.gistrid_stats_data = gistrid_stats.build()
 
         non_dangerous_waste_stats = RNDTSStatsProcessor(
-            self.rndts_data["ndw_incoming"], self.rndts_data["ndw_outgoing"], data_date_interval
+            self.siret, self.rndts_data["ndw_incoming"], self.rndts_data["ndw_outgoing"], data_date_interval
         )
         self.computed.non_dangerous_waste_stats_data = non_dangerous_waste_stats.build()
         if self.computed.non_dangerous_waste_stats_data:
             self.all_rndts_data_empty = False
 
         excavated_land_stats = RNDTSStatsProcessor(
-            self.rndts_data["excavated_land_incoming"], self.rndts_data["excavated_land_outgoing"], data_date_interval
+            self.siret,
+            self.rndts_data["excavated_land_incoming"],
+            self.rndts_data["excavated_land_outgoing"],
+            data_date_interval,
         )
         self.computed.excavated_land_stats_data = excavated_land_stats.build()
         if self.computed.excavated_land_stats_data:
             self.all_rndts_data_empty = False
 
-        ssd_stats = RNDTSStatsProcessor(None, self.rndts_data["ssd_data"], data_date_interval)
+        ssd_stats = RNDTSStatsProcessor(self.siret, None, self.rndts_data["ssd_data"], data_date_interval)
         self.computed.ssd_stats_data = ssd_stats.build()
         if self.computed.ssd_stats_data:
             self.all_rndts_data_empty = False
@@ -609,6 +640,11 @@ class SheetProcessor:
         ssd_table = SSDProcessor(self.siret, self.rndts_data["ssd_data"], data_date_interval)
         self.computed.ssd_table_data = ssd_table.build()
         if self.computed.ssd_table_data:
+            self.all_rndts_data_empty = False
+
+        rndts_transporter_stats = RNDTSTransporterStatsProcessor(self.siret, self.rndts_data, data_date_interval)
+        self.computed.rndts_transporter_stats_data = rndts_transporter_stats.build()
+        if self.computed.rndts_transporter_stats_data:
             self.all_rndts_data_empty = False
 
         eco_organisme_bordereaux_stats = IntermediaryBordereauxStatsProcessor(

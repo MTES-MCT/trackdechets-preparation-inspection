@@ -574,10 +574,12 @@ SELECT
     quantite,
     unite,
     date_reception,
-    code_traitement
+    code_traitement,
+    numeros_indentification_transporteurs
 FROM trusted_zone_rndts.dnd_entrant
 where
     numero_identification_declarant = :siret
+    or (numeros_indentification_transporteurs @> array[:siret])
 """
 
 sql_get_outgoing_ndw_data = """
@@ -591,10 +593,12 @@ SELECT
     date_expedition,
     code_traitement,
     destinataire_numero_identification,
-    destinataire_raison_sociale
+    destinataire_raison_sociale,
+    numeros_indentification_transporteurs
 FROM trusted_zone_rndts.dnd_sortant
 where
     numero_identification_declarant = :siret
+    or (numeros_indentification_transporteurs @> array[:siret])
 """
 
 
@@ -607,10 +611,12 @@ SELECT
     quantite,
     unite,
     date_reception,
-    code_traitement
+    code_traitement,
+    numeros_indentification_transporteurs
 FROM trusted_zone_rndts.texs_entrant
 where
     numero_identification_declarant = :siret
+    or (numeros_indentification_transporteurs @> array[:siret])
 """
 
 sql_get_outgoing_excavated_land_data = """
@@ -624,10 +630,12 @@ SELECT
     date_expedition,
     code_traitement,
     destinataire_numero_identification,
-    destinataire_raison_sociale
+    destinataire_raison_sociale,
+    numeros_indentification_transporteurs
 FROM trusted_zone_rndts.texs_sortant
 where
     numero_identification_declarant = :siret
+    or (numeros_indentification_transporteurs @> array[:siret])
 """
 
 sql_get_ssd_data = """

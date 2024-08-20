@@ -188,6 +188,14 @@ def render_ssd_table(computed, graph_context="web"):
     return return_dict
 
 
+@register.inclusion_tag("sheets/components/rndts_transporter_stats.html")
+def render_rndts_transporter_stats(computed, graph_context="web"):
+    return {
+        "rndts_transporter_stats_data": computed.rndts_transporter_stats_data,
+        "graph_context": graph_context,
+    }
+
+
 @register.inclusion_tag("sheets/components/intermediary_bordereaux_stats.html")
 def render_intermediary_bordereaux_stats_data(stats, graph_context="web"):
     return {

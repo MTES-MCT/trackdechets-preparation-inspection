@@ -9,7 +9,7 @@
                     <th scope="col">Code déchet</th>
                     <th scope="col">Description</th>
                     <th scope="col">Type de flux</th>
-                    <th scope="col">Quantité&nbsp;(t)</th>
+                    <th scope="col">Quantité</th>
                 </tr>
             </thead>
             <tbody>
@@ -24,6 +24,10 @@
                                 Sortant➜
                             {% elif row.flow_status == "transported" %}
                                 Transporté 🚛
+                            {% elif row.flow_status == "transported_incoming" %}
+                                Transporté (registre entrant) 🚛
+                            {% elif row.flow_status == "transported_outgoing" %}
+                                Transporté (registre sortant) 🚛
                             {% else %}
                                 N/A
                             {% endif %}

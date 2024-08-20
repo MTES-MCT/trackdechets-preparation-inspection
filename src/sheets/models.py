@@ -209,6 +209,12 @@ class ComputedInspectionData(models.Model):
     ssd_stats_data = models.JSONField(default=dict)
     ssd_table_data = models.JSONField(default=dict)
 
+    rndts_transporter_statement_stats_graph_data = models.JSONField(default=dict)
+    rndts_transporter_statement_stats_graph = models.TextField(blank=True)
+    rndts_transporter_quantities_graph_data = models.JSONField(default=dict)
+    rndts_transporter_quantities_graph = models.TextField(blank=True)
+    rndts_transporter_stats_data = models.JSONField(default=dict)
+
     eco_organisme_bordereaux_graph_data = models.JSONField(default=dict)
     eco_organisme_bordereaux_graph = models.TextField(blank=True)
     eco_organisme_quantities_graph_data = models.JSONField(default=dict)

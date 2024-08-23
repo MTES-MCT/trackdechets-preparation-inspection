@@ -422,46 +422,69 @@ class WasteFlowsTableProcessor:
                 transport_df = self.transporters_data_df.get(bs_type)
 
                 if transport_df is not None:
-                    df = df.drop(
-                        columns=["sent_at", "quantity_received"],
-                        errors="ignore",
-                    )  # To avoid column duplication with transport data
+                    if len(df) > 0:
+                        df = df.drop(
+                            columns=["sent_at", "quantity_received"],
+                            errors="ignore",
+                        )  # To avoid column duplication with transport data
 
-                    if (bs_type == BSFF) and (self.packagings_data is not None):
+                        if bs_type == BSFF:
+                            if self.packagings_data is not None:
+                                # Quantity is taken from packagings data in case of BSFF
+                                df = df.merge(
+                                    self.packagings_data[["bsff_id", "acceptation_weight", "acceptation_date"]],
+                                    left_on="id",
+                                    right_on="bsff_id",
+                                    validate="one_to_many",
+                                )
+                                df = df.rename(columns={"acceptation_weight": "quantity_received"})
+
+                                # data is re-aggregated at 'bordereau' granularity to match other 'obordereaux' dfs granularity
+                                df = df.groupby("id", as_index=False).agg(
+                                    {
+                                        "emitter_company_siret": "max",
+                                        "recipient_company_siret": "max",
+                                        "received_at": "min",
+                                        "waste_code": "max",
+                                        "quantity_received": "sum",
+                                    }
+                                )
+                            else:
+                                # If there is no packagings data, we can't get the quantity
+                                continue
+
+                        transport_columns_to_take = ["bs_id", "sent_at", "transporter_company_siret"]
+
+                        validation = "many_to_many"  # Due to merging with packaging before
+                        if (not bs_type == BSFF) or (
+                            self.packagings_data is None
+                        ):  # BSFF stores quantity in packagings data
+                            transport_columns_to_take.append("quantity_received")
+                            validation = "one_to_many"
+
                         df = df.merge(
-                            self.packagings_data[["bsff_id", "acceptation_weight", "acceptation_date"]],
+                            transport_df[transport_columns_to_take],
                             left_on="id",
-                            right_on="bsff_id",
-                            validate="one_to_many",
+                            right_on="bs_id",
+                            how="left",
+                            validate=validation,
                         )
-                        df = df.rename(columns={"acceptation_weight": "quantity_received"})
 
-                    transport_columns_to_take = ["bs_id", "sent_at", "transporter_company_siret"]
-
-                    if not bs_type == BSFF:  # BSFF stores quantity in packagings data
-                        transport_columns_to_take.append("quantity_received")
-
-                    df = df.merge(
-                        transport_df[transport_columns_to_take],
-                        left_on="id",
-                        right_on="bs_id",
-                        how="left",
-                        validate="one_to_many",
-                    )
-
-                    df = df.groupby("id", as_index=False).agg(
-                        {
-                            "emitter_company_siret": "max",
-                            "recipient_company_siret": "max",
-                            "transporter_company_siret": lambda x: x.fillna(
-                                value=""
-                            ).max(),  # Handle missing values being NA instead of None
-                            "sent_at": "min",
-                            "received_at": "min",
-                            "waste_code": "max",
-                            "quantity_received": "max",
-                        }
-                    )
+                        df = df.groupby("id", as_index=False).agg(
+                            {
+                                "emitter_company_siret": "max",
+                                "recipient_company_siret": "max",
+                                "transporter_company_siret": lambda x: x.fillna(
+                                    value=""
+                                ).max(),  # Handle missing values being NA instead of None
+                                "sent_at": "min",
+                                "received_at": "min",
+                                "waste_code": "max",
+                                "quantity_received": "max",
+                            }
+                        )
+                    else:
+                        df = transport_df
 
             dfs_to_concat.append(df)
 
@@ -481,9 +504,10 @@ class WasteFlowsTableProcessor:
             ("recipient_company_siret", "received_at", "incoming"),
             ("transporter_company_siret", "sent_at", "transported"),
         ]:
-            temp_df = df[(df[siret_key] == siret) & df[date_key].between(*self.data_date_interval)].copy()
-            temp_df["flow_status"] = flow_type
-            dfs_to_concat.append(temp_df)
+            if (siret_key in df.columns) and (date_key in df.columns):
+                temp_df = df[(df[siret_key] == siret) & df[date_key].between(*self.data_date_interval)].copy()
+                temp_df["flow_status"] = flow_type
+                dfs_to_concat.append(temp_df)
 
         df = pd.concat(dfs_to_concat)
         df = df.dropna(subset="flow_status")
@@ -492,7 +516,7 @@ class WasteFlowsTableProcessor:
             # We compute the quantity by waste codes and incoming/outgoing/transported categories
             df_grouped = df.groupby(["waste_code", "flow_status"], as_index=False).agg({"quantity_received": "sum"})
             df_grouped["unit"] = "t"
-
+            df_grouped["quantity_received"] = df_grouped["quantity_received"].round(3)
             return df_grouped
 
         return None
@@ -580,7 +604,7 @@ class WasteFlowsTableProcessor:
         )
 
         final_df = final_df[final_df["quantity_received"] > 0]
-        final_df["quantity_received"] = final_df["quantity_received"].apply(lambda x: format_number_str(x, 2))
+        final_df["quantity_received"] = final_df["quantity_received"].apply(lambda x: format_number_str(x, 3))
         final_df["description"] = final_df["description"].fillna("")
         final_df = (
             final_df[["waste_code", "description", "flow_status", "quantity_received", "unit"]]

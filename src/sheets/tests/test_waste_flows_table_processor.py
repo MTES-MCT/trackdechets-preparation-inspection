@@ -15,7 +15,7 @@ EXPECTED_FILES_PATH = Path(__file__).parent.resolve() / "expected"
 
 
 @pytest.fixture
-def sample_data():
+def sample_data() -> dict:
     # Creating sample data for bs_data_dfs, transporters_data_df, rndts_data, waste_codes_df, and packagings_data
     bs_data_dfs = {
         BSDD: pd.DataFrame(
@@ -112,9 +112,10 @@ def sample_data():
 
     packagings_data = pd.DataFrame(
         {
-            "bsff_id": [8, 5, 6, 2],
-            "acceptation_weight": [3, 1, 2.4, 5],
+            "bsff_id": [8, 8, 5, 6, 2],
+            "acceptation_weight": [3, 1.001, 1, 2.4, 5],
             "acceptation_date": [
+                datetime(2023, 2, 1),
                 datetime(2023, 2, 1),
                 datetime(2023, 4, 20),
                 datetime(2023, 6, 10),
@@ -174,25 +175,27 @@ def sample_data():
         ),
     }
 
-    waste_codes_df = load_waste_code_data()
-
     return {
         "bs_data_dfs": bs_data_dfs,
         "transporters_data_df": transporters_data_df,
         "rndts_data": rndts_data,
-        "waste_codes_df": waste_codes_df,
         "packagings_data": packagings_data,
     }
 
 
-def test_preprocess_bs_data(sample_data):
+@pytest.fixture
+def waste_code_data() -> pd.DataFrame:
+    return load_waste_code_data()
+
+
+def test_preprocess_bs_data(sample_data: dict, waste_code_data: pd.DataFrame):
     processor = WasteFlowsTableProcessor(
         company_siret="12345678901234",
         bs_data_dfs=sample_data["bs_data_dfs"],
         transporters_data_df=sample_data["transporters_data_df"],
         rndts_data=sample_data["rndts_data"],
         data_date_interval=(datetime(2023, 1, 1), datetime(2023, 6, 30)),
-        waste_codes_df=sample_data["waste_codes_df"],
+        waste_codes_df=waste_code_data,
         packagings_data=sample_data["packagings_data"],
     )
 
@@ -226,7 +229,7 @@ def test_preprocess_bs_data(sample_data):
                 "outgoing",
                 "transported",
             ],
-            "quantity_received": [30.0, 30.0, 9.3, 19.0, 12.5, 10.0, 32.0, 3.0, 1.0, 2.4, 7.4],
+            "quantity_received": [30.000, 30.000, 9.300, 19.000, 12.500, 10.000, 32.000, 4.001, 1.000, 2.400, 7.400],
             "unit": ["t", "t", "t", "t", "t", "t", "t", "t", "t", "t", "t"],
         }
     )
@@ -234,14 +237,14 @@ def test_preprocess_bs_data(sample_data):
     assert bs_data.equals(expected_output)
 
 
-def test_preprocess_rndts_data(sample_data):
+def test_preprocess_rndts_data(sample_data: dict, waste_code_data: pd.DataFrame):
     processor = WasteFlowsTableProcessor(
         company_siret="12345678901234",
         bs_data_dfs=sample_data["bs_data_dfs"],
         transporters_data_df=sample_data["transporters_data_df"],
         rndts_data=sample_data["rndts_data"],
         data_date_interval=(datetime(2023, 1, 1), datetime(2023, 6, 30)),
-        waste_codes_df=sample_data["waste_codes_df"],
+        waste_codes_df=waste_code_data,
         packagings_data=sample_data["packagings_data"],
     )
 
@@ -285,14 +288,14 @@ def test_preprocess_rndts_data(sample_data):
     assert preprocessed_rndts_data.equals(expected_output)
 
 
-def test_preprocess_data(sample_data):
+def test_preprocess_data(sample_data: dict, waste_code_data: pd.DataFrame):
     processor = WasteFlowsTableProcessor(
         company_siret="12345678901234",
         bs_data_dfs=sample_data["bs_data_dfs"],
         transporters_data_df=sample_data["transporters_data_df"],
         rndts_data=sample_data["rndts_data"],
         data_date_interval=(datetime(2023, 1, 1), datetime(2023, 6, 30)),
-        waste_codes_df=sample_data["waste_codes_df"],
+        waste_codes_df=waste_code_data,
         packagings_data=sample_data["packagings_data"],
     )
 
@@ -323,14 +326,84 @@ def test_empty_data():
     assert preprocessed_df is None or preprocessed_df.empty
 
 
-def test_build(sample_data):
+def test_empty_bs_data_with_transport_data(waste_code_data: pd.DataFrame):
+    transport_df = pd.DataFrame(
+        {
+            "id": ["1", "2"],
+            "bs_id": ["5", "6"],
+            "sent_at": [datetime(2023, 2, 2), datetime(2023, 5, 2)],
+            "transporter_company_siret": ["12345678901234", "12345678901234"],
+            "transporter_transport_mode": ["ROAD", "ROAD"],
+            "quantity_received": [12.5, 11.3],
+            "waste_code": ["13 03 10*", "14 06 01*"],
+        }
+    )
+    processor = WasteFlowsTableProcessor(
+        company_siret="12345678901234",
+        bs_data_dfs={
+            BSDD: pd.DataFrame(
+                columns=[
+                    "id",
+                    "created_at",
+                    "sent_at",
+                    "received_at",
+                    "emitter_company_siret",
+                    "emitter_company_address",
+                    "recipient_company_siret",
+                    "waste_detail_quantity",
+                    "waste_code",
+                    "quantity_received",
+                    "status",
+                ]
+            )
+        },
+        transporters_data_df={BSDD: transport_df},
+        rndts_data={},
+        data_date_interval=(datetime(2023, 1, 1), datetime(2023, 6, 30)),
+        waste_codes_df=waste_code_data,
+        packagings_data=None,
+    )
+
+    processor._preprocess_data()
+    preprocessed_df = processor.preprocessed_df
+
+    expected_output = pd.DataFrame(
+        {
+            "waste_code": ["13 03 10*", "14 06 01*"],
+            "description": ["autres huiles isolantes et fluides caloporteurs", "chlorofluorocarbones, HCFC, HFC"],
+            "flow_status": ["transported", "transported"],
+            "quantity_received": ["12.5", "11.3"],
+            "unit": ["t", "t"],
+        }
+    )
+    assert preprocessed_df.equals(expected_output)
+
+
+def test_empty_packagings_data_with_bsff_and_transport_data(sample_data: dict, waste_code_data: pd.DataFrame):
+    processor = WasteFlowsTableProcessor(
+        company_siret="12345678901234",
+        bs_data_dfs={BSFF: sample_data["bs_data_dfs"][BSFF]},
+        transporters_data_df={BSFF: sample_data["transporters_data_df"][BSFF]},
+        rndts_data={},
+        data_date_interval=(datetime(2023, 1, 1), datetime(2023, 6, 30)),
+        waste_codes_df=waste_code_data,
+        packagings_data=None,
+    )
+
+    processor._preprocess_data()
+    preprocessed_df = processor.preprocessed_df
+
+    assert preprocessed_df is None
+
+
+def test_build(sample_data: dict, waste_code_data: pd.DataFrame):
     processor = WasteFlowsTableProcessor(
         company_siret="12345678901234",
         bs_data_dfs=sample_data["bs_data_dfs"],
         transporters_data_df=sample_data["transporters_data_df"],
         rndts_data=sample_data["rndts_data"],
         data_date_interval=(datetime(2023, 1, 1), datetime(2023, 6, 30)),
-        waste_codes_df=sample_data["waste_codes_df"],
+        waste_codes_df=waste_code_data,
         packagings_data=sample_data["packagings_data"],
     )
 

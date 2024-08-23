@@ -516,7 +516,7 @@ class WasteFlowsTableProcessor:
             # We compute the quantity by waste codes and incoming/outgoing/transported categories
             df_grouped = df.groupby(["waste_code", "flow_status"], as_index=False).agg({"quantity_received": "sum"})
             df_grouped["unit"] = "t"
-            df_grouped["quantity_received"] = df_grouped["quantity_received"].round(3)
+            df_grouped["quantity_received"] = df_grouped["quantity_received"].astype(float).round(3)
             return df_grouped
 
         return None

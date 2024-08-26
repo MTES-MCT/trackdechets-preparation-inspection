@@ -2801,7 +2801,7 @@ class SSDProcessor:
         ]
 
         if len(ssd_data) > 0:
-            ssd_data_agg = ssd_data.groupby(["code_dechet", "unite"], as_index=False).agg(
+            ssd_data_agg = ssd_data.groupby(["code_dechet", "nature", "unite"], as_index=False).agg(
                 quantite=pd.NamedAgg(column="quantite", aggfunc="sum"),
                 denomination_usuelle=pd.NamedAgg(column="denomination_usuelle", aggfunc="max"),
             )
@@ -2824,6 +2824,7 @@ class SSDProcessor:
                 {
                     "waste_code": row.code_dechet,
                     "waste_name": row.denomination_usuelle,
+                    "nature": row.nature,
                     "quantity": format_number_str(row.quantite, 2),
                     "unit": row.unite,
                 }

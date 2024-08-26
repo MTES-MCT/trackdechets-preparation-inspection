@@ -644,6 +644,7 @@ SELECT
     numero_identification_declarant,
     code_dechet,
     denomination_usuelle,
+    nature,
     quantite,
     unite,
     date_expedition,

@@ -7,7 +7,8 @@
             <thead>
                 <tr>
                     <th scope="col">Code déchet</th>
-                    <th scope="col">Dénomination usuelle</th>
+                    <th scope="col">Dénomination déchet</th>
+                    <th scope="col">Dénomination SSD</th>
                     <th scope="col">Quantité&nbsp;</th>
                 </tr>
             </thead>
@@ -16,6 +17,7 @@
                     <tr>
                         <td>{{ row.waste_code }}</td>
                         <td>{{ row.waste_name }}</td>
+                        <td>{{ row.nature }}</td>
                         <td class="td--right">{{ row.quantity|number|safe }} {{ row.unit }}</td>
                     </tr>
                 {% endfor %}

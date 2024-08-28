@@ -5,9 +5,11 @@
     <div class="fr-container fr-mt-1v">
         <div class="fr-container--fluid">
             <h3>Contrôle transport</h3>
-            <p>Votre archive est prête</p>
+            <p>Votre dossier est prêt</p>
+            <p>Siret: {{ bundle.company_siret }}</p>
+            <p>Immatriculation: {{ bundle.transporter_plate }}</p>
             <p>
-                Télécharger <a href="{{ bundle.zip_file.url }}">{{ bundle }}</a>
+                <a href="{{ bundle.zip_file.url }}" class="fr-btn">Télécharger le dossier</a>
             </p>
         </div>
     </div>

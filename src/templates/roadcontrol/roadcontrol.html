@@ -19,7 +19,7 @@
                 <div class="fr-col-7 fr-col-offset-1">
                     <h4 class="fr-mb-1w">Recherches récentes</h4>
                     <div hx-get="{% url "roadcontrol_recent_pdfs" %}"
-                         hx-trigger="load,reloadRecentPdfs"></div>
+                         hx-trigger="load,reloadRecentPdfs from:body"></div>
                 </div>
             </div>
             <div class="fr-grid-row fr-grid-row--center">

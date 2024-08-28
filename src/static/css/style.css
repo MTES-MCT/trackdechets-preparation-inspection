@@ -182,22 +182,27 @@ table .td--right {
 .htmx-request .htmx-indicator {
     opacity: 1;
 
-        display: block;
+    display: block;
 }
 
 .htmx-request.htmx-indicator {
     opacity: 1;
-        display: block;
+    display: block;
 }
 
 /*Road control */
-.search-results{ width: 100%}
-.bsd-card-list{
+.search-results {
+    width: 100%
+}
+
+.bsd-card-list {
 
 }
+
 .bsd-card-list__item {
 
 }
+
 /* Style coming from TD UI dashboard*/
 .bsd-card-list {
     list-style-type: none;
@@ -486,7 +491,7 @@ table .td--right {
 }
 
 
-.bsd-card__footer{
+.bsd-card__footer {
     display: flex;
     flex-direction: column;
     color: #161616;
@@ -497,4 +502,30 @@ table .td--right {
 
 .bsd-card__footer p {
     font-size: 0.875rem;
+}
+
+@keyframes spin-animation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(359deg);
+    }
+}
+
+.bsd-card__content__spinner {
+    opacity: 0;
+    display: none;
+    transition: opacity 500ms ease-in;
+    animation: spin-animation 1s infinite linear;
+}
+
+.htmx-request .bsd-card__content__spinner {
+    opacity: 1;
+    display: inline-block;
+}
+
+.htmx-request.bsd-card__content__spinner {
+        display: inline-block;
+    opacity: 1;
 }

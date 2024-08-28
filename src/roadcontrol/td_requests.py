@@ -378,6 +378,7 @@ def query_td_bsds(siret, plate):
             },
         },
     )
+
     rep = res.json()
 
     return rep

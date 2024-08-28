@@ -1,7 +1,6 @@
 import httpx
 from celery.result import AsyncResult
 from django.core.files.base import ContentFile
-from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.views.generic import DetailView, FormView, TemplateView
 
@@ -39,7 +38,7 @@ class RoadControlSearchResult(FullyLoggedMixin, FormView):
 
         edges = resp["data"]["bsds"]["edges"]
 
-        nodes = [edge["node"] for edge in edges][:3]
+        nodes = [edge["node"] for edge in edges]
 
         converter = BsdsToBsdsDisplay(nodes)
         converter.convert()
@@ -70,15 +69,15 @@ class BsdRetrievingMixin:
         waste_code = request.POST.get("waste_code", "")
         weight = request.POST.get("weight", "0")
         packagings = request.POST.get("packagings", "")
-
+        print({"adr_code": adr_code, "waste_code": waste_code, "weight": weight, "packagings": packagings})
         return {"adr_code": adr_code, "waste_code": waste_code, "weight": weight, "packagings": packagings}
 
 
 class RoadControlPdf(FullyLoggedMixin, BsdRetrievingMixin, TemplateView):
+    template_name = "roadcontrol/road_control_pdf.html"
+
     def get_pdf_download_link(self, bsd_type, bsd_id):
         link = query_td_pdf(bsd_type=bsd_type, bsd_id=bsd_id)
-
-        # link = res.get("data", {}).get("formPdf", {}).get("downloadLink", None)
 
         return link
 
@@ -104,7 +103,7 @@ class RoadControlPdf(FullyLoggedMixin, BsdRetrievingMixin, TemplateView):
         download_link = self.get_pdf_download_link(bsd_type=bsd_type, bsd_id=bsd_id)
         pdfdata = self.get_pdf_download_content(download_link)
         file = ContentFile(pdfdata, name="bsd.pdf")
-        BsdPdf.objects.create(
+        bsd_pdf = BsdPdf.objects.create(
             bsd_id=bsd_readable_id,
             pdf_file=file,
             company_siret=siret,
@@ -113,12 +112,10 @@ class RoadControlPdf(FullyLoggedMixin, BsdRetrievingMixin, TemplateView):
             **bsd_data,
             created_by=request.user,
         )
-        response = HttpResponse(content_type="application/pdf")
-        filename = f"{bsd_readable_id}.pdf"
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-        response["HX-Trigger"] = "reloadRecentPdfs"
-        response.write(pdfdata)
-        return response
+
+        res = self.render_to_response(context={"bsd_pdf": bsd_pdf})
+        res["HX-Trigger"] = "reloadRecentPdfs"
+        return res
 
 
 class RoadControlPdfBundle(FullyLoggedMixin, BsdRetrievingMixin, TemplateView):

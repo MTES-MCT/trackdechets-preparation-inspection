@@ -67,7 +67,7 @@ def test_bsdasri_to_bsd_display():
     assert bsd_display == {
         "bsd_type": "BSDASRI",
         "adr": "UN , DECHET, Quantité estimée conformément au 5.4.1.1.3.2",
-        "destination": {"company": {"name": None}},
+        "destination": {"company": {"name": "DESTI"}},
         "emitter": {"company": {"name": "EMITTER"}},
         "id": "DASRI-123_XYY",
         "packagings": "",
@@ -126,7 +126,7 @@ def test_bsda_to_bsd_display():
         "destination": {"company": {"name": "THE COMPANY"}},
         "emitter": {"company": {"name": "EMITTER"}},
         "id": "BSDA-123-XYZ",
-        "transporters": [{"company": {"name": "TRANSPORT"}, "transport": {"plates": ["34ER36"]}}],
+        "transporter": {"company": {"name": "TRANSPORT"}, "transport": {"plates": ["34ER36"]}},
         "waste": {"adr": "non sousmis", "bsdaWasteCode": "17 06 05*", "materialName": "amiante ciment lié"},
         "weight": {"value": 10.1},
     }
@@ -141,9 +141,9 @@ def test_bsda_to_bsd_display():
         "adr": "non sousmis",
         "waste_details": {"code": "17 06 05*", "name": "amiante ciment lié", "weight": "10.1"},
         "emitter": {"company": {"name": "EMITTER"}},
-        "destination": {"company": {"name": None}},
-        "transporter": {"company": {"name": None}},
-        "transporter_plate": "",
+        "destination": {"company": {"name": "THE COMPANY"}},
+        "transporter": {"company": {"name": "TRANSPORT"}},
+        "transporter_plate": "34ER36",
         "packagings": "",
     }
 

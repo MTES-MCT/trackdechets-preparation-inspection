@@ -32,6 +32,6 @@ def get_company_data(siret) -> CompanyData:
         "company_name": company[0] or "",
         "company_address": company[1] or "",
         "company_contact": company[2] or "",
-        "company_email": company[3 or ""],
+        "company_email": company[3] or "",
         "company_phone": company[4] or "",
     }

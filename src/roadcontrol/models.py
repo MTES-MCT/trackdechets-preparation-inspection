@@ -39,7 +39,8 @@ class Base(models.Model):
 
 def bundle_path(instance, _):
     now = timezone.now()
-    return f"bundles/{now.year}/{now.month}/{now.day}/bundle-{instance.id}.zip"
+    transporter_plate = "".join(instance.transporter_plate.split())
+    return f"bundles/{now.year}/{now.month}/{now.day}/{now.year}{now.month}{now.day}_{now.hour}{now.minute}_{instance.company_siret}_{transporter_plate}.zip"
 
 
 class PdfBundle(Base):

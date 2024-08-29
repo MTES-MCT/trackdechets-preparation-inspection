@@ -15,15 +15,15 @@ class RoadControlSearchForm(Form):
 
     plate = CharField(
         label="Immatriculation",
-        min_length=7,
+        min_length=5,
         max_length=14,
-        help_text="Format: 7-14 caractères (AB-123-YZ)",
+        help_text="Format: 5-14 caractères (AB-123-YZ ou AB 123 YZ)",
     )
 
     def clean_plate(self):
         plate = self.cleaned_data["plate"]
-        plate = plate.replace("-", "")
-        plate = "".join(plate.split())  # strip all whitespace
+        plate = plate.replace("-", " ")
+        plate = " ".join(plate.split())  # strip double whitespace
         return plate
 
     def clean_siret(self):

@@ -146,7 +146,7 @@ def bsdasri_to_bsd_display(bsdasri) -> BsdDisplay:
             # force str to get a dot an not a comma
         },
         "emitter": {"company": {"name": deep_get(bsdasri, "emitter.company.name")}},
-        "destination": {"company": {"name": deep_get(bsdasri, "recipient.company.name")}},
+        "destination": {"company": {"name": deep_get(bsdasri, "destination.company.name")}},
         "transporter": {"company": {"name": deep_get(bsdasri, "transporter.company.name")}},
         "transporter_plate": ",".join(
             deep_get(bsdasri, "transporter.transport.plates", default=[])
@@ -172,12 +172,9 @@ def bsda_to_bsd_display(bsda) -> BsdDisplay:
             # force str to get a dot an not a comma
         },
         "emitter": {"company": {"name": deep_get(bsda, "emitter.company.name")}},
-        "destination": {"company": {"name": deep_get(bsda, "recipient.company.name")}},
+        "destination": {"company": {"name": deep_get(bsda, "destination.company.name")}},
         "transporter": {"company": {"name": deep_get(bsda, "transporter.company.name")}},
-        "transporter_plate": ",".join(
-            deep_get(bsda, "transporter.transport.plates", default=[])
-            or deep_get(bsda, "bsdasriTransporter.transport.plates", default=[])
-        ),
+        "transporter_plate": ",".join(deep_get(bsda, "transporter.transport.plates", default=[])),
         "packagings": format_bsdasri_packagings(deep_get(bsda, "transporter.transport.packagings", default=[])),
     }
 

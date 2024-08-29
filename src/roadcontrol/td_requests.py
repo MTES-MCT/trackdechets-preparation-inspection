@@ -112,7 +112,7 @@ fragment BsdaFragment on Bsda {
       name
     }
   }
-  transporters {
+  transporter {
     company {
       name
     }

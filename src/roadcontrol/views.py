@@ -67,7 +67,6 @@ class BsdRetrievingMixin:
         waste_code = request.POST.get("waste_code", "")
         weight = request.POST.get("weight", "0")
         packagings = request.POST.get("packagings", "")
-        print({"adr_code": adr_code, "waste_code": waste_code, "weight": weight, "packagings": packagings})
         return {"adr_code": adr_code, "waste_code": waste_code, "weight": weight, "packagings": packagings}
 
 

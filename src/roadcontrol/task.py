@@ -22,7 +22,7 @@ def prepare_bundle(bundle_pk):
     """
     Pollable task to prepare html view.
 
-    :param computed_pk: ComputedInspectionData pk
+    :param bundle_pk: PdfBundle pk
     """
     process = Process(bundle_pk)
     return process.process()
@@ -48,7 +48,8 @@ class Process:
         bundle = PdfBundle.objects.get(pk=self.bundle_pk)
         PdfBundle.objects.mark_as_processing(self.bundle_pk)
         self.client = httpx.Client(timeout=60)  # 1 minute
-
+        bsds_total_count = len(bundle.params)
+        bsds_count = 0
         for row in bundle.params:
             bsd_type = row["bsd_type"]
             bsd_id = row["bsd_id"]
@@ -75,8 +76,17 @@ class Process:
                 company_email=bundle.company_email,
                 company_phone=bundle.company_phone,
             )
+            bsds_count += 1
+            current_task.update_state(
+                state="PROGRESS",
+                meta={
+                    "progress": round(100 * (bsds_count / bsds_total_count)),
+                    "bsds_count": bsds_count,
+                    "bsds_total_count": bsds_total_count,
+                },
+            )
 
-        # build zip
+            # build zip
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
             bytes = render_pdf_road_control_fn(bundle)

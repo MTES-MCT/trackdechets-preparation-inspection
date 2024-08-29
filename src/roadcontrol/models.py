@@ -20,6 +20,9 @@ class PdfBundleCustomManager(models.Manager):
     def mark_as_ready(self, pk):
         self.filter(pk=pk).update(state="READY")
 
+    def ready(self):
+        return self.filter(state="READY")
+
 
 class Base(models.Model):
     company_siret = models.CharField(_("Company Siret"), max_length=20, blank=True)
@@ -73,6 +76,10 @@ class PdfBundle(Base):
     def type(self):
         return "Bundle"
 
+    @property
+    def verbose_type(self):
+        return "Dossier"
+
     def __str__(self):
         return f"Archive {self.company_siret} {self.created_at.strftime('%d %M %Y')}"
 
@@ -116,6 +123,10 @@ class BsdPdf(Base):
     @property
     def type(self):
         return "Pdf"
+
+    @property
+    def verbose_type(self):
+        return "Bordereau"
 
 
 @receiver(pre_delete, sender=BsdPdf)

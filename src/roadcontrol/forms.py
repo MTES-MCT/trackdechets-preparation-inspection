@@ -15,9 +15,9 @@ class RoadControlSearchForm(Form):
 
     plate = CharField(
         label="Immatriculation",
-        min_length=6,
+        min_length=7,
         max_length=14,
-        help_text="Format: todo",
+        help_text="Format: 7-14 caractères (AB-123-YZ)",
     )
 
     def clean_plate(self):

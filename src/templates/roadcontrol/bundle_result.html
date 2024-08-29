@@ -9,7 +9,7 @@
             <p>Siret: {{ bundle.company_siret }}</p>
             <p>Immatriculation: {{ bundle.transporter_plate }}</p>
             <p>
-                <a href="{{ bundle.zip_file.url }}" class="fr-btn">Télécharger le dossier</a>
+                {% if  bundle.zip_file %}<a href="{{ bundle.zip_file.url }}" class="fr-btn">Télécharger le dossier</a>{% endif %}
             </p>
         </div>
     </div>

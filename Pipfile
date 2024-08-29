@@ -32,6 +32,7 @@ django-allauth = "== 64.0.0"
 httpx = "*"
 djangorestframework = "*"
 "django-storages[s3]" = "*"
+django-template-partials = "*"
 
 [dev-packages]
 ruff = "*"

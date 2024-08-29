@@ -366,20 +366,22 @@ def query_td_bsds(siret, plate):
     )
 
     client = httpx.Client(timeout=60)
-
-    res = client.post(
-        url=settings.TD_API_URL,
-        headers={"Authorization": f"Bearer {settings.TD_API_TOKEN}"},
-        json={
-            "query": query,
-            "variables": {
-                "siret": siret,
-                "plate": plate,
+    try:
+        res = client.post(
+            url=settings.TD_API_URL,
+            headers={"Authorization": f"Bearer {settings.TD_API_TOKEN}"},
+            json={
+                "query": query,
+                "variables": {
+                    "siret": siret,
+                    "plate": plate,
+                },
             },
-        },
-    )
+        )
 
-    rep = res.json()
+        rep = res.json()
+    except httpx.HTTPError:
+        return []
 
     return rep
 

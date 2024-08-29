@@ -1,7 +1,7 @@
 {% if state != "done" %}
     <div hx-get="{% url "pdf_bundle_processing_fragment" task_id bundle_pk %}"
          hx-trigger="every 500ms"
-         hx-swap="outerHTML">{% include "spinner.html" with message=True %}</div>
+         hx-swap="outerHTML">{% include "spinner.html" with message=False custom_message=custom_message %}</div>
 {% endif %}
 {% if state == "done" %}
     {% if not errors %}
@@ -17,7 +17,7 @@
     {% else %}
         <div class="fr-container fr-mt-1v">
             <p>
-                💥 Une erreur est survenue -  <a href="{% url "prepare" %}">Préparer une autre fiche</a>
+                💥 Une erreur est survenue -  <a href="{% url "roadcontrol" %}">Préparer un autre contrôlee</a>
             </p>
         </div>
     {% endif %}

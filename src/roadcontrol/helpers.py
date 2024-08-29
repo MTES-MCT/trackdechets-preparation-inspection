@@ -1,3 +1,5 @@
+from typing import TypedDict
+
 from sqlalchemy.sql import text
 
 from sheets.database import wh_engine
@@ -12,7 +14,15 @@ where
 """
 
 
-def get_company_data_fn(siret):
+class CompanyData(TypedDict):
+    company_name: str
+    company_address: str
+    company_contact: str
+    company_email: str
+    company_phone: str
+
+
+def get_company_data(siret) -> CompanyData:
     prepared_query = text(sql_company_query_data_str)
     with wh_engine.connect() as con:
         companies = con.execute(prepared_query, siret=siret).all()

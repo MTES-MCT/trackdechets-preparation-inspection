@@ -1,25 +1,39 @@
-<div class="fr-table fr-table--bordered">
-    <table>
-        <thead>
-            <tr>
-                <th scope="col">Date</th>
-                <th scope="col">Établissement</th>
-                <th scope="col">Immatriculation</th>
-                <th scope="col">PDF/ZIP</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for download in recent_downloads %}
+{% if recent_downloads %}
+    <div class="fr-table fr-table--bordered">
+        <table>
+            <thead>
                 <tr>
-                    <td>{{ download.created_at }}</td>
-                    <td>{{ download.company_name }} {{ download.company_siret }}</td>
-                    <td>{{ download.transporter_plate }}</td>
-                    <td>
-                        <a href="{{ download.pdf_file.url }}{{ download.zip_file.url }}"
-                           class="fr-btn fr-btn--tertiary fr-icon-download-line "></a>
-                    </td>
+                    <th scope="col">Date</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Établissement</th>
+                    <th scope="col">Immatriculation</th>
+                    <th scope="col">PDF/ZIP</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+            </thead>
+            <tbody>
+                {% for download in recent_downloads %}
+                    <tr data-test-id="{{ download.pk }}">
+                        <td>{{ download.created_at }}</td>
+                        <td>
+                            {% if  download.bsd_id %}
+                                {{ download.bsd_id }}
+                            {% else %}
+                                {{ download.verbose_type }}
+                            {% endif %}
+                        </td>
+                        <td>{{ download.company_name }} {{ download.company_siret }}</td>
+                        <td>{{ download.transporter_plate }}</td>
+                        <td>
+                            {% if  download.pdf_file or  download.zip_file %}
+                                <a href="{{ download.pdf_file.url }}{{ download.zip_file.url }}"
+                                   class="fr-btn fr-btn--tertiary fr-icon-download-line "></a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p>Aucune recherche récente</p>
+{% endif %}

@@ -11,7 +11,7 @@ from config.celery_app import app
 from .converters import BsdsToBsdsDisplay
 from .exceptions import FormDownloadException
 from .forms import RoadControlSearchForm
-from .helpers import get_company_data_fn
+from .helpers import get_company_data
 from .models import BsdPdf, PdfBundle
 from .task import prepare_bundle
 from .td_requests import query_td_bsds, query_td_pdf
@@ -35,10 +35,11 @@ class RoadControlSearchResult(FullyLoggedMixin, FormView):
         plate = form.cleaned_data["plate"]
 
         resp = query_td_bsds(siret, plate)
+        nodes = []
+        if resp:
+            edges = resp["data"]["bsds"]["edges"]
 
-        edges = resp["data"]["bsds"]["edges"]
-
-        nodes = [edge["node"] for edge in edges]
+            nodes = [edge["node"] for edge in edges]
 
         converter = BsdsToBsdsDisplay(nodes)
         converter.convert()
@@ -54,9 +55,6 @@ class RoadControlSearchResult(FullyLoggedMixin, FormView):
 
 
 class BsdRetrievingMixin:
-    def get_company_data(self, siret):
-        return get_company_data_fn(siret)
-
     def get_search_params(self, request):
         siret = request.POST.get("siret")
         plate = request.POST.get("plate")
@@ -96,7 +94,7 @@ class RoadControlPdf(FullyLoggedMixin, BsdRetrievingMixin, TemplateView):
         search_params = self.get_search_params(request)
         siret = search_params["siret"]
         plate = search_params["plate"]
-        company_data = self.get_company_data(siret)
+        company_data = get_company_data(siret)
         bsd_data = self.get_bsd_data(request)
 
         self.client = httpx.Client(timeout=60)  # 60 seconds
@@ -119,6 +117,8 @@ class RoadControlPdf(FullyLoggedMixin, BsdRetrievingMixin, TemplateView):
 
 
 class RoadControlPdfBundle(FullyLoggedMixin, BsdRetrievingMixin, TemplateView):
+    template_name = "dummy.html"
+
     def post(self, request, *args, **kwargs):
         bsd_ids = request.POST.getlist("bsd_ids[]")
         bsd_types = request.POST.getlist("bsd_types[]")
@@ -129,9 +129,9 @@ class RoadControlPdfBundle(FullyLoggedMixin, BsdRetrievingMixin, TemplateView):
         packagings = request.POST.getlist("packagings[]")
 
         search_params = self.get_search_params(request)
-        siret = search_params["siret"]
-        plate = search_params["plate"]
-        company_data = self.get_company_data(search_params["siret"])
+        siret = search_params.get("siret", "")
+        plate = search_params.get("plate", "")
+        company_data = get_company_data(siret)
         bundle = PdfBundle.objects.create(
             created_by=request.user,
             company_siret=siret,
@@ -184,14 +184,19 @@ class FragmentBundleProcessingView(FullyLoggedMixin, TemplateView):
         job = AsyncResult(self.task_id, app=app)
         done = job.ready()
         result = job.result
-
+        bsds_count = "N/A"
+        bsds_total_count = "N/A"
         if isinstance(result, dict):
             progress = result.get("progress", 0)
+            bsds_count = result.get("bsds_count", 0)
+            bsds_total_count = result.get("bsds_total_count", 0)
 
         else:
             progress = 100.0 if done else 0.0
-
-        ctx.update({"progress": int(progress)})
+        custom_message = "Préparation en cours"
+        if bsds_count and bsds_total_count:
+            custom_message = f"{progress} % : {bsds_count}/{bsds_total_count} bsds"
+        ctx.update({"custom_message": custom_message})
 
         if not job.ready():
             ctx.update({"state": STATE_RUNNING})
@@ -212,13 +217,16 @@ class RoadControlPdfBundleResult(FullyLoggedMixin, DetailView):
     context_object_name = "bundle"
     template_name = "roadcontrol/bundle_result.html"
 
+    def get_queryset(self):
+        return super().get_queryset().filter(created_by=self.request.user)
+
 
 class RoadControlRecentsPdfs(FullyLoggedMixin, TemplateView):
     template_name = "roadcontrol/partials/_recent_pdfs.html"
 
     def get_recent_downloads(self):
         user = self.request.user
-        bundles = PdfBundle.objects.filter(created_by=user, state=PdfBundle.BundleChoice.READY)[:5]
+        bundles = PdfBundle.objects.ready().filter(created_by=user)[:5]
         pdfs = BsdPdf.objects.filter(bundle=None, created_by=user)[:5]
 
         return sorted(list(bundles) + list(pdfs), key=lambda i: getattr(i, "created_at"), reverse=True)[:5]

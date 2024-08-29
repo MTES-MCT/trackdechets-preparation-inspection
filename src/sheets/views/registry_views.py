@@ -22,7 +22,7 @@ from ..models import RegistryDownload
 
 
 class RegistryDownloadException(Exception):
-    def __init__(self, salary, message="Erreur de téléchargement"):
+    def __init__(self, message="Erreur de téléchargement"):
         self.message = message
         super().__init__(self.message)
 

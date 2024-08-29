@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "grappelli.dashboard",
     "grappelli",
     "django.contrib.admin",
+    "template_partials",
     "anymail",
     "defender",
     "django_otp",
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
     "aiot_provider",
     "accounts",
     "content",
+    "roadcontrol",
     "sheets",
 ]
 
@@ -77,6 +79,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "config.context_processors.settings_processor",
             ],
         },
     },
@@ -168,7 +171,6 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.BasicAuthentication"],
 }
-
 
 # defender
 REDIS_URL = env.str("REDIS_URL", "redis://localhost:6379/0")
@@ -264,3 +266,23 @@ REQUEST_IGNORE_PATHS = (
     r"/static/",
     r"favicon.ico",
 )
+
+# Storages
+DISPLAY_ROADCONTROL_MENU = env.bool("DISPLAY_ROADCONTROL_MENU", False)
+
+AWS_S3_ENDPOINT_URL = env("AWS_S3_ENDPOINT_URL")
+AWS_BUCKET_NAME = env("AWS_BUCKET_NAME")
+AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
+AWS_S3_REGION_NAME = env("AWS_S3_REGION_NAME")
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "private_s3": {
+        "BACKEND": "roadcontrol.storage_backends.PrivateMediaStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}

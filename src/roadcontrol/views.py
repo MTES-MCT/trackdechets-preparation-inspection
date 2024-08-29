@@ -1,0 +1,235 @@
+import httpx
+from celery.result import AsyncResult
+from django.core.files.base import ContentFile
+from django.shortcuts import redirect
+from django.views.generic import DetailView, FormView, TemplateView
+
+from common.constants import STATE_DONE, STATE_RUNNING
+from common.mixins import FullyLoggedMixin
+from config.celery_app import app
+
+from .converters import BsdsToBsdsDisplay
+from .exceptions import FormDownloadException
+from .forms import RoadControlSearchForm
+from .helpers import get_company_data
+from .models import BsdPdf, PdfBundle
+from .task import prepare_bundle
+from .td_requests import query_td_bsds, query_td_pdf
+
+
+class RoadControl(FullyLoggedMixin, TemplateView):
+    template_name = "roadcontrol/roadcontrol.html"
+
+    def get_context_data(self, **kwargs):
+        form = RoadControlSearchForm()
+        return super().get_context_data(**kwargs, form=form)
+
+
+class RoadControlSearchResult(FullyLoggedMixin, FormView):
+    form_class = RoadControlSearchForm
+    success_url = ""
+    template_name = "roadcontrol/partials/search_result.html"
+
+    def form_valid(self, form):
+        siret = form.cleaned_data["siret"]
+        plate = form.cleaned_data["plate"]
+
+        resp = query_td_bsds(siret, plate)
+        nodes = []
+        if resp:
+            edges = resp["data"]["bsds"]["edges"]
+
+            nodes = [edge["node"] for edge in edges]
+
+        converter = BsdsToBsdsDisplay(nodes)
+        converter.convert()
+
+        bsds_ids = [{"bsd_id": bsd["id"], "readable_id": bsd["readable_id"]} for bsd in converter.bsds_display]
+
+        search_params = {"plate": plate, "siret": siret}
+        return self.render_to_response(
+            self.get_context_data(
+                form=form, bsds=converter.bsds_display, bsds_ids=bsds_ids, search_params=search_params
+            )
+        )
+
+
+class BsdRetrievingMixin:
+    def get_search_params(self, request):
+        siret = request.POST.get("siret")
+        plate = request.POST.get("plate")
+        adr = request.POST.get("adr")
+
+        return {"siret": siret, "plate": plate, "adr": adr}
+
+    def get_bsd_data(self, request):
+        adr_code = request.POST.get("adr_code", "")
+        waste_code = request.POST.get("waste_code", "")
+        weight = request.POST.get("weight", "0")
+        packagings = request.POST.get("packagings", "")
+        print({"adr_code": adr_code, "waste_code": waste_code, "weight": weight, "packagings": packagings})
+        return {"adr_code": adr_code, "waste_code": waste_code, "weight": weight, "packagings": packagings}
+
+
+class RoadControlPdf(FullyLoggedMixin, BsdRetrievingMixin, TemplateView):
+    template_name = "roadcontrol/road_control_pdf.html"
+
+    def get_pdf_download_link(self, bsd_type, bsd_id):
+        link = query_td_pdf(bsd_type=bsd_type, bsd_id=bsd_id)
+
+        return link
+
+    def get_pdf_download_content(self, link):
+        try:
+            r = self.client.get(link)
+        except httpx.RequestError:
+            raise FormDownloadException()
+        return r.content
+
+    def post(self, request, *args, **kwargs):
+        bsd_id = request.POST.get("bsd_id")
+        bsd_type = request.POST.get("bsd_type")
+        bsd_readable_id = request.POST.get("bsd_readable_id", None) or bsd_id
+
+        search_params = self.get_search_params(request)
+        siret = search_params["siret"]
+        plate = search_params["plate"]
+        company_data = get_company_data(siret)
+        bsd_data = self.get_bsd_data(request)
+
+        self.client = httpx.Client(timeout=60)  # 60 seconds
+        download_link = self.get_pdf_download_link(bsd_type=bsd_type, bsd_id=bsd_id)
+        pdfdata = self.get_pdf_download_content(download_link)
+        file = ContentFile(pdfdata, name="bsd.pdf")
+        bsd_pdf = BsdPdf.objects.create(
+            bsd_id=bsd_readable_id,
+            pdf_file=file,
+            company_siret=siret,
+            transporter_plate=plate,
+            **company_data,
+            **bsd_data,
+            created_by=request.user,
+        )
+
+        res = self.render_to_response(context={"bsd_pdf": bsd_pdf})
+        res["HX-Trigger"] = "reloadRecentPdfs"
+        return res
+
+
+class RoadControlPdfBundle(FullyLoggedMixin, BsdRetrievingMixin, TemplateView):
+    template_name = "dummy.html"
+
+    def post(self, request, *args, **kwargs):
+        bsd_ids = request.POST.getlist("bsd_ids[]")
+        bsd_types = request.POST.getlist("bsd_types[]")
+        readable_ids = request.POST.getlist("readable_ids[]")
+        waste_codes = request.POST.getlist("waste_codes[]")
+        weights = request.POST.getlist("weights[]")
+        adr_codes = request.POST.getlist("adr_codes[]")
+        packagings = request.POST.getlist("packagings[]")
+
+        search_params = self.get_search_params(request)
+        siret = search_params.get("siret", "")
+        plate = search_params.get("plate", "")
+        company_data = get_company_data(siret)
+        bundle = PdfBundle.objects.create(
+            created_by=request.user,
+            company_siret=siret,
+            transporter_plate=plate,
+            **company_data,
+            params=[
+                {
+                    "bsd_type": bsd_type,
+                    "bsd_id": bsd_id,
+                    "readable_id": readable_id,
+                    "waste_code": waste_code,
+                    "weight": weight,
+                    "adr_code": adr_code,
+                    "packagings": packaging,
+                }
+                for bsd_type, bsd_id, readable_id, waste_code, weight, adr_code, packaging in zip(
+                    bsd_types, bsd_ids, readable_ids, waste_codes, weights, adr_codes, packagings
+                )
+            ],
+        )
+
+        task = prepare_bundle.delay(bundle.pk)
+
+        return redirect("roadcontrol_pdf_bundle_processing", task_id=task.id, bundle_pk=str(bundle.pk))
+
+
+class BundleProcessingView(FullyLoggedMixin, TemplateView):
+    template_name = "roadcontrol/bundle_processing.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx.update(
+            {
+                "task_id": self.kwargs.get("task_id", None),
+                "bundle_pk": self.kwargs.get("bundle_pk", None),
+            }
+        )
+        return ctx
+
+
+class FragmentBundleProcessingView(FullyLoggedMixin, TemplateView):
+    template_name = "roadcontrol/partials/_prepare_bundle.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.task_id = self.kwargs.get("task_id")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        job = AsyncResult(self.task_id, app=app)
+        done = job.ready()
+        result = job.result
+        bsds_count = "N/A"
+        bsds_total_count = "N/A"
+        if isinstance(result, dict):
+            progress = result.get("progress", 0)
+            bsds_count = result.get("bsds_count", 0)
+            bsds_total_count = result.get("bsds_total_count", 0)
+
+        else:
+            progress = 100.0 if done else 0.0
+        custom_message = "Préparation en cours"
+        if bsds_count and bsds_total_count:
+            custom_message = f"{progress} % : {bsds_count}/{bsds_total_count} bsds"
+        ctx.update({"custom_message": custom_message})
+
+        if not job.ready():
+            ctx.update({"state": STATE_RUNNING})
+        else:
+            result = job.get()
+            ctx.update(
+                {
+                    "errors": result.get("errors", []),
+                    "state": STATE_DONE,
+                    "redirect_to": result.get("redirect", ""),
+                }
+            )
+        return ctx
+
+
+class RoadControlPdfBundleResult(FullyLoggedMixin, DetailView):
+    model = PdfBundle
+    context_object_name = "bundle"
+    template_name = "roadcontrol/bundle_result.html"
+
+    def get_queryset(self):
+        return super().get_queryset().filter(created_by=self.request.user)
+
+
+class RoadControlRecentsPdfs(FullyLoggedMixin, TemplateView):
+    template_name = "roadcontrol/partials/_recent_pdfs.html"
+
+    def get_recent_downloads(self):
+        user = self.request.user
+        bundles = PdfBundle.objects.ready().filter(created_by=user)[:5]
+        pdfs = BsdPdf.objects.filter(bundle=None, created_by=user)[:5]
+
+        return sorted(list(bundles) + list(pdfs), key=lambda i: getattr(i, "created_at"), reverse=True)[:5]
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**kwargs, recent_downloads=self.get_recent_downloads())

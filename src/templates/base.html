@@ -72,6 +72,14 @@
                                    aria-controls="modal-header__menu"
                                    class="fr-nav__link">Préparer une fiche</a>
                             </li>
+                            {% if DISPLAY_ROADCONTROL_MENU %}
+                                <li class="fr-nav__item">
+                                    <a href="{% url "roadcontrol" %}"
+                                       target="_self"
+                                       aria-controls="modal-header__menu"
+                                       class="fr-nav__link">Contrôle routier</a>
+                                </li>
+                            {% endif %}
                             {% if user.is_staff %}
                                 <li class="fr-nav__item">
                                     <a href="{% url "admin:index" %}"

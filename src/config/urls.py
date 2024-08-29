@@ -40,6 +40,7 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
     path("content/", include("content.urls")),
     path("sheets/", include("sheets.urls")),
+    path("roadcontrol/", include("roadcontrol.urls")),
     path("monaiot-login/", temp_aiot_login_page),
 ]
 

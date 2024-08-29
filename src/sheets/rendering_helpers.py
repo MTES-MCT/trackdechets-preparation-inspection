@@ -113,9 +113,6 @@ def render_pdf_sheet_fn(computed_pk: str):
         font_config=font_config,
         base_url=f"{settings.BASE_URL}/static/css/",
     )
-    # tmp_pdf_path = f"/tmp/{sheet.pk}.pdf"
-    #
-    # html.write_pdf(tmp_pdf_path, stylesheets=[css], font_config=font_config)
 
     with tempfile.NamedTemporaryFile(delete=False) as tmp:
         html.write_pdf(tmp, stylesheets=[css], font_config=font_config)

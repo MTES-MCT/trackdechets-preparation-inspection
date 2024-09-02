@@ -1544,7 +1544,7 @@ class WasteProcessingWithoutICPERubriqueProcessor:
     def __init__(
         self,
         company_siret: str,
-        bs_data_dfs: Dict[str, pd.DataFrame],
+        bs_data_dfs: Dict[str, pd.DataFrame | None],
         rndts_incoming_data: pd.DataFrame | None,
         icpe_data: pd.DataFrame | None,
         data_date_interval: tuple[datetime, datetime],
@@ -1567,45 +1567,49 @@ class WasteProcessingWithoutICPERubriqueProcessor:
         has_2760_2 = False
         icpe_data = self.icpe_data
 
-        if icpe_data is not None:
+        if (icpe_data is not None) and (len(icpe_data) > 0):
             has_2760_1 = len(icpe_data[(icpe_data["rubrique"] == "2760-1")]) > 0
             has_2760_2 = len(icpe_data[icpe_data["rubrique"].isin(["2760-2", "2760-2-a", "2760-2-b"])]) > 0
 
         if not has_2760_1:  # Means no authorization for ICPE 2760-1
             bs_2760_dfs = []
             bsdd_data = self.bs_data_dfs[BSDD]
-            bsdd_data_filtered = bsdd_data[
-                (bsdd_data["recipient_company_siret"] == self.siret)
-                & (bsdd_data["processing_operation_code"] == "D5")
-                & (bsdd_data["processed_at"].between(*self.data_date_interval))
-            ]
 
-            if len(bsdd_data_filtered):
-                bsdd_data_filtered["bs_type"] = "BSDD"
-                bs_2760_dfs.append(bsdd_data_filtered)
-
-            if not has_2760_2:  # Means no authorization for ICPE 2760-1 NEITHER 2760-2 (BSDA case)
-                bsda_data = self.bs_data_dfs[BSDA]
-                bsda_data_filtered = bsda_data[
-                    (bsda_data["recipient_company_siret"] == self.siret)
-                    & (bsda_data["processing_operation_code"] == "D5")
+            if (bsdd_data is not None) and (len(bsdd_data) > 0):
+                bsdd_data_filtered = bsdd_data[
+                    (bsdd_data["recipient_company_siret"] == self.siret)
+                    & (bsdd_data["processing_operation_code"] == "D5")
                     & (bsdd_data["processed_at"].between(*self.data_date_interval))
                 ]
-                if len(bsda_data_filtered) > 0:
-                    bsda_data_filtered["bs_type"] = "BSDA"
-                    bs_2760_dfs.append(bsda_data_filtered)
+
+                if len(bsdd_data_filtered):
+                    bsdd_data_filtered["bs_type"] = "BSDD"
+                    bs_2760_dfs.append(bsdd_data_filtered)
+
+                if not has_2760_2:  # Means no authorization for ICPE 2760-1 NEITHER 2760-2 (BSDA case)
+                    bsda_data = self.bs_data_dfs[BSDA]
+
+                    if (bsda_data is not None) and (len(bsda_data) > 0):
+                        bsda_data_filtered = bsda_data[
+                            (bsda_data["recipient_company_siret"] == self.siret)
+                            & (bsda_data["processing_operation_code"] == "D5")
+                            & (bsdd_data["processed_at"].between(*self.data_date_interval))
+                        ]
+                        if len(bsda_data_filtered) > 0:
+                            bsda_data_filtered["bs_type"] = "BSDA"
+                            bs_2760_dfs.append(bsda_data_filtered)
 
             if len(bs_2760_dfs) > 0:
-                bs_df = pd.concat(bs_2760_dfs)  # Creates the list of bordereaux
+                bs_df = pd.concat(bs_2760_dfs).reset_index(drop=True)  # Creates the list of bordereaux
                 self.preprocessed_data["dangerous"].append(
                     {
                         "missing_rubriques": "2760-1, 2760-2",
-                        "num_missing_rubrique": 2,
+                        "num_missing_rubriques": 2,
                         "found_processing_codes": "D5",
                         "num_found_processing_codes": 1,
                         "bs_list": bs_df,
                         "stats": {
-                            "total_bs": len(bs_df),  # Total number of bordereaux
+                            "total_bs": format_number_str(len(bs_df), 0),  # Total number of bordereaux
                             "total_quantity": format_number_str(
                                 bs_df["quantity_received"].sum(), 2
                             ),  # Total quantity processed
@@ -1657,7 +1661,7 @@ class WasteProcessingWithoutICPERubriqueProcessor:
 
             has_rubrique = False
             icpe_data = self.icpe_data
-            if icpe_data is not None:
+            if (icpe_data is not None) and (len(icpe_data) > 0):
                 has_rubrique = len(icpe_data[icpe_data["rubrique"] == rubrique]) > 0
 
             if not has_rubrique:
@@ -1675,7 +1679,7 @@ class WasteProcessingWithoutICPERubriqueProcessor:
                     found_processing_codes = bs_filtered_df["processing_operation_code"].unique()
                     self.preprocessed_data["dangerous"].append(
                         {
-                            "bs_list": bs_filtered_df,  # Creates the list of bordereaux
+                            "bs_list": bs_filtered_df.reset_index(drop=True),  # Creates the list of bordereaux
                             "missing_rubriques": rubrique,
                             "num_missing_rubriques": 1,
                             "found_processing_codes": ", ".join(found_processing_codes),
@@ -1768,8 +1772,8 @@ class WasteProcessingWithoutICPERubriqueProcessor:
                         "num_missing_rubriques": len(missing_rubriques),
                         "found_processing_codes": ", ".join(found_processing_codes),
                         "num_found_processing_codes": len(found_processing_codes),
-                        "statements_list": filtered_rndts_data_df.sort_values(
-                            "date_reception"
+                        "statements_list": filtered_rndts_data_df.sort_values("date_reception").reset_index(
+                            drop=True
                         ),  # Creates the list of statements
                         "stats": {
                             "total_statements": format_number_str(
@@ -1792,8 +1796,9 @@ class WasteProcessingWithoutICPERubriqueProcessor:
     ) -> pd.DataFrame:
         bs_dfs = []
         for bs_type, df in dfs_to_process:
-            if len(df) == 0:
+            if (df is None) or (len(df) == 0):
                 continue
+
             df_filtered = pd.DataFrame()
             if bs_type != BSFF:
                 df_filtered = df[

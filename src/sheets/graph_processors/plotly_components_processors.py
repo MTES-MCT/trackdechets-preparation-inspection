@@ -891,7 +891,7 @@ class ICPEAnnualItemProcessor:
 
     def __init__(
         self,
-        icpe_item_daily_data: pd.DataFrame,
+        icpe_item_daily_data: pd.DataFrame | None,
     ) -> None:
         self.icpe_item_daily_data = icpe_item_daily_data
 
@@ -916,6 +916,9 @@ class ICPEAnnualItemProcessor:
 
     def _check_data_empty(self) -> bool:
         if (self.preprocessed_df is None) or len(self.preprocessed_df) == 0:
+            return True
+
+        if self.preprocessed_df["processed_quantity"].sum() == 0:
             return True
 
         return False

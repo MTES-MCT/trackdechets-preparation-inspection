@@ -1711,7 +1711,6 @@ class WasteProcessingWithoutICPERubriqueProcessor:
             {
                 "rubriques": ["2771"],
                 "processing_codes": [
-                    "D9",
                     "D10",
                 ],
             },
@@ -1744,8 +1743,13 @@ class WasteProcessingWithoutICPERubriqueProcessor:
             icpe_data_df = self.icpe_data
             missing_rubriques = rubriques
             if icpe_data_df is not None:
+                # Handle 2791 case that can have alinea
+                installation_rubriques = (
+                    icpe_data_df["rubrique"].str[:6].str.replace(pat="^2791.*", repl="2791").unique()
+                )
+
                 # To handle the case of rubriques with trailing "-a" or trailing "-b", we use only the 6 first characters
-                missing_rubriques = set(rubriques) - set(icpe_data_df["rubrique"].str[:6].unique())
+                missing_rubriques = set(rubriques) - set(installation_rubriques)
                 has_rubrique = len(missing_rubriques) == 0
 
             if has_rubrique:

@@ -907,8 +907,8 @@ class ICPEAnnualItemProcessor:
         df = self.icpe_item_daily_data[["day_of_processing", "processed_quantity"]]
         df = df.sort_values("day_of_processing")
 
-        series = df.set_index("day_of_processing").squeeze()
-        final_df = series.resample("1d").max().fillna(0).reset_index()
+        df = df.set_index("day_of_processing")
+        final_df = df.resample("1d").max().fillna(0).reset_index()
         final_df["quantity_cumsum"] = final_df.groupby(final_df["day_of_processing"].dt.year).cumsum()
 
         self.preprocessed_df = final_df

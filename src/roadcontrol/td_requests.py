@@ -272,14 +272,22 @@ graphql_query_bsds = Template("""
  $bspaoh_fragment
  $bsff_fragment
  
-query GetBsds($$siret: String!, $$plate: String!) {
+query GetBsds {
   bsds(
     where: {
-      isCollectedFor: [$$siret]
-      transporter: { transport: { plates: { _itemContains: $$plate } } }
+      $where
     }
+    $after
   ) {
+  totalCount
+    pageInfo{
+        startCursor 
+        endCursor 
+        hasNextPage 
+        hasPreviousPage 
+    }
     edges {
+ 
       node {
         ... on Bsdasri {
           ...BsdasriFragment
@@ -353,10 +361,20 @@ query BspaohPdf ($id: ID!){
 """
 
 
-def query_td_bsds(siret, plate):
+def query_td_bsds(siret, plate, start_cursor=None, end_cursor=None):
     """Request SENT bsds matching siret and plate. Vhu do not have plates yet and are ignored"""
 
+    where = """  status: {_in: ["SENT", "RESENT"]}"""
+    after = ""
+    if siret:
+        where += """ \n isCollectedFor: "SIRET" """.replace("SIRET", siret)
+    if plate:
+        where += """\n transporter: {transport: {plates: {_itemContains: "PLATE"}}}""".replace("PLATE", plate)
+    if end_cursor:
+        after = f"""after: "{end_cursor}" """
     query = graphql_query_bsds.substitute(
+        where=where,
+        after=after,
         bsdd_fragment=bsdd_fragment,
         bsdasri_fragment=bsdasri_fragment,
         bsda_fragment=bsda_fragment,
@@ -378,7 +396,6 @@ def query_td_bsds(siret, plate):
                 },
             },
         )
-
         rep = res.json()
     except httpx.HTTPError:
         return []

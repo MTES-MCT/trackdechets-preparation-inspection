@@ -34,10 +34,26 @@ class RoadControlSearchResult(FullyLoggedMixin, FormView):
         siret = form.cleaned_data["siret"]
         plate = form.cleaned_data["plate"]
 
-        resp = query_td_bsds(siret, plate)
+        form_end_cursor = form.cleaned_data.get("end_cursor", None)
+        resp = query_td_bsds(siret, plate, end_cursor=form_end_cursor)
         nodes = []
+        total_count = 0
+
+        start_cursor = None
+        end_cursor = None
+        has_next_page = False
+        has_previous_page = False
         if resp:
-            edges = resp["data"]["bsds"]["edges"]
+            bsds = resp["data"]["bsds"]
+            total_count = bsds["totalCount"]
+            page_info = bsds["pageInfo"]
+            start_cursor = page_info["startCursor"]
+            end_cursor = page_info["endCursor"]
+
+            has_next_page = page_info["hasNextPage"]
+            # has_previous_page = page_info["has_previous_page"]  bsds api is currently buggy on hasNextPage
+            has_previous_page = bool(form_end_cursor)
+            edges = bsds["edges"]
 
             nodes = [edge["node"] for edge in edges]
 
@@ -49,7 +65,15 @@ class RoadControlSearchResult(FullyLoggedMixin, FormView):
         search_params = {"plate": plate, "siret": siret}
         return self.render_to_response(
             self.get_context_data(
-                form=form, bsds=converter.bsds_display, bsds_ids=bsds_ids, search_params=search_params
+                form=form,
+                bsds=converter.bsds_display,
+                bsds_ids=bsds_ids,
+                search_params=search_params,
+                total_count=total_count,
+                start_cursor=start_cursor,
+                end_cursor=end_cursor,
+                has_next_page=has_next_page,
+                has_previous_page=has_previous_page,
             )
         )
 
@@ -93,7 +117,7 @@ class RoadControlPdf(FullyLoggedMixin, BsdRetrievingMixin, TemplateView):
         search_params = self.get_search_params(request)
         siret = search_params["siret"]
         plate = search_params["plate"]
-        company_data = get_company_data(siret)
+        company_data = get_company_data(siret) if siret else {}
         bsd_data = self.get_bsd_data(request)
 
         self.client = httpx.Client(timeout=60)  # 60 seconds

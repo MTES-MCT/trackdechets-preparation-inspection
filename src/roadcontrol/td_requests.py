@@ -48,6 +48,7 @@ id
   }
    transporter {
     company {
+      siret
       name
     }
     numberPlate
@@ -73,6 +74,7 @@ fragment BsdasriFragment on Bsdasri {
   }
   transporter {
     company {
+      siret
       name
     }
     transport {
@@ -114,6 +116,7 @@ fragment BsdaFragment on Bsda {
   }
   transporter {
     company {
+      siret
       name
     }
     transport {
@@ -211,6 +214,7 @@ fragment BsvuFragment on Bsvhu {
   }
   transporter {
     company {
+      siret
       name
     }
   }
@@ -240,6 +244,7 @@ fragment BspaohFragment on Bspaoh {
   }
   transporter {
     company {
+      siret
       name
     }
     transport {

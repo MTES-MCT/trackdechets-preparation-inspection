@@ -14,10 +14,13 @@ def test_bsdd_to_bsd_display():
         "emitter": {"company": {"name": "DECHETTERIE DE LA BAS "}, "workSite": None},
         "id": "xyz123",
         "readableId": "BSD-1238-ABCD",
-        "recipient": {"company": {"name": "THE COMPANY "}},
+        "recipient": {"company": {"name": "THE COMPANY"}},
         "stateSummary": {"quantity": 0.02},
-        "transporter": {"company": {"name": "THE COMPANY "}, "numberPlate": "FN605TG"},
-        "transporters": [{"company": {"name": "THE COMPANY "}, "numberPlate": "XY605TG"}],
+        "transporter": {
+            "company": {"name": "THE COMPANY", "siret": "thesiret"},
+            "numberPlate": "FN605TG",
+        },
+        "transporters": [{"company": {"name": "THE COMPANY"}, "numberPlate": "XY605TG"}],
         "updatedAt": "2024-11-15T09:43:13.790Z",
         "wasteDetails": {
             "code": "15 02 02*",
@@ -34,12 +37,12 @@ def test_bsdd_to_bsd_display():
     assert bsd_display == {
         "bsd_type": "BSDD",
         "adr": "UN 3175 DECHET SOLIDES CONTENANT DU LIQUIDE",
-        "destination": {"company": {"name": "THE COMPANY "}},
+        "destination": {"company": {"name": "THE COMPANY"}},
         "emitter": {"company": {"name": "DECHETTERIE DE LA BAS "}},
         "id": "xyz123",
         "packagings": "1 Caisse croco, 1 synchro",
         "readable_id": "BSD-1238-ABCD",
-        "transporter": {"company": {"name": "THE COMPANY "}},
+        "transporter": {"company": {"name": "THE COMPANY", "siret": "thesiret"}},
         "transporter_plate": "FN605TG",
         "waste_details": {"code": "15 02 02*", "name": " Materiaux souilles", "weight": "0.02"},
         "updated_at": "15/11/2024",
@@ -58,7 +61,7 @@ def test_bsdasri_to_bsd_display():
         "emitter": {"company": {"name": "EMITTER"}},
         "id": "DASRI-123_XYY",
         "transporter": {
-            "company": {"name": "THE COMPANY"},
+            "company": {"name": "THE COMPANY", "siret": "thesiret"},
             "transport": {"plates": ["DQ-199-NS"], "weight": {"value": 12}},
         },
         "updatedAt": "2024-11-15T09:43:13.790Z",
@@ -72,7 +75,7 @@ def test_bsdasri_to_bsd_display():
         "id": "DASRI-123_XYY",
         "packagings": "",
         "readable_id": "DASRI-123_XYY",
-        "transporter": {"company": {"name": "THE COMPANY"}},
+        "transporter": {"company": {"name": "THE COMPANY", "siret": "thesiret"}},
         "transporter_plate": "DQ-199-NS",
         "updated_at": "15/11/2024",
         "waste_details": {"code": "18 01 03*", "name": "DASRI origine humaine", "weight": "12"},
@@ -85,7 +88,10 @@ def test_bsff_to_bsd_display():
         "bsffUpdatedAt": "2024-11-15T09:43:13.790Z",
         "bsffDestination": {"company": {"name": "THE COMPANY"}},
         "bsffStatus": "SENT",
-        "bsffTransporter": {"company": {"name": "THE COMPANY", "siret": "123"}, "transport": {"plates": ["FR-SD-FR"]}},
+        "bsffTransporter": {
+            "company": {"name": "THE COMPANY", "siret": "thesiret"},
+            "transport": {"plates": ["FR-SD-FR"]},
+        },
         "bsffWeight": {"value": 1},
         "emitter": {"company": {"name": "THE COMPANY"}},
         "id": "FF-123-XY",
@@ -107,7 +113,7 @@ def test_bsff_to_bsd_display():
         "id": "FF-123-XY",
         "readable_id": "FF-123-XY",
         "packagings": "2222222 BOUTEILLE vol:12.5 poids:1",
-        "transporter": {"company": {"name": "THE COMPANY"}},
+        "transporter": {"company": {"name": "THE COMPANY", "siret": "thesiret"}},
         "transporter_plate": "FR-SD-FR",
         "updated_at": "15/11/2024",
         "waste_details": {"code": "14 06 01*", "name": "R-410A", "weight": "1"},
@@ -126,7 +132,7 @@ def test_bsda_to_bsd_display():
         "destination": {"company": {"name": "THE COMPANY"}},
         "emitter": {"company": {"name": "EMITTER"}},
         "id": "BSDA-123-XYZ",
-        "transporter": {"company": {"name": "TRANSPORT"}, "transport": {"plates": ["34ER36"]}},
+        "transporter": {"company": {"name": "TRANSPORT", "siret": "thesiret"}, "transport": {"plates": ["34ER36"]}},
         "waste": {"adr": "non sousmis", "bsdaWasteCode": "17 06 05*", "materialName": "amiante ciment lié"},
         "weight": {"value": 10.1},
     }
@@ -142,7 +148,7 @@ def test_bsda_to_bsd_display():
         "waste_details": {"code": "17 06 05*", "name": "amiante ciment lié", "weight": "10.1"},
         "emitter": {"company": {"name": "EMITTER"}},
         "destination": {"company": {"name": "THE COMPANY"}},
-        "transporter": {"company": {"name": "TRANSPORT"}},
+        "transporter": {"company": {"name": "TRANSPORT", "siret": "thesiret"}},
         "transporter_plate": "34ER36",
         "packagings": "",
     }
@@ -160,7 +166,10 @@ def test_bspaoh_to_bsd_display():
         "destination": {"company": {"name": "Établissement de test"}},
         "emitter": {"company": {"name": "Établissement de test"}, "emission": {"detail": {"weight": {"value": 10}}}},
         "id": "PAOH-20240826-ZCF7DH7V1",
-        "transporter": {"company": {"name": "Établissement de test"}, "transport": {"plates": ["az-ta-87"]}},
+        "transporter": {
+            "company": {"name": "Établissement de test", "siret": "thesiret"},
+            "transport": {"plates": ["az-ta-87"]},
+        },
     }
 
     bsd_display = bspaoh_to_bsd_display(es_bpaoh)
@@ -174,7 +183,7 @@ def test_bspaoh_to_bsd_display():
         "waste_details": {"code": "18 01 02", "name": "Pièces anatomiques d'origine humainee", "weight": "10"},
         "emitter": {"company": {"name": "Établissement de test"}},
         "destination": {"company": {"name": "Établissement de test"}},
-        "transporter": {"company": {"name": "Établissement de test"}},
+        "transporter": {"company": {"name": "Établissement de test", "siret": "thesiret"}},
         "transporter_plate": "az-ta-87",
         "packagings": "1 BIG_BOX vol:1",
     }

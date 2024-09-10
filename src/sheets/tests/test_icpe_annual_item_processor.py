@@ -1,8 +1,10 @@
-import pytest
-import pandas as pd
-from pandas import Timestamp
 from datetime import datetime
+
+import pandas as pd
 import plotly.graph_objects as go
+import pytest
+from pandas import Timestamp
+
 from ..graph_processors.plotly_components_processors import (
     ICPEAnnualItemProcessor,
 )  # Import ICPEAnnualItemProcessor from the module where it is defined

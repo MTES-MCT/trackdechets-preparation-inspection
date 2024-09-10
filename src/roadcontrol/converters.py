@@ -102,7 +102,12 @@ def bsdd_to_bsd_display(bsdd) -> BsdDisplay:
         },
         "emitter": {"company": {"name": deep_get(bsdd, "emitter.company.name")}},
         "destination": {"company": {"name": deep_get(bsdd, "recipient.company.name")}},
-        "transporter": {"company": {"name": deep_get(bsdd, "transporter.company.name")}},
+        "transporter": {
+            "company": {
+                "name": deep_get(bsdd, "transporter.company.name"),
+                "siret": deep_get(bsdd, "transporter.company.siret"),
+            }
+        },
         "transporter_plate": deep_get(bsdd, "transporter.numberPlate")
         or deep_get(bsdd, "stateSummary.transporterNumberPlate"),
         "packagings": format_bsdd_packagings(deep_get(bsdd, "wasteDetails.packagingInfos")),
@@ -124,7 +129,12 @@ def bsff_to_bsd_display(bsff) -> BsdDisplay:
         },
         "emitter": {"company": {"name": deep_get(bsff, "emitter.company.name")}},
         "destination": {"company": {"name": deep_get(bsff, "bsffDestination.company.name")}},
-        "transporter": {"company": {"name": deep_get(bsff, "bsffTransporter.company.name")}},
+        "transporter": {
+            "company": {
+                "name": deep_get(bsff, "bsffTransporter.company.name"),
+                "siret": deep_get(bsff, "bsffTransporter.company.siret"),
+            }
+        },
         "transporter_plate": ",".join(deep_get(bsff, "bsffTransporter.transport.plates")),
         "packagings": format_bsff_packagings(deep_get(bsff, "packagings")),
     }
@@ -147,7 +157,12 @@ def bsdasri_to_bsd_display(bsdasri) -> BsdDisplay:
         },
         "emitter": {"company": {"name": deep_get(bsdasri, "emitter.company.name")}},
         "destination": {"company": {"name": deep_get(bsdasri, "destination.company.name")}},
-        "transporter": {"company": {"name": deep_get(bsdasri, "transporter.company.name")}},
+        "transporter": {
+            "company": {
+                "name": deep_get(bsdasri, "transporter.company.name"),
+                "siret": deep_get(bsdasri, "transporter.company.siret"),
+            }
+        },
         "transporter_plate": ",".join(
             deep_get(bsdasri, "transporter.transport.plates", default=[])
             or deep_get(bsdasri, "bsdasriTransporter.transport.plates", default=[])
@@ -173,7 +188,12 @@ def bsda_to_bsd_display(bsda) -> BsdDisplay:
         },
         "emitter": {"company": {"name": deep_get(bsda, "emitter.company.name")}},
         "destination": {"company": {"name": deep_get(bsda, "destination.company.name")}},
-        "transporter": {"company": {"name": deep_get(bsda, "transporter.company.name")}},
+        "transporter": {
+            "company": {
+                "name": deep_get(bsda, "transporter.company.name"),
+                "siret": deep_get(bsda, "transporter.company.siret"),
+            }
+        },
         "transporter_plate": ",".join(deep_get(bsda, "transporter.transport.plates", default=[])),
         "packagings": format_bsdasri_packagings(deep_get(bsda, "transporter.transport.packagings", default=[])),
     }
@@ -197,7 +217,12 @@ def bspaoh_to_bsd_display(bspaoh) -> BsdDisplay:
         },
         "emitter": {"company": {"name": deep_get(bspaoh, "emitter.company.name")}},
         "destination": {"company": {"name": deep_get(bspaoh, "destination.company.name")}},
-        "transporter": {"company": {"name": deep_get(bspaoh, "transporter.company.name")}},
+        "transporter": {
+            "company": {
+                "name": deep_get(bspaoh, "transporter.company.name"),
+                "siret": deep_get(bspaoh, "transporter.company.siret"),
+            }
+        },
         "transporter_plate": ",".join(
             deep_get(bspaoh, "transporter.transport.plates", default=[])
             or deep_get(bspaoh, "bsdasriTransporter.transport.plates", default=[])

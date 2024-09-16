@@ -39,6 +39,10 @@ class ComputedInspectionDataAdmin(admin.ModelAdmin):
                 "data_end_date",
                 "creation_mode",
                 "created_by",
+                "processing_end",
+                "processing_start",
+                "pdf_rendering_end",
+                "pdf_rendering_start",
             )
         )
 

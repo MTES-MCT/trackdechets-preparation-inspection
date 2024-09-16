@@ -38,8 +38,8 @@ def render_pdf_graph_fn(computed_pk, name):
             graph = data_to_bs64_plot(graph_data)
         name = f"{name}_graph" if "_graph" not in name else name
         setattr(computed, name, graph)
-
-        computed.save()
+        # save only updated field
+        computed.save(update_fields=[name])
 
 
 def prepare_sheet_fn(computed_pk):

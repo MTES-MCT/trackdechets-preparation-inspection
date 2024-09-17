@@ -33,9 +33,7 @@ def render_pdf_graph_fn(computed_pk, name):
         name_graph_fn = f"{name}_graph"
         field_name_to_update = name_graph_fn if "_graph" not in name else name
 
-        computed = get_object_or_404(
-            ComputedInspectionData.objects.select_for_update(of=(name_graph_fn,)), pk=computed_pk
-        )
+        computed = get_object_or_404(ComputedInspectionData, pk=computed_pk)
         if not computed.is_computed:
             return
         graph_data = getattr(computed, graph_data_fn)

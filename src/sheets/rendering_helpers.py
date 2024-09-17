@@ -29,17 +29,22 @@ def render_pdf_graph_fn(computed_pk, name):
         raise Exception("Invalid argument")
 
     with transaction.atomic():
-        computed = get_object_or_404(ComputedInspectionData.objects.select_for_update(), pk=computed_pk)
+        graph_data_fn = f"{name}_data"
+        name_graph_fn = f"{name}_graph"
+        computed = get_object_or_404(
+            ComputedInspectionData.objects.select_for_update(of=(name_graph_fn)), pk=computed_pk
+        )
         if not computed.is_computed:
             return
-        graph_data = getattr(computed, f"{name}_data")
+        graph_data = getattr(computed, graph_data_fn)
         graph = ""
         if graph_data is not None and graph_data != "{}":
             graph = data_to_bs64_plot(graph_data)
-        name = f"{name}_graph" if "_graph" not in name else name
-        setattr(computed, name, graph)
+
+        field_name_to_update = name_graph_fn if "_graph" not in name else name
+        setattr(computed, field_name_to_update, graph)
         # save only updated field
-        computed.save(update_fields=[name])
+        computed.save(update_fields=[field_name_to_update])
 
 
 def prepare_sheet_fn(computed_pk):

@@ -292,7 +292,7 @@ class ComputedInspectionData(models.Model):
     @property
     def processing_duration(self):
         if self.processing_start and self.processing_end:
-            return
+            return self.processing_end - self.processing_start
         return None
 
     @property

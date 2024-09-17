@@ -31,8 +31,10 @@ def render_pdf_graph_fn(computed_pk, name):
     with transaction.atomic():
         graph_data_fn = f"{name}_data"
         name_graph_fn = f"{name}_graph"
+        field_name_to_update = name_graph_fn if "_graph" not in name else name
+
         computed = get_object_or_404(
-            ComputedInspectionData.objects.select_for_update(of=(name_graph_fn)), pk=computed_pk
+            ComputedInspectionData.objects.select_for_update(of=(name_graph_fn,)), pk=computed_pk
         )
         if not computed.is_computed:
             return
@@ -41,7 +43,6 @@ def render_pdf_graph_fn(computed_pk, name):
         if graph_data is not None and graph_data != "{}":
             graph = data_to_bs64_plot(graph_data)
 
-        field_name_to_update = name_graph_fn if "_graph" not in name else name
         setattr(computed, field_name_to_update, graph)
         # save only updated field
         computed.save(update_fields=[field_name_to_update])

@@ -14,7 +14,7 @@
             <div class="waste-details">
                 <div>
                     <img src="{% bsd_icon bsd.bsd_type %}"
-                         alt="{% bsd_icon_alt  bsd.bsd_type %}">
+                         alt="{% bsd_icon_alt bsd.bsd_type %}">
                 </div>
                 <div class="waste-details__infos">
                     <p class="waste-details__infos__code">{{ bsd.waste_details.code }}</p>
@@ -32,18 +32,18 @@
                 <div class="actors__item">
                     <img src="{% static "custom-icons/icon-map-pin-2.svg" %}" alt="">
                     <p class="actors__label">
-                        <span>{{ bsd.emitter.company.name }}</span>
+                        <span>{{ bsd.emitter.company.name|truncatechars:78 }}</span>
                     </p>
                 </div>
                 <div class="actors__item">
                     <img src="{% static "custom-icons/icon-truck.svg" %}" alt="">
                     <p class="actors__label">
-                        <span>{{ bsd.transporter.company.name }} ({{ bsd.transporter.company.siret }})</span>
+                        <span>{{ bsd.transporter.company.name|truncatechars:78 }} ({{ bsd.transporter.company.siret }})</span>
                     </div>
                     <div class="actors__item">
                         <img src="{% static "custom-icons/icon-arrow-line.svg" %}" alt="">
                         <p class="actors__label">
-                            <span>{{ bsd.destination.company.name }}</span>
+                            <span>{{ bsd.destination.company.name|truncatechars:78 }}</span>
                         </p>
                     </div>
                 </div>

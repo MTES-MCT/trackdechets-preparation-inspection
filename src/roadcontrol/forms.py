@@ -5,6 +5,16 @@ from sheets.database import wh_engine
 from sheets.queries import sql_company_query_exists_str
 
 
+class BsdSearchForm(Form):
+    bsd_id = CharField(
+        label="Numéro de borderau",
+        min_length=14,
+        max_length=20,
+        help_text="Format: todo",
+        required=True,
+    )
+
+
 class RoadControlSearchForm(Form):
     siret = CharField(
         label="Numéro de SIRET",
@@ -56,3 +66,13 @@ class RoadControlSearchForm(Form):
             self.add_error(
                 "plate", "L'immatriculation doit être renseignée en entier si vous ne précisez pas le siret"
             )
+
+
+class BsdSearchForm(Form):
+    bsd_id = CharField(
+        label="Numéro de borderau",
+        min_length=14,
+        max_length=20,
+        help_text="Format: todo",
+        required=True,
+    )

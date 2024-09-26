@@ -10,14 +10,14 @@ from config.celery_app import app
 
 from .converters import BsdsToBsdsDisplay
 from .exceptions import FormDownloadException
-from .forms import RoadControlSearchForm
+from .forms import RoadControlSearchForm, BsdSearchForm
 from .helpers import get_company_data
 from .models import BsdPdf, PdfBundle
 from .task import prepare_bundle
-from .td_requests import query_td_bsds, query_td_pdf
+from .td_requests import query_td_bsds, query_td_pdf, query_td_bsd_id
 
 
-class RoadControl(FullyLoggedMixin, TemplateView):
+class RoadControlSearch(FullyLoggedMixin, TemplateView):
     template_name = "roadcontrol/roadcontrol.html"
 
     def get_context_data(self, **kwargs):
@@ -74,6 +74,7 @@ class RoadControlSearchResult(FullyLoggedMixin, FormView):
                 end_cursor=end_cursor,
                 has_next_page=has_next_page,
                 has_previous_page=has_previous_page,
+                bundle_download_available=True
             )
         )
 
@@ -256,3 +257,59 @@ class RoadControlRecentsPdfs(FullyLoggedMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         return super().get_context_data(**kwargs, recent_downloads=self.get_recent_downloads())
+
+
+class BsdSearch(FullyLoggedMixin, TemplateView):
+    template_name = "roadcontrol/bsd_search.html"
+
+    def get_context_data(self, **kwargs):
+        form = BsdSearchForm()
+        return super().get_context_data(**kwargs, form=form)
+
+
+class BsdSearchResult(FullyLoggedMixin, FormView):
+    form_class = BsdSearchForm
+    success_url = ""
+    template_name = "roadcontrol/partials/search_result.html"
+
+    def form_valid(self, form):
+        bsd_id = form.cleaned_data["bsd_id"]
+
+        resp = query_td_bsd_id(bsd_id)
+        nodes = []
+        total_count = 0
+
+        start_cursor = None
+        end_cursor = None
+        has_next_page = False
+        has_previous_page = False
+        if resp:
+            bsds = resp["data"]["bsds"]
+            total_count = bsds["totalCount"]
+            page_info = bsds["pageInfo"]
+            start_cursor = page_info["startCursor"]
+            end_cursor = page_info["endCursor"]
+
+            edges = bsds["edges"]
+
+            nodes = [edge["node"] for edge in edges]
+
+        converter = BsdsToBsdsDisplay(nodes)
+        converter.convert()
+
+        bsds_ids = [{"bsd_id": bsd["id"], "readable_id": bsd["readable_id"]} for bsd in converter.bsds_display]
+
+        return self.render_to_response(
+            self.get_context_data(
+                form=form,
+                bsds=converter.bsds_display,
+                bsds_ids=bsds_ids,
+                search_params={"bsd_id": bsd_id},
+                total_count=total_count,
+                start_cursor=start_cursor,
+                end_cursor=end_cursor,
+                has_next_page=has_next_page,
+                has_previous_page=has_previous_page,
+                bundle_download_available=False
+            )
+        )

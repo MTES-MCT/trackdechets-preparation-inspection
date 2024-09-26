@@ -79,7 +79,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "config.context_processors.settings_processor",
             ],
         },
     },
@@ -268,7 +267,6 @@ REQUEST_IGNORE_PATHS = (
 )
 
 # Storages
-DISPLAY_ROADCONTROL_MENU = env.bool("DISPLAY_ROADCONTROL_MENU", False)
 
 AWS_S3_ENDPOINT_URL = env("AWS_S3_ENDPOINT_URL")
 AWS_BUCKET_NAME = env("AWS_BUCKET_NAME")

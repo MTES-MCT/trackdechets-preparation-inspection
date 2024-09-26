@@ -436,3 +436,39 @@ def query_td_pdf(bsd_type, bsd_id):
 
     link = rep.get("data", {}).get(field, {}).get("downloadLink", None)
     return link
+
+
+def query_td_bsd_id(bsd_id):
+    """Request SENT bsds matching siret and plate. Vhu do not have plates yet and are ignored"""
+
+    where = """readableId: {_contains: "BSD_ID"}""".replace("BSD_ID", bsd_id)
+
+    query = graphql_query_bsds.substitute(
+        where=where,
+        after="",
+        bsdd_fragment=bsdd_fragment,
+        bsdasri_fragment=bsdasri_fragment,
+        bsda_fragment=bsda_fragment,
+        bsvhu_fragment=bsvhu_fragment,
+        bspaoh_fragment=bspaoh_fragment,
+        bsff_fragment=bsff_fragment,
+    )
+
+    client = httpx.Client(timeout=60)
+    try:
+        res = client.post(
+            url=settings.TD_API_URL,
+            headers={"Authorization": f"Bearer {settings.TD_API_TOKEN}"},
+            json={
+                "query": query,
+                "variables": {
+                    "siret": bsd_id,
+
+                },
+            },
+        )
+        rep = res.json()
+    except httpx.HTTPError:
+        return []
+
+    return rep

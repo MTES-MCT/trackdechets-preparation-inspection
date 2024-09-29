@@ -33,6 +33,7 @@ httpx = "*"
 djangorestframework = "*"
 "django-storages[s3]" = "*"
 django-template-partials = "*"
+django-simple-menu = "*"
 
 [dev-packages]
 ruff = "*"

@@ -26,7 +26,7 @@
                 </div>
             </div>
             <div class="bsd-card__content__infos__status">
-                <p class="fr-badge fr-badge--sm fr-badge--SENT">signé par le transporteur</p>
+                <p class="fr-badge fr-badge--sm fr-badge--SENT">{% status_badge bsd.status bsd.bsd_type %}</p>
             </div>
             <div class="actors">
                 <div class="actors__item">
@@ -55,6 +55,7 @@
                     <input type="hidden" value="{{ bsd.id }}" name="bsd_id" />
                     <input type="hidden" value="{{ bsd.bsd_type }}" name="bsd_type" />
                     <input type="hidden" value="{{ bsd.readable_id }}" name="bsd_readable_id" />
+                    <input type="hidden" value="{{ request_type }}" name="request_type" />
                     <input type="hidden" name="siret" value="{{ search_params.siret }}" />
                     <input type="hidden" name="plate" value="{{ search_params.plate }}" />
                     <input type="hidden" name="adr" value="{{ bsd.adr }}" />

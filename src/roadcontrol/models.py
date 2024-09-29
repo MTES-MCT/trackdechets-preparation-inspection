@@ -10,7 +10,7 @@ from django.utils.translation import gettext_lazy as _
 from accounts.models import User
 
 
-class PdfBundleCustomManager(models.Manager):
+class PdfBundleManager(models.Manager):
     def mark_as_failed(self, pk):
         self.filter(pk=pk).update(state="ERROR")
 
@@ -66,7 +66,7 @@ class PdfBundle(Base):
     zip_file = models.FileField(
         _("Zip File"), upload_to=bundle_path, blank=True, max_length=512, storage=storages["private_s3"]
     )
-    objects = PdfBundleCustomManager()
+    objects = PdfBundleManager()
 
     class Meta:
         verbose_name = _("Pdfs Bundle")
@@ -90,7 +90,22 @@ def bsd_path(instance, _):
     return f"bsds/{now.year}/{now.month}/{now.day}/bsd-{instance.id}.pdf"
 
 
+class BsdPdfManager(models.Manager):
+    def road_control(self):
+        """Pdf created from raod control queries"""
+        return self.filter(request_type="ROAD_CONTROL")
+
+    def bsd(self):
+        """Pdf created from individual pdf queries"""
+
+        return self.filter(request_type="BSD")
+
+
 class BsdPdf(Base):
+    class RequestTypeChoice(models.TextChoices):
+        ROAD_CONTROL = "ROAD_CONTROL", _("Road control")
+        BSD = "BSD", _("Bsd")
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     bsd_id = models.CharField(_("Bsd Id "), max_length=30)
     packagings = models.CharField(_("Packagings"), max_length=255, blank=True)
@@ -108,11 +123,23 @@ class BsdPdf(Base):
     bundle = models.ForeignKey(
         PdfBundle, verbose_name=_("Bundle"), blank=True, null=True, on_delete=models.CASCADE, related_name="pdfs"
     )
+    request_type = models.CharField(
+        _("Request Type"), max_length=20, default=RequestTypeChoice.ROAD_CONTROL, choices=RequestTypeChoice.choices
+    )
+    objects = BsdPdfManager()
 
     class Meta:
         verbose_name = _("Pdf Bsd")
         verbose_name_plural = _("Pdfs Bsds")
         ordering = ("-created_at",)
+
+        indexes = [
+            models.Index(
+                fields=[
+                    "request_type",
+                ]
+            )
+        ]
 
     def __str__(self):
         return f"Pdf {self.bsd_id}"

@@ -5,16 +5,6 @@ from sheets.database import wh_engine
 from sheets.queries import sql_company_query_exists_str
 
 
-class BsdSearchForm(Form):
-    bsd_id = CharField(
-        label="Numéro de borderau",
-        min_length=14,
-        max_length=20,
-        help_text="Format: todo",
-        required=True,
-    )
-
-
 class RoadControlSearchForm(Form):
     siret = CharField(
         label="Numéro de SIRET",
@@ -39,7 +29,6 @@ class RoadControlSearchForm(Form):
         plate = " ".join(plate.split())  # strip double whitespace
         return plate
 
-    #
     def clean_siret(self):
         siret = self.cleaned_data["siret"]
 
@@ -70,9 +59,8 @@ class RoadControlSearchForm(Form):
 
 class BsdSearchForm(Form):
     bsd_id = CharField(
-        label="Numéro de borderau",
-        min_length=14,
-        max_length=20,
-        help_text="Format: todo",
+        label="Numéro de bordereau",
+        min_length=18,
+        max_length=22,
         required=True,
     )

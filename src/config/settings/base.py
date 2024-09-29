@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "django_otp",
     "django_otp.plugins.otp_email",
     "request",  # webstats module
+    "simple_menu",
     "rest_framework",
     "rest_framework.authtoken",
     "allauth",

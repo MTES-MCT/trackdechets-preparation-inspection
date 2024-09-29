@@ -9,11 +9,13 @@ from .constants import (
     ES_TYPE_BSDD,
     ES_TYPE_BSFF,
     ES_TYPE_BSPAOH,
-    TYPE_BPAOH,
+    ES_TYPE_BSVHU,
     TYPE_BSDA,
     TYPE_BSDASRI,
     TYPE_BSDD,
     TYPE_BSFF,
+    TYPE_BSPAOH,
+    TYPE_BSVHU,
 )
 
 
@@ -94,6 +96,7 @@ def bsdd_to_bsd_display(bsdd) -> BsdDisplay:
         "readable_id": deep_get(bsdd, "readableId", None) or deep_get(bsdd, "id"),
         "updated_at": format_date(deep_get(bsdd, "updatedAt")),
         "adr": deep_get(bsdd, "wasteDetails.onuCode"),
+        "status": deep_get(bsdd, "bsddStatus"),
         "waste_details": {
             "code": deep_get(bsdd, "wasteDetails.code"),
             "name": deep_get(bsdd, "wasteDetails.name"),
@@ -118,6 +121,7 @@ def bsff_to_bsd_display(bsff) -> BsdDisplay:
     return {
         "bsd_type": TYPE_BSFF,
         "id": deep_get(bsff, "id"),
+        "status": deep_get(bsff, "bsffStatus"),
         "readable_id": deep_get(bsff, "id"),
         "updated_at": format_date(deep_get(bsff, "bsffUpdatedAt")),
         "adr": deep_get(bsff, "waste.adr"),
@@ -146,6 +150,7 @@ def bsdasri_to_bsd_display(bsdasri) -> BsdDisplay:
     return {
         "bsd_type": TYPE_BSDASRI,
         "id": deep_get(bsdasri, "id"),
+        "status": deep_get(bsdasri, "bsdasriStatus"),
         "readable_id": deep_get(bsdasri, "id"),
         "updated_at": format_date(deep_get(bsdasri, "updatedAt")),
         "adr": deep_get(bsdasri, "bsdasriWaste.adr"),
@@ -177,6 +182,7 @@ def bsda_to_bsd_display(bsda) -> BsdDisplay:
     return {
         "bsd_type": TYPE_BSDA,
         "id": deep_get(bsda, "id"),
+        "status": deep_get(bsda, "bsdaStatus"),
         "readable_id": deep_get(bsda, "id"),
         "updated_at": format_date(deep_get(bsda, "updatedAt")),
         "adr": deep_get(bsda, "waste.adr"),
@@ -204,14 +210,15 @@ def bspaoh_to_bsd_display(bspaoh) -> BsdDisplay:
     waste_type = deep_get(bspaoh, "bspaohWaste.type")
 
     return {
-        "bsd_type": TYPE_BPAOH,
+        "bsd_type": TYPE_BSPAOH,
         "id": deep_get(bspaoh, "id"),
+        "status": deep_get(bspaoh, "bspaohStatus"),
         "readable_id": deep_get(bspaoh, "id"),
         "updated_at": format_date(deep_get(bspaoh, "updatedAt")),
         "adr": "Non applicable",
         "waste_details": {
             "code": waste_code,
-            "name": "Foetus" if waste_type == "FOETUS" else "Pièces anatomiques d'origine humainee",
+            "name": "Foetus" if waste_type == "FOETUS" else "Pièces anatomiques d'origine humaine",
             "weight": str(deep_get(bspaoh, "emitter.emission.detail.weight.value", default=0)),
             # force str to get a dot an not a comma
         },
@@ -231,6 +238,37 @@ def bspaoh_to_bsd_display(bspaoh) -> BsdDisplay:
     }
 
 
+def bsvhu_to_bsd_display(bsvhu) -> BsdDisplay:
+    waste_code = deep_get(bsvhu, "wasteCode")
+    return {
+        "bsd_type": TYPE_BSVHU,
+        "id": deep_get(bsvhu, "id"),
+        "readable_id": deep_get(bsvhu, "id"),
+        "adr": "Non applicable",
+        "status": deep_get(bsvhu, "bsvhuStatus"),
+        "waste_details": {
+            "code": waste_code,
+            "name": "VHU non dépollués" if waste_code == "16 01 04*" else "VHU dépollués",
+            "weight": str(
+                deep_get(bsvhu, "destination.reception.weight", default=0)
+                or deep_get(bsvhu, "weight.value", default=0)
+            ),
+            # bsvhu?.destination?.reception?.weight || bsvhu?.weight?.value,
+        },
+        "emitter": {"company": {"name": deep_get(bsvhu, "emitter.company.name")}},
+        "destination": {"company": {"name": deep_get(bsvhu, "destination.company.name")}},
+        "transporter": {
+            "company": {
+                "name": deep_get(bsvhu, "transporter.company.name"),
+                "siret": deep_get(bsvhu, "transporter.company.siret"),
+            }
+        },
+        "transporter_plate": "Non applicable",
+        "updated_at": format_date(deep_get(bsvhu, "bsvhuUpdatedAt")),
+        "packagings": "",
+    }
+
+
 class BsdsToBsdsDisplay:
     def __init__(self, bsds):
         self.bsds: List[BsdDisplay] = bsds
@@ -243,6 +281,7 @@ class BsdsToBsdsDisplay:
             ES_TYPE_BSFF: bsff_to_bsd_display,
             ES_TYPE_BSDA: bsda_to_bsd_display,
             ES_TYPE_BSPAOH: bspaoh_to_bsd_display,
+            ES_TYPE_BSVHU: bsvhu_to_bsd_display,
         }
 
         bsd_type = bsd["__typename"]

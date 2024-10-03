@@ -3,7 +3,7 @@ from string import Template
 import httpx
 from django.conf import settings
 
-from .constants import TYPE_BPAOH, TYPE_BSDA, TYPE_BSDASRI, TYPE_BSDD, TYPE_BSFF, TYPE_BSVHU
+from .constants import TYPE_BSDA, TYPE_BSDASRI, TYPE_BSDD, TYPE_BSFF, TYPE_BSPAOH, TYPE_BSVHU
 
 bsdd_fragment = """
 fragment BsddFragment on Form {
@@ -156,7 +156,7 @@ fragment BsffFragment on Bsff {
   __typename
 
   id
- bsffUpdatedAt : updatedAt   
+  bsffUpdatedAt : updatedAt   
   bsffStatus: status
 
   emitter {
@@ -200,13 +200,15 @@ fragment BsffFragment on Bsff {
 """
 
 bsvhu_fragment = """
-fragment BsvuFragment on Bsvhu {
+fragment BsvhuFragment on Bsvhu {
   __typename
-
   id
-
+  wasteCode	
   bsvhuStatus: status
-
+  bsvhuUpdatedAt : updatedAt   
+  weight { 
+    value 
+  }
   emitter {
     company {
       name
@@ -222,6 +224,9 @@ fragment BsvuFragment on Bsvhu {
   destination {
     company {
       name
+    }
+    reception {
+    weight 
     }
   }
 }
@@ -302,7 +307,7 @@ query GetBsds {
           ...BsdaFragment
         }
         ... on Bsvhu {
-          ...BsvuFragment
+          ...BsvhuFragment
         }
         ... on Bspaoh {
           ...BspaohFragment
@@ -414,7 +419,7 @@ def query_td_pdf(bsd_type, bsd_id):
         TYPE_BSDASRI: {"query": graphql_query_bsdasri_pdf, "field": "bsdasriPdf"},
         TYPE_BSFF: {"query": graphql_query_bsff_pdf, "field": "bsffPdf"},
         TYPE_BSDA: {"query": graphql_query_bsda_pdf, "field": "bsdaPdf"},
-        TYPE_BPAOH: {"query": graphql_query_bspaoh_pdf, "field": "bspaohPdf"},
+        TYPE_BSPAOH: {"query": graphql_query_bspaoh_pdf, "field": "bspaohPdf"},
         TYPE_BSVHU: {"query": graphql_query_bsvhu_pdf, "field": "bvhuPdf"},
     }
 
@@ -436,3 +441,36 @@ def query_td_pdf(bsd_type, bsd_id):
 
     link = rep.get("data", {}).get(field, {}).get("downloadLink", None)
     return link
+
+
+def query_td_bsd_id(bsd_id):
+    """Request SENT bsds matching siret and plate. Vhu do not have plates yet and are ignored"""
+
+    where = """readableId: {_contains: "BSD_ID"}""".replace("BSD_ID", bsd_id)
+
+    query = graphql_query_bsds.substitute(
+        where=where,
+        after="",
+        bsdd_fragment=bsdd_fragment,
+        bsdasri_fragment=bsdasri_fragment,
+        bsda_fragment=bsda_fragment,
+        bsvhu_fragment=bsvhu_fragment,
+        bspaoh_fragment=bspaoh_fragment,
+        bsff_fragment=bsff_fragment,
+    )
+
+    client = httpx.Client(timeout=60)
+    try:
+        res = client.post(
+            url=settings.TD_API_URL,
+            headers={"Authorization": f"Bearer {settings.TD_API_TOKEN}"},
+            json={
+                "query": query,
+                "variables": {
+                    "siret": bsd_id,
+                },
+            },
+        )
+        return res.json()
+    except httpx.HTTPError:
+        return []

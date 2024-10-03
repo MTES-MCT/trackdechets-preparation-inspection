@@ -1,7 +1,5 @@
 {% extends "base.html" %}
 {% block main %}
-    {% include "content/_privacy_disclaimer.html" %}
-    {% include "content/_survey_callout.html" %}
     <div class="fr-container">
         {% if user.is_authenticated %}
             <p>Bonjour, {{ user.username }}</p>

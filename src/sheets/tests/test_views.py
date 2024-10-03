@@ -22,8 +22,6 @@ def test_home(verified_user):
 
     assert "Interface d'administration équipe" not in res.content.decode()
 
-    assert "Aidez-nous à améliorer cet outil" in res.content.decode()
-
 
 @pytest.mark.parametrize("get_client", ["verified_client", "logged_monaiot_client"], indirect=True)
 def test_home_aiot_user(get_client):
@@ -32,9 +30,11 @@ def test_home_aiot_user(get_client):
     assert res.status_code == 200
     assert "Préparer une fiche" in res.content.decode()
 
-    assert "Interface d'administration équipe" not in res.content.decode()
+    assert "Bordereau" in res.content.decode()
 
-    assert "Aidez-nous à améliorer cet outil" in res.content.decode()
+    assert "Interface d'administration équipe" not in res.content.decode()
+    assert "Contrôle routier" in res.content.decode()
+    assert "Guide" in res.content.decode()
 
 
 def test_home_for_staff(verified_staff):
@@ -52,7 +52,6 @@ def test_home_when_user_has_filled_survey(verified_user):
 
     res = verified_user.get(url)
     assert res.status_code == 200
-    assert "Aidez-nous à améliorer cet outil" in res.content.decode()
 
 
 def test_sheet_prepare_deny_anon(anon_client):

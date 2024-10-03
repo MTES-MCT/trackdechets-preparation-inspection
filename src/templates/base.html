@@ -1,4 +1,4 @@
-{% load static %}
+{% load static simple_menu %}
 <!DOCTYPE html>
 <html lang="fr" data-fr-scheme="light">
     <head>
@@ -63,35 +63,19 @@
                 </div>
             </div>
             {% if user.is_verified or user.is_authenticated_from_monaiot %}
+                {% generate_menu %}
                 <div class="fr-container">
                     <nav role="navigation" aria-label="Menu principal" class="fr-nav">
                         <ul class="fr-nav__list">
-                            <li class="fr-nav__item">
-                                <a href="{% url "prepare" %}"
-                                   target="_self"
-                                   aria-controls="modal-header__menu"
-                                   class="fr-nav__link">Préparer une fiche</a>
-                            </li>
-                            {% if DISPLAY_ROADCONTROL_MENU %}
+                            {% for item in menus.main %}
                                 <li class="fr-nav__item">
-                                    <a href="{% url "roadcontrol" %}"
-                                       target="_self"
+                                    <a href="{{ item.url }}"
                                        aria-controls="modal-header__menu"
-                                       class="fr-nav__link">Contrôle routier</a>
+                                       target="{{ item.target|default:"_self" }}"
+                                       {% if  item.selected %}aria-current="page"{% endif %}
+                                       class="fr-nav__link">{{ item.title }}</a>
                                 </li>
-                            {% endif %}
-                            {% if user.is_staff %}
-                                <li class="fr-nav__item">
-                                    <a href="{% url "admin:index" %}"
-                                       target="_self"
-                                       aria-controls="modal-header__menu"
-                                       class="fr-nav__link">Interface d'administration équipe</a>
-                                </li>
-                            {% endif %}
-                            <li class="fr-nav__item">
-                                <a href="{% static "user-manual/trackdechets-mode-emploi-fiche-inspection.pdf" %}" aria-controls="modal-header__menu" target="_blank" class="fr-nav__link">Guide
-                                d'utilisation</a>
-                            </li>
+                            {% endfor %}
                             <li class="fr-nav__item">
                                 <form action="{% url "logout" %}" method="post">
                                     {% csrf_token %}
@@ -116,7 +100,7 @@
         {% endif %}
         {% block main %}{% endblock %}
         <script src="{% static "js/plotly-2.18.1.min.js" %}" charset="utf-8"></script>
-        <script src="https://cdn.plot.ly/plotly-locale-fr-latest.js"></script>
+        <script src="{% static "js/plotly-locale-fr.js" %}"></script>
         <script src="{% static "js/htmx.1.8.5.min.js" %}"></script>
         {% block scripts %}
         {% endblock %}

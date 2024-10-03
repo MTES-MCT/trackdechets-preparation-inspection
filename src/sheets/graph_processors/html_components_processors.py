@@ -1836,7 +1836,7 @@ class WasteProcessingWithoutICPERubriqueProcessor:
 
             if (
                 len(df_filtered) > 0
-            ):  # If condition is met, it means we found borderaux without the company having the "rubrique"
+            ):  # If condition is met, it means we found bordereaux without the company having the "rubrique"
                 df_filtered["bs_type"] = bs_type.upper()
                 bs_dfs.append(df_filtered)
 

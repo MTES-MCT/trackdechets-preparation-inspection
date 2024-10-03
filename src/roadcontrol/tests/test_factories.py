@@ -9,6 +9,7 @@ def test_bsd_pdf_factory():
     bsd = BsdPdfFactory()
     assert bsd.pk
     assert bsd.created_at
+    assert bsd.request_type == "ROAD_CONTROL"
 
 
 def test_pdf_bundle_factory():

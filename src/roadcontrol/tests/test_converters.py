@@ -4,6 +4,7 @@ from ..converters import (
     bsdd_to_bsd_display,
     bsff_to_bsd_display,
     bspaoh_to_bsd_display,
+    bsvhu_to_bsd_display,
 )
 
 
@@ -36,6 +37,7 @@ def test_bsdd_to_bsd_display():
     bsd_display = bsdd_to_bsd_display(es_bsdd)
     assert bsd_display == {
         "bsd_type": "BSDD",
+        "status": "SENT",
         "adr": "UN 3175 DECHET SOLIDES CONTENANT DU LIQUIDE",
         "destination": {"company": {"name": "THE COMPANY"}},
         "emitter": {"company": {"name": "DECHETTERIE DE LA BAS "}},
@@ -69,6 +71,7 @@ def test_bsdasri_to_bsd_display():
     bsd_display = bsdasri_to_bsd_display(es_bsdasri)
     assert bsd_display == {
         "bsd_type": "BSDASRI",
+        "status": "SENT",
         "adr": "UN , DECHET, Quantité estimée conformément au 5.4.1.1.3.2",
         "destination": {"company": {"name": "DESTI"}},
         "emitter": {"company": {"name": "EMITTER"}},
@@ -103,6 +106,7 @@ def test_bsff_to_bsd_display():
 
     assert bsd_display == {
         "bsd_type": "BSFF",
+        "status": "SENT",
         "adr": "lorem ipsum",
         "destination": {
             "company": {
@@ -133,7 +137,7 @@ def test_bsda_to_bsd_display():
         "emitter": {"company": {"name": "EMITTER"}},
         "id": "BSDA-123-XYZ",
         "transporter": {"company": {"name": "TRANSPORT", "siret": "thesiret"}, "transport": {"plates": ["34ER36"]}},
-        "waste": {"adr": "non sousmis", "bsdaWasteCode": "17 06 05*", "materialName": "amiante ciment lié"},
+        "waste": {"adr": "non soumis", "bsdaWasteCode": "17 06 05*", "materialName": "amiante ciment lié"},
         "weight": {"value": 10.1},
     }
 
@@ -141,10 +145,11 @@ def test_bsda_to_bsd_display():
 
     assert bsd_display == {
         "bsd_type": "BSDA",
+        "status": "SENT",
         "id": "BSDA-123-XYZ",
         "readable_id": "BSDA-123-XYZ",
         "updated_at": "",
-        "adr": "non sousmis",
+        "adr": "non soumis",
         "waste_details": {"code": "17 06 05*", "name": "amiante ciment lié", "weight": "10.1"},
         "emitter": {"company": {"name": "EMITTER"}},
         "destination": {"company": {"name": "THE COMPANY"}},
@@ -176,14 +181,46 @@ def test_bspaoh_to_bsd_display():
 
     assert bsd_display == {
         "bsd_type": "BSPAOH",
+        "status": "SENT",
         "id": "PAOH-20240826-ZCF7DH7V1",
         "readable_id": "PAOH-20240826-ZCF7DH7V1",
         "updated_at": "",
         "adr": "Non applicable",
-        "waste_details": {"code": "18 01 02", "name": "Pièces anatomiques d'origine humainee", "weight": "10"},
+        "waste_details": {"code": "18 01 02", "name": "Pièces anatomiques d'origine humaine", "weight": "10"},
         "emitter": {"company": {"name": "Établissement de test"}},
         "destination": {"company": {"name": "Établissement de test"}},
         "transporter": {"company": {"name": "Établissement de test", "siret": "thesiret"}},
         "transporter_plate": "az-ta-87",
         "packagings": "1 BIG_BOX vol:1",
+    }
+
+
+def test_bvhu_to_bsd_display():
+    es_bsvhu = {
+        "__typename": "Bsvhu",
+        "id": "VHU-20220111-1234",
+        "wasteCode": "16 01 06",
+        "bsvhuStatus": "PROCESSED",
+        "bsvhuUpdatedAt": "2022-01-11T15:11:43.960Z",
+        "weight": {"value": 5},
+        "emitter": {"company": {"name": "EMITTER"}},
+        "transporter": {"company": {"siret": "thesiret", "name": "TRANSPORT"}},
+        "destination": {"company": {"name": "THE COMPANY"}, "reception": {"weight": 10}},
+    }
+
+    bsd_display = bsvhu_to_bsd_display(es_bsvhu)
+
+    assert bsd_display == {
+        "bsd_type": "BSVHU",
+        "status": "PROCESSED",
+        "id": "VHU-20220111-1234",
+        "readable_id": "VHU-20220111-1234",
+        "updated_at": "11/01/2022",
+        "adr": "Non applicable",
+        "waste_details": {"code": "16 01 06", "name": "VHU dépollués", "weight": "10"},
+        "emitter": {"company": {"name": "EMITTER"}},
+        "destination": {"company": {"name": "THE COMPANY"}},
+        "transporter": {"company": {"name": "TRANSPORT", "siret": "thesiret"}},
+        "transporter_plate": "Non applicable",
+        "packagings": "",
     }

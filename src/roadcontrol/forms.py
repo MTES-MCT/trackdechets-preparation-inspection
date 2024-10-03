@@ -29,7 +29,6 @@ class RoadControlSearchForm(Form):
         plate = " ".join(plate.split())  # strip double whitespace
         return plate
 
-    #
     def clean_siret(self):
         siret = self.cleaned_data["siret"]
 
@@ -56,3 +55,12 @@ class RoadControlSearchForm(Form):
             self.add_error(
                 "plate", "L'immatriculation doit être renseignée en entier si vous ne précisez pas le siret"
             )
+
+
+class BsdSearchForm(Form):
+    bsd_id = CharField(
+        label="Numéro de bordereau",
+        min_length=18,
+        max_length=22,
+        required=True,
+    )

@@ -30,7 +30,11 @@ def test_home_aiot_user(get_client):
     assert res.status_code == 200
     assert "Préparer une fiche" in res.content.decode()
 
+    assert "Bordereau" in res.content.decode()
+
     assert "Interface d'administration équipe" not in res.content.decode()
+    assert "Contrôle routier" in res.content.decode()
+    assert "Guide" in res.content.decode()
 
 
 def test_home_for_staff(verified_staff):

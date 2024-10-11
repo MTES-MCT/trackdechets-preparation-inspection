@@ -2647,7 +2647,9 @@ class RNDTSTransporterQuantitiesGraphProcessor:
                     self.transported_quantities_stats[key][unit] = df_by_month
 
     def _check_data_empty(self) -> bool:
-        if all((e is None) or (len(e) == 0) for e in self.transported_quantities_stats.values()):
+        if all(
+            (ee is None) or (len(ee) == 0) for e in self.transported_quantities_stats.values() for ee in e.values()
+        ):
             return True
 
         return False

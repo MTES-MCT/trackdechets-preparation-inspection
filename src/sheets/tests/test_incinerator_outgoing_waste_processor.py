@@ -1,15 +1,13 @@
-from datetime import datetime
 import json
+from datetime import datetime
 
 import pandas as pd
 import pytest
 
 from sheets.constants import BSDA, BSDD
-from .constants import EXPECTED_FILES_PATH
 
-from ..graph_processors.html_components_processors import (
-    IncineratorOutgoingWasteProcessor,
-)
+from ..graph_processors.html_components_processors import IncineratorOutgoingWasteProcessor
+from .constants import EXPECTED_FILES_PATH
 
 
 @pytest.fixture

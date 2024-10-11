@@ -6,12 +6,11 @@ import pytest
 
 from sheets.constants import BSDA, BSDD, BSFF
 from sheets.data_extract import load_waste_code_data
+from .constants import EXPECTED_FILES_PATH
 
 from ..graph_processors.html_components_processors import (
     WasteFlowsTableProcessor,
 )  # Adjust the import to your actual module
-
-EXPECTED_FILES_PATH = Path(__file__).parent.resolve() / "expected"
 
 
 @pytest.fixture

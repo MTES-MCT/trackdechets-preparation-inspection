@@ -1,0 +1,43 @@
+{
+  "dangerous": [
+    {
+      "waste_code": "01 01 01*",
+      "waste_name": "D\\u00e9chet A",
+      "destination_company_siret": "43210987654321",
+      "processing_opration": "D10",
+      "quantity": "30"
+    },
+    {
+      "waste_code": "01 01 03*",
+      "waste_name": "D\\u00e9chet B",
+      "destination_company_siret": "87654321098765",
+      "processing_opration": "D5",
+      "quantity": "9.3"
+    },
+    {
+      "waste_code": "02 01 01*",
+      "waste_name": "D\\u00e9chet C",
+      "destination_company_siret": "87654321098765",
+      "processing_opration": "D10",
+      "quantity": "12.5"
+    }
+  ],
+  "non_dangerous": [
+    {
+      "waste_code": "02 01 03",
+      "waste_name": "D\\u00e9chet CC",
+      "destination_company_siret": "56789012345678",
+      "unit": "T",
+      "processing_opration": "D5",
+      "quantity": "35"
+    },
+    {
+      "waste_code": "04 01 01",
+      "waste_name": "D\\u00e9chet AA",
+      "destination_company_siret": "98765432109876",
+      "unit": "M3",
+      "processing_opration": "R1",
+      "quantity": "15"
+    }
+  ]
+}

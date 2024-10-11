@@ -243,6 +243,8 @@ def test_build_with_data(
     assert len(result["dangerous"]) > 0, "No dangerous waste data in result"
     assert len(result["non_dangerous"]) > 0, "No non-dangerous waste data in result"
 
-    expected_data = json.load((EXPECTED_FILES_PATH / "incinerator_outgoing_waste_build_data_expected.json").open())
+    expected_data = json.load(
+        (EXPECTED_FILES_PATH / "incinerator_outgoing_waste_build_data_expected.json").open(encoding="utf-8")
+    )
 
     assert result == expected_data

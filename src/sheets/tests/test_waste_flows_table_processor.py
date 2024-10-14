@@ -1,5 +1,4 @@
 from datetime import datetime
-from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -10,8 +9,7 @@ from sheets.data_extract import load_waste_code_data
 from ..graph_processors.html_components_processors import (
     WasteFlowsTableProcessor,
 )  # Adjust the import to your actual module
-
-EXPECTED_FILES_PATH = Path(__file__).parent.resolve() / "expected"
+from .constants import EXPECTED_FILES_PATH
 
 
 @pytest.fixture

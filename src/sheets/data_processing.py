@@ -204,6 +204,7 @@ class SheetProcessor:
     def _extract_company_data(self):
         company_data_df = build_query_company(siret=self.siret, date_params=["created_at"])
         self.company_data = company_data_df
+        self.company_id = company_data_df["id"].item()
 
         self.receipts_agreements_data = get_agreement_data(company_data_df)
         self.linked_companies_data = get_linked_companies_data(self.siret)

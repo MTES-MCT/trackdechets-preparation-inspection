@@ -285,3 +285,6 @@ STORAGES = {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
+
+SKIP_ROAD_CONTROL_SIRET_CHECK = False
+USE_CONTROL_BSDS_QUERY = env.bool("USE_CONTROL_BSDS_QUERY")

@@ -61,7 +61,7 @@ fragment BsdasriFragment on Bsdasri {
   __typename
 
   id
-  updatedAt
+  bsdasriUpdatedAt: updatedAt
   bsdasriStatus: status
   bsdasriWaste: waste {
     code
@@ -103,7 +103,7 @@ fragment BsdaFragment on Bsda {
   __typename
 
   id
-
+  bsdaUpdatedAt: updatedAt
   bsdaStatus: status
   waste {
     bsdaWasteCode: code
@@ -371,7 +371,7 @@ query BspaohPdf ($id: ID!){
 """
 
 
-def query_td_bsds(siret, plate, start_cursor=None, end_cursor=None):
+def query_td_bsds(siret=None, plate=None, start_cursor=None, end_cursor=None):
     """Request SENT bsds matching siret and plate. Vhu do not have plates yet and are ignored"""
 
     where = """  status: {_in: ["SENT", "RESENT"]}"""
@@ -474,3 +474,101 @@ def query_td_bsd_id(bsd_id):
         return res.json()
     except httpx.HTTPError:
         return []
+
+
+graphql_query_control_bsds = Template("""
+ $bsdd_fragment
+ $bsdasri_fragment
+ $bsda_fragment
+ $bsvhu_fragment
+ $bspaoh_fragment
+ $bsff_fragment
+
+query ControlBsds {
+  controlBsds(
+    where: {
+      $where
+    }
+    $after
+  ) {
+  totalCount
+    pageInfo{
+        startCursor 
+        endCursor 
+        hasNextPage 
+        hasPreviousPage 
+    }
+    edges {
+
+      node {
+        ... on Bsdasri {
+          ...BsdasriFragment
+        }
+
+        ... on Bsda {
+          ...BsdaFragment
+        }
+        ... on Bsvhu {
+          ...BsvhuFragment
+        }
+        ... on Bspaoh {
+          ...BspaohFragment
+        }
+        ... on Bsff {
+          ...BsffFragment
+        }
+        ... on Form {
+          ...BsddFragment
+        }
+      }
+    }
+  }
+}
+""")
+
+
+def query_td_control_bsds(siret=None, plate=None, bsd_id=None, start_cursor=None, end_cursor=None):
+    """Request SENT bsds matching siret and plate. Vhu do not have plates yet and are ignored"""
+
+    where = ""
+    after = ""
+    if siret:
+        where += f' siret: "{siret}" '
+    if plate:
+        where += f' plate: "{plate}" '
+    if bsd_id:
+        where += f' readableId: "{bsd_id}" '
+    if end_cursor:
+        after = f"""after: "{end_cursor}" """
+
+    query = graphql_query_control_bsds.substitute(
+        where=where,
+        after=after,
+        bsdd_fragment=bsdd_fragment,
+        bsdasri_fragment=bsdasri_fragment,
+        bsda_fragment=bsda_fragment,
+        bsvhu_fragment=bsvhu_fragment,
+        bspaoh_fragment=bspaoh_fragment,
+        bsff_fragment=bsff_fragment,
+    )
+
+    client = httpx.Client(timeout=60)
+    try:
+        res = client.post(
+            url=settings.TD_API_URL,
+            headers={"Authorization": f"Bearer {settings.TD_API_TOKEN}"},
+            json={
+                "query": query,
+                "variables": {
+                    "siret": siret,
+                    "plate": plate,
+                },
+            },
+        )
+
+        rep = res.json()
+
+    except httpx.HTTPError:
+        return []
+
+    return rep

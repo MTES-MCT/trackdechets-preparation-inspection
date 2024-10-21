@@ -66,9 +66,10 @@ def test_bsdasri_to_bsd_display():
             "company": {"name": "THE COMPANY", "siret": "thesiret"},
             "transport": {"plates": ["DQ-199-NS"], "weight": {"value": 12}},
         },
-        "updatedAt": "2024-11-15T09:43:13.790Z",
+        "bsdasriUpdatedAt": "2024-11-15T09:43:13.790Z",
     }
     bsd_display = bsdasri_to_bsd_display(es_bsdasri)
+
     assert bsd_display == {
         "bsd_type": "BSDASRI",
         "status": "SENT",

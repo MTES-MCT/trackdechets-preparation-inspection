@@ -5,7 +5,7 @@
             <p class="bsd-number">N°: {{ bsd.readable_id }}</p>
             <div class="bsd-card__header__infos">
                 <p class="label-icon label-icon__LastModificationDate">Modifié le {{ bsd.updated_at }}</p>
-                <p class="label-icon label-icon__TransporterNumberPlate">{{ bsd.transporter_plate }}</p>
+                <p class="label-icon label-icon__TransporterNumberPlate">{{ bsd.transporter_plate|default:"N/A" }}</p>
             </div>
         </div>
     </div>

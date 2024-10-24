@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.forms import CharField, Form, HiddenInput, ValidationError
 from sqlalchemy.sql import text
 
@@ -40,7 +41,7 @@ class RoadControlSearchForm(Form):
         with wh_engine.connect() as con:
             companies = con.execute(prepared_query, siret=siret).all()
 
-        if not companies:
+        if not companies and not settings.SKIP_ROAD_CONTROL_SIRET_CHECK:
             raise ValidationError("Établissement non inscrit sur Trackdéchets.")
         return siret
 

@@ -1,5 +1,6 @@
 import httpx
 from celery.result import AsyncResult
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.shortcuts import redirect
 from django.views.generic import DetailView, FormView, TemplateView
@@ -14,7 +15,25 @@ from .forms import BsdSearchForm, RoadControlSearchForm
 from .helpers import get_company_data
 from .models import BsdPdf, PdfBundle
 from .task import prepare_bundle
-from .td_requests import query_td_bsd_id, query_td_bsds, query_td_pdf
+from .td_requests import query_td_bsd_id, query_td_bsds, query_td_control_bsds, query_td_pdf
+
+
+def get_query_fn():
+    if settings.USE_CONTROL_BSDS_QUERY:
+        return query_td_control_bsds
+    return query_td_bsds
+
+
+def get_query_id_fn():
+    if settings.USE_CONTROL_BSDS_QUERY:
+        return query_td_control_bsds
+    return query_td_bsd_id
+
+
+def get_query_name():
+    if settings.USE_CONTROL_BSDS_QUERY:
+        return "controlBsds"
+    return "bsds"
 
 
 class RoadControlSearch(FullyLoggedMixin, TemplateView):
@@ -35,7 +54,11 @@ class RoadControlSearchResult(FullyLoggedMixin, FormView):
         plate = form.cleaned_data["plate"]
 
         form_end_cursor = form.cleaned_data.get("end_cursor", None)
-        resp = query_td_bsds(siret, plate, end_cursor=form_end_cursor)
+
+        query_fn = get_query_fn()
+        query_name = get_query_name()
+        resp = query_fn(siret=siret, plate=plate, end_cursor=form_end_cursor)
+
         nodes = []
         total_count = 0
 
@@ -45,7 +68,7 @@ class RoadControlSearchResult(FullyLoggedMixin, FormView):
         has_previous_page = False
 
         if resp:
-            bsds = resp["data"]["bsds"]
+            bsds = resp["data"][query_name]
             total_count = bsds["totalCount"]
             page_info = bsds["pageInfo"]
             start_cursor = page_info["startCursor"]
@@ -281,7 +304,10 @@ class BsdSearchResult(FullyLoggedMixin, FormView):
     def form_valid(self, form):
         bsd_id = form.cleaned_data["bsd_id"]
 
-        resp = query_td_bsd_id(bsd_id)
+        query_fn = get_query_id_fn()
+        query_name = get_query_name()
+        resp = query_fn(bsd_id=bsd_id)
+        breakpoint()
         nodes = []
         total_count = 0
         start_cursor = None
@@ -289,7 +315,7 @@ class BsdSearchResult(FullyLoggedMixin, FormView):
         has_next_page = False
         has_previous_page = False
         if resp:
-            bsds = resp["data"]["bsds"]
+            bsds = resp["data"][query_name]
             total_count = bsds["totalCount"]
             page_info = bsds["pageInfo"]
             start_cursor = page_info["startCursor"]

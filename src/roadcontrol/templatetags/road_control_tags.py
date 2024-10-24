@@ -84,6 +84,7 @@ EN_ATTENTE_TRAITEMENT = "En attente de traitement"
 
 @register.inclusion_tag("roadcontrol/tags/status_badge.html")
 def status_badge(status: str, bsd_type: str) -> dict:
+    # a few matches are missing, but should not appear in results
     verbose = status
     match status:
         case BsdStatus.DRAFT:
@@ -103,110 +104,31 @@ def status_badge(status: str, bsd_type: str) -> dict:
             verbose = TRAITE
         case BsdStatus.AWAITING_CHILD:
             verbose = TRAITE
-
+        case BsdStatus.GROUPED:
+            if bsd_type == TYPE_BSFF:
+                verbose = EN_ATTENTE_TRAITEMENT
+            if bsd_type == TYPE_BSDA:
+                verbose = ANNEXE_BORDEREAU_SUITE
+        case BsdStatus.NO_TRACEABILITY:
+            verbose = TRAITE_AVEC_RUPTURE_TRACABILITE
+        case BsdStatus.REFUSED:
+            verbose = REFUSE
+        case BsdStatus.TEMP_STORED:
+            verbose = ARRIVE_ENTREPOS_PROVISOIRE
+        case BsdStatus.TEMP_STORER_ACCEPTED:
+            verbose = ENTREPOS_TEMPORAIREMENT
+        case BsdStatus.RESEALED:
+            verbose = BSD_SUITE_PREPARE
+        case BsdStatus.RESENT:
+            verbose = SIGNE_PAR_TRANSPORTEUR
+        case BsdStatus.SIGNED_BY_PRODUCER:
+            verbose = SIGNE_PAR_EMETTEUR
+        case BsdStatus.SIGNED_BY_TEMP_STORER:
+            verbose = SIGNER_PAR_ENTREPOS_PROVISOIRE
+        case BsdStatus.PARTIALLY_REFUSED:
+            verbose = PARTIELLEMENT_REFUSE
+        case BsdStatus.FOLLOWED_WITH_PNTTD:
+            verbose = SUIVI_PAR_PNTTD
+        case BsdStatus.SI:
+            verbose = SUIVI_PAR_PNTTD
     return {"status": status, "verbose": verbose}
-
-
-"""
-
-  switch (status) {
-    case BsdStatusCode.Draft:
-      return BROUILLON;
-    case BsdStatusCode.Sealed:
-      return INITIAL;
-    case BsdStatusCode.Sent:
-      if (bsdType && transporters && transporters.length > 1) {
-        // Le code qui suit permet d'afficher "Signé par le transporteur N"
-        // en cas de transport multi-modal
-        let lastTransporterNumero: Maybe<number> = null;
-        if (isBsdd(bsdType)) {
-          lastTransporterNumero = (transporters as Transporter[]).filter(t =>
-            Boolean(t.takenOverAt)
-          ).length;
-        } else if (isBsda(bsdType) || isBsff(bsdType)) {
-          lastTransporterNumero = (transporters as BsdaTransporter[]).filter(
-            t => Boolean(t.transport?.signature?.date)
-          ).length;
-        }
-        if (lastTransporterNumero)
-          return SIGNE_PAR_TRANSPORTEUR_N(lastTransporterNumero);
-      }
-      return SIGNE_PAR_TRANSPORTEUR;
-    case BsdStatusCode.Received:
-      if (bsdType === BsdType.Bsdasri) {
-        return ACCEPTE;
-      }
-      if (bsdType === BsdType.Bspaoh) {
-        return ACCEPTE;
-      }
-      return RECU;
-    case BsdStatusCode.Accepted:
-      return ACCEPTE;
-    case BsdStatusCode.Processed:
-      return TRAITE;
-    case BsdStatusCode.AwaitingChild:
-    case BsdStatusCode.Grouped:
-      if (bsdType === BsdType.Bsff) {
-        return EN_ATTENTE_TRAITEMENT;
-      }
-      if (bsdType === BsdType.Bsda) {
-        if (bsdaAnnexed) {
-          return ANNEXE_BORDEREAU_SUITE;
-        }
-        return EN_ATTENTE_BSD_SUITE;
-      }
-      return ANNEXE_BORDEREAU_SUITE;
-    case BsdStatusCode.NoTraceability:
-      return TRAITE_AVEC_RUPTURE_TRACABILITE;
-    case BsdStatusCode.Refused:
-      return REFUSE;
-    case BsdStatusCode.TempStored:
-      return ARRIVE_ENTREPOS_PROVISOIRE;
-    case BsdStatusCode.TempStorerAccepted:
-      return ENTREPOS_TEMPORAIREMENT;
-    case BsdStatusCode.Resealed:
-      return BSD_SUITE_PREPARE;
-    case BsdStatusCode.Resent:
-      return SIGNE_PAR_TRANSPORTEUR;
-    case BsdStatusCode.SignedByProducer:
-      return SIGNE_PAR_EMETTEUR;
-    case BsdStatusCode.Initial:
-      if (isDraft) {
-        return BROUILLON;
-      } else {
-        return INITIAL;
-      }
-    case BsdStatusCode.SignedByEmitter:
-      return SIGNE_PAR_EMETTEUR;
-    case BsdStatusCode.SignedByTempStorer:
-      return SIGNER_PAR_ENTREPOS_PROVISOIRE;
-    case BsdStatusCode.PartiallyRefused:
-      return PARTIELLEMENT_REFUSE;
-    case BsdStatusCode.FollowedWithPnttd:
-      return SUIVI_PAR_PNTTD;
-    case BsdStatusCode.SignedByWorker:
-      return SIGNER_PAR_ENTREPRISE_TRAVAUX;
-    case BsdStatusCode.AwaitingGroup:
-      if (bsdType === BsdType.Bsdasri) {
-        if (operationCode === "R12" || operationCode === "D13") {
-          return EN_ATTENTE_BSD_SUITE;
-        }
-        return ANNEXE_BORDEREAU_SUITE;
-      }
-      return EN_ATTENTE_BSD_SUITE;
-    case BsdStatusCode.IntermediatelyProcessed:
-      if (bsdType === BsdType.Bsff) {
-        return EN_ATTENTE_TRAITEMENT;
-      }
-      if (bsdType === BsdType.Bsdasri) {
-        return ANNEXE_BORDEREAU_SUITE;
-      }
-      return EN_ATTENTE_BSD_SUITE;
-    case BsdStatusCode.Canceled:
-      return ANNULE;
-
-    default:
-      return "unknown status";
-  }
-
-"""

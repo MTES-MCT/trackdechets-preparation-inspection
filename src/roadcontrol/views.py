@@ -323,8 +323,6 @@ class BsdSearchResult(FullyLoggedMixin, FormView):
 
             edges = bsds["edges"]
 
-            print(len(edges))
-
             nodes = [edge["node"] for edge in edges]
 
         converter = BsdsToBsdsDisplay(nodes)

@@ -504,7 +504,6 @@ query ControlBsds {
         ... on Bsdasri {
           ...BsdasriFragment
         }
-
         ... on Bsda {
           ...BsdaFragment
         }

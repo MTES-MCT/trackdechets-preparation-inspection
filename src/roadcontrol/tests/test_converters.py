@@ -140,6 +140,7 @@ def test_bsda_to_bsd_display():
         "transporter": {"company": {"name": "TRANSPORT", "siret": "thesiret"}, "transport": {"plates": ["34ER36"]}},
         "waste": {"adr": "non soumis", "bsdaWasteCode": "17 06 05*", "materialName": "amiante ciment lié"},
         "weight": {"value": 10.1},
+        "bsdaUpdatedAt": "2024-11-15T09:43:13.790Z",
     }
 
     bsd_display = bsda_to_bsd_display(es_bsda)
@@ -149,7 +150,7 @@ def test_bsda_to_bsd_display():
         "status": "SENT",
         "id": "BSDA-123-XYZ",
         "readable_id": "BSDA-123-XYZ",
-        "updated_at": "",
+        "updated_at": "15/11/2024",
         "adr": "non soumis",
         "waste_details": {"code": "17 06 05*", "name": "amiante ciment lié", "weight": "10.1"},
         "emitter": {"company": {"name": "EMITTER"}},

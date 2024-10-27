@@ -307,7 +307,6 @@ class BsdSearchResult(FullyLoggedMixin, FormView):
         query_fn = get_query_id_fn()
         query_name = get_query_name()
         resp = query_fn(bsd_id=bsd_id)
-        breakpoint()
         nodes = []
         total_count = 0
         start_cursor = None

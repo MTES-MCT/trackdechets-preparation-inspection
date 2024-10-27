@@ -54,3 +54,9 @@ class BsdStatus:
     TEMP_STORED = "TEMP_STORED"
     # Déchet accepté par le site d'entreposage ou reconditionnement
     TEMP_STORER_ACCEPTED = "TEMP_STORER_ACCEPTED"
+    #  Une partie des contenants a été refusée, l'autre partie acceptée. Les contenants acceptés n'ont pas encore été traités.
+    PARTIALLY_REFUSED = "PARTIALLY_REFUSED"
+
+    INTERMEDIATELY_PROCESSED = "INTERMEDIATELY_PROCESSED"
+    # Signé par l'entreprise de travaux
+    SIGNED_BY_WORKER = "SIGNED_BY_WORKER"

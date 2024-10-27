@@ -152,7 +152,7 @@ def bsdasri_to_bsd_display(bsdasri) -> BsdDisplay:
         "id": deep_get(bsdasri, "id"),
         "status": deep_get(bsdasri, "bsdasriStatus"),
         "readable_id": deep_get(bsdasri, "id"),
-        "updated_at": format_date(deep_get(bsdasri, "updatedAt")),
+        "updated_at": format_date(deep_get(bsdasri, "bsdasriUpdatedAt")),
         "adr": deep_get(bsdasri, "bsdasriWaste.adr"),
         "waste_details": {
             "code": waste_code,
@@ -184,7 +184,7 @@ def bsda_to_bsd_display(bsda) -> BsdDisplay:
         "id": deep_get(bsda, "id"),
         "status": deep_get(bsda, "bsdaStatus"),
         "readable_id": deep_get(bsda, "id"),
-        "updated_at": format_date(deep_get(bsda, "updatedAt")),
+        "updated_at": format_date(deep_get(bsda, "bsdaUpdatedAt")),
         "adr": deep_get(bsda, "waste.adr"),
         "waste_details": {
             "code": waste_code,

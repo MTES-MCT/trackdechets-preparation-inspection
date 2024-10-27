@@ -90,3 +90,4 @@ jobs:
           AWS_S3_ENDPOINT_URL: "https://s3.fr-par.scw.cloud"
           AWS_ACCESS_KEY_ID: "XYZ"
           AWS_SECRET_ACCESS_KEY: "xyz2"
+          USE_CONTROL_BSDS_QUERY: true

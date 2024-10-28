@@ -20,7 +20,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         STAFF_TD = "STAFF_TD", _("Staff Trackdéchets")
         ADMINISTRATION_CENTRALE = "ADMINISTRATION_CENTRALE", _("Administration centrale")
         INSPECTEUR_ICPE = "INSPECTEUR_ICPE", _("Inspecteur ICPE")
-        CTT = "CTT", _("CTT - contrôleur des transports routiers")
+        CTT = "CTT", _("CTT - Contrôleur des transports routiers")
         INSPECTION_TRAVAIL = "INSPECTION_TRAVAIL", _("Inspection du travail")
         GENDARMERIE = "GENDARMERIE", _("Gendarmerie")
         ARS = "ARS", _("ARS")

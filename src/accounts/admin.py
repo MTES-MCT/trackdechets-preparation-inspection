@@ -9,6 +9,7 @@ from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _
 from import_export import resources
 from import_export.admin import ImportExportMixin
+from import_export.exceptions import FieldError
 
 from .forms import AdminCustomUserChangeForm, AdminCustomUserCreationForm
 from .models import User
@@ -20,7 +21,12 @@ class UserResource(resources.ModelResource):
         self.emails = User.objects.values_list("email", flat=True)
 
     def before_import_row(self, row, **kwargs):
+        if not row["user_category"]:
+            raise FieldError("Missing user_category")
         row["username"] = f"{row['first_name']} {row['last_name']}"
+
+    def validate_instance(self, instance, import_validation_errors=None, validate_unique=True):
+        return super().validate_instance(instance, import_validation_errors, validate_unique)
 
     def skip_row(self, instance, original, row, import_validation_errors=None):
         skip = super().skip_row(instance, original, row, import_validation_errors)

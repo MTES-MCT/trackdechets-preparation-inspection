@@ -16,6 +16,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         HUMAN = "HUMAN", _("Human")
         API = "API", _("api")
 
+    class UserCategoryChoice(models.TextChoices):
+        STAFF_TD = "STAFF_TD", _("Staff Trackdéchets")
+        ADMINISTRATION_CENTRALE = "ADMINISTRATION_CENTRALE", _("Administration centrale")
+        INSPECTEUR_ICPE = "INSPECTEUR_ICPE", _("Inspecteur ICPE")
+        CTT = "CTT", _("CTT - Contrôleur des transports routiers")
+        INSPECTION_TRAVAIL = "INSPECTION_TRAVAIL", _("Inspection du travail")
+        GENDARMERIE = "GENDARMERIE", _("Gendarmerie")
+        ARS = "ARS", _("ARS")
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = [
         "username",
@@ -37,6 +46,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         _("MonAIOT inscription"), help_text=_("Did this user sign up in with MonAIOT ?"), default=False
     )
     user_type = models.CharField(_("User Type"), choices=UserTypeChoice, default=UserTypeChoice.HUMAN, max_length=30)
+    user_category = models.CharField(
+        _("User Category"), choices=UserCategoryChoice, default=UserCategoryChoice.INSPECTEUR_ICPE, max_length=30
+    )
     objects = UserManager()
 
     class Meta:

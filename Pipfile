@@ -34,6 +34,8 @@ djangorestframework = "*"
 "django-storages[s3]" = "*"
 django-template-partials = "*"
 django-simple-menu = "*"
+"django-import-export[xlsx]"= "*"
+
 
 [dev-packages]
 ruff = "*"

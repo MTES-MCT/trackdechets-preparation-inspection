@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "aiot_provider",
     "accounts",
     "content",
+    "import_export",
     "roadcontrol",
     "sheets",
 ]
@@ -288,3 +289,7 @@ STORAGES = {
 
 SKIP_ROAD_CONTROL_SIRET_CHECK = False
 USE_CONTROL_BSDS_QUERY = env.bool("USE_CONTROL_BSDS_QUERY")
+#
+# from import_export.formats.base_formats import XLSX
+#
+# IMPORT_EXPORT_FORMATS = [XLSX]

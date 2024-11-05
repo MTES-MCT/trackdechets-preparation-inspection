@@ -18,7 +18,7 @@ def sample_data():
                 datetime(2024, 8, 11),
                 datetime(2024, 9, 12),
             ],
-            "numero_identification_declarant": [
+            "etablissement_numero_identification": [
                 "12345678901234",
                 "12345678901234",
                 "98765432109876",  # Different SIRET
@@ -40,7 +40,7 @@ def sample_data():
                 datetime(2024, 8, 15),
                 datetime(2024, 8, 16),
             ],
-            "numero_identification_declarant": [
+            "producteur_numero_identification": [
                 "12345678901234",
                 "12345678901234",
                 "98765432109876",  # Different SIRET

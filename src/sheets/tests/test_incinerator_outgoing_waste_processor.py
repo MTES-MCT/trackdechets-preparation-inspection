@@ -81,7 +81,7 @@ def sample_data() -> dict:
     rndts_data_df = {
         "ndw_outgoing": pd.DataFrame(
             {
-                "numero_identification_declarant": ["12345678901234", "98765432109876", "12345678901234"],
+                "producteur_numero_identification": ["12345678901234", "98765432109876", "12345678901234"],
                 "destinataire_numero_identification": ["98765432109876", "98765432109876", "56789012345678"],
                 "date_expedition": [datetime(2023, 2, 1), datetime(2023, 4, 20), datetime(2023, 6, 10)],
                 "quantite": [15, 25, 35],

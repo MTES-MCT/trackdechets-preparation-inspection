@@ -17,7 +17,7 @@ def sample_data():
                 datetime(2024, 7, 15),  # Not in data interval
                 datetime(2024, 8, 15),
             ],
-            "numero_identification_declarant": [
+            "etablissement_numero_identification": [
                 "12345678901234",
                 "12345678901234",
                 "12345678901234",
@@ -34,7 +34,7 @@ def sample_data():
                 datetime(2024, 8, 12),
                 datetime(2024, 8, 1),
             ],
-            "numero_identification_declarant": [
+            "producteur_numero_identification": [
                 "12345678901234",
                 "12345678901234",
                 "98765432109876",

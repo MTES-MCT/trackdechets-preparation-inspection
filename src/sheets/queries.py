@@ -568,28 +568,28 @@ where (siret_notifiant = :siret or siret_installation_traitement = :siret)
 sql_get_incoming_ndw_data = """
 SELECT 
     id,
-    numero_identification_declarant,
+    etablissement_numero_identification,
     code_dechet,
     denomination_usuelle,
     quantite,
-    unite,
+    code_unite as unite,
     date_reception,
     code_traitement,
     numeros_indentification_transporteurs
 FROM trusted_zone_rndts.dnd_entrant
 where
-    numero_identification_declarant = :siret
+    etablissement_numero_identification = :siret
     or (numeros_indentification_transporteurs @> array[:siret])
 """
 
 sql_get_outgoing_ndw_data = """
 SELECT 
     id,
-    numero_identification_declarant,
+    producteur_numero_identification,
     code_dechet,
     denomination_usuelle,
     quantite,
-    unite,
+    code_unite as unite,
     date_expedition,
     code_traitement,
     destinataire_numero_identification,
@@ -597,7 +597,7 @@ SELECT
     numeros_indentification_transporteurs
 FROM trusted_zone_rndts.dnd_sortant
 where
-    numero_identification_declarant = :siret
+    producteur_numero_identification = :siret
     or (numeros_indentification_transporteurs @> array[:siret])
 """
 
@@ -605,28 +605,28 @@ where
 sql_get_incoming_excavated_land_data = """
 SELECT 
     id,
-    numero_identification_declarant,
+    etablissement_numero_identification,
     code_dechet,
     denomination_usuelle,
     quantite,
-    unite,
+    code_unite as unite,
     date_reception,
     code_traitement,
     numeros_indentification_transporteurs
 FROM trusted_zone_rndts.texs_entrant
 where
-    numero_identification_declarant = :siret
+    etablissement_numero_identification = :siret
     or (numeros_indentification_transporteurs @> array[:siret])
 """
 
 sql_get_outgoing_excavated_land_data = """
 SELECT 
     id,
-    numero_identification_declarant,
+    producteur_numero_identification,
     code_dechet,
     denomination_usuelle,
     quantite,
-    unite,
+    code_unite as unite,
     date_expedition,
     code_traitement,
     destinataire_numero_identification,
@@ -634,26 +634,26 @@ SELECT
     numeros_indentification_transporteurs
 FROM trusted_zone_rndts.texs_sortant
 where
-    numero_identification_declarant = :siret
+    producteur_numero_identification = :siret
     or (numeros_indentification_transporteurs @> array[:siret])
 """
 
 sql_get_ssd_data = """
 SELECT 
     id,
-    numero_identification_declarant,
+    etablissement_numero_identification,
     code_dechet,
     denomination_usuelle,
     nature,
     quantite,
-    unite,
+    code_unite as unite,
     date_expedition,
     code_traitement,
     destinataire_numero_identification,
     destinataire_raison_sociale
-FROM trusted_zone_rndts.sorties_statut_dechet
+FROM trusted_zone_rndts.sortie_statut_dechet
 where
-    numero_identification_declarant = :siret
+    etablissement_numero_identification = :siret
 """
 
 sql_company_query_exists_str = """

@@ -12,7 +12,7 @@ from ..graph_processors.html_components_processors import (
 @pytest.fixture
 def sample_ssd_data():
     data = {
-        "numero_identification_declarant": [
+        "etablissement_numero_identification": [
             "12345678901234",
             "12345678901234",
             "12345678901234",
@@ -179,7 +179,7 @@ def test_correct_serialization(sample_ssd_data):
 
 def test_incorrect_data_format():
     data = {
-        "numero_identification_declarant": ["12345678901234"],
+        "etablissement_numero_identification": ["12345678901234"],
         "date_expedition": ["Not a datetime"],  # Incorrect date format
         "quantite": [10],
         "code_dechet": ["01 01 01"],
@@ -202,7 +202,7 @@ def test_incorrect_data_format():
 
 def test_missing_columns():
     data = {
-        "numero_identification_declarant": ["12345678901234"],
+        "etablissement_numero_identification": ["12345678901234"],
         "quantite": [10],
         "code_dechet": ["01 01 01"],
         "unite": ["T"],

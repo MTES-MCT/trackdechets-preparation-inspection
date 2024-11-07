@@ -524,11 +524,11 @@ class WasteFlowsTableProcessor:
     def _preprocess_rndts_data(self) -> pd.DataFrame | None:
         # If there is RNDTS data, we add it to the dataframe
         df_to_group = []
-        for key, date_col in [
-            ("ndw_incoming", "date_reception"),
-            ("ndw_outgoing", "date_expedition"),
-            ("excavated_land_incoming", "date_reception"),
-            ("excavated_land_outgoing", "date_expedition"),
+        for key, date_col, siret_col in [
+            ("ndw_incoming", "date_reception", "etablissement_numero_identification"),
+            ("ndw_outgoing", "date_expedition", "producteur_numero_identification"),
+            ("excavated_land_incoming", "date_reception", "etablissement_numero_identification"),
+            ("excavated_land_outgoing", "date_expedition", "producteur_numero_identification"),
         ]:
             df_rndts = self.rndts_data.get(key)
 
@@ -545,7 +545,7 @@ class WasteFlowsTableProcessor:
                 rndts_grouped_data = (
                     df_rndts[
                         df_rndts[date_col].between(*self.data_date_interval)
-                        & (df_rndts["numero_identification_declarant"] == self.company_siret)
+                        & (df_rndts[siret_col] == self.company_siret)
                     ]
                     .groupby(["waste_code", "unit"], as_index=False)["quantity_received"]
                     .sum()
@@ -1700,7 +1700,7 @@ class WasteProcessingWithoutICPERubriqueProcessor:
             return
 
         rndts_data_df = rndts_data_df[
-            (rndts_data_df["numero_identification_declarant"] == self.siret)
+            (rndts_data_df["etablissement_numero_identification"] == self.siret)
             & rndts_data_df["date_reception"].between(*self.data_date_interval)
         ]
 
@@ -1772,8 +1772,10 @@ class WasteProcessingWithoutICPERubriqueProcessor:
                         "num_missing_rubriques": len(missing_rubriques),
                         "found_processing_codes": ", ".join(found_processing_codes),
                         "num_found_processing_codes": len(found_processing_codes),
-                        "statements_list": filtered_rndts_data_df.sort_values("date_reception").reset_index(
-                            drop=True
+                        "statements_list": filtered_rndts_data_df.sort_values("date_reception")
+                        .reset_index(drop=True)
+                        .rename(
+                            columns={"etablissement_numero_identification": "siret"}
                         ),  # Creates the list of statements
                         "stats": {
                             "total_statements": format_number_str(
@@ -2443,7 +2445,7 @@ class RNDTSStatsProcessor:
         if incoming_data is not None:
             incoming_data = incoming_data[
                 incoming_data["date_reception"].between(*self.data_date_interval)
-                & (incoming_data["numero_identification_declarant"] == self.company_siret)
+                & (incoming_data["etablissement_numero_identification"] == self.company_siret)
             ]
             if len(incoming_data) > 0:
                 self.stats["total_statements_incoming"] = incoming_data["id"].nunique()
@@ -2456,7 +2458,7 @@ class RNDTSStatsProcessor:
         if outgoing_data is not None:
             outgoing_data = outgoing_data[
                 outgoing_data["date_expedition"].between(*self.data_date_interval)
-                & (outgoing_data["numero_identification_declarant"] == self.company_siret)
+                & (outgoing_data["producteur_numero_identification"] == self.company_siret)
             ]
             if len(outgoing_data) > 0:
                 self.stats["total_statements_outgoing"] = outgoing_data["id"].nunique()
@@ -2702,7 +2704,7 @@ class IncineratorOutgoingWasteProcessor:
 
         aggregated_data_df = (
             rndts_data[
-                (rndts_data["numero_identification_declarant"] == self.company_siret)
+                (rndts_data["producteur_numero_identification"] == self.company_siret)
                 & (rndts_data["date_expedition"].between(*self.data_date_interval))
             ]
             .groupby(["code_dechet", "destinataire_numero_identification", "code_traitement", "unite"], as_index=False)
@@ -2808,7 +2810,7 @@ class SSDProcessor:
             return
 
         ssd_data = ssd_data_df[
-            (ssd_data_df["numero_identification_declarant"] == self.company_siret)
+            (ssd_data_df["etablissement_numero_identification"] == self.company_siret)
             & (ssd_data_df["date_expedition"].between(*self.data_date_interval))
         ]
 

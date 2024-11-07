@@ -125,7 +125,7 @@ def sample_data() -> dict:
     rndts_data = {
         "ndw_incoming": pd.DataFrame(
             {
-                "numero_identification_declarant": ["12345678901234", "12345678901234", "98765432109876"],
+                "etablissement_numero_identification": ["12345678901234", "12345678901234", "98765432109876"],
                 "date_reception": [datetime(2023, 1, 10), datetime(2023, 3, 15), datetime(2023, 5, 20)],
                 "quantite": [10, 20, 30],
                 "code_dechet": ["03 01 01", "03 01 02", "03 01 01"],
@@ -135,7 +135,7 @@ def sample_data() -> dict:
         ),
         "ndw_outgoing": pd.DataFrame(
             {
-                "numero_identification_declarant": ["12345678901234", "98765432109876", "12345678901234"],
+                "producteur_numero_identification": ["12345678901234", "98765432109876", "12345678901234"],
                 "date_expedition": [datetime(2023, 2, 1), datetime(2023, 4, 20), datetime(2023, 6, 10)],
                 "quantite": [15, 25, 35],
                 "code_dechet": ["04 01 01", "04 01 02", "02 01 03"],
@@ -149,7 +149,7 @@ def sample_data() -> dict:
         ),
         "excavated_land_incoming": pd.DataFrame(
             {
-                "numero_identification_declarant": ["12345678901234", "12345678901234", "98765432109876"],
+                "etablissement_numero_identification": ["12345678901234", "12345678901234", "98765432109876"],
                 "date_reception": [datetime(2023, 2, 10), datetime(2023, 3, 18), datetime(2023, 5, 21)],
                 "quantite": [9.7, 12, 18],
                 "code_dechet": ["03 01 01", "03 01 02", "03 01 03"],
@@ -159,7 +159,7 @@ def sample_data() -> dict:
         ),
         "excavated_land_outgoing": pd.DataFrame(
             {
-                "numero_identification_declarant": ["12345678901234", "98765432109876", "12345678901234"],
+                "producteur_numero_identification": ["12345678901234", "98765432109876", "12345678901234"],
                 "date_expedition": [datetime(2023, 2, 1), datetime(2023, 2, 20), datetime(2023, 4, 17)],
                 "quantite": [15, 25, 35],
                 "code_dechet": ["05 01 01", "03 01 02", "02 01 03"],

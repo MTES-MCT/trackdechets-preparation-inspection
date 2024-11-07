@@ -45,7 +45,7 @@ def sample_data():
     # Sample RNDTS incoming data
     rndts_incoming_data = pd.DataFrame(
         {
-            "numero_identification_declarant": ["12345678900000", "12345678900000"],
+            "etablissement_numero_identification": ["12345678900000", "12345678900000"],
             "date_reception": [
                 datetime(2023, 1, 1),
                 datetime(2023, 2, 2),
@@ -194,7 +194,7 @@ def test_preprocess_non_dangerous_rubriques(sample_data):
             "num_found_processing_codes": 1,
             "statements_list": pd.DataFrame(
                 {
-                    "numero_identification_declarant": ["12345678900000"],
+                    "siret": ["12345678900000"],
                     "date_reception": [Timestamp("2023-01-01 00:00:00")],
                     "code_traitement": ["D5"],
                     "quantite": [30],
@@ -209,7 +209,7 @@ def test_preprocess_non_dangerous_rubriques(sample_data):
             "num_found_processing_codes": 1,
             "statements_list": pd.DataFrame(
                 {
-                    "numero_identification_declarant": ["12345678900000"],
+                    "siret": ["12345678900000"],
                     "date_reception": [Timestamp("2023-02-02 00:00:00")],
                     "code_traitement": ["R1"],
                     "quantite": [20],

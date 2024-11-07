@@ -1658,7 +1658,7 @@ class RNDTSQuantitiesGraphProcessor:
         if (incoming_data is not None) and (len(incoming_data) > 0):
             incoming_data = incoming_data[
                 (incoming_data["date_reception"].between(*self.data_date_interval))
-                & (incoming_data["numero_identification_declarant"] == self.company_siret)
+                & (incoming_data["etablissement_numero_identification"] == self.company_siret)
             ]
 
             if len(incoming_data) > 0:
@@ -1679,7 +1679,7 @@ class RNDTSQuantitiesGraphProcessor:
         if (outgoing_data is not None) and (len(outgoing_data) > 0):
             outgoing_data = outgoing_data[
                 outgoing_data["date_expedition"].between(*self.data_date_interval)
-                & (outgoing_data["numero_identification_declarant"] == self.company_siret)
+                & (outgoing_data["producteur_numero_identification"] == self.company_siret)
             ]
 
             if len(outgoing_data) > 0:
@@ -1884,7 +1884,7 @@ class RNDTSStatementsGraphProcessor:
         if (incoming_data is not None) and (len(incoming_data) > 0):
             incoming_data = incoming_data[
                 incoming_data["date_reception"].between(*self.data_date_interval)
-                & (incoming_data["numero_identification_declarant"] == self.company_siret)
+                & (incoming_data["etablissement_numero_identification"] == self.company_siret)
             ].dropna(subset=["date_reception"])
 
             if len(incoming_data) > 0:
@@ -1896,7 +1896,7 @@ class RNDTSStatementsGraphProcessor:
         if (outgoing_data is not None) and (len(outgoing_data) > 0):
             outgoing_data = outgoing_data[
                 outgoing_data["date_expedition"].between(*self.data_date_interval)
-                & (outgoing_data["numero_identification_declarant"] == self.company_siret)
+                & (outgoing_data["producteur_numero_identification"] == self.company_siret)
             ].dropna(subset=["date_expedition"])
 
             if len(outgoing_data) > 0:

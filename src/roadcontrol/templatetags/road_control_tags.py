@@ -129,6 +129,9 @@ def status_badge(status: str, bsd_type: str) -> dict:
             verbose = PARTIELLEMENT_REFUSE
         case BsdStatus.FOLLOWED_WITH_PNTTD:
             verbose = SUIVI_PAR_PNTTD
-        case BsdStatus.SI:
-            verbose = SUIVI_PAR_PNTTD
+        case BsdStatus.AWAITING_GROUP:
+            verbose = EN_ATTENTE_BSD_SUITE
+        case BsdStatus.INTERMEDIATELY_PROCESSED:
+            verbose = EN_ATTENTE_TRAITEMENT
+
     return {"status": status, "verbose": verbose}

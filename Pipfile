@@ -35,7 +35,8 @@ djangorestframework = "*"
 django-template-partials = "*"
 django-simple-menu = "*"
 "django-import-export[xlsx]"= "*"
-
+django-vite = "*"
+django-filter = "*"
 
 [dev-packages]
 ruff = "*"

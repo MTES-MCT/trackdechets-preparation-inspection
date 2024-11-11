@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load django_vite %}
+{% block extra_head %}
+    {% vite_hmr_client %}
+    {% vite_react_refresh %}
+    {% vite_asset 'main.jsx' %}
+{% endblock %}
+{% block main %}
+    <div class="fr-container fr-mt-1v">
+        <div id="root"></div>
+    </div>
+{% endblock %}

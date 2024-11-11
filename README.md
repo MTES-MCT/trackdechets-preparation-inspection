@@ -7,9 +7,10 @@ Transition Écologique.
 
 ## Prérequis:
 
-- Une instance de prosgresql récente
+- Une instance de prosgresql récente avec l'extension postgis installée
 - Une instance redis
-- Python >= 3.9 avec pipenv
+- Python >= 3.11 avec pipenv
+- les librairies nécessaires aux fonctionalités géographiques de django (GDAL et GEOS)
 
 ## Installation
 
@@ -31,7 +32,7 @@ $ pipenv install -d
 - DATABASE_URL, managée par django, pour les comptes, les données calculées etc.
 - WAREHOUSE_URL, en lecture seule, contenant un dump des données du data warehouse Trackdéchets
 
-Se référer au fichier src/core/settings/env.dist
+Se référer au fichier env.dist
 
 ### Setup de la db
 
@@ -57,6 +58,22 @@ Pour les tâches asynchrones, dans une autre fenêtre de terminal:
 
 ```
     $ DJANGO_SETTINGS_MODULE='config.settings.dev' celery -A config worker -l info
+```
+
+### Installation des dépendances front
+
+```
+    $ cd src/static/ui_app
+    $ npm install
+```
+
+### Lancement de l'UI de cartographie
+
+Dans un second terminal, 
+
+```
+    $ cd src/static/ui_app
+    $ npm run dev
 ```
 
 ### Utilitaires

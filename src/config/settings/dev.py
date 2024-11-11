@@ -47,3 +47,6 @@ LOGGING = {
 
 
 SKIP_ROAD_CONTROL_SIRET_CHECK = env("SKIP_ROAD_CONTROL_SIRET_CHECK")
+
+
+DJANGO_VITE = {"default": {"dev_mode": True}}

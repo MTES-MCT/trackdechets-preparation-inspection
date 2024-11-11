@@ -31,6 +31,16 @@ Menu.add_item(
     ),
 )
 
+
+Menu.add_item(
+    "main",
+    StaffMenuItem(
+        "Cartographie",
+        reverse("map_view"),
+    ),
+)
+
+
 Menu.add_item(
     "main",
     MenuItem(

@@ -8,7 +8,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres
+        image: postgis/postgis
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: admin
@@ -38,6 +38,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install binutils libproj-dev gdal-bin
           python -m pip install --upgrade pip
 
       - name: Install pipenv

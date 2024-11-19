@@ -1677,9 +1677,13 @@ class RNDTSQuantitiesGraphProcessor:
 
         outgoing_data = self.rndts_outgoing_data
         if (outgoing_data is not None) and (len(outgoing_data) > 0):
+            colname = "producteur_numero_identification"
+            if "producteur_numero_identification" not in outgoing_data.columns:
+                colname = "etablissement_numero_identification"  # SSD case
+
             outgoing_data = outgoing_data[
                 outgoing_data["date_expedition"].between(*self.data_date_interval)
-                & (outgoing_data["producteur_numero_identification"] == self.company_siret)
+                & (outgoing_data[colname] == self.company_siret)
             ]
 
             if len(outgoing_data) > 0:
@@ -1894,9 +1898,12 @@ class RNDTSStatementsGraphProcessor:
 
         outgoing_data = self.rndts_outgoing_data
         if (outgoing_data is not None) and (len(outgoing_data) > 0):
+            colname = "producteur_numero_identification"
+            if "producteur_numero_identification" not in outgoing_data.columns:
+                colname = "etablissement_numero_identification"  # SSD case
             outgoing_data = outgoing_data[
                 outgoing_data["date_expedition"].between(*self.data_date_interval)
-                & (outgoing_data["producteur_numero_identification"] == self.company_siret)
+                & (outgoing_data[colname] == self.company_siret)
             ].dropna(subset=["date_expedition"])
 
             if len(outgoing_data) > 0:

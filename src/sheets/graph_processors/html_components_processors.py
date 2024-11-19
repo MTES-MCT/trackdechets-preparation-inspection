@@ -2456,9 +2456,12 @@ class RNDTSStatsProcessor:
                         self.stats[f"total_{key}_incoming"] = total
 
         if outgoing_data is not None:
+            colname = "producteur_numero_identification"
+            if "producteur_numero_identification" not in outgoing_data.columns:
+                colname = "etablissement_numero_identification"  # SSD case
             outgoing_data = outgoing_data[
                 outgoing_data["date_expedition"].between(*self.data_date_interval)
-                & (outgoing_data["producteur_numero_identification"] == self.company_siret)
+                & (outgoing_data[colname] == self.company_siret)
             ]
             if len(outgoing_data) > 0:
                 self.stats["total_statements_outgoing"] = outgoing_data["id"].nunique()

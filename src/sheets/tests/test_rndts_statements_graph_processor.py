@@ -7,7 +7,9 @@ from ..graph_processors.plotly_components_processors import RNDTSStatementsGraph
 
 
 @pytest.fixture
-def sample_data():
+def sample_data(request):
+    ssd_mode: bool = request.param
+
     incoming_data = pd.DataFrame(
         {
             "id": [1, 2, 3, 4],
@@ -26,6 +28,7 @@ def sample_data():
         }
     )
 
+    key_name = "producteur_numero_identification" if not ssd_mode else "etablissement_numero_identification"
     outgoing_data = pd.DataFrame(
         {
             "id": [4, 5, 6],
@@ -34,7 +37,7 @@ def sample_data():
                 datetime(2024, 8, 12),
                 datetime(2024, 8, 1),
             ],
-            "producteur_numero_identification": [
+            key_name: [
                 "12345678901234",
                 "12345678901234",
                 "98765432109876",
@@ -47,6 +50,7 @@ def sample_data():
     return incoming_data, outgoing_data, date_interval
 
 
+@pytest.mark.parametrize("sample_data", [False, True], indirect=True)
 def test_initialization(sample_data):
     incoming_data, outgoing_data, date_interval = sample_data
 
@@ -68,6 +72,7 @@ def test_initialization(sample_data):
     assert processor.figure is None
 
 
+@pytest.mark.parametrize("sample_data", [False, True], indirect=True)
 def test_preprocess_bs_data(sample_data):
     incoming_data, outgoing_data, date_interval = sample_data
 
@@ -90,6 +95,7 @@ def test_preprocess_bs_data(sample_data):
     assert processor.statements_emitted_by_month_serie.sum() == 2
 
 
+@pytest.mark.parametrize("sample_data", [False, True], indirect=True)
 def test_check_data_empty(sample_data):
     incoming_data, outgoing_data, date_interval = sample_data
 
@@ -118,6 +124,7 @@ def test_check_data_empty(sample_data):
     assert processor._check_data_empty()
 
 
+@pytest.mark.parametrize("sample_data", [False, True], indirect=True)
 def test_create_figure(sample_data):
     incoming_data, outgoing_data, date_interval = sample_data
 
@@ -135,6 +142,7 @@ def test_create_figure(sample_data):
     assert processor.figure is not None
 
 
+@pytest.mark.parametrize("sample_data", [False, True], indirect=True)
 def test_build_output(sample_data):
     incoming_data, outgoing_data, date_interval = sample_data
 

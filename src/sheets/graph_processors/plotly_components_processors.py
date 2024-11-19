@@ -1240,7 +1240,7 @@ class BsdaWorkerQuantityProcessor:
     def build(self) -> str:
         self._preprocess_bs_data()
 
-        figure = ""
+        figure = {}
         if not self._check_data_empty():
             self._create_figure()
             figure = self.figure.to_json()

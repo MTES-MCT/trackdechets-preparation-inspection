@@ -25,7 +25,7 @@
   "non_dangerous": [
     {
       "waste_code": "02 01 03",
-      "waste_name": "Déchet CC",
+      "waste_name": "",
       "destination_company_siret": "56789012345678",
       "unit": "T",
       "processing_opration": "D5",

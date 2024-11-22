@@ -2679,24 +2679,23 @@ class IncineratorOutgoingWasteProcessor:
             if len(df) > 0:
                 dfs_to_concat.append(df)
 
-            if len(dfs_to_concat) > 0:
-                concat_df = pd.concat(dfs_to_concat)
+        if len(dfs_to_concat) > 0:
+            concat_df = pd.concat(dfs_to_concat)
+            concat_df["waste_name"] = concat_df["waste_name"].fillna("")
 
-                aggregated_data_df = (
-                    concat_df.groupby(
-                        ["waste_code", "recipient_company_siret", "processing_operation_code"], as_index=False
-                    )
-                    .aggregate(
-                        quantity=pd.NamedAgg(column="quantity_received", aggfunc="sum"),
-                        waste_name=pd.NamedAgg(column="waste_name", aggfunc="max"),
-                    )
-                    .sort_values(
-                        by=["waste_code", "recipient_company_siret", "quantity"], ascending=[True, True, False]
-                    )
+            aggregated_data_df = (
+                concat_df.groupby(
+                    ["waste_code", "recipient_company_siret", "processing_operation_code"], as_index=False
                 )
+                .aggregate(
+                    quantity=pd.NamedAgg(column="quantity_received", aggfunc="sum"),
+                    waste_name=pd.NamedAgg(column="waste_name", aggfunc="max"),
+                )
+                .sort_values(by=["waste_code", "recipient_company_siret", "quantity"], ascending=[True, True, False])
+            )
 
-                if len(aggregated_data_df) > 0:
-                    self.preprocessed_data["dangerous"] = aggregated_data_df
+            if len(aggregated_data_df) > 0:
+                self.preprocessed_data["dangerous"] = aggregated_data_df
 
     def _preprocess_rndts_statements_data(self) -> None:
         """Preprocess raw RNDTS statements data to prepare it to be displayed."""
@@ -2705,6 +2704,7 @@ class IncineratorOutgoingWasteProcessor:
         if (rndts_data is None) or (len(rndts_data) == 0):
             return
 
+        rndts_data["denomination_usuelle"] = rndts_data["denomination_usuelle"].fillna("")
         aggregated_data_df = (
             rndts_data[
                 (rndts_data["producteur_numero_identification"] == self.company_siret)

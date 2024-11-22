@@ -25,7 +25,7 @@ def sample_data() -> dict:
                     datetime(2023, 5, 21),
                 ],
                 "waste_code": ["01 01 01*", "01 01 01*", "01 01 03*", "01 01 03*"],
-                "waste_name": ["Déchet A", "Déchet A", "Déchet B", "Déchet B"],
+                "waste_name": ["Déchet A", None, "Déchet B", "Déchet B"],
                 "processing_operation_code": ["D10", "D10", "D5", "R1"],
                 "quantity_received": [10, 20, 30, 19],
             }
@@ -86,7 +86,7 @@ def sample_data() -> dict:
                 "date_expedition": [datetime(2023, 2, 1), datetime(2023, 4, 20), datetime(2023, 6, 10)],
                 "quantite": [15, 25, 35],
                 "code_dechet": ["04 01 01", "04 01 02", "02 01 03"],
-                "denomination_usuelle": ["Déchet AA", "Déchet BB", "Déchet CC"],
+                "denomination_usuelle": ["Déchet AA", "Déchet BB", None],
                 "unite": ["M3", "T", "T"],
                 "numeros_indentification_transporteurs": [
                     ["98765432109876"],
@@ -181,7 +181,7 @@ def test_preprocess_rndts_statements_data(sample_data, sample_data_date_interval
                 "code_traitement": "D5",
                 "unite": "T",
                 "quantite": 35,
-                "denomination_usuelle": "Déchet CC",
+                "denomination_usuelle": "",
             },
             {
                 "code_dechet": "04 01 01",

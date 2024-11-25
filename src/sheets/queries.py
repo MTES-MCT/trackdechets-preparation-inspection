@@ -10,7 +10,11 @@ select
     emitter_company_address,
     recipient_company_siret,
     waste_details_quantity,
-    quantity_received,
+    case 
+        when (emitter_company_siret = :siret) and (emitter_type = 'APPENDIX1_PRODUCER') 
+        then waste_details_quantity -- For appendix 1 we take the estimated quantity as received quantity
+        else quantity_received
+    end as quantity_received,
     waste_details_code as waste_code,
     waste_details_name as waste_name,
     processing_operation_done as processing_operation_code,

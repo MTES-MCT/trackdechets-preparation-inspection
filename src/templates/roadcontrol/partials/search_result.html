@@ -65,13 +65,23 @@
                     <input type="hidden" name="plate" value="{{ search_params.plate }}" />
                     <input type="hidden" name="end_cursor" value="{{ end_cursor }}" />
                 {% endfor %}
-                <button class="fr-btn fr-btn--secondary ">Suivant</button>
+                <button class="fr-btn fr-btn--secondary">Suivant</button>
             </form>
         {% endif %}
     </div>
 {% else %}
     <div class="fr-alert fr-alert--warning fr-mt-4w">
         <h3 class="fr-alert__title">Aucun bordereau ne correspond aux critères saisis</h3>
+        {% if no_bsd_found_pdf_available %}
+            <form action="{% url "no_result_roadcontrol_pdf" %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="siret" value="{{ search_params.siret }}" />
+                <input type="hidden" name="plate" value="{{ search_params.plate }}" />
+                <div class="fr-grid-row fr-grid-row--right">
+                    <button class="fr-btn fr-btn--sm fr-btn--secondary fr-btn--icon-right fr-icon-file-text-line">Imprimer un pdf</button>
+                </div>
+            </form>
+        {% endif %}
         <p>{{ form.non_field_errors }}</p>
         {% for field in form %}
             {% if field.errors %}

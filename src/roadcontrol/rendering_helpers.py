@@ -6,9 +6,7 @@ from weasyprint.text.fonts import FontConfiguration
 from .models import PdfBundle
 
 
-def render_pdf_road_control_fn(bundle: PdfBundle):
-    ctx = {"bundle": bundle}
-    content = render_to_string("roadcontrol/pdf/bundle_digest.html", ctx)
+def render_pdf(content):
     html = HTML(string=content, base_url=settings.BASE_URL)
 
     font_config = FontConfiguration()
@@ -23,3 +21,10 @@ def render_pdf_road_control_fn(bundle: PdfBundle):
 
     bytes = html.write_pdf(stylesheets=[css], font_config=font_config)
     return bytes
+
+
+def render_pdf_road_control_fn(bundle: PdfBundle):
+    ctx = {"bundle": bundle}
+    content = render_to_string("roadcontrol/pdf/bundle_digest.html", ctx)
+
+    return render_pdf(content)

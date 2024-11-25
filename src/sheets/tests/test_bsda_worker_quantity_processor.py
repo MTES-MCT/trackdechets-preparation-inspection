@@ -1,7 +1,9 @@
+from datetime import datetime
+
 import pandas as pd
 import pytest
-from datetime import datetime
 from plotly.graph_objects import Figure
+
 from ..graph_processors.plotly_components_processors import (
     BsdaWorkerQuantityProcessor,
 )  # Replace with actual module name

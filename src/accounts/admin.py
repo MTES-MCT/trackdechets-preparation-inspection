@@ -5,7 +5,9 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMultiAlternatives
+from django.http import HttpResponseRedirect
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from import_export import resources
 from import_export.admin import ImportExportMixin
@@ -90,6 +92,9 @@ class CustomUserAdmin(ImportExportMixin, UserAdmin):
         "monaiot_signup",
     ]
     list_filter = ("is_staff", "is_superuser", "is_active", "user_type", "user_category", "date_joined")
+    resource_classes = [
+        UserResource,
+    ]
     fieldsets = (
         (None, {"fields": ("username", "password")}),
         (_("Personal info"), {"fields": ("email",)}),
@@ -116,15 +121,17 @@ class CustomUserAdmin(ImportExportMixin, UserAdmin):
         ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
+
     add_fieldsets = (
+        (None, {"fields": (("username", "email", "password1", "password2"))}),
         (
-            None,
-            {
-                "classes": ("wide",),
-                "fields": ("username", "email", "password1", "password2"),
-            },
+            _("Segmentation"),
+            {"fields": ("user_category",)},
         ),
     )
-    resource_classes = [
-        UserResource,
-    ]
+
+    def response_add(self, request, obj, post_url_continue=None):
+        # Redirect to change list
+
+        list_url = reverse("admin:accounts_user_changelist")
+        return HttpResponseRedirect(list_url)

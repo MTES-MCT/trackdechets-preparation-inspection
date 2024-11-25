@@ -2,7 +2,10 @@ import httpx
 from celery.result import AsyncResult
 from django.conf import settings
 from django.core.files.base import ContentFile
+from django.http import HttpResponse
 from django.shortcuts import redirect
+from django.template.loader import render_to_string
+from django.utils import timezone
 from django.views.generic import DetailView, FormView, TemplateView
 
 from common.constants import STATE_DONE, STATE_RUNNING
@@ -14,6 +17,7 @@ from .exceptions import FormDownloadException
 from .forms import BsdSearchForm, RoadControlSearchForm
 from .helpers import get_company_data
 from .models import BsdPdf, PdfBundle
+from .rendering_helpers import render_pdf
 from .task import prepare_bundle
 from .td_requests import query_td_bsd_id, query_td_bsds, query_td_control_bsds, query_td_pdf
 
@@ -94,6 +98,7 @@ class RoadControlSearchResult(FullyLoggedMixin, FormView):
                 bsds_ids=bsds_ids,
                 search_params=search_params,
                 total_count=total_count,
+                no_bsd_found_pdf_available=not total_count,
                 start_cursor=start_cursor,
                 end_cursor=end_cursor,
                 has_next_page=has_next_page,
@@ -118,6 +123,33 @@ class BsdRetrievingMixin:
         weight = request.POST.get("weight", "0")
         packagings = request.POST.get("packagings", "")
         return {"adr_code": adr_code, "waste_code": waste_code, "weight": weight, "packagings": packagings}
+
+
+class NoResultRoadControlPdf(FullyLoggedMixin, BsdRetrievingMixin, FormView):
+    template_name = "roadcontrol/pdf/no_result_road_control_pdf.html"
+    form_class = RoadControlSearchForm
+    http_method_names = ["post"]
+    success_url = ""
+
+    def form_valid(self, form):
+        company_data = {}
+        siret = form.cleaned_data["siret"]
+        plate = form.cleaned_data["plate"]
+
+        if siret:
+            company_data = get_company_data(siret)
+
+        ctx = {"bundle": {**company_data, "company_siret": siret, "transporter_plate": plate}}
+        content = render_to_string(self.template_name, ctx)
+
+        pdf = render_pdf(content)
+
+        response = HttpResponse(content_type="application/pdf")
+        now = timezone.now()
+        response["Content-Disposition"] = f'attachment; filename="Contrôle routier {now:%d-%m-%Y %H%M}.pdf"'
+        response.write(pdf)
+
+        return response
 
 
 class RoadControlPdf(FullyLoggedMixin, BsdRetrievingMixin, TemplateView):

@@ -24,6 +24,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         INSPECTION_TRAVAIL = "INSPECTION_TRAVAIL", _("Inspection du travail")
         GENDARMERIE = "GENDARMERIE", _("Gendarmerie")
         ARS = "ARS", _("ARS")
+        DOUANE = "DOUANE", _("Douane")
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = [

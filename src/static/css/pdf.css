@@ -32,11 +32,13 @@ body {
     }
 
     @top-right {
-        content: "Page " counter(page) " sur " counter(pages);
+        content: "Page " counter(page) " / " counter(pages);
         font-size: 10pt;
         color: #444;
+        white-space: nowrap;
     }
 }
+
 
 @page vertical {
     size: A4 portrait;

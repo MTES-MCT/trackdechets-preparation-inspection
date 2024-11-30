@@ -10,6 +10,7 @@ COMPANY_TYPES = {
     "PRODUCER": "Producteur",
     "WASTE_VEHICLES": "Centre Véhicules Hors d'Usage",
     "CREMATORIUM": "Crématorium",
+    "WORKER": "Entreprise de travaux",
 }
 
 WASTE_PROCESSOR_TYPES = {

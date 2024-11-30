@@ -2,7 +2,7 @@ from .base import *  # noqa
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django.contrib.gis.db.backends.postgis",
         "NAME": "plop",
         "USER": "postgres",
         "PASSWORD": "admin",
@@ -42,3 +42,4 @@ SOCIALACCOUNT_PROVIDERS = {
         "SCOPE": ["openid"],
     }
 }
+DJANGO_VITE = {"default": {"dev_mode": True}}

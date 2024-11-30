@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
+    "django.contrib.gis",
     "grappelli.dashboard",
     "grappelli",
     "django.contrib.admin",
@@ -36,6 +37,8 @@ INSTALLED_APPS = [
     "defender",
     "django_otp",
     "django_otp.plugins.otp_email",
+    "django_filters",
+    "django_vite",
     "request",  # webstats module
     "simple_menu",
     "rest_framework",
@@ -50,6 +53,7 @@ INSTALLED_APPS = [
     "import_export",
     "roadcontrol",
     "sheets",
+    "maps",
 ]
 
 MIDDLEWARE = [
@@ -91,7 +95,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-DATABASES = {"default": env.db()}
+
+DATABASES = {
+    "default": env.db(),
+}
+
+
 WAREHOUSE_URL = env("WAREHOUSE_URL")
 
 # Password validation
@@ -133,6 +142,8 @@ STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 )
 STATICFILES_DIR = BASE_DIR / "static"
+DJANGO_VITE_ASSETS_PATH = STATICFILES_DIR / "ui_app" / "dist"
+
 STATICFILES_DIRS = [
     STATICFILES_DIR,
 ]
@@ -164,13 +175,18 @@ MEDIA_URL = "/medias/"
 SITE_ID = env.int("SITE_ID", 1)
 
 REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],
     "DEFAULT_PARSER_CLASSES": [
         "rest_framework.parsers.JSONParser",
     ],
-    "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.BasicAuthentication"],
 }
 
 # defender
@@ -198,6 +214,12 @@ OTP_EMAIL_SUBJECT = "Votre code pour Trackdéchets fiche établissement"
 OTP_EMAIL_BODY_TEMPLATE_PATH = "emails/second_factor/second_factor.txt"
 OTP_EMAIL_BODY_HTML_TEMPLATE_PATH = "emails/second_factor/second_factor.html"
 OTP_EMAIL_THROTTLE_DELAY = 300  # s
+
+if gdal_path := env.str("GDAL_LIBRARY_PATH", ""):
+    GDAL_LIBRARY_PATH = gdal_path
+if geos_path := env.str("GEOS_LIBRARY_PATH", ""):
+    GEOS_LIBRARY_PATH = env.str("GEOS_LIBRARY_PATH")
+
 
 # allauth monaiot
 SOCIALACCOUNT_ONLY = True
@@ -232,20 +254,7 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication",
-    ],
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
-    ],
-    "DEFAULT_RENDERER_CLASSES": [
-        "rest_framework.renderers.JSONRenderer",
-    ],
-    "DEFAULT_PARSER_CLASSES": [
-        "rest_framework.parsers.JSONParser",
-    ],
-}
+
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 
 WEB_QUEUE = "web-queue"
@@ -289,7 +298,3 @@ STORAGES = {
 
 SKIP_ROAD_CONTROL_SIRET_CHECK = False
 USE_CONTROL_BSDS_QUERY = env.bool("USE_CONTROL_BSDS_QUERY")
-#
-# from import_export.formats.base_formats import XLSX
-#
-# IMPORT_EXPORT_FORMATS = [XLSX]

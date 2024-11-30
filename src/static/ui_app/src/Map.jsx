@@ -5,10 +5,12 @@ import { useMapStore } from "./Store";
 import { Popup } from "./Popup";
 import { useShallow } from "zustand/react/shallow";
 
+const MAP_STYLE =
+  "https://openmaptiles.geo.data.gouv.fr/styles/osm-bright/style.json";
+
 export default function MapContainer({ mapRef, lat, lng, pins }) {
   const {
     zoom,
-
     setZoom,
     setBounds,
     popupTitle,
@@ -16,6 +18,7 @@ export default function MapContainer({ mapRef, lat, lng, pins }) {
     popupRow1,
     popupRow2,
     popupRow3,
+    popupLink,
     closePopup,
   } = useMapStore(
     useShallow((state) => ({
@@ -28,6 +31,7 @@ export default function MapContainer({ mapRef, lat, lng, pins }) {
       popupRow1: state.popupRow1,
       popupRow2: state.popupRow2,
       popupRow3: state.popupRow3,
+      popupLink: state.popupLink,
       closePopup: state.closePopup,
     })),
   );
@@ -43,7 +47,7 @@ export default function MapContainer({ mapRef, lat, lng, pins }) {
         }}
         dragRotate={false}
         touchZoomRotate={false}
-        mapStyle="https://openmaptiles.geo.data.gouv.fr/styles/osm-bright/style.json"
+        mapStyle={MAP_STYLE}
         onMoveEnd={(event) => {
           closePopup();
           setZoom(event.target.getZoom());
@@ -52,6 +56,7 @@ export default function MapContainer({ mapRef, lat, lng, pins }) {
         onLoad={(event) => {
           if (mapRef) {
             mapRef["current"] = event.target;
+            setBounds(event.target.getBounds());
           }
         }}
       >
@@ -66,6 +71,8 @@ export default function MapContainer({ mapRef, lat, lng, pins }) {
             row1={popupRow1}
             row2={popupRow2}
             row3={popupRow3}
+            link={popupLink}
+            onClose={closePopup}
           />
         )}
       </Map>

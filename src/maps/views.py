@@ -14,6 +14,7 @@ from common.mixins import FullyLoggedMixin
 
 from .centroids import DEPARTMENTS_CENTROIDS, REGIONS_CENTROIDS
 from .models import CartoCompany
+from .permissions import UserIsVerifedPermission
 from .serializers import ClusterSerializer, CompanySerializer, DepartmentCompanySerializer, RegionCompanySerializer
 
 
@@ -21,11 +22,11 @@ class MapView(FullyLoggedMixin, TemplateView):
     template_name = "maps/map.html"
 
 
-class CartoCompanyFilter(filters.FilterSet):
+class BaseCartoCompanyFilter(filters.FilterSet):
     profils = filters.CharFilter(method="filter_profils")
     bsds = filters.CharFilter(method="filter_bsds")
     operationcodes = filters.CharFilter(method="filter_operation_codes")
-    bounds = filters.CharFilter(method="filter_bounds")
+    bounds = filters.CharFilter(method="filter_bounds", required=True)
 
     def filter_profils(self, queryset, name, value):
         return queryset.filter(profils__contains=value.split(","))
@@ -52,6 +53,14 @@ class CartoCompanyFilter(filters.FilterSet):
 
     def filter_bounds(self, queryset, name, value):
         bbox = [float(v) for v in value.split(",")]
+        # to avoid expensive api requests tha could exhaust our db, we compute the bbox diagonal and return
+        # an empty queryset if it exceeds  `max_bbox_diagonal`
+        p1 = Point(bbox[0], bbox[1], srid=4326)
+        p2 = Point(bbox[2], bbox[3], srid=4326)
+        dist = p1.distance(p2)
+
+        if dist > self.max_bbox_diagonal:
+            return CartoCompany.objects.none()
 
         bbox_polygon = Polygon.from_bbox(bbox)
 
@@ -62,13 +71,30 @@ class CartoCompanyFilter(filters.FilterSet):
         fields = ["bsdd", "bsda", "bsff", "bsdasri", "bsvhu", "bsds", "profils", "bounds"]
 
 
+class RegionCartoCompanyFilter(BaseCartoCompanyFilter):
+    max_bbox_diagonal = 500
+
+
+class DepartmentCartoCompanyFilter(BaseCartoCompanyFilter):
+    max_bbox_diagonal = 7
+
+
+class DetailCartoCompanyFilter(BaseCartoCompanyFilter):
+    max_bbox_diagonal = 0.5
+
+
+class ClusterCartoCompanyFilter(BaseCartoCompanyFilter):
+    max_bbox_diagonal = 2
+
+
 class BaseApiCompanies(ListAPIView):
     authentication_classes = [SessionAuthentication]
+    permission_classes = [UserIsVerifedPermission]
 
 
 class RegionApiCompanies(BaseApiCompanies):
     filter_backends = [filters.DjangoFilterBackend]
-    filterset_class = CartoCompanyFilter
+    filterset_class = RegionCartoCompanyFilter
     serializer_class = RegionCompanySerializer
 
     def get_queryset(self):
@@ -83,7 +109,7 @@ class RegionApiCompanies(BaseApiCompanies):
 
 class DepartmentsApiCompanies(BaseApiCompanies):
     filter_backends = [filters.DjangoFilterBackend]
-    filterset_class = CartoCompanyFilter
+    filterset_class = DepartmentCartoCompanyFilter
     serializer_class = DepartmentCompanySerializer
 
     def get_queryset(self):
@@ -99,7 +125,7 @@ class DepartmentsApiCompanies(BaseApiCompanies):
 
 class ApiCompanies(BaseApiCompanies):
     filter_backends = [filters.DjangoFilterBackend]
-    filterset_class = CartoCompanyFilter
+    filterset_class = DetailCartoCompanyFilter
     serializer_class = CompanySerializer
 
     def get_queryset(self):
@@ -109,7 +135,7 @@ class ApiCompanies(BaseApiCompanies):
 class ApiCLusterCompanies(BaseApiCompanies):
     serializer_class = ClusterSerializer
     filter_backends = [filters.DjangoFilterBackend]
-    filterset_class = CartoCompanyFilter
+    filterset_class = ClusterCartoCompanyFilter
 
     def get_queryset_kmeans(self, companies_ids):
         q = """
@@ -204,6 +230,9 @@ class ApiCLusterCompanies(BaseApiCompanies):
         # First we retrieve companies ids in the bounding box
         companies_ids = self.filter_queryset(self.get_base_queryset()).values_list("id", flat=True)
         count = len(companies_ids)
+        if not count:
+            return Response([])
+
         # Then given that clustering algorithms are costly, if we have a lot of companies, we cheat and return the
         # middle of the bounding box
         if count > 1000:  # empirical steps values

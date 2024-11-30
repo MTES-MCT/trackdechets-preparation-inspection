@@ -123,3 +123,37 @@ def get_client(
         "logged_monaiot_client": monaiot_logged_in_user,
     }
     return clients.get(request.param)
+
+
+@pytest.fixture()
+def api_anon():
+    """Return a DRF api client."""
+    api = APIClient()
+    return api
+
+
+@pytest.fixture()
+def logged_in_api():
+    """Return a DRF api client with an already logged in (not verified)  user."""
+
+    user = UserFactory()
+
+    api = APIClient()
+    api.login(email=user.email, password=DEFAULT_PASSWORD)
+
+    setattr(api, "user", user)
+    return api
+
+
+@pytest.fixture()
+def verified_api(logged_in_api):
+    """Return a DRF api client with an already verified user."""
+
+    client = logged_in_api
+
+    device = EmailDeviceFactory(user=client.user)
+    session = client.session
+    session[DEVICE_ID_SESSION_KEY] = device.persistent_id
+    session.save()
+
+    return client

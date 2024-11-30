@@ -127,8 +127,8 @@ export const SelectWithSubOptions = ({
   );
   useEffect(() => {
     // Close select if user clicks elsewhere in the page
-    const handleClickInPage = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+    const handleClickInPage = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
         if (isOpen) setIsOpen(false);
       }
     };

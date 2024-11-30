@@ -6,13 +6,13 @@ import { resolve } from "path";
 export default defineConfig({
   plugins: [react()],
   css: {},
-  root: resolve("./src"),
+  root: resolve("./src/static/ui_app/src"),
   base: "/static/",
   build: {
     manifest: "manifest.json",
-    outDir: resolve("../ui_app/dist"),
+    outDir: resolve("./src/static/ui_app/dist"),
     rollupOptions: {
-      input: "src/main.jsx",
+      input: "./src/static/ui_app/src/main.jsx",
     },
   },
 });

@@ -8,6 +8,7 @@ from django.views.generic import DetailView, FormView, TemplateView
 
 from common.constants import STATE_DONE, STATE_RUNNING
 from common.mixins import FullyLoggedMixin
+from common.sirets import validate_siret
 from config.celery_app import app
 
 from ..forms import SiretForm
@@ -47,8 +48,17 @@ class Prepare(FullyLoggedMixin, FormView):
         self.is_inspection = bool(self.request.POST.get("inspection"))
         return super().post(request, *args, **kwargs)
 
+    def get_initial(self):
+        # prefill siret field when coming from map
+        siret = self.request.GET.get("siret", "")
+        init = super().get_initial()
+        if validate_siret(siret):
+            init["siret"] = siret
+        return init
+
     def get_form_kwargs(self):
         kw = super().get_form_kwargs()
+
         kw.update({"is_registry": self.is_registry})
         return kw
 

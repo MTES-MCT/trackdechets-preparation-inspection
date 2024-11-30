@@ -1,4 +1,4 @@
-import { SelectWithSubOptions } from "./SelectWithSubOptions.tsx";
+import { SelectWithSubOptions } from "./SelectWithSubOptions.jsx";
 import { useMapStore } from "./Store";
 import { useShallow } from "zustand/react/shallow";
 import {

@@ -62,8 +62,9 @@ Pour les tâches asynchrones, dans une autre fenêtre de terminal:
 
 ### Installation des dépendances front
 
+A la racine du projet :
+
 ```
-    $ cd src/static/ui_app
     $ npm install
 ```
 
@@ -72,7 +73,6 @@ Pour les tâches asynchrones, dans une autre fenêtre de terminal:
 Dans un second terminal, 
 
 ```
-    $ cd src/static/ui_app
     $ npm run dev
 ```
 
@@ -82,6 +82,13 @@ Pour lancer un rendu de manière synchrone (et glisser plus facilement des break
 
 ```
     $ manage.py prepare_sheet <sheet_pk>
+```
+
+
+Pour récupérer les établissements depuis le data warehouse:
+
+```
+    $ manage.py retrieve_companies
 ```
 
 
@@ -99,6 +106,10 @@ Lancer les tests avec :
     $ pytest
 ```
 
+### Création en masse d'utilisateurs
+
+Un template xls est disponible à la racine. 
+Un fois rempli le fichier est importable par la section users de l'interface d'admin (via django-import-export).
 
 ### Linting (python + templates)
 

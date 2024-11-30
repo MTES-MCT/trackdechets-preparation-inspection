@@ -112,12 +112,27 @@ const defaultPopupState = {
   popupRow1: [],
   popupRow2: [],
   popupRow3: [],
+  popupLink: "",
 };
 export const createMapPopupState = (set) => ({
   ...defaultPopupState,
-  setPopupData: ({ popupTitle, popupText, popupRow1, popupRow2, popupRow3 }) =>
+  setPopupData: ({
+    popupTitle,
+    popupText,
+    popupRow1,
+    popupRow2,
+    popupRow3,
+    popupLink,
+  }) =>
     set(() => {
-      return { popupTitle, popupText, popupRow1, popupRow2, popupRow3 };
+      return {
+        popupTitle,
+        popupText,
+        popupRow1,
+        popupRow2,
+        popupRow3,
+        popupLink,
+      };
     }),
   closePopup: () =>
     set(() => {

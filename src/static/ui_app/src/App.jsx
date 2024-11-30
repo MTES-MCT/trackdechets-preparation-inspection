@@ -11,6 +11,7 @@ import { useMapStore } from "./Store";
 
 import { ZOOM_ETABS, ZOOM_DEPARTMENTS, ZOOM_CLUSTERS } from "./constants";
 
+const PREPARE_SLUG = "/sheets/prepare/";
 const mapPlotToPopup = (plot, zoom) => {
   if (zoom >= ZOOM_ETABS) {
     return {
@@ -19,6 +20,7 @@ const mapPlotToPopup = (plot, zoom) => {
       popupRow1: ["Siret", plot.siret],
       popupRow2: ["Profil", plot.profiles],
       popupRow3: ["Déchet", plot.wastes],
+      popupLink: `${PREPARE_SLUG}?siret=${plot.siret}`,
     };
   }
   if (zoom >= ZOOM_CLUSTERS) {

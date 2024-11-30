@@ -42,3 +42,4 @@ SOCIALACCOUNT_PROVIDERS = {
         "SCOPE": ["openid"],
     }
 }
+DJANGO_VITE = {"default": {"dev_mode": True}}

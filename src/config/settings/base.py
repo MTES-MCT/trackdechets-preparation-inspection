@@ -8,7 +8,9 @@ from pathlib import Path
 import environ
 from django.urls import reverse_lazy
 
-BASE_DIR = Path(__file__).resolve().parents[2]
+BASE_DIR = Path(__file__).resolve().parents[3]
+SRC_DIR = BASE_DIR / "src"
+
 env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env(BASE_DIR / ".env")
 
@@ -77,7 +79,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [SRC_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -99,7 +101,6 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": env.db(),
 }
-
 
 WAREHOUSE_URL = env("WAREHOUSE_URL")
 
@@ -141,11 +142,11 @@ STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 )
-STATICFILES_DIR = BASE_DIR / "static"
+STATICFILES_DIR = SRC_DIR / "static"
 DJANGO_VITE_ASSETS_PATH = STATICFILES_DIR / "ui_app" / "dist"
 
 STATICFILES_DIRS = [
-    STATICFILES_DIR,
+    str(STATICFILES_DIR),
 ]
 
 # Default primary key field type
@@ -167,9 +168,9 @@ AUTH_USER_MODEL = "accounts.User"
 
 LOGIN_REDIRECT_URL = reverse_lazy("second_factor")
 
-CSV_FILES_DIR = BASE_DIR / "csv"
+CSV_FILES_DIR = SRC_DIR / "csv"
 
-MEDIA_ROOT = BASE_DIR.parent / "public" / "medias"
+MEDIA_ROOT = BASE_DIR / "public" / "medias"
 MEDIA_URL = "/medias/"
 
 SITE_ID = env.int("SITE_ID", 1)
@@ -220,7 +221,6 @@ if gdal_path := env.str("GDAL_LIBRARY_PATH", ""):
 if geos_path := env.str("GEOS_LIBRARY_PATH", ""):
     GEOS_LIBRARY_PATH = env.str("GEOS_LIBRARY_PATH")
 
-
 # allauth monaiot
 SOCIALACCOUNT_ONLY = True
 ACCOUNT_ADAPTER = "aiot_provider.account_adapter.MonaiotAccountAdapter"
@@ -253,7 +253,6 @@ SOCIALACCOUNT_PROVIDERS = {
         "SCOPE": MONAIOT_SCOPES,
     }
 }
-
 
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 

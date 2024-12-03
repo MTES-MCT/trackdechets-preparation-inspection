@@ -158,8 +158,8 @@ useMapStore.subscribe(
   ],
 
   () => {
-    const { fetchPlots } = useMapStore.getState();
-
+    const { fetchPlots, closePopup } = useMapStore.getState();
+    closePopup();
     fetchPlots();
   },
   { equalityFn: shallow },

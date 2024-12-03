@@ -84,8 +84,7 @@ function App() {
   ));
 
   return (
-    <div className="map-app ">
-      <div></div>
+    <div className="map-app">
       <Sidebar mapRef={mapRef} />
       <MapContainer lat={lat} lng={lng} pins={pins} mapRef={mapRef} />
     </div>

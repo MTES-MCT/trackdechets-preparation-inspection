@@ -550,6 +550,7 @@ table .td--right {
     padding: 10px 20px 20px 20px;
     z-index: 1000;
     background-color: #fff;
+    width: 40vw;
 }
 
 .map-popup__close {

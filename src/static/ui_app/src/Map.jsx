@@ -49,7 +49,6 @@ export default function MapContainer({ mapRef, lat, lng, pins }) {
         touchZoomRotate={false}
         mapStyle={MAP_STYLE}
         onMoveEnd={(event) => {
-          closePopup();
           setZoom(event.target.getZoom());
           setBounds(event.target.getBounds());
         }}

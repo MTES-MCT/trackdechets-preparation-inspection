@@ -26,7 +26,6 @@ class BaseCartoCompanyFilter(filters.FilterSet):
     profils = filters.CharFilter(method="filter_profils")
     bsds = filters.CharFilter(method="filter_bsds")
     operationcodes = filters.CharFilter(method="filter_operation_codes")
-    bounds = filters.CharFilter(method="filter_bounds", required=True)
 
     def filter_profils(self, queryset, name, value):
         return queryset.filter(profils__contains=value.split(","))
@@ -68,7 +67,7 @@ class BaseCartoCompanyFilter(filters.FilterSet):
 
     class Meta:
         model = CartoCompany
-        fields = ["bsdd", "bsda", "bsff", "bsdasri", "bsvhu", "bsds", "profils", "bounds"]
+        fields = ["bsdd", "bsda", "bsff", "bsdasri", "bsvhu", "bsds", "profils"]
 
 
 class RegionCartoCompanyFilter(BaseCartoCompanyFilter):
@@ -79,12 +78,19 @@ class DepartmentCartoCompanyFilter(BaseCartoCompanyFilter):
     max_bbox_diagonal = 7
 
 
-class DetailCartoCompanyFilter(BaseCartoCompanyFilter):
-    max_bbox_diagonal = 0.5
+class BasDetailCartoCompanyFilter(BaseCartoCompanyFilter):
+    bounds = filters.CharFilter(method="filter_bounds", required=True)
+
+    class Meta(BaseCartoCompanyFilter.Meta):
+        fields = ["bsdd", "bsda", "bsff", "bsdasri", "bsvhu", "bsds", "profils", "bounds"]
 
 
-class ClusterCartoCompanyFilter(BaseCartoCompanyFilter):
+class ClusterCartoCompanyFilter(BasDetailCartoCompanyFilter):
     max_bbox_diagonal = 2
+
+
+class DetailCartoCompanyFilter(BasDetailCartoCompanyFilter):
+    max_bbox_diagonal = 0.5
 
 
 class BaseApiCompanies(ListAPIView):

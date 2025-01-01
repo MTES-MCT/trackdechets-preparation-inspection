@@ -23,12 +23,24 @@ class MapView(FullyLoggedMixin, TemplateView):
 
 
 class BaseCartoCompanyFilter(filters.FilterSet):
+    departments = filters.CharFilter(method="filter_departments")
     profils = filters.CharFilter(method="filter_profils")
+    profils_collecteur = filters.CharFilter(method="filter_profils_collecteur")
+    profils_installation = filters.CharFilter(method="filter_profils_installation")
     bsds = filters.CharFilter(method="filter_bsds")
     operationcodes = filters.CharFilter(method="filter_operation_codes")
 
+    def filter_departments(self, queryset, name, value):
+        return queryset.filter(code_departement_insee__in=value.split(","))
+
     def filter_profils(self, queryset, name, value):
         return queryset.filter(profils__contains=value.split(","))
+
+    def filter_profils_collecteur(self, queryset, name, value):
+        return queryset.filter(profils_collecteur__contains=value.split(","))
+
+    def filter_profils_installation(self, queryset, name, value):
+        return queryset.filter(profils_installation__contains=value.split(","))
 
     def filter_operation_codes(self, queryset, name, value):
         values = value.split(",")

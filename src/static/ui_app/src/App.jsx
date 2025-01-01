@@ -28,10 +28,7 @@ const mapPlotToPopup = (plot, zoom) => {
       popupTitle: `${plot.count} établissements`,
     };
   }
-  return {
-    popupTitle: plot.name,
-    popupText: `${plot.count} établissements`,
-  };
+  return {};
 };
 
 function App() {
@@ -71,7 +68,7 @@ function App() {
       anchor="center"
       onClick={(e) => {
         e.originalEvent.stopPropagation();
-
+        if (zoom < ZOOM_CLUSTERS) return;
         setPopupData(mapPlotToPopup(plot, zoom));
       }}
     >

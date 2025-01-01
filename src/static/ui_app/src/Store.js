@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { immer } from "zustand/middleware/immer";
 import { subscribeWithSelector } from "zustand/middleware";
 import axios from "axios";
 import { shallow } from "zustand/shallow";
@@ -14,20 +15,30 @@ const getSlug = (zoom) => {
 const buildUrl = (
   zoom,
   profileFilters,
+
   bsdFilters,
   operationCodeFilters,
+  departmentFilters,
   bounds,
 ) => {
   const baseUrl = getSlug(zoom);
 
   const params = new URLSearchParams({
-    ...(profileFilters.length ? { profils: profileFilters } : {}),
-
-    ...(bsdFilters.length
-      ? { bsds: bsdFilters.map((bsd) => bsd.toLowerCase()).join(",") }
+    ...(profileFilters.root.length ? { profils: profileFilters.root } : {}),
+    ...(profileFilters.collectorTypes.length
+      ? { profils_collecteur: profileFilters.collectorTypes }
       : {}),
-    ...(operationCodeFilters.length
-      ? { operationcodes: operationCodeFilters }
+    ...(profileFilters.wasteProcessorTypes.length
+      ? { profils_installation: profileFilters.wasteProcessorTypes }
+      : {}),
+    ...(bsdFilters.root.length
+      ? { bsds: bsdFilters.root.map((bsd) => bsd.toLowerCase()).join(",") }
+      : {}),
+    ...(operationCodeFilters.root.length
+      ? { operationcodes: operationCodeFilters.root }
+      : {}),
+    ...(departmentFilters.root.length
+      ? { departments: departmentFilters.root }
       : {}),
     ...(bounds._sw
       ? {
@@ -43,52 +54,72 @@ const buildUrl = (
   return `${baseUrl}?${params.toString()}`;
 };
 
-export const createSearchUiState = (set) => ({
-  bsdFilters: [],
-  profileFilters: [],
-  operationCodeFilters: [],
+// const availableFilterKeys = [
+//   "bsdFilters",
+//   "profileFilters",
+//   "collectorFilters",
+//   "operationCodeFilters",
+//
+//   "departmentFilters",
+// ];
+export const createSearchUiState = immer((set) => ({
+  bsdFilters: { root: [] },
+  profileFilters: {
+    root: [],
+    collectorTypes: [],
+    wasteProcessorTypes: [],
+    wasteVehiclesTypes: [],
+  },
 
-  addBsdFilter: (bsdType) =>
-    set((state) => ({ bsdFilters: [...state.bsdFilters, bsdType] })),
+  operationCodeFilters: { root: [] },
 
-  removeBsdFilter: (bsdType) =>
-    set((state) => ({
-      bsdFilters: state.bsdFilters.filter((item) => item !== bsdType),
-    })),
+  departmentFilters: { root: [] },
 
-  addProfileFilter: (profile) =>
-    set((state) => ({ profileFilters: [...state.profileFilters, profile] })),
-  removeProfileFilter: (profile) =>
-    set((state) => ({
-      profileFilters: state.profileFilters.filter((item) => item !== profile),
-    })),
-  addOperationCodeFilter: (operationCode) =>
-    set((state) => ({
-      operationCodeFilters: [...state.operationCodeFilters, operationCode],
-    })),
-  removeOperationCodeFilter: (operationCode) =>
-    set((state) => ({
-      operationCodeFilters: state.operationCodeFilters.filter(
-        (item) => item !== operationCode,
-      ),
-    })),
-});
+  addFilter: ({ filterKey, subFilterKey = "root", value }) =>
+    set((state) => {
+      state[filterKey][subFilterKey].push(value);
+    }),
+
+  removeFilter: ({ filterKey, subFilterKey = "root", value }) =>
+    set((state) => {
+      const arr = state[filterKey][subFilterKey];
+      const index = arr.findIndex((el) => el === value);
+      if (index !== -1) arr.splice(index, 1);
+    }),
+
+  clearFilter: ({ filterKey, subFilterKey = "root" }) =>
+    set((state) => {
+      state[filterKey][subFilterKey] = [];
+    }),
+}));
 
 export const createMapDataState = (set, get) => ({
   regions: [],
   departments: [],
   plots: [],
   fetchPlots: async () => {
-    const { zoom, profileFilters, bsdFilters, operationCodeFilters, bounds } =
-      get();
+    const {
+      zoom,
+      profileFilters,
+
+      bsdFilters,
+      operationCodeFilters,
+      departmentFilters,
+      bounds,
+    } = get();
 
     const url = buildUrl(
       zoom,
       profileFilters,
+
       bsdFilters,
       operationCodeFilters,
+      departmentFilters,
       bounds,
     );
+
+    console.log(url);
+
     axios.get(url).then((res) => {
       set({ plots: res.data });
     });
@@ -154,11 +185,14 @@ useMapStore.subscribe(
     state.bsdFilters,
     state.profileFilters,
     state.operationCodeFilters,
+    state.departmentFilters,
     state.bounds,
   ],
 
   () => {
     const { fetchPlots, closePopup } = useMapStore.getState();
+
+    console.log(JSON.stringify(useMapStore.getState().profileFilters, null, 4));
     closePopup();
     fetchPlots();
   },

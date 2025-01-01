@@ -5,6 +5,7 @@ import {
   BSDS_OPTIONS,
   PROCESSING_CODES_OPTIONS,
   PROFILE_OPTIONS,
+  FRENCH_DEPARTEMENTS,
 } from "./constants";
 
 export function Sidebar({ mapRef }) {
@@ -12,27 +13,24 @@ export function Sidebar({ mapRef }) {
     bsdFilters,
     profileFilters,
     operationCodeFilters,
-    addBsdFilter,
-    removeBsdFilter,
-    addProfileFilter,
-    removeProfileFilter,
-    addOperationCodeFilter,
-    removeOperationCodeFilter,
+
+    departmentFilters,
+
+    addFilter,
+    removeFilter,
+    clearFilter,
   } = useMapStore(
     useShallow((state) => ({
       bsdFilters: state.bsdFilters,
       profileFilters: state.profileFilters,
       operationCodeFilters: state.operationCodeFilters,
+      departmentFilters: state.departmentFilters,
 
-      addBsdFilter: state.addBsdFilter,
-      removeBsdFilter: state.removeBsdFilter,
-      addProfileFilter: state.addProfileFilter,
-      removeProfileFilter: state.removeProfileFilter,
-      addOperationCodeFilter: state.addOperationCodeFilter,
-      removeOperationCodeFilter: state.removeOperationCodeFilter,
+      addFilter: state.addFilter,
+      removeFilter: state.removeFilter,
+      clearFilter: state.clearFilter,
     })),
   );
-
   return (
     <div className="map__sidebar">
       <p className="fr-text--lg fr-text--bold">Filtrer</p>
@@ -43,9 +41,11 @@ export function Sidebar({ mapRef }) {
         </label>
         <SelectWithSubOptions
           options={BSDS_OPTIONS}
+          filterKey="bsdFilters"
           selected={bsdFilters}
-          onAdd={addBsdFilter}
-          onRemove={removeBsdFilter}
+          onAdd={addFilter}
+          onRemove={removeFilter}
+          onClear={clearFilter}
         />
       </div>
       <div className="fr-select-group">
@@ -54,9 +54,11 @@ export function Sidebar({ mapRef }) {
         </label>
         <SelectWithSubOptions
           options={PROFILE_OPTIONS}
+          filterKey="profileFilters"
           selected={profileFilters}
-          onAdd={addProfileFilter}
-          onRemove={removeProfileFilter}
+          onAdd={addFilter}
+          onRemove={removeFilter}
+          onClear={clearFilter}
         />
       </div>
 
@@ -66,9 +68,25 @@ export function Sidebar({ mapRef }) {
         </label>
         <SelectWithSubOptions
           options={PROCESSING_CODES_OPTIONS}
+          filterKey="operationCodeFilters"
           selected={operationCodeFilters}
-          onAdd={addOperationCodeFilter}
-          onRemove={removeOperationCodeFilter}
+          onAdd={addFilter}
+          onRemove={removeFilter}
+          onClear={clearFilter}
+        />
+      </div>
+
+      <div className="fr-select-group">
+        <label className="fr-label" htmlFor="id_profile_select">
+          Département
+        </label>
+        <SelectWithSubOptions
+          options={FRENCH_DEPARTEMENTS}
+          filterKey="departmentFilters"
+          selected={departmentFilters}
+          onAdd={addFilter}
+          onRemove={removeFilter}
+          onClear={clearFilter}
         />
       </div>
       <div>
@@ -97,6 +115,13 @@ export function Sidebar({ mapRef }) {
           lat={3.9517949}
           long={-53.07822}
           label="Guyane"
+          zoom={7}
+        />
+        <FlyTo
+          mapRef={mapRef}
+          lat={-12.82451}
+          long={45.165455}
+          label="Mayotte"
           zoom={7}
         />
       </div>

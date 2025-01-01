@@ -52,7 +52,7 @@ class RoadControlSearchForm(Form):
         if not plate and not siret:
             raise ValidationError("Au moins un champ est requis")
 
-        if len("".join(plate.split())) <= 6 and not siret:
+        if len("".join(plate.split())) < 6 and not siret:
             self.add_error(
                 "plate", "L'immatriculation doit être renseignée en entier si vous ne précisez pas le siret"
             )

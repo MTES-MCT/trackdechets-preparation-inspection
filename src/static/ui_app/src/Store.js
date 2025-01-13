@@ -118,8 +118,6 @@ export const createMapDataState = (set, get) => ({
       bounds,
     );
 
-    console.log(url);
-
     axios.get(url).then((res) => {
       set({ plots: res.data });
     });
@@ -192,7 +190,6 @@ useMapStore.subscribe(
   () => {
     const { fetchPlots, closePopup } = useMapStore.getState();
 
-    console.log(JSON.stringify(useMapStore.getState().profileFilters, null, 4));
     closePopup();
     fetchPlots();
   },

@@ -540,6 +540,7 @@ table .td--right {
 
 .map__sidebar {
     width: 30%;
+    max-width: 400px;
 }
 
 .map-popup {
@@ -550,7 +551,8 @@ table .td--right {
     padding: 10px 20px 20px 20px;
     z-index: 1000;
     background-color: #fff;
-    width: 40vw;
+    width: 60%;
+    max-width: 700px ;
 }
 
 .map-popup__close {

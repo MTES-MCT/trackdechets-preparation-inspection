@@ -277,6 +277,14 @@ class BsdStatsProcessor:
                     self.packagings_data, left_on="id", right_on="bsff_id"
                 )[key].sum()
             else:
+                if self.bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDASRI]:
+                    # Handle quantity refused
+                    bs_received_data["quantity_received"] = (
+                        bs_received_data["quantity_received"] - bs_received_data["quantity_refused"]
+                    )
+                    bs_emitted_data["quantity_received"] = (
+                        bs_emitted_data["quantity_received"] - bs_emitted_data["quantity_refused"]
+                    )
                 total_quantity_incoming = bs_received_data[key].sum()
                 total_quantity_outgoing = bs_emitted_data[key].sum()
 
@@ -309,7 +317,7 @@ class BsdStatsProcessor:
                 )
 
     def _preprocess_data(self) -> None:
-        bs_data = self.bs_data
+        bs_data = self.bs_data.copy()
 
         bs_emitted_data = bs_data[
             (bs_data["emitter_company_siret"] == self.company_siret)
@@ -422,6 +430,7 @@ class WasteFlowsTableProcessor:
                 transport_df = self.transporters_data_df.get(bs_type)
 
                 if transport_df is not None:
+                    transport_df = transport_df.copy()
                     if len(df) > 0:
                         df = df.drop(
                             columns=["sent_at", "quantity_received"],
@@ -462,6 +471,12 @@ class WasteFlowsTableProcessor:
                             transport_columns_to_take.append("quantity_received")
                             validation = "one_to_many"
 
+                        if bs_type in [BSDD, BSDD_NON_DANGEROUS]:
+                            # Handle quantity refused
+                            transport_df["quantity_received"] = (
+                                transport_df["quantity_received"] - transport_df["quantity_refused"]
+                            )
+
                         df = df.merge(
                             transport_df[transport_columns_to_take],
                             left_on="id",
@@ -485,7 +500,8 @@ class WasteFlowsTableProcessor:
                         )
                     else:
                         df = transport_df
-
+            elif bs_type == "BSDASRI":
+                df["quantity_received"] = df["quantity_received"] - df["quantity_refused"]
             dfs_to_concat.append(df)
 
         if len(dfs_to_concat) == 0:
@@ -694,6 +710,10 @@ class BsdCanceledTableProcessor:
                 # BSDASRI does not have waste name
                 if "waste_name" in bs_data.columns:
                     columns_to_take.append("waste_name")
+
+                # Handle quantity refused
+                if "quantity_refused" in bs_data.columns:
+                    columns_to_take.append("quantity_refused")
 
                 temp_df = pd.merge(
                     cancellations,

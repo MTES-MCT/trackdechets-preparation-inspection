@@ -15,6 +15,7 @@ select
         then waste_details_quantity -- For appendix 1 we take the estimated quantity as received quantity
         else quantity_received
     end as quantity_received,
+    quantity_refused,
     waste_details_code as waste_code,
     waste_details_name as waste_name,
     processing_operation_done as processing_operation_code,
@@ -67,7 +68,12 @@ select
     emitter_company_address,
     recipient_company_siret,
     waste_details_quantity,
-    quantity_received,
+    case 
+        when (emitter_company_siret = :siret) and (emitter_type = 'APPENDIX1_PRODUCER') 
+        then waste_details_quantity -- For appendix 1 we take the estimated quantity as received quantity
+        else quantity_received
+    end as quantity_received,
+    quantity_refused,
     waste_details_code as waste_code,
     waste_details_name as waste_name,
     processing_operation_done as processing_operation_code,
@@ -119,6 +125,7 @@ select
     transporter_number_plate,
     transporter_transport_mode,
     quantity_received,
+    quantity_refused,
     waste_details_code as waste_code
 from
     refined_zone_enriched.bsdd_transporter_enriched
@@ -152,6 +159,7 @@ select
     transporter_number_plate,
     transporter_transport_mode,
     quantity_received,
+    quantity_refused,
     waste_details_code as waste_code
 from
     refined_zone_enriched.bsdd_transporter_enriched
@@ -281,6 +289,7 @@ select
     destination_company_siret as recipient_company_siret,
     emitter_waste_weight_value as waste_details_quantity,
     destination_reception_waste_weight_value as quantity_received,
+    destination_reception_waste_refused_weight_value as quantity_refused,
     destination_reception_waste_volume as volume,
     waste_code,
     destination_operation_code as processing_operation_code,

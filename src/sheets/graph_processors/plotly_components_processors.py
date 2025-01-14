@@ -111,15 +111,19 @@ class BsdQuantitiesGraph:
                     .replace(0, np.nan)
                 )
             else:
-                outgoing_data_by_month = (
-                    outgoing_data.groupby(pd.Grouper(key="sent_at", freq="1M"))[variable_name].sum().replace(0, np.nan)
-                )
-
                 # Handle quantity refused
-                if self.bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA]:
+                if self.bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDASRI]:
                     incoming_data["quantity_received"] = incoming_data["quantity_received"] - incoming_data[
                         "quantity_refused"
                     ].fillna(0)
+
+                    outgoing_data["quantity_received"] = outgoing_data["quantity_received"] - outgoing_data[
+                        "quantity_refused"
+                    ].fillna(0)
+
+                outgoing_data_by_month = (
+                    outgoing_data.groupby(pd.Grouper(key="sent_at", freq="1M"))[variable_name].sum().replace(0, np.nan)
+                )
 
                 incoming_data_by_month = (
                     incoming_data.groupby(pd.Grouper(key="received_at", freq="1M"))[variable_name]
@@ -1099,21 +1103,18 @@ class BsdaWorkerQuantityProcessor:
 
         # Handling multimodal
         bsda_data.drop(
-            columns=["sent_at", "quantity_received", "quantity_refused"],
+            columns=["sent_at", "quantity_received"],
             errors="ignore",
             inplace=True,
         )  # To avoid column duplication with transport data
 
         bsda_data = bsda_data.merge(
-            transport_df[["bs_id", "sent_at", "quantity_received", "quantity_refused", "transporter_company_siret"]],
+            transport_df[["bs_id", "sent_at", "quantity_received", "transporter_company_siret"]],
             left_on="id",
             right_on="bs_id",
             how="left",
             validate="one_to_many",
         )
-
-        # Handle quantity refused
-        bsda_data["quantity_received"] = bsda_data["quantity_received"] - bsda_data["quantity_refused"].fillna(0)
 
         bsda_data = bsda_data.groupby("id", as_index=False).agg(
             {
@@ -2322,6 +2323,9 @@ class IntermediaryBordereauxQuantitiesGraphProcessor:
             df = df.drop_duplicates("id")
 
             if len(df) > 0:
+                if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA, BSDASRI]:
+                    df["quantity_received"] = df["quantity_received"] - df["quantity_refused"].fillna(0)
+
                 df_by_month = df.groupby(pd.Grouper(key="sent_at", freq="1M"))["quantity_received"].sum()
                 self.bordereaux_stats[bs_type] = df_by_month
 

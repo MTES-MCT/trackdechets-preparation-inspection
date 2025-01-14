@@ -9,7 +9,15 @@ import pandas as pd
 
 from sheets.utils import format_number_str
 
-from ..constants import BS_TYPES_WITH_MULTIMODAL_TRANSPORT, BSDA, BSDASRI, BSDD, BSDD_NON_DANGEROUS, BSFF, BSVHU
+from ..constants import (
+    BS_TYPES_WITH_MULTIMODAL_TRANSPORT,
+    BSDA,
+    BSDASRI,
+    BSDD,
+    BSDD_NON_DANGEROUS,
+    BSFF,
+    BSVHU,
+)
 
 # classes returning a context to be rendered in a non-plotly template
 
@@ -913,7 +921,8 @@ class StorageStatsProcessor:
         df = pd.concat(dfs_to_concat)
 
         # Handle quantity refused
-        df["quantity_received"] = df["quantity_received"] - df["quantity_refused"].fillna(0)
+        if "quantity_refused" in df.columns:
+            df["quantity_received"] = df["quantity_received"] - df["quantity_refused"].fillna(0)
 
         emitted_mask = (df.emitter_company_siret == siret) & df.sent_at.between(*self.data_date_interval)
         received_mask = (df.recipient_company_siret == siret) & df.received_at.between(*self.data_date_interval)
@@ -1339,7 +1348,7 @@ class PrivateIndividualsCollectionsTableProcessor:
         )  # To avoid column duplication with transport data
 
         df = df.merge(
-            transport_df[["bs_id", "sent_at", "quantity_received", "quantity_refused", "transporter_company_siret"]],
+            transport_df[["bs_id", "sent_at", "quantity_received", "transporter_company_siret"]],
             left_on="id",
             right_on="bs_id",
             how="left",
@@ -1358,7 +1367,6 @@ class PrivateIndividualsCollectionsTableProcessor:
                 "waste_code": "max",
                 "waste_name": "max",
                 "quantity_received": "max",
-                "quantity_refused": "max",
                 "sent_at": "min",
                 "received_at": "min",
             }
@@ -1397,7 +1405,6 @@ class PrivateIndividualsCollectionsTableProcessor:
                 "waste_code": e.waste_code,
                 "waste_name": e.waste_name,
                 "quantity": e.quantity_received if not pd.isna(e.quantity_received) else None,
-                "quantity_refused": e.quantity_refused if not pd.isna(e.quantity_refused) else None,
                 "sent_at": e.sent_at.strftime("%d/%m/%Y %H:%M") if not pd.isna(e.sent_at) else None,
                 "received_at": e.received_at.strftime("%d/%m/%Y %H:%M") if not pd.isna(e.received_at) else None,
             }
@@ -1470,12 +1477,10 @@ class QuantityOutliersTableProcessor:
             # In this case we use transporter data
 
             # Old 'bordereaux' data could contain quantity_received, we want to use the one from transport data
-            df = df.drop(columns=["quantity_received", "quantity_refused"], errors="ignore")
+            df = df.drop(columns=["quantity_received"], errors="ignore")
 
             df_with_transport = df.merge(
-                transporters_df[
-                    ["bs_id", "transporter_transport_mode", "sent_at", "quantity_received", "quantity_refused"]
-                ],
+                transporters_df[["bs_id", "transporter_transport_mode", "sent_at", "quantity_received"]],
                 left_on="id",
                 right_on="bs_id",
                 how="left",
@@ -2651,7 +2656,8 @@ class IntermediaryBordereauxStatsProcessor:
                 num_bordereaux = df["id"].nunique()
 
                 # handle quantity refused
-                df["quantity_received"] = df["quantity_received"] - df["quantity_refused"].fillna(0)
+                if bs_type in [BSDD, BSDD_NON_DANGEROUS]:
+                    df["quantity_received"] = df["quantity_received"] - df["quantity_refused"].fillna(0)
 
                 quantity = df.drop_duplicates("id")["quantity_received"].sum()
                 self.bordereaux_stats[bs_type]["count"] = format_number_str(num_bordereaux, 0)
@@ -2743,6 +2749,12 @@ class IncineratorOutgoingWasteProcessor:
         if len(dfs_to_concat) > 0:
             concat_df = pd.concat(dfs_to_concat)
             concat_df["waste_name"] = concat_df["waste_name"].fillna("")
+
+            # Handle quantity refused
+            if "quantity_refused" in concat_df.columns:
+                concat_df["quantity_received"] = concat_df["quantity_received"] - concat_df["quantity_refused"].fillna(
+                    0
+                )
 
             aggregated_data_df = (
                 concat_df.groupby(

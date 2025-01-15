@@ -370,7 +370,7 @@ class SheetProcessor:
                 icpe_rubrique_data,
             )
             icpe_rubrique_graph_data = icpe_rubrique_graph.build()
-            setattr(self.computed, f"icpe_{rubrique.replace('-','_')}_data", icpe_rubrique_graph_data)
+            setattr(self.computed, f"icpe_{rubrique.replace('-', '_')}_data", icpe_rubrique_graph_data)
 
         non_dangerous_waste_quantities_graph = RNDTSQuantitiesGraphProcessor(
             self.siret, self.rndts_data["ndw_incoming"], self.rndts_data["ndw_outgoing"], data_date_interval

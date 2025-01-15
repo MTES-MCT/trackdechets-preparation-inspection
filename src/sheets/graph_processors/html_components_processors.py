@@ -204,7 +204,7 @@ class BsdStatsProcessor:
                         - bs_emitted_processed_in_more_than_one_month["received_at"]
                     ).mean()
                 ).total_seconds() / (24 * 3600)  # Time in seconds is converted in days
-                target["processed_in_more_than_one_month_avg_processing_time"] = f"{format_number_str(res,1)}j"
+                target["processed_in_more_than_one_month_avg_processing_time"] = f"{format_number_str(res, 1)}j"
 
             # Handle the case of BSFF specific packagings statistics
             if to_process_packagings is not None:

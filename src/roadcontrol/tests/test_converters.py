@@ -206,7 +206,10 @@ def test_bvhu_to_bsd_display():
         "bsvhuUpdatedAt": "2022-01-11T15:11:43.960Z",
         "weight": {"value": 5},
         "emitter": {"company": {"name": "EMITTER"}},
-        "transporter": {"company": {"siret": "thesiret", "name": "TRANSPORT"}},
+        "transporter": {
+            "company": {"siret": "thesiret", "name": "TRANSPORT"},
+            "transport": {"plates": ["DR-33-PL", "JK-98-MM"]},
+        },
         "destination": {"company": {"name": "THE COMPANY"}, "reception": {"weight": 10}},
     }
 
@@ -223,6 +226,6 @@ def test_bvhu_to_bsd_display():
         "emitter": {"company": {"name": "EMITTER"}},
         "destination": {"company": {"name": "THE COMPANY"}},
         "transporter": {"company": {"name": "TRANSPORT", "siret": "thesiret"}},
-        "transporter_plate": "Non applicable",
+        "transporter_plate": "DR-33-PL,JK-98-MM",
         "packagings": "",
     }

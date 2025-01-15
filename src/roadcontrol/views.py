@@ -70,7 +70,6 @@ class RoadControlSearchResult(FullyLoggedMixin, FormView):
         end_cursor = None
         has_next_page = False
         has_previous_page = False
-
         if resp:
             bsds = resp["data"][query_name]
             total_count = bsds["totalCount"]

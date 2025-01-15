@@ -219,6 +219,9 @@ fragment BsvhuFragment on Bsvhu {
       siret
       name
     }
+    transport {
+      plates
+    }
   }
 
   destination {

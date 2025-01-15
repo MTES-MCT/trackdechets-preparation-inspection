@@ -56,7 +56,7 @@ def test_bsdasri_to_bsd_display():
         "__typename": "Bsdasri",
         "bsdasriStatus": "SENT",
         "bsdasriWaste": {
-            "adr": "UN , DECHET, Quantité estimée conformément au " "5.4.1.1.3.2",
+            "adr": "UN , DECHET, Quantité estimée conformément au 5.4.1.1.3.2",
             "code": "18 01 03*",
         },
         "destination": {"company": {"name": "DESTI"}},

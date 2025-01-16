@@ -1,8 +1,4 @@
-import datetime as dt
-
 import pytest
-from allauth.socialaccount.models import SocialAccount
-from django.utils import timezone
 from django_otp import DEVICE_ID_SESSION_KEY
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
@@ -100,16 +96,14 @@ def monaiot_logged_in_user(db):
     from django.test.client import Client
 
     user = UserFactory(monaiot_connexion=True)
-    uid = f"xyz-{user.pk}"
-    SocialAccount.objects.create(provider="monaiot", user=user, uid=uid)
+
     client = Client()
     client.login(email=user.email, password=DEFAULT_PASSWORD)
 
-    now = timezone.now()
-    ts = dt.datetime.timestamp(now)
-    account_authentication_methods = [{"method": "socialaccount", "at": ts, "provider": "monaiot", "uid": uid}]
     session = client.session
-    session["account_authentication_methods"] = account_authentication_methods
+
+    session["_auth_user_backend"] = "oidc.oidc.MonAiotOidcBackend"
+
     session.save()
 
     setattr(client, "user", user)

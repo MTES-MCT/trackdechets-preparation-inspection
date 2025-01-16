@@ -12,7 +12,7 @@ class PublicHomeView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         """Redirect user to private home or second_factor page wether they're logged in or verified."""
-        if request.user.is_verified():
+        if request.user.is_verified() or request.user.is_authenticated_from_monaiot():
             return HttpResponseRedirect(reverse_lazy("private_home"))
         if request.user.is_authenticated:
             return HttpResponseRedirect(reverse_lazy("second_factor"))

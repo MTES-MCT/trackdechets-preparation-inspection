@@ -1,4 +1,4 @@
 isort .
 ruff check .
 ruff format .
-djlint --reformat templates
+git ls-files -z -- '*.html' | xargs -0r djade --target-version 5.1

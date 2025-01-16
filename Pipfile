@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-numpy =  "==1.26.4"
+numpy = "==1.26.4"
 django = "*"
 django-registration = "*"
 psycopg2-binary = "*"
@@ -25,8 +25,8 @@ django-defender = "*"
 django-request = "*"
 django-grappelli = "*"
 weasyprint = "*"
-sentry-sdk = {extras = ["django"], version = "*"}
-django-anymail = {extras = ["sendinblue"], version = "*"}
+sentry-sdk = { extras = ["django"], version = "*" }
+django-anymail = { extras = ["sendinblue"], version = "*" }
 django-otp = "*"
 django-allauth = "== 64.0.0"
 httpx = "*"
@@ -34,15 +34,16 @@ djangorestframework = "*"
 "django-storages[s3]" = "*"
 django-template-partials = "*"
 django-simple-menu = "*"
-"django-import-export[xlsx]"= "*"
+"django-import-export[xlsx]" = "*"
 django-vite = "*"
 django-filter = "*"
 boto3 = "*"
+mozilla-django-oidc = "*"
 
 [dev-packages]
 ruff = "*"
 isort = "*"
-djlint = "*"
+djade = "*"
 pywatchman = "*"
 django-debug-toolbar = "*"
 django-extensions = "*"

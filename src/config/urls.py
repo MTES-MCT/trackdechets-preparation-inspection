@@ -8,7 +8,6 @@ from django.urls import include, path
 from django.views.generic.base import RedirectView
 from django_otp.admin import OTPAdminSite
 
-from aiot_provider.views import temp_aiot_login_page
 from sheets.views import PrivateHomeView, PublicHomeView
 
 # Admin config
@@ -32,19 +31,17 @@ urlpatterns = [
     path("", PublicHomeView.as_view(), name="public_home"),
     path("home/", PrivateHomeView.as_view(), name="private_home"),
     path("local-accounts/", include("accounts.urls")),
-    # path("accounts/signup/", HttpResponseNotFound, name="allauth_signup"),
     path("accounts/login/", not_found),
     path("accounts/logout/", not_found),
     path("accounts/inactive/", not_found),
-    # path("accounts/3rdparty/signup/", not_found),
-    path("accounts/", include("allauth.urls")),
+    path("accounts/", include("mozilla_django_oidc.urls")),
+    path("oidc/", include("oidc.urls")),
     path("content/", include("content.urls")),
     path("sheets/", include("sheets.urls")),
     path("registry/", include("registry.urls")),
     path("roadcontrol/", include("roadcontrol.urls")),
     path("map/", include("maps.urls")),
     path("data-exports/", include("data_exports.urls")),
-    path("monaiot-login/", temp_aiot_login_page),
 ]
 
 if settings.DEBUG:

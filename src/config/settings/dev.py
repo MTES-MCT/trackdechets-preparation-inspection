@@ -42,6 +42,9 @@ LOGGING = {
         "handlers": ["console"],
         "level": "INFO",
     },
+    "loggers": {
+        "mozilla_django_oidc": {"handlers": ["console"], "level": "DEBUG"},
+    },
 }
 
 

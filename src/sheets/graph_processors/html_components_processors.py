@@ -441,13 +441,17 @@ class WasteFlowsTableProcessor:
                     transport_df = transport_df.copy()
                     if len(df) > 0:
                         df = df.drop(
-                            columns=["sent_at", "quantity_received"],
+                            columns=["sent_at"],
                             errors="ignore",
                         )  # To avoid column duplication with transport data
 
                         if bs_type == BSFF:
                             if self.packagings_data is not None:
                                 # Quantity is taken from packagings data in case of BSFF
+                                df = df.drop(
+                                    columns=["quantity_received"],
+                                    errors="ignore",
+                                )
                                 df = df.merge(
                                     self.packagings_data[["bsff_id", "acceptation_weight", "acceptation_date"]],
                                     left_on="id",
@@ -476,14 +480,11 @@ class WasteFlowsTableProcessor:
                         if (not bs_type == BSFF) or (
                             self.packagings_data is None
                         ):  # BSFF stores quantity in packagings data
-                            transport_columns_to_take.append("quantity_received")
                             validation = "one_to_many"
 
                         if bs_type in [BSDD, BSDD_NON_DANGEROUS]:
                             # Handle quantity refused
-                            transport_df["quantity_received"] = transport_df["quantity_received"] - transport_df[
-                                "quantity_refused"
-                            ].fillna(0)
+                            df["quantity_received"] = df["quantity_received"] - df["quantity_refused"].fillna(0)
 
                         df = df.merge(
                             transport_df[transport_columns_to_take],
@@ -817,9 +818,7 @@ class SameEmitterRecipientTableProcessor:
             if (df is None) or (transport_df is None):
                 continue
 
-            columns_to_drop = ["sent_at", "quantity_received", "transporter_company_siret"]
-            if bs_type in [BSDD, BSDD_NON_DANGEROUS]:
-                columns_to_drop.append("quantity_refused")
+            columns_to_drop = ["sent_at", "transporter_company_siret"]
 
             # Handling multimodal
             df.drop(
@@ -828,9 +827,7 @@ class SameEmitterRecipientTableProcessor:
                 inplace=True,
             )  # To avoid column duplication with transport data
 
-            transport_df_columns_to_take = ["bs_id", "sent_at", "quantity_received", "transporter_company_siret"]
-            if bs_type in [BSDD, BSDD_NON_DANGEROUS]:
-                transport_df_columns_to_take.append("quantity_refused")
+            transport_df_columns_to_take = ["bs_id", "sent_at", "transporter_company_siret"]
 
             df = df.merge(
                 transport_df[transport_df_columns_to_take],
@@ -1178,13 +1175,13 @@ class WasteIsDangerousStatementsProcessor:
 
         # Handling multimodal
         df.drop(
-            columns=["sent_at", "quantity_received", "quantity_refused"],
+            columns=["sent_at"],
             errors="ignore",
             inplace=True,
         )  # To avoid column duplication with transport data
 
         df = df.merge(
-            transport_df[["bs_id", "sent_at", "quantity_received", "quantity_refused", "transporter_company_siret"]],
+            transport_df[["bs_id", "sent_at", "transporter_company_siret"]],
             left_on="id",
             right_on="bs_id",
             how="left",
@@ -1342,13 +1339,13 @@ class PrivateIndividualsCollectionsTableProcessor:
 
         # Handling multimodal
         df.drop(
-            columns=["sent_at", "quantity_received", "quantity_refused"],
+            columns=["sent_at"],
             errors="ignore",
             inplace=True,
         )  # To avoid column duplication with transport data
 
         df = df.merge(
-            transport_df[["bs_id", "sent_at", "quantity_received", "transporter_company_siret"]],
+            transport_df[["bs_id", "sent_at", "transporter_company_siret"]],
             left_on="id",
             right_on="bs_id",
             how="left",
@@ -1476,8 +1473,8 @@ class QuantityOutliersTableProcessor:
         if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA, BSFF] and (transporters_df is not None):
             # In this case we use transporter data
 
-            # Old 'bordereaux' data could contain quantity_received, we want to use the one from transport data
-            df = df.drop(columns=["quantity_received"], errors="ignore")
+            # Old 'bordereaux' data could contain sent_at column, we want to use the one from transport data
+            df = df.drop(columns=["sent_at"], errors="ignore")
 
             df_with_transport = df.merge(
                 transporters_df[["bs_id", "transporter_transport_mode", "sent_at", "quantity_received"]],
@@ -2039,8 +2036,6 @@ class BsdaWorkerStatsProcessor:
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bsda_data_df: DataFrame
         DataFrame containing BSDA data.
-    bsda_transporters_data_df : DataFrame
-        DataFrames containing information about the transported BSDA waste.
     data_date_interval: tuple
         Date interval to filter data.
     """
@@ -2049,11 +2044,9 @@ class BsdaWorkerStatsProcessor:
         self,
         company_siret: str,
         bsda_data_df: pd.DataFrame,
-        bsda_transporters_data_df: pd.DataFrame | None,
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.bsda_data_df = bsda_data_df
-        self.bsda_transporters_data_df = bsda_transporters_data_df
         self.data_date_interval = data_date_interval
         self.company_siret = company_siret
 
@@ -2626,7 +2619,7 @@ class IntermediaryBordereauxStatsProcessor:
 
     def _preprocess_bs_data(self) -> None:
         """Preprocess raw 'bordereaux' data to prepare it to be displayed."""
-        bs_data_dfs = self.bs_data_dfs
+        bs_data_dfs = self.bs_data_dfs.copy()
 
         for bs_type, df in bs_data_dfs.items():
             if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA]:

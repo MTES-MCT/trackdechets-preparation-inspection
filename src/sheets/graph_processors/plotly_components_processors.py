@@ -1103,13 +1103,13 @@ class BsdaWorkerQuantityProcessor:
 
         # Handling multimodal
         bsda_data.drop(
-            columns=["sent_at", "quantity_received"],
+            columns=["sent_at"],
             errors="ignore",
             inplace=True,
         )  # To avoid column duplication with transport data
 
         bsda_data = bsda_data.merge(
-            transport_df[["bs_id", "sent_at", "quantity_received", "transporter_company_siret"]],
+            transport_df[["bs_id", "sent_at", "transporter_company_siret"]],
             left_on="id",
             right_on="bs_id",
             how="left",

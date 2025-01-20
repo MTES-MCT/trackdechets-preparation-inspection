@@ -2,22 +2,14 @@ import json
 import numbers
 from datetime import datetime
 from itertools import chain
-from typing import Any, Dict, List
+from typing import Dict
 
 import numpy as np
 import pandas as pd
 
 from sheets.utils import format_number_str
 
-from ..constants import (
-    BS_TYPES_WITH_MULTIMODAL_TRANSPORT,
-    BSDA,
-    BSDASRI,
-    BSDD,
-    BSDD_NON_DANGEROUS,
-    BSFF,
-    BSVHU,
-)
+from ..constants import BS_TYPES_WITH_MULTIMODAL_TRANSPORT, BSDA, BSDASRI, BSDD, BSDD_NON_DANGEROUS, BSFF, BSVHU
 
 # classes returning a context to be rendered in a non-plotly template
 

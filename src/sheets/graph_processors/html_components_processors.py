@@ -278,16 +278,18 @@ class BsdStatsProcessor:
                     self.packagings_data, left_on="id", right_on="bsff_id"
                 )[key].sum()
             else:
+                df_received = bs_received_data.copy()
+                df_emitted = bs_emitted_data.copy()
                 if self.bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDASRI]:
                     # Handle quantity refused
-                    bs_received_data["quantity_received"] = bs_received_data["quantity_received"] - bs_received_data[
+                    df_received["quantity_received"] = df_received["quantity_received"] - df_received[
                         "quantity_refused"
                     ].fillna(0)
-                    bs_emitted_data["quantity_received"] = bs_emitted_data["quantity_received"] - bs_emitted_data[
+                    df_emitted["quantity_received"] = df_emitted["quantity_received"] - df_emitted[
                         "quantity_refused"
                     ].fillna(0)
-                total_quantity_incoming = bs_received_data[key].sum()
-                total_quantity_outgoing = bs_emitted_data[key].sum()
+                total_quantity_incoming = df_received[key].sum()
+                total_quantity_outgoing = df_emitted[key].sum()
 
             self.quantities_stats[key]["total_quantity_incoming"] = total_quantity_incoming
             self.quantities_stats[key]["total_quantity_outgoing"] = total_quantity_outgoing

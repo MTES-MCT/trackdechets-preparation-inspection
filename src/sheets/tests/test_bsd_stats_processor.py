@@ -13,12 +13,12 @@ from ..graph_processors.html_components_processors import BsdStatsProcessor
 def sample_bs_data():
     # Create a sample DataFrame for bs_data
     created_at_datetimes = [
-        datetime.now() - timedelta(days=95),
-        datetime.now() - timedelta(days=65),
-        datetime.now() - timedelta(days=35),
-        datetime.now() - timedelta(days=20),
-        datetime.now() - timedelta(days=10),
-        datetime.now() - timedelta(days=5),
+        datetime(2024, 11, 1),
+        datetime(2024, 11, 4),
+        datetime(2024, 11, 9),
+        datetime(2024, 12, 1),
+        datetime(2024, 12, 18),
+        datetime(2024, 12, 31),
     ]
     sent_at_datetimes = [e + timedelta(days=1) for e in created_at_datetimes]
     received_at_datetimes = [e + timedelta(days=1) for e in sent_at_datetimes]
@@ -114,9 +114,9 @@ def data_date_interval():
     Generate a tuple with two random dates representing a date interval.
     The first date is older than the second one.
     """
-    today = datetime.today()  # Generate a random number of days up to one year
-    start_date = today - timedelta(days=10)
-    return start_date, today
+    start_date = datetime(2024, 11, 1)
+    end_date = datetime(2024, 12, 26)
+    return start_date, end_date
 
 
 @pytest.mark.parametrize(
@@ -126,10 +126,10 @@ def data_date_interval():
             "123456789",
             {
                 "emitted_bs_stats": {
-                    "total": "0",
-                    "archived": "0",
-                    "processed_in_more_than_one_month_count": "0",
-                    "processed_in_more_than_one_month_avg_processing_time": None,
+                    "total": "3",
+                    "archived": "1",
+                    "processed_in_more_than_one_month_count": "1",
+                    "processed_in_more_than_one_month_avg_processing_time": "60j",
                 },
                 "received_bs_stats": {
                     "total": "2",
@@ -139,10 +139,10 @@ def data_date_interval():
                 },
                 "quantities_stats": {
                     "quantity_received": {
-                        "total_quantity_incoming": "13.4",
-                        "total_quantity_outgoing": "0",
+                        "total_quantity_incoming": "28",
+                        "total_quantity_outgoing": "14",
                         "bar_size_incoming": 100,
-                        "bar_size_outgoing": 0,
+                        "bar_size_outgoing": 50,
                     }
                 },
                 "revised_bs_count": "0",
@@ -160,16 +160,16 @@ def data_date_interval():
                     "processed_in_more_than_one_month_avg_processing_time": "60j",
                 },
                 "received_bs_stats": {
-                    "total": "0",
-                    "archived": "0",
-                    "processed_in_more_than_one_month_count": "0",
-                    "processed_in_more_than_one_month_avg_processing_time": None,
+                    "total": "3",
+                    "archived": "1",
+                    "processed_in_more_than_one_month_count": "1",
+                    "processed_in_more_than_one_month_avg_processing_time": "60j",
                 },
                 "quantities_stats": {
                     "quantity_received": {
-                        "total_quantity_incoming": "0",
-                        "total_quantity_outgoing": "13.4",
-                        "bar_size_incoming": 0,
+                        "total_quantity_incoming": "14",
+                        "total_quantity_outgoing": "28",
+                        "bar_size_incoming": 50,
                         "bar_size_outgoing": 100,
                     }
                 },
@@ -208,10 +208,10 @@ def test_bsd_stats_processor(siret, sample_bs_data, data_date_interval, expected
             ["quantity_received", "volume"],
             {
                 "emitted_bs_stats": {
-                    "total": "0",
-                    "archived": "0",
-                    "processed_in_more_than_one_month_count": "0",
-                    "processed_in_more_than_one_month_avg_processing_time": None,
+                    "total": "3",
+                    "archived": "1",
+                    "processed_in_more_than_one_month_count": "1",
+                    "processed_in_more_than_one_month_avg_processing_time": "60j",
                 },
                 "revised_bs_count": "0",
                 "pending_revisions_count": "0",
@@ -223,19 +223,19 @@ def test_bsd_stats_processor(siret, sample_bs_data, data_date_interval, expected
                 },
                 "quantities_stats": {
                     "quantity_received": {
-                        "total_quantity_incoming": "13.4",
-                        "total_quantity_outgoing": "0",
+                        "total_quantity_incoming": "28",
+                        "total_quantity_outgoing": "14",
                         "bar_size_incoming": 100,
-                        "bar_size_outgoing": 0,
+                        "bar_size_outgoing": 50,
                     },
                     "volume": {
-                        "total_quantity_incoming": "14.7",
-                        "total_quantity_outgoing": "0",
+                        "total_quantity_incoming": "28",
+                        "total_quantity_outgoing": "17.5",
                         "bar_size_incoming": 100,
-                        "bar_size_outgoing": 0,
+                        "bar_size_outgoing": 62,
                     },
                 },
-                "weight_volume_ratio": "911.56",
+                "weight_volume_ratio": "1 000",
             },
         ),
     ],

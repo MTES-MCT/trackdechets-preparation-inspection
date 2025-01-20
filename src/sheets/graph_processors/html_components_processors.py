@@ -138,7 +138,7 @@ class BsdStatsProcessor:
             (self.emitted_bs_stats, bs_emitted_data, self.packagings_data),
             (self.received_bs_stats, bs_received_data, self.packagings_data),
         ]:
-            df = to_process
+            df = to_process.copy()
 
             if self.bs_type == BSFF:
                 if (to_process_packagings is None) or (len(to_process_packagings) == 0):
@@ -253,6 +253,7 @@ class BsdStatsProcessor:
         # NOTE: only revision asked by the current organization are computed.
         bs_revised_data = self.bs_revised_data
         if bs_revised_data is not None:
+            bs_revised_data = bs_revised_data.copy()
             bs_ids = pd.concat([bs_emitted_data["id"], bs_received_data["id"]])
             bs_revised_data = bs_revised_data[bs_revised_data["bs_id"].isin(bs_ids)]
 

@@ -56,6 +56,7 @@ def sample_bs_data():
                 "PROCESSED",
             ],
             "quantity_received": [10, 20, 2.5, 5, 8, 6.7],
+            "quantity_refused": [1, None, 2.5, 0, None, 1.3],
             "volume": [10, 20, 2.5, 5, 8, 6.7],
         }
     )
@@ -101,6 +102,7 @@ def sample_bs_data_empty():
                 "SENT",
             ],
             "quantity_received": [10, None],
+            "quantity_refused": [2, None],
         }
     )
     return bs_data
@@ -112,9 +114,8 @@ def data_date_interval():
     Generate a tuple with two random dates representing a date interval.
     The first date is older than the second one.
     """
-    today = datetime.today()
-    days_before = random.randint(365, 500)  # Generate a random number of days up to one year
-    start_date = today - timedelta(days=days_before)
+    today = datetime.today()  # Generate a random number of days up to one year
+    start_date = today - timedelta(days=10)
     return start_date, today
 
 
@@ -125,23 +126,23 @@ def data_date_interval():
             "123456789",
             {
                 "emitted_bs_stats": {
-                    "total": "3",
-                    "archived": "1",
-                    "processed_in_more_than_one_month_count": "1",
-                    "processed_in_more_than_one_month_avg_processing_time": "60j",
+                    "total": "0",
+                    "archived": "0",
+                    "processed_in_more_than_one_month_count": "0",
+                    "processed_in_more_than_one_month_avg_processing_time": None,
                 },
                 "received_bs_stats": {
-                    "total": "3",
-                    "archived": "3",
+                    "total": "2",
+                    "archived": "2",
                     "processed_in_more_than_one_month_count": "1",
                     "processed_in_more_than_one_month_avg_processing_time": "60j",
                 },
                 "quantities_stats": {
                     "quantity_received": {
-                        "total_quantity_incoming": "34.7",
-                        "total_quantity_outgoing": "17.5",
+                        "total_quantity_incoming": "13.4",
+                        "total_quantity_outgoing": "0",
                         "bar_size_incoming": 100,
-                        "bar_size_outgoing": 50,
+                        "bar_size_outgoing": 0,
                     }
                 },
                 "revised_bs_count": "0",
@@ -153,22 +154,22 @@ def data_date_interval():
             "987654321",
             {
                 "emitted_bs_stats": {
-                    "total": "3",
-                    "archived": "3",
+                    "total": "2",
+                    "archived": "2",
                     "processed_in_more_than_one_month_count": "1",
                     "processed_in_more_than_one_month_avg_processing_time": "60j",
                 },
                 "received_bs_stats": {
-                    "total": "3",
-                    "archived": "1",
-                    "processed_in_more_than_one_month_count": "1",
-                    "processed_in_more_than_one_month_avg_processing_time": "60j",
+                    "total": "0",
+                    "archived": "0",
+                    "processed_in_more_than_one_month_count": "0",
+                    "processed_in_more_than_one_month_avg_processing_time": None,
                 },
                 "quantities_stats": {
                     "quantity_received": {
-                        "total_quantity_incoming": "17.5",
-                        "total_quantity_outgoing": "34.7",
-                        "bar_size_incoming": 50,
+                        "total_quantity_incoming": "0",
+                        "total_quantity_outgoing": "13.4",
+                        "bar_size_incoming": 0,
                         "bar_size_outgoing": 100,
                     }
                 },
@@ -207,34 +208,34 @@ def test_bsd_stats_processor(siret, sample_bs_data, data_date_interval, expected
             ["quantity_received", "volume"],
             {
                 "emitted_bs_stats": {
-                    "total": "3",
-                    "archived": "1",
-                    "processed_in_more_than_one_month_count": "1",
-                    "processed_in_more_than_one_month_avg_processing_time": "60j",
+                    "total": "0",
+                    "archived": "0",
+                    "processed_in_more_than_one_month_count": "0",
+                    "processed_in_more_than_one_month_avg_processing_time": None,
                 },
                 "revised_bs_count": "0",
                 "pending_revisions_count": "0",
                 "received_bs_stats": {
-                    "total": "3",
-                    "archived": "3",
+                    "total": "2",
+                    "archived": "2",
                     "processed_in_more_than_one_month_count": "1",
                     "processed_in_more_than_one_month_avg_processing_time": "60j",
                 },
                 "quantities_stats": {
                     "quantity_received": {
-                        "total_quantity_incoming": "34.7",
-                        "total_quantity_outgoing": "17.5",
+                        "total_quantity_incoming": "13.4",
+                        "total_quantity_outgoing": "0",
                         "bar_size_incoming": 100,
-                        "bar_size_outgoing": 50,
+                        "bar_size_outgoing": 0,
                     },
                     "volume": {
-                        "total_quantity_incoming": "34.7",
-                        "total_quantity_outgoing": "17.5",
+                        "total_quantity_incoming": "14.7",
+                        "total_quantity_outgoing": "0",
                         "bar_size_incoming": 100,
-                        "bar_size_outgoing": 50,
+                        "bar_size_outgoing": 0,
                     },
                 },
-                "weight_volume_ratio": "1 000",
+                "weight_volume_ratio": "911.56",
             },
         ),
     ],

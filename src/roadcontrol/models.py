@@ -110,7 +110,7 @@ class BsdPdf(Base):
     bsd_id = models.CharField(_("Bsd Id "), max_length=30)
     packagings = models.CharField(_("Packagings"), max_length=255, blank=True)
     waste_code = models.CharField(_("Waste Code"), max_length=128, blank=True)
-    weight = models.DecimalField(_("Weight"), max_digits=6, decimal_places=2, null=True, blank=True)
+    weight = models.DecimalField(_("Weight"), max_digits=12, decimal_places=2, null=True, blank=True)
     adr_code = models.CharField(_("Adr Code"), max_length=255, blank=True)
     created_at = models.DateTimeField(_("Created at"), default=timezone.now)
     pdf_file = models.FileField(

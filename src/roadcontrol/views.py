@@ -180,8 +180,11 @@ class RoadControlPdf(FullyLoggedMixin, BsdRetrievingMixin, TemplateView):
 
         self.client = httpx.Client(timeout=60)  # 60 seconds
         download_link = self.get_pdf_download_link(bsd_type=bsd_type, bsd_id=bsd_id)
+
         pdfdata = self.get_pdf_download_content(download_link)
+
         file = ContentFile(pdfdata, name="bsd.pdf")
+
         bsd_pdf = BsdPdf.objects.create(
             bsd_id=bsd_readable_id,
             pdf_file=file,

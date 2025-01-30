@@ -1,5 +1,4 @@
 from .base import *  # noqa
-from .base import env
 
 SECRET_KEY = "xyzabcdefghu"
 
@@ -44,9 +43,6 @@ LOGGING = {
         "level": "INFO",
     },
 }
-
-
-SKIP_ROAD_CONTROL_SIRET_CHECK = env("SKIP_ROAD_CONTROL_SIRET_CHECK")
 
 
 DJANGO_VITE = {"default": {"dev_mode": True}}

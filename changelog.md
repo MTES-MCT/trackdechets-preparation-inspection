@@ -5,9 +5,13 @@ Les changements importants de Trackdéchets préparation inspection sont documen
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 et le projet suit un schéma de versioning inspiré de [Calendar Versioning](https://calver.org/).
 
+## 30/01/2025
+
+- Gestion de la quantité refusée
+
 ## 26/11/2024
 
-- Ajout de la cartographie des établissments
+- Ajout de la cartographie des établissements
 
 ## 25/11/2024
 

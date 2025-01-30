@@ -850,7 +850,7 @@ class ICPEDailyItemProcessor:
             paper_bgcolor="#fff",
             plot_bgcolor="rgba(0,0,0,0)",
             title={
-                "text": f"Quantité moyenne traitée par jour : <b>{format_number_str(self.mean_quantity,2)}</b> t/j",
+                "text": f"Quantité moyenne traitée par jour : <b>{format_number_str(self.mean_quantity, 2)}</b> t/j",
                 "font_size": 14,
             },
         )
@@ -868,7 +868,7 @@ class ICPEDailyItemProcessor:
                 yref="y",
                 x=1,
                 y=authorized_quantity,
-                text=f"Quantité maximale <br>autorisée :<b>{format_number_str(authorized_quantity,2)}</b> t/jour",
+                text=f"Quantité maximale <br>autorisée :<b>{format_number_str(authorized_quantity, 2)}</b> t/jour",
                 font_color="red",
                 xanchor="left",
                 showarrow=False,
@@ -997,7 +997,7 @@ class ICPEAnnualItemProcessor:
                 yref="y",
                 x=1,
                 y=authorized_quantity,
-                text=f"Quantité maximale <br>autorisée : <b>{format_number_str(authorized_quantity,2)}</b> t/an",
+                text=f"Quantité maximale <br>autorisée : <b>{format_number_str(authorized_quantity, 2)}</b> t/an",
                 font_color="red",
                 xanchor="left",
                 showarrow=False,
@@ -1018,7 +1018,7 @@ class ICPEAnnualItemProcessor:
                     yref="y",
                     x=0.7,
                     y=authorized_quantity / 2,
-                    text=f"Objectif 50% pour 2025 : <b>{format_number_str(authorized_quantity/2,2)}</b> t/an",
+                    text=f"Objectif 50% pour 2025 : <b>{format_number_str(authorized_quantity / 2, 2)}</b> t/an",
                     font_color="black",
                     xanchor="left",
                     yanchor="bottom",
@@ -1201,7 +1201,7 @@ class BsdaWorkerQuantityProcessor:
                         name=config["name"],
                         mode="lines+markers",
                         hovertext=[
-                            f"{index.strftime('%B %y').capitalize()} - <b>{format_number_str(e,2)}</b> {hover_suffix}"
+                            f"{index.strftime('%B %y').capitalize()} - <b>{format_number_str(e, 2)}</b> {hover_suffix}"
                             for index, e in data.items()
                         ],
                         marker_color=config["color"],
@@ -1383,7 +1383,7 @@ class TransporterBordereauxGraphProcessor:
                         textposition="auto",
                         name=config["name"],
                         hovertext=[
-                            f"{index.strftime('%B %y').capitalize()} - <b>{format_number_str(e,2)}</b> {hover_suffix}"
+                            f"{index.strftime('%B %y').capitalize()} - <b>{format_number_str(e, 2)}</b> {hover_suffix}"
                             for index, e in data.items()
                         ],
                         hoverinfo="text",
@@ -2186,7 +2186,7 @@ class IntermediaryBordereauxCountsGraphProcessor:
                         textposition="auto",
                         name=config["name"],
                         hovertext=[
-                            f"{index.strftime('%B %y').capitalize()} - <b>{format_number_str(e,2)}</b> {hover_suffix}"
+                            f"{index.strftime('%B %y').capitalize()} - <b>{format_number_str(e, 2)}</b> {hover_suffix}"
                             for index, e in data.items()
                         ],
                         hoverinfo="text",
@@ -2551,7 +2551,7 @@ class RNDTSTransporterStatementsStatsGraphProcessor:
                         textposition="auto",
                         name=config["name"],
                         hovertext=[
-                            f"{index.strftime('%B %y').capitalize()} - <b>{format_number_str(e,2)}</b> {hover_suffix}"
+                            f"{index.strftime('%B %y').capitalize()} - <b>{format_number_str(e, 2)}</b> {hover_suffix}"
                             for index, e in data.items()
                         ],
                         hoverinfo="text",
@@ -2742,7 +2742,7 @@ class RNDTSTransporterQuantitiesGraphProcessor:
                             name=f"{unit_name_str.capitalize()} de {config['name']}",
                             mode="lines+markers",
                             hovertext=[
-                                f"{index.strftime('%B %y').capitalize()} - <b>{format_number_str(e,2)}<b>{unit_str} {hover_suffix}"
+                                f"{index.strftime('%B %y').capitalize()} - <b>{format_number_str(e, 2)}<b>{unit_str} {hover_suffix}"
                                 for index, e in data_df.items()
                             ],
                             hoverinfo="text",

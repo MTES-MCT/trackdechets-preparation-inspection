@@ -5,7 +5,7 @@ export function Popup({
   row1 = null,
   row2 = null,
   row3 = null,
-  link = "sdkg",
+  link = null,
 }) {
   return (
     <div className="map-popup">

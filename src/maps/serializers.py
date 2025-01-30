@@ -46,7 +46,7 @@ class DepartmentCompanySerializer(BaseCompanySerializer):
     centroids = DEPARTMENTS_CENTROIDS
 
 
-WASTE_NAMES = ["Déchets dangereux", "Fluides Frigorigènes", "Dasri", "Vehicules hors d'usage"]
+WASTE_NAMES = ["Déchets dangereux", "Amiante", "Fluides Frigorigènes", "Dasri", "Vehicules hors d'usage"]
 
 
 class CompanySerializer(serializers.ModelSerializer):

@@ -253,7 +253,6 @@ def bsvhu_to_bsd_display(bsvhu) -> BsdDisplay:
                 deep_get(bsvhu, "destination.reception.weight", default=0)
                 or deep_get(bsvhu, "weight.value", default=0)
             ),
-            # bsvhu?.destination?.reception?.weight || bsvhu?.weight?.value,
         },
         "emitter": {"company": {"name": deep_get(bsvhu, "emitter.company.name")}},
         "destination": {"company": {"name": deep_get(bsvhu, "destination.company.name")}},
@@ -263,7 +262,7 @@ def bsvhu_to_bsd_display(bsvhu) -> BsdDisplay:
                 "siret": deep_get(bsvhu, "transporter.company.siret"),
             }
         },
-        "transporter_plate": "Non applicable",
+        "transporter_plate": ",".join(deep_get(bsvhu, "transporter.transport.plates", default=[])),
         "updated_at": format_date(deep_get(bsvhu, "bsvhuUpdatedAt")),
         "packagings": "",
     }

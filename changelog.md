@@ -9,6 +9,10 @@ et le projet suit un schéma de versioning inspiré de [Calendar Versioning](htt
 
 - Gestion de la quantité refusée
 
+## 01/01/2025
+
+- Correction de la recherche par plaque
+
 ## 26/11/2024
 
 - Ajout de la cartographie des établissements

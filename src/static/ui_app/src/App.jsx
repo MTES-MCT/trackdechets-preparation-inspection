@@ -28,10 +28,7 @@ const mapPlotToPopup = (plot, zoom) => {
       popupTitle: `${plot.count} établissements`,
     };
   }
-  return {
-    popupTitle: plot.name,
-    popupText: `${plot.count} établissements`,
-  };
+  return {};
 };
 
 function App() {
@@ -71,7 +68,7 @@ function App() {
       anchor="center"
       onClick={(e) => {
         e.originalEvent.stopPropagation();
-
+        if (zoom < ZOOM_CLUSTERS) return;
         setPopupData(mapPlotToPopup(plot, zoom));
       }}
     >
@@ -84,8 +81,7 @@ function App() {
   ));
 
   return (
-    <div className="map-app ">
-      <div></div>
+    <div className="map-app">
       <Sidebar mapRef={mapRef} />
       <MapContainer lat={lat} lng={lng} pins={pins} mapRef={mapRef} />
     </div>

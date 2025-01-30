@@ -1,13 +1,30 @@
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useRef } from "react";
 import Map, { NavigationControl, ScaleControl } from "react-map-gl/maplibre";
 import { useMapStore } from "./Store";
 import { Popup } from "./Popup";
 import { useShallow } from "zustand/react/shallow";
+import { Marker, Source, Layer } from "react-map-gl/maplibre";
 
 const MAP_STYLE =
   "https://openmaptiles.geo.data.gouv.fr/styles/osm-bright/style.json";
 
+export const adminLayer = {
+  id: "departements",
+  type: "line",
+  source: "departements",
+  paint: {
+    "line-color": "#198EC8",
+  },
+};
+
+export const adminLayer1 = {
+  id: "regions",
+  type: "line",
+  source: "regions",
+  paint: {
+    "line-color": "#198EC8",
+  },
+};
 export default function MapContainer({ mapRef, lat, lng, pins }) {
   const {
     zoom,
@@ -49,13 +66,12 @@ export default function MapContainer({ mapRef, lat, lng, pins }) {
         touchZoomRotate={false}
         mapStyle={MAP_STYLE}
         onMoveEnd={(event) => {
-          closePopup();
           setZoom(event.target.getZoom());
           setBounds(event.target.getBounds());
         }}
         onLoad={(event) => {
           if (mapRef) {
-            mapRef["current"] = event.target;
+            // mapRef["current"] = event.target;
             setBounds(event.target.getBounds());
           }
         }}
@@ -64,6 +80,19 @@ export default function MapContainer({ mapRef, lat, lng, pins }) {
         <ScaleControl />
 
         {pins}
+
+        <Source
+          id="departements"
+          type="geojson"
+          data="/static/geo/departements.geojson"
+        >
+          <Layer {...adminLayer} minzoom={6} />
+        </Source>
+
+        <Source id="regions" type="geojson" data="/static/geo/regions.geojson">
+          <Layer {...adminLayer1} maxzoom={6} />
+        </Source>
+
         {popupTitle && (
           <Popup
             title={popupTitle}

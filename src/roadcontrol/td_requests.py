@@ -219,6 +219,9 @@ fragment BsvhuFragment on Bsvhu {
       siret
       name
     }
+    transport {
+      plates
+    }
   }
 
   destination {
@@ -420,7 +423,7 @@ def query_td_pdf(bsd_type, bsd_id):
         TYPE_BSFF: {"query": graphql_query_bsff_pdf, "field": "bsffPdf"},
         TYPE_BSDA: {"query": graphql_query_bsda_pdf, "field": "bsdaPdf"},
         TYPE_BSPAOH: {"query": graphql_query_bspaoh_pdf, "field": "bspaohPdf"},
-        TYPE_BSVHU: {"query": graphql_query_bsvhu_pdf, "field": "bvhuPdf"},
+        TYPE_BSVHU: {"query": graphql_query_bsvhu_pdf, "field": "bsvhuPdf"},
     }
 
     config = configs.get(bsd_type)
@@ -440,6 +443,7 @@ def query_td_pdf(bsd_type, bsd_id):
     rep = res.json()
 
     link = rep.get("data", {}).get(field, {}).get("downloadLink", None)
+
     return link
 
 

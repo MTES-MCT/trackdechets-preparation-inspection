@@ -1487,11 +1487,16 @@ class QuantityOutliersTableProcessor:
                 suffixes=("", "_transport"),
             )
 
-            if (bs_type == BSFF) and (packagings_data_df is not None):
-                df_with_transport = df_with_transport.drop(columns=["quantity_received"], errors="ignore")
-                df_with_transport = df_with_transport.merge(
-                    packagings_data_df.groupby("bsff_id")["acceptation_weight"].sum(), left_on="id", right_index=True
-                ).rename(columns={"acceptation_weight": "quantity_received"})
+            if bs_type == BSFF:
+                if packagings_data_df is not None:
+                    df_with_transport = df_with_transport.drop(columns=["quantity_received"], errors="ignore")
+                    df_with_transport = df_with_transport.merge(
+                        packagings_data_df.groupby("bsff_id")["acceptation_weight"].sum(),
+                        left_on="id",
+                        right_index=True,
+                    ).rename(columns={"acceptation_weight": "quantity_received"})
+                else:
+                    return
 
             df_quantity_outliers = df_with_transport[
                 (df_with_transport["quantity_received"] > 40)

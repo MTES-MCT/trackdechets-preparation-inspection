@@ -176,7 +176,7 @@ def test_build(bs_data_dfs, transporters_data_df, data_date_interval, packagings
             "waste_code": "01 01 01*",
             "waste_name": "Waste Type A",
             "quantity": "50",
-            "quantity_refused": None,
+            "quantity_refused": "7",
             "sent_at": "10/08/2024 00:00",
             "received_at": "12/08/2024 00:00",
         },

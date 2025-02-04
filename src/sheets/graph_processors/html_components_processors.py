@@ -1555,7 +1555,7 @@ class QuantityOutliersTableProcessor:
     def _add_stats(self) -> list:
         stats = []
 
-        has_quantity_refused = "quantyty_refused" in self.preprocessed_data.columns
+        has_quantity_refused = "quantity_refused" in self.preprocessed_data.columns
 
         for e in self.preprocessed_data.sort_values("sent_at").itertuples():
             row = {

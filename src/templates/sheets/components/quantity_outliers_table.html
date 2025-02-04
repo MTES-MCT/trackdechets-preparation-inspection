@@ -11,6 +11,7 @@
                     <th scope="col">Type de bordereau</th>
                     <th scope="col">Numéro de bordereau</th>
                     <th scope="col">SIRET de l'émetteur</th>
+                    <th scope="col">SIRET du transporteur</th>
                     <th scope="col">SIRET du destinataire</th>
                     <th scope="col">Date de l'envoi</th>
                     <th scope="col">Date de la réception</th>
@@ -31,6 +32,12 @@
                             {% else %}
                                 {{ row.emitter_company_siret|default:"N/A" }}
                             {% endif %}
+                        </td><td>
+                            {% if row.transporter_company_siret == company_siret %}
+                                <span class="fr-text--bold">{{ row.transporter_company_siret }}</span>
+                            {% else %}
+                                {{ row.transporter_company_siret|default:"N/A" }}
+                            {% endif %}
                         </td>
                         <td>
                             {% if row.recipient_company_siret == company_siret %}
@@ -44,7 +51,7 @@
                         <td>{{ row.waste_code }}</td>
                         <td>{{ row.waste_name }}</td>
                         <td class="td--right">{{ row.quantity|number|safe }}</td>
-                        <td class="td--right">{{ row.quantity_refused|number|safe }}</td>
+                        <td class="td--right">{{ row.quantity_refused|number|safe|default:"N/A" }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

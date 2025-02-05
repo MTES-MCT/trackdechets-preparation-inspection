@@ -9,7 +9,7 @@ from django.test import RequestFactory
 from django.urls import reverse
 
 from accounts.factories import UserFactory
-from accounts.models import User
+from accounts.models import User, UserTypeChoice
 from aiot_provider.provider import MonaiotLoginProvider
 
 
@@ -149,7 +149,7 @@ class AiotOpenIDConnectTests(OpenIDConnectTests, TestCase):
         sa = SocialAccount.objects.get(provider=self.app.provider_id)
         user = sa.user
         self.assertEqual(user.email, "jean.valjean@developpement-durable.gouv.fr")
-        self.assertEqual(user.user_type, User.UserTypeChoice.HUMAN)
+        self.assertEqual(user.user_type, UserTypeChoice.HUMAN)
         self.assertTrue(user.is_active)
         self.assertTrue(user.monaiot_signup)
         self.assertFalse(user.is_staff)
@@ -180,7 +180,7 @@ class AiotOpenIDConnectTests(OpenIDConnectTests, TestCase):
         sa = SocialAccount.objects.get(provider=self.app.provider_id)
         user = sa.user
         self.assertEqual(user.email, "jean.valjean@developpement-durable.gouv.fr")
-        self.assertEqual(user.user_type, User.UserTypeChoice.HUMAN)
+        self.assertEqual(user.user_type, UserTypeChoice.HUMAN)
         self.assertTrue(user.is_active)
         self.assertTrue(user.monaiot_signup)
         self.assertFalse(user.is_staff)

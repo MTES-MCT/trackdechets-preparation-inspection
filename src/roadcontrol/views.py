@@ -8,6 +8,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.views.generic import DetailView, FormView, TemplateView
 
+from accounts.models import ALL_BUT_OBSERVATOIRE
 from common.constants import STATE_DONE, STATE_RUNNING
 from common.mixins import FullyLoggedMixin
 from config.celery_app import app
@@ -42,6 +43,7 @@ def get_query_name():
 
 class RoadControlSearch(FullyLoggedMixin, TemplateView):
     template_name = "roadcontrol/roadcontrol.html"
+    allowed_user_categories = ALL_BUT_OBSERVATOIRE
 
     def get_context_data(self, **kwargs):
         form = RoadControlSearchForm()
@@ -52,6 +54,7 @@ class RoadControlSearchResult(FullyLoggedMixin, FormView):
     form_class = RoadControlSearchForm
     success_url = ""
     template_name = "roadcontrol/partials/search_result.html"
+    allowed_user_categories = ALL_BUT_OBSERVATOIRE
 
     def form_valid(self, form):
         siret = form.cleaned_data["siret"]
@@ -129,6 +132,7 @@ class NoResultRoadControlPdf(FullyLoggedMixin, BsdRetrievingMixin, FormView):
     form_class = RoadControlSearchForm
     http_method_names = ["post"]
     success_url = ""
+    allowed_user_categories = ALL_BUT_OBSERVATOIRE
 
     def form_valid(self, form):
         company_data = {}
@@ -153,6 +157,7 @@ class NoResultRoadControlPdf(FullyLoggedMixin, BsdRetrievingMixin, FormView):
 
 class RoadControlPdf(FullyLoggedMixin, BsdRetrievingMixin, TemplateView):
     template_name = "roadcontrol/road_control_pdf.html"
+    allowed_user_categories = ALL_BUT_OBSERVATOIRE
 
     def get_pdf_download_link(self, bsd_type, bsd_id):
         link = query_td_pdf(bsd_type=bsd_type, bsd_id=bsd_id)
@@ -203,6 +208,7 @@ class RoadControlPdf(FullyLoggedMixin, BsdRetrievingMixin, TemplateView):
 
 class RoadControlPdfBundle(FullyLoggedMixin, BsdRetrievingMixin, TemplateView):
     template_name = "dummy.html"
+    allowed_user_categories = ALL_BUT_OBSERVATOIRE
 
     def post(self, request, *args, **kwargs):
         bsd_ids = request.POST.getlist("bsd_ids[]")
@@ -245,6 +251,7 @@ class RoadControlPdfBundle(FullyLoggedMixin, BsdRetrievingMixin, TemplateView):
 
 class BundleProcessingView(FullyLoggedMixin, TemplateView):
     template_name = "roadcontrol/bundle_processing.html"
+    allowed_user_categories = ALL_BUT_OBSERVATOIRE
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -259,6 +266,7 @@ class BundleProcessingView(FullyLoggedMixin, TemplateView):
 
 class FragmentBundleProcessingView(FullyLoggedMixin, TemplateView):
     template_name = "roadcontrol/partials/_prepare_bundle.html"
+    allowed_user_categories = ALL_BUT_OBSERVATOIRE
 
     def dispatch(self, request, *args, **kwargs):
         self.task_id = self.kwargs.get("task_id")
@@ -301,6 +309,7 @@ class RoadControlPdfBundleResult(FullyLoggedMixin, DetailView):
     model = PdfBundle
     context_object_name = "bundle"
     template_name = "roadcontrol/bundle_result.html"
+    allowed_user_categories = ALL_BUT_OBSERVATOIRE
 
     def get_queryset(self):
         return super().get_queryset().filter(created_by=self.request.user)
@@ -308,6 +317,7 @@ class RoadControlPdfBundleResult(FullyLoggedMixin, DetailView):
 
 class RoadControlRecentPdfs(FullyLoggedMixin, TemplateView):
     template_name = "roadcontrol/partials/_recent_pdfs.html"
+    allowed_user_categories = ALL_BUT_OBSERVATOIRE
 
     def get_recent_downloads(self):
         user = self.request.user
@@ -324,6 +334,7 @@ class RoadControlRecentPdfs(FullyLoggedMixin, TemplateView):
 
 class BsdSearch(FullyLoggedMixin, TemplateView):
     template_name = "roadcontrol/bsd_search.html"
+    allowed_user_categories = ALL_BUT_OBSERVATOIRE
 
     def get_context_data(self, **kwargs):
         form = BsdSearchForm()
@@ -334,6 +345,7 @@ class BsdSearchResult(FullyLoggedMixin, FormView):
     form_class = BsdSearchForm
     success_url = ""
     template_name = "roadcontrol/partials/search_result.html"
+    allowed_user_categories = ALL_BUT_OBSERVATOIRE
 
     def form_valid(self, form):
         bsd_id = form.cleaned_data["bsd_id"]
@@ -382,6 +394,7 @@ class BsdSearchResult(FullyLoggedMixin, FormView):
 
 class BsdRecentPdfs(FullyLoggedMixin, TemplateView):
     template_name = "roadcontrol/partials/_recent_pdfs.html"
+    allowed_user_categories = ALL_BUT_OBSERVATOIRE
 
     def get_recent_downloads(self):
         user = self.request.user

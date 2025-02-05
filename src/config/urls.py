@@ -42,6 +42,7 @@ urlpatterns = [
     path("sheets/", include("sheets.urls")),
     path("roadcontrol/", include("roadcontrol.urls")),
     path("map/", include("maps.urls")),
+    path("data-exports/", include("data_exports.urls")),
     path("monaiot-login/", temp_aiot_login_page),
 ]
 

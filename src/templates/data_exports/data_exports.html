@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Recherche Bordereau{% endblock %}
+{% block main %}
+    <div class="fr-container fr-mt-1v">
+        <h3>Observatoires</h3>
+        <ul>
+            <li>Les données ci-dessous sont mise à jour mensuellement.</li>
+            <li>Les fichiers sont au format Parquet.</li>
+            <li>Pour en savoir plus consulter la documentation.</li>
+        </ul>
+        {% for year,export_set in exports.items %}
+            <h3>{{ year }}</h3>
+            <div class="fr-grid-row fr-grid-row--gutters fr-mb-3w">
+                {% for  export in export_set %}
+                    <div class="fr-col fr-col-3 ">
+                        <div class="fr-card fr-enlarge-button fr-card--download">
+                            <div class="fr-card__body">
+                                <p class="fr-card__detail">Mise à jour : {{ export.last_modified }}</p>
+                                <div class="fr-card__content">
+                                    <form id="id_form_{{ export.pk }}"
+                                          action="{% url "data_export_download" export.pk %}"
+                                          method="post">
+                                        {% csrf_token %}
+                                    </form>
+                                    <h3 class="fr-card__title">
+                                        <button form="id_form_{{ export.pk }}">{{ export.get_bsd_type_display }}</button>
+                                    </h3>
+                                    <div class="fr-card__end">
+                                        <p class="fr-card__detail">Parquet – {{ export.verbose_size }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -9,22 +9,39 @@ from django.utils.translation import gettext_lazy as _
 from .managers import UserManager
 
 
+class UserCategoryChoice(models.TextChoices):
+    STAFF_TD = "STAFF_TD", _("Staff Trackdéchets")
+    ADMINISTRATION_CENTRALE = "ADMINISTRATION_CENTRALE", _("Administration centrale")
+    INSPECTEUR_ICPE = "INSPECTEUR_ICPE", _("Inspecteur ICPE")
+    CTT = "CTT", _("CTT - Contrôleur des transports routiers")
+    INSPECTION_TRAVAIL = "INSPECTION_TRAVAIL", _("Inspection du travail")
+    GENDARMERIE = "GENDARMERIE", _("Gendarmerie")
+    ARS = "ARS", _("ARS")
+    DOUANE = "DOUANE", _("Douane")
+    OBSERVATOIRE = "OBSERVATOIRE", _("Observatoire")
+
+
+ALL_BUT_OBSERVATOIRE = [
+    UserCategoryChoice.STAFF_TD,
+    UserCategoryChoice.ADMINISTRATION_CENTRALE,
+    UserCategoryChoice.ARS,
+    UserCategoryChoice.INSPECTEUR_ICPE,
+    UserCategoryChoice.GENDARMERIE,
+    UserCategoryChoice.DOUANE,
+]
+OBSERVATOIRE_AND_STAFF = [UserCategoryChoice.STAFF_TD, UserCategoryChoice.OBSERVATOIRE]
+
+
+ALL_USER_CATEGORIES = ALL_BUT_OBSERVATOIRE + OBSERVATOIRE_AND_STAFF
+
+
+class UserTypeChoice(models.TextChoices):
+    HUMAN = "HUMAN", _("Human")
+    API = "API", _("api")
+
+
 class User(AbstractBaseUser, PermissionsMixin):
     """User models."""
-
-    class UserTypeChoice(models.TextChoices):
-        HUMAN = "HUMAN", _("Human")
-        API = "API", _("api")
-
-    class UserCategoryChoice(models.TextChoices):
-        STAFF_TD = "STAFF_TD", _("Staff Trackdéchets")
-        ADMINISTRATION_CENTRALE = "ADMINISTRATION_CENTRALE", _("Administration centrale")
-        INSPECTEUR_ICPE = "INSPECTEUR_ICPE", _("Inspecteur ICPE")
-        CTT = "CTT", _("CTT - Contrôleur des transports routiers")
-        INSPECTION_TRAVAIL = "INSPECTION_TRAVAIL", _("Inspection du travail")
-        GENDARMERIE = "GENDARMERIE", _("Gendarmerie")
-        ARS = "ARS", _("ARS")
-        DOUANE = "DOUANE", _("Douane")
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = [
@@ -62,4 +79,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_api(self):
-        return self.user_type == self.UserTypeChoice.API
+        return self.user_type == UserTypeChoice.API
+
+    @property
+    def is_observatoire(self):
+        return self.user_category == UserCategoryChoice.OBSERVATOIRE

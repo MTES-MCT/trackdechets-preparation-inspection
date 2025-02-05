@@ -18,6 +18,12 @@ def test_roadcontrol_anon(anon_client):
     assert res.status_code == 302
 
 
+def test_roadcontrol_observatoires(verified_observatoire):
+    url = reverse("roadcontrol")
+    res = verified_observatoire.get(url)
+    assert res.status_code == 403
+
+
 @pytest.mark.parametrize("get_client", ["verified_client", "logged_monaiot_client"], indirect=True)
 def test_roadcontrol(get_client):
     url = reverse("roadcontrol")
@@ -33,6 +39,12 @@ def test_roadcontrol_search_result_anon(anon_client):
     assert res.status_code == 302
 
 
+def test_roadcontrol_search_result_observatoires(verified_observatoire):
+    url = reverse("roadcontrol_search_result")
+    res = verified_observatoire.get(url)
+    assert res.status_code == 403
+
+
 def test_roadcontrol_search_result(verified_user):
     url = reverse("roadcontrol_search_result")
     res = verified_user.get(url)
@@ -45,6 +57,12 @@ def test_roadcontrol_pdf_bundle_anon(anon_client):
     assert res.status_code == 302
 
 
+def test_roadcontrol_pdf_observatoires(verified_observatoire):
+    url = reverse("roadcontrol_pdf_bundle")
+    res = verified_observatoire.get(url)
+    assert res.status_code == 403
+
+
 def test_roadcontrol_pdf_bundle(verified_user):
     url = reverse("roadcontrol_pdf_bundle")
     res = verified_user.get(url)
@@ -55,6 +73,12 @@ def test_roadcontrol_recent_pdfs_anon(anon_client):
     url = reverse("roadcontrol_recent_pdfs")
     res = anon_client.get(url)
     assert res.status_code == 302
+
+
+def test_roadcontrol_recent_pdfs_observatoires(verified_observatoire):
+    url = reverse("roadcontrol_pdf_bundle")
+    res = verified_observatoire.get(url)
+    assert res.status_code == 403
 
 
 def test_roadcontrol_recent_pdfs(verified_user):

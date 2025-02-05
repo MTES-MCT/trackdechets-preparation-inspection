@@ -2,6 +2,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 
+from accounts.models import ALL_USER_CATEGORIES
 from common.mixins import FullyLoggedMixin
 from content.models import FeedbackResult
 
@@ -20,6 +21,7 @@ class PublicHomeView(TemplateView):
 
 class PrivateHomeView(FullyLoggedMixin, TemplateView):
     template_name = "private_home.html"
+    allowed_user_categories = ALL_USER_CATEGORIES
 
     def has_filled_survey(self):
         return FeedbackResult.objects.filter(author=self.request.user.email).exists()

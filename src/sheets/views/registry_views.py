@@ -7,6 +7,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 from django.views.generic import TemplateView
 
+from accounts.models import ALL_BUT_OBSERVATOIRE
 from common.mixins import FullyLoggedMixin
 
 from ..constants import (
@@ -37,6 +38,7 @@ CONFIG = {
 
 class RegistryView(FullyLoggedMixin, TemplateView):
     template_name = "sheets/registry_download.html"
+    allowed_user_categories = ALL_BUT_OBSERVATOIRE
 
     def get_file_name(self, siret, registry_format, registry_type):
         extension = {REGISTRY_FORMAT_XLS: "xlsx", REGISTRY_FORMAT_CSV: "csv"}.get(registry_format)

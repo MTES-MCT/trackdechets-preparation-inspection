@@ -15,13 +15,18 @@ def test_map_view_deny_anon(anon_client):
     assert res.status_code == 302
 
 
-def test_map_view(verified_user):
+def test_map_view_deny_user(verified_user):
     url = reverse("map_view")
     res = verified_user.get(url)
+    assert res.status_code == 403
+
+
+def test_map_view(verified_staff):
+    url = reverse("map_view")
+    res = verified_staff.get(url)
     assert res.status_code == 200
 
 
-##
 def test_map_api_region_companies_deny_anon(api_anon):
     url = reverse("map_api_region_companies")
     res = api_anon.get(url)

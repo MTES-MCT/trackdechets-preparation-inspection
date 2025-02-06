@@ -10,6 +10,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 
+from accounts.models import UserCategoryChoice
 from common.mixins import FullyLoggedMixin
 
 from .centroids import DEPARTMENTS_CENTROIDS, REGIONS_CENTROIDS
@@ -20,6 +21,7 @@ from .serializers import ClusterSerializer, CompanySerializer, DepartmentCompany
 
 class MapView(FullyLoggedMixin, TemplateView):
     template_name = "maps/map.html"
+    allowed_user_categories = [UserCategoryChoice.STAFF_TD]
 
 
 class BaseCartoCompanyFilter(filters.FilterSet):

@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "roadcontrol",
     "sheets",
     "maps",
+    "data_exports",
 ]
 
 MIDDLEWARE = [

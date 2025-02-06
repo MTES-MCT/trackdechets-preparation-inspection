@@ -37,6 +37,7 @@ django-simple-menu = "*"
 "django-import-export[xlsx]"= "*"
 django-vite = "*"
 django-filter = "*"
+boto3 = "*"
 
 [dev-packages]
 ruff = "*"

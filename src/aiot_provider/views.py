@@ -35,3 +35,4 @@ def temp_aiot_login_page(request):
 
 class PostMonAiotSignup(FullyLoggedMixin, TemplateView):
     template_name = "post_monaiot_signup.html"
+    allowed_user_categories = ["*"]

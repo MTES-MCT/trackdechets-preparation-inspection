@@ -1,7 +1,7 @@
 import factory
 from django_otp.plugins.otp_email.models import EmailDevice
 
-from .models import User
+from .models import User, UserTypeChoice
 
 DEFAULT_PASSWORD = "passpass"  # nosec
 
@@ -24,4 +24,4 @@ class EmailDeviceFactory(factory.django.DjangoModelFactory):
 
 
 class ApiUserFactory(UserFactory):
-    user_type = User.UserTypeChoice.API
+    user_type = UserTypeChoice.API

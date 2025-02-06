@@ -14,7 +14,7 @@ from import_export.admin import ImportExportMixin
 from import_export.exceptions import FieldError
 
 from .forms import AdminCustomUserChangeForm, AdminCustomUserCreationForm
-from .models import User
+from .models import User, UserTypeChoice
 
 
 class UserResource(resources.ModelResource):
@@ -42,7 +42,7 @@ class UserResource(resources.ModelResource):
         instance.is_active = True
         instance.is_staff = False
         instance.is_superuser = False
-        instance.user_type = User.UserTypeChoice.HUMAN
+        instance.user_type = UserTypeChoice.HUMAN
         instance.password = str(uuid.uuid4())
         instance.email = instance.email.lower()
 

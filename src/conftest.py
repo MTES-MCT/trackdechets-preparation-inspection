@@ -8,6 +8,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
 from accounts.factories import DEFAULT_PASSWORD, ApiUserFactory, EmailDeviceFactory, UserFactory
+from accounts.models import UserCategoryChoice
 
 
 @pytest.fixture()
@@ -44,6 +45,14 @@ def verified_user(logged_in_user):
     session.save()
 
     return client
+
+
+@pytest.fixture()
+def verified_observatoire(verified_user):
+    user = verified_user.user
+    user.user_category = UserCategoryChoice.OBSERVATOIRE
+    user.save()
+    return verified_user
 
 
 @pytest.fixture()

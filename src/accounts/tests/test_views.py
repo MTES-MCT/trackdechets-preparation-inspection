@@ -219,8 +219,3 @@ def test_django_admin_denies_verified_user(verified_user):
 def test_django_admin_denies_logged_staff_user(logged_in_staff):
     res = logged_in_staff.get(reverse("admin:index"))
     assert res.status_code == 302
-
-
-def test_django_admin_grants_verifed_staff_user(verified_staff):
-    res = verified_staff.get(reverse("admin:index"))
-    assert res.status_code == 200

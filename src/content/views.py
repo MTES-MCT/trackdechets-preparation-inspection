@@ -17,6 +17,7 @@ class FeedbackView(FullyLoggedMixin, SuccessMessageMixin, FormView):
     form_class = FeedbackForm
     success_url = reverse_lazy("private_home")
     success_message = "Merci, vos réponses ont été enregistrées et nous aideront à améliorer cet outil "
+    allowed_user_categories = ["*"]
 
     def form_valid(self, form):
         res = super().form_valid(form)

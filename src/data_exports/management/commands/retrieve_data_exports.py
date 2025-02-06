@@ -12,7 +12,7 @@ from ...models import DataExport
 
 logger = logging.getLogger(__name__)
 
-pattern = r"^(bsdd|bsda|bsdasri|bsvhu|bsff)\/(bsdd|bsda|bsdasri|bsvhu|bsff)_(20\d{2}).parquet$"
+pattern = r"^(bsdd|bsda|bsdasri|bsvhu|bsff)\/(bsdd|bsda|bsdasri|bsvhu|bsff)_?(20\d{2})?.parquet$"
 
 
 def verbosify_byte_size(size_bytes):

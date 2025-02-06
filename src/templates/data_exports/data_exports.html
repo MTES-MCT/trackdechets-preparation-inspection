@@ -9,9 +9,9 @@
             <li>Pour en savoir plus consulter la documentation.</li>
         </ul>
         {% for year,export_set in exports.items %}
-            <h3>{{ year }}</h3>
+            <h3>{{ year|default_if_none:"Exports complets" }}</h3>
             <div class="fr-grid-row fr-grid-row--gutters fr-mb-3w">
-                {% for  export in export_set %}
+                {% for export in export_set %}
                     <div class="fr-col fr-col-3 ">
                         <div class="fr-card fr-enlarge-button fr-card--download">
                             <div class="fr-card__body">

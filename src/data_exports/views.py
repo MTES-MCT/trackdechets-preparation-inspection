@@ -23,8 +23,10 @@ class ExportList(FullyLoggedMixin, TemplateView):
     allowed_user_categories = OBSERVATOIRE_AND_STAFF
 
     def get_exports(self):
+        oldest_year = 2022
         today = timezone.now().date()
-        years = range(today.year, 2022 - 1, -1)
+        current_year = today.year
+        years = list(range(current_year, oldest_year - 1, -1)) + [None]
         exports = defaultdict(list)
         for year in years:
             for bsd_type in BsdTypeChoice:

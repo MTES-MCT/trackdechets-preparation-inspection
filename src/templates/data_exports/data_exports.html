@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Recherche Bordereau{% endblock %}
+{% block title %}Export données parquet{% endblock %}
 {% block main %}
     <div class="fr-container fr-mt-1v">
         <h3>Observatoires</h3>
         <ul>
             <li>Les données ci-dessous sont mise à jour mensuellement.</li>
             <li>Les fichiers sont au format Parquet.</li>
-            <li>Pour en savoir plus consulter la documentation.</li>
+            {#            <li>Pour en savoir plus consulter la documentation.</li>#}
         </ul>
         {% for year,export_set in exports.items %}
             <h3>{{ year|default_if_none:"Exports complets" }}</h3>

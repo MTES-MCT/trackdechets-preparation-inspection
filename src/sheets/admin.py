@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import reverse_lazy
 from django.utils.html import format_html
 
-from .models import ComputedInspectionData, RegistryDownload
+from .models import ComputedInspectionData
 
 
 @admin.register(ComputedInspectionData)
@@ -55,10 +55,3 @@ class ComputedInspectionDataAdmin(admin.ModelAdmin):
             return None
         url = reverse_lazy("sheet", args=[obj.pk])
         return format_html("<a href='{}' _target='blank'>Voir</a>", url)
-
-
-@admin.register(RegistryDownload)
-class RegistryDownloadAdmin(admin.ModelAdmin):
-    list_display = ["id", "org_id", "created", "created_by"]
-    list_filter = ["created"]
-    search_fields = ["org_id"]

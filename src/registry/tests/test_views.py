@@ -1,0 +1,63 @@
+import datetime as dt
+
+import pytest
+from django.urls import reverse
+
+pytestmark = pytest.mark.django_db
+
+
+def test_sheet_prepare_deny_anon(anon_client):
+    url = reverse("registry_prepare")
+    res = anon_client.get(url)
+    assert res.status_code == 302
+
+
+def test_sheet_prepare_deny_observatoire(verified_observatoire):
+    url = reverse("registry_prepare")
+    res = verified_observatoire.get(url)
+    assert res.status_code == 403
+
+
+@pytest.mark.parametrize("get_client", ["verified_client", "logged_monaiot_client"], indirect=True)
+def test_sheet_prepare(get_client):
+    url = reverse("registry_prepare")
+    res = get_client.get(url)
+    assert res.status_code == 200
+    form = res.context["form"]
+    today = dt.date.today()
+    assert form.initial == {
+        "start_date": (today - dt.timedelta(days=365)).isoformat(),
+        "end_date": today.isoformat(),
+    }
+    assert form.fields["siret"]
+    assert form.fields["registry_type"]
+    assert form.fields["registry_format"]
+    assert form.fields["start_date"].widget.attrs == {"max": today.isoformat()}
+    assert form.fields["end_date"].widget.attrs == {
+        "max": dt.date(day=31, month=12, year=dt.date.today().year).isoformat()
+    }
+    content = res.content.decode()
+    assert "id_siret" in content
+    assert "id_registry_type" in content
+    assert "id_registry_format" in content
+    assert "id_start_date" in content
+    assert "id_end_date" in content
+
+
+def test_registry_deny_anon(anon_client):
+    url = reverse("registry")
+    res = anon_client.get(url)
+    assert res.status_code == 302
+
+
+def test_registry_deny_observatoire(verified_observatoire):
+    url = reverse("registry")
+    res = verified_observatoire.get(url)
+    assert res.status_code == 403
+
+
+@pytest.mark.parametrize("get_client", ["verified_client", "logged_monaiot_client"], indirect=True)
+def test_registry(get_client):
+    url = reverse("registry")
+    res = get_client.get(url)
+    assert res.status_code == 200

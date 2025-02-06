@@ -1,17 +1,9 @@
 import datetime as dt
 
-from django.forms import CharField, ChoiceField, DateField, Form, ValidationError
+from django.forms import CharField, DateField, Form, ValidationError
 from django.forms.widgets import DateInput
 from sqlalchemy.sql import text
 
-from .constants import (
-    REGISTRY_FORMAT_CSV,
-    REGISTRY_FORMAT_XLS,
-    REGISTRY_TYPE_ALL,
-    REGISTRY_TYPE_INCOMING,
-    REGISTRY_TYPE_OUTGOING,
-    REGISTRY_TYPE_TRANSPORTED,
-)
 from .database import wh_engine
 from .queries import sql_company_query_exists_str
 
@@ -35,23 +27,10 @@ class SiretForm(Form):
         label="Date de fin",
         widget=TypedDateInput,
     )
-    registry_type = ChoiceField(
-        label="Type de registre",
-        choices=(
-            (REGISTRY_TYPE_ALL, "Exhaustif"),
-            (REGISTRY_TYPE_INCOMING, "Entrant"),
-            (REGISTRY_TYPE_OUTGOING, "Sortant"),
-            (REGISTRY_TYPE_TRANSPORTED, "Transporté"),
-        ),
-    )
-    registry_format = ChoiceField(
-        label="Format",
-        choices=((REGISTRY_FORMAT_CSV, ".csv (données tabulées)"), (REGISTRY_FORMAT_XLS, ".xls (Excel)")),
-    )
 
     def __init__(self, *ars, **kwargs):
         initial = kwargs.get("initial", {})
-        self.is_registry = kwargs.pop("is_registry", False)
+
         # set initial value and max attrs at form instanciation to prevent unwanted value cache
         today = dt.date.today()
         initial.update(
@@ -105,3 +84,7 @@ class SiretForm(Form):
         if not companies:
             raise ValidationError("Établissement non inscrit à Trackdéchets.")
         return siret
+
+
+class SheetPrepareForm(SiretForm):
+    is_registry = False

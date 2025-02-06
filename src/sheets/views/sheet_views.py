@@ -12,14 +12,14 @@ from common.mixins import FullyLoggedMixin
 from common.sirets import validate_siret
 from config.celery_app import app
 
-from ..forms import SiretForm
+from ..forms import SheetPrepareForm
 from ..models import ComputedInspectionData
 from ..task import prepare_sheet, render_pdf
 
 CHECK_INSPECTION = False
 
 
-class Prepare(FullyLoggedMixin, FormView):
+class SheetPrepare(FullyLoggedMixin, FormView):
     """
     View to prepare an inspection sheet $:
         - render a form
@@ -27,16 +27,14 @@ class Prepare(FullyLoggedMixin, FormView):
         - redirect to a self refreshing waiting page
     """
 
-    template_name = "sheets/prepare.html"
-    form_class = SiretForm
+    template_name = "sheets/sheet_prepare.html"
+    form_class = SheetPrepareForm
     allowed_user_categories = ALL_BUT_OBSERVATOIRE
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.existing_inspection = None
         self.new_inspection = None
-        self.is_registry = False
-        self.is_inspection = False
 
     def check_existing_inspection(self, siret):
         if not CHECK_INSPECTION:
@@ -44,11 +42,6 @@ class Prepare(FullyLoggedMixin, FormView):
             return
         today = dt.date.today()
         self.existing_inspection = ComputedInspectionData.objects.filter(org_id=siret, created__date=today).first()
-
-    def post(self, request, *args, **kwargs):
-        self.is_registry = bool(self.request.POST.get("registry"))
-        self.is_inspection = bool(self.request.POST.get("inspection"))
-        return super().post(request, *args, **kwargs)
 
     def get_initial(self):
         # prefill siret field when coming from map
@@ -58,31 +51,10 @@ class Prepare(FullyLoggedMixin, FormView):
             init["siret"] = siret
         return init
 
-    def get_form_kwargs(self):
-        kw = super().get_form_kwargs()
-
-        kw.update({"is_registry": self.is_registry})
-        return kw
-
     def form_valid(self, form):
-        if self.is_inspection:
-            return self.handle_inspection(form)
-        if self.is_registry:
-            return self.handle_registry(form)
+        self.handle_inspection(form)
+
         raise Http404
-
-    def handle_registry(self, form):
-        # store form data in session and redirect to download view
-        for fn in [
-            "siret",
-            "registry_type",
-            "registry_format",
-        ]:
-            self.request.session[fn] = form.cleaned_data[fn]
-        for fn in ["start_date", "end_date"]:
-            self.request.session[fn] = form.cleaned_data[fn].isoformat()
-
-        return HttpResponseRedirect(reverse("registry"))
 
     def handle_inspection(self, form):
         siret = form.cleaned_data["siret"]

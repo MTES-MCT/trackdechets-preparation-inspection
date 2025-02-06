@@ -1,12 +1,8 @@
 {% extends "base.html" %}
 {% block main %}
     <div class="fr-container fr-mt-1v">
-        <h3>Fiche établissement</h3>
-        <div class="fr-alert fr-alert--info fr-mb-10v">
-            <h3 class="fr-alert__title">Accès au registre</h3>
-            <p>Le téléchargement du registre est maintenant proposé en version béta.</p>
-        </div>
-        <form method="post" {% url "prepare" %}>
+        <h3>Registre</h3>
+        <form method="post" {% url "registry_prepare" %}>
             {% csrf_token %}
             {% if form.errors or has_errors %}
                 {% if not form.non_field_errors %}
@@ -42,63 +38,19 @@
                 <div class="fr-col-3">{% include 'forms/_field.html' with field=form.start_date %}</div>
                 <div class="fr-col-3">{% include 'forms/_field.html' with field=form.end_date %}</div>
             </div>
-            <p class="fr-text--bold  fr-mt-4v fr-mb-2v">Registre</p>
             <div class="fr-grid-row fr-grid-row--gutters">
                 <div class="fr-col-3">{% include 'forms/_field.html' with field=form.registry_type %}</div>
                 <div class="fr-col-3">{% include 'forms/_field.html' with field=form.registry_format %}</div>
             </div>
             <div class="fr-mt-5v">
                 <input type="submit"
-                       class="fr-btn"
-                       name="inspection"
-                       value="Préparer la fiche" />
-                <input type="submit"
-                       class="fr-btn fr-btn--secondary"
+                       class="fr-btn fr-btn--primary"
                        name="registry"
                        value="Préparer le registre" />
             </div>
         </form>
-        {% if computed %}
-            <p>
-                <a href="{% url "sheet" computed.pk %}">voir</a>
-            </p>
-        {% endif %}
     </div>
 {% endblock %}
 {% block scripts %}
-    <script>
-        (function () {
-
-            const toisoStr = (dt) => dt.toISOString().substring(0, 10);
-            const subtractYear = (dt) => {
-                dt.setFullYear(dt.getFullYear() - 1);
-                return dt;
-            }
-
-            const today = new Date();
-            const oneYearAgo = subtractYear(new Date())
-
-            const buttons = document.querySelectorAll('[data-period-btn]');
-            const startDateInput = document.getElementById('id_start_date');
-            const endDateInput = document.getElementById('id_end_date');
-
-            buttons.forEach(item => {
-                item.addEventListener('click', e => {
-                    const period = e.target.getAttribute("data-period-btn")
-                    if (period === "current_year") {
-                        endDateInput.value = toisoStr(today)
-                        startDateInput.value = toisoStr(oneYearAgo)
-                    }
-                    if (period === "this_year") {
-                        endDateInput.value = toisoStr(new Date(new Date().getFullYear(), 11, 32))
-                        startDateInput.value = toisoStr(new Date(new Date().getFullYear(), 0, 2))
-                    }
-                    if (period === "prev_year") {
-                        endDateInput.value = toisoStr(new Date(new Date().getFullYear() - 1, 11, 32))
-                        startDateInput.value = toisoStr(new Date(new Date().getFullYear() - 1, 0, 2))
-                    }
-                })
-            })
-        })()
-    </script>
+    {% include "scripts/siret_form_script.html" %}
 {% endblock %}

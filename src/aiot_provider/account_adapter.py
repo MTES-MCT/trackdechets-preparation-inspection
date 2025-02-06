@@ -3,7 +3,7 @@ from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from django.contrib.auth import get_user_model
 from django.shortcuts import resolve_url
 
-redirect_url = "prepare"
+redirect_url = "sheet_prepare"
 
 
 class MonaiotAccountAdapter(DefaultAccountAdapter):

@@ -5,7 +5,7 @@
             <p>Bonjour, {{ user.username }}</p>
             {% if user.is_staff %}
                 <p>
-                    <a href="{% url "admin:index" %}">Interface d'administration équipe</a>
+                    <a href="{% url "admin:index" %}">Admin équipe</a>
                 </p>
             {% endif %}
             <p>

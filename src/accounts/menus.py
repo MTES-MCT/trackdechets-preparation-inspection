@@ -1,4 +1,3 @@
-from django.templatetags.static import static
 from django.urls import reverse
 from simple_menu import Menu, MenuItem
 
@@ -24,7 +23,11 @@ class ObservatoireMenuItem(MenuItem):
         self.visible = request.user.is_staff or request.user.is_observatoire
 
 
-Menu.add_item("main", MainMenuItem("Préparer une fiche", reverse("prepare"), icon="tools"))
+submenu = (
+    MainMenuItem("Préparer une fiche", reverse("sheet_prepare"), icon="tools"),
+    MainMenuItem("Registre", reverse("registry_prepare"), icon="tools"),
+)
+Menu.add_item("main", MenuItem("Établissements", "", children=submenu, menu_id="id_companies"))
 
 Menu.add_item("main", MainMenuItem("Contrôle routier", reverse("roadcontrol"), icon="report"))
 
@@ -49,20 +52,5 @@ Menu.add_item(
     ObservatoireMenuItem(
         "Observatoires",
         reverse("data_export_list"),
-    ),
-)
-
-Menu.add_item(
-    "main",
-    MainMenuItem(
-        "Guide d'utilisation", static("user-manual/trackdechets-mode-emploi-fiche-inspection.pdf"), target="_blank"
-    ),
-)
-
-Menu.add_item(
-    "main",
-    StaffMenuItem(
-        "Interface d'administration équipe",
-        reverse("admin:index"),
     ),
 )

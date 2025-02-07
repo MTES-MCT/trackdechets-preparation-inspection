@@ -2,7 +2,7 @@
 {% block main %}
     <div class="fr-container">
         {% if user.is_authenticated %}
-            <p>Bonjour, {{ user.username }}</p>
+            <p>Bonjour, {{ user.username }}.</p>
             {% if user.is_staff %}
                 <p>
                     <a href="{% url "admin:index" %}">Admin équipe</a>
@@ -15,7 +15,7 @@
                 </form>
             </p>
         {% else %}
-            <a href="{% url "login" %}">Connectez vous</a>
+            <a href="{% url "login" %}">Connectez-vous</a>
         {% endif %}
     </div>
 {% endblock %}

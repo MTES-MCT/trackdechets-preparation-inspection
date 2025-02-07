@@ -52,9 +52,7 @@ class SheetPrepare(FullyLoggedMixin, FormView):
         return init
 
     def form_valid(self, form):
-        self.handle_inspection(form)
-
-        raise Http404
+        return self.handle_inspection(form)
 
     def handle_inspection(self, form):
         siret = form.cleaned_data["siret"]

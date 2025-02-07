@@ -1472,13 +1472,31 @@ class QuantityOutliersTableProcessor:
             df = df.drop(columns=["sent_at"], errors="ignore")
 
             df_with_transport = df.merge(
-                transporters_df[["bs_id", "transporter_transport_mode", "sent_at", "quantity_received"]],
+                transporters_df[
+                    [
+                        "bs_id",
+                        "transporter_company_siret",
+                        "transporter_transport_mode",
+                        "sent_at",
+                    ]
+                ],
                 left_on="id",
                 right_on="bs_id",
                 how="left",
                 validate="one_to_many",
                 suffixes=("", "_transport"),
             )
+
+            if bs_type == BSFF:
+                if packagings_data_df is not None:
+                    df_with_transport = df_with_transport.drop(columns=["quantity_received"], errors="ignore")
+                    df_with_transport = df_with_transport.merge(
+                        packagings_data_df.groupby("bsff_id")["acceptation_weight"].sum(),
+                        left_on="id",
+                        right_index=True,
+                    ).rename(columns={"acceptation_weight": "quantity_received"})
+                else:
+                    return
 
             df_quantity_outliers = df_with_transport[
                 (df_with_transport["quantity_received"] > 40)
@@ -1537,17 +1555,20 @@ class QuantityOutliersTableProcessor:
     def _add_stats(self) -> list:
         stats = []
 
+        has_quantity_refused = "quantity_refused" in self.preprocessed_data.columns
+
         for e in self.preprocessed_data.sort_values("sent_at").itertuples():
             row = {
                 "id": e.id,
                 "bs_type": e.bs_type,
                 "emitter_company_siret": e.emitter_company_siret,
+                "transporter_company_siret": e.transporter_company_siret,
                 "recipient_company_siret": e.recipient_company_siret,
                 "waste_code": e.waste_code,
                 "waste_name": e.waste_name if e.bs_type != "bsvhu" else None,
                 "quantity": format_number_str(e.quantity_received, 1) if not pd.isna(e.quantity_received) else None,
                 "quantity_refused": format_number_str(e.quantity_refused, 1)
-                if not pd.isna(e.quantity_refused)
+                if (has_quantity_refused and not pd.isna(e.quantity_refused))
                 else None,
                 "sent_at": e.sent_at.strftime("%d/%m/%Y %H:%M") if not pd.isna(e.sent_at) else None,
                 "received_at": e.received_at.strftime("%d/%m/%Y %H:%M") if not pd.isna(e.received_at) else None,

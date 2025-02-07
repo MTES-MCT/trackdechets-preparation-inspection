@@ -2,7 +2,7 @@ import base64
 import datetime as dt
 
 from celery.result import AsyncResult
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import DetailView, FormView, TemplateView
 

@@ -2,6 +2,7 @@ import base64
 import datetime as dt
 
 from celery.result import AsyncResult
+from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import DetailView, FormView, TemplateView
@@ -67,7 +68,10 @@ class SheetPrepare(FullyLoggedMixin, FormView):
             data_end_date=data_end_date,
             created_by=self.request.user.email,
         )
-        self.task_id = prepare_sheet.delay(self.new_inspection.pk)
+        if getattr(settings, "CELERY_ALWAYS_EAGER", False):
+            self.task_id = "fake-task-id"
+        else:
+            self.task_id = prepare_sheet.delay(self.new_inspection.pk)
         return HttpResponseRedirect(self.get_success_url())
 
     def get_context_data(self, **kwargs):

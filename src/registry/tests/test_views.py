@@ -19,7 +19,7 @@ def test_sheet_prepare_deny_observatoire(verified_observatoire):
 
 
 @pytest.mark.parametrize("get_client", ["verified_client", "logged_monaiot_client"], indirect=True)
-def test_sheet_prepare(get_client):
+def test_registry_prepare(get_client):
     url = reverse("registry_prepare")
     res = get_client.get(url)
     assert res.status_code == 200
@@ -42,6 +42,23 @@ def test_sheet_prepare(get_client):
     assert "id_registry_format" in content
     assert "id_start_date" in content
     assert "id_end_date" in content
+
+
+@pytest.mark.parametrize("get_client", ["verified_client", "logged_monaiot_client"], indirect=True)
+def test_registry_prepare_post(get_client):
+    url = reverse("registry_prepare")
+    res = get_client.post(
+        url,
+        data={
+            "siret": "51212357100030",
+            "registry_type": "ALL",
+            "registry_format": "csv",
+            "start_date": "2024-01-01",
+            "end_date": "2024-12-31",
+        },
+    )
+    assert res.status_code == 302
+    assert res.url == reverse("registry")
 
 
 def test_registry_deny_anon(anon_client):

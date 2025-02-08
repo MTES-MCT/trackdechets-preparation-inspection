@@ -6,6 +6,8 @@ from django.urls import reverse
 from accounts.models import UserCategoryChoice
 from content.models import FeedbackResult
 
+from ..models import ComputedInspectionData
+
 pytestmark = pytest.mark.django_db
 
 
@@ -128,3 +130,19 @@ def test_sheet_prepare(get_client):
 
     assert "id_start_date" in content
     assert "id_end_date" in content
+
+
+@pytest.mark.parametrize("get_client", ["verified_client", "logged_monaiot_client"], indirect=True)
+def test_sheet_prepare_post(get_client):
+    url = reverse("sheet_prepare")
+    res = get_client.post(
+        url,
+        data={
+            "siret": "51212357100030",
+            "start_date": "2024-01-01",
+            "end_date": "2024-12-31",
+        },
+    )
+    assert res.status_code == 302
+    sheet = ComputedInspectionData.objects.get()
+    assert res.url == reverse("pollable_result", args=["fake-task-id", str(sheet.id)])

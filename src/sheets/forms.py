@@ -1,5 +1,6 @@
 import datetime as dt
 
+from django.conf import settings
 from django.forms import CharField, DateField, Form, ValidationError
 from django.forms.widgets import DateInput
 from sqlalchemy.sql import text
@@ -78,6 +79,8 @@ class SiretForm(Form):
 
     def clean_siret(self):
         siret = self.cleaned_data["siret"]
+        if getattr(settings, "SKIP_SIRET_CHECK", False):
+            return siret
         prepared_query = text(sql_company_query_exists_str)
         with wh_engine.connect() as con:
             companies = con.execute(prepared_query, siret=siret).all()

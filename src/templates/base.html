@@ -70,12 +70,27 @@
                         <div class="fr-header__tools">
                             <div class="fr-header__tools-links">
                                 <ul class="fr-btns-group">
-                                    <li>
-                                        <a target="_blank"
-                                           href="https://trackdechets.beta.gouv.fr/"
-                                           title="Trackdéchets - nouvelle fenêtre"
-                                           class="fr-btn fr-icon-chat-3-line">Trackdéchets</a>
-                                    </li>
+                                    {% if user.is_verified or user.is_authenticated_from_monaiot %}
+                                        {% if user.is_staff %}
+                                            <li>
+                                                <a href="{% url "admin:index" %}"
+                                                   class="fr-btn fr-icon-admin-line fr-link--icon-right">Admin équipe</a>
+                                            </li>
+                                        {% endif %}
+                                        <li>
+                                            <a target="_blank"
+                                               href="{% static  "user-manual/trackdechets-mode-emploi-fiche-inspection.pdf" %}"
+                                               title="Trackdéchets - nouvelle fenêtre"
+                                               class="fr-btn">Guide d'utilisation</a>
+                                        </li>
+                                        <li>
+                                            <form action="{% url "logout" %}" method="post">
+                                                {% csrf_token %}
+                                                <button class="fr-btn  fr-icon-logout-box-r-line fr-link--icon-right"
+                                                        aria-controls="modal-header__menu">Déconnexion</button>
+                                            </form>
+                                        </li>
+                                    {% endif %}
                                 </ul>
                             </div>
                         </div>
@@ -85,25 +100,40 @@
             {% if user.is_verified or user.is_authenticated_from_monaiot %}
                 {% generate_menu %}
                 <div class="fr-container">
+                    <div class="fr-header__menu-links"></div>
                     <nav role="navigation" aria-label="Menu principal" class="fr-nav">
                         <ul class="fr-nav__list">
                             {% for item in menus.main %}
                                 <li class="fr-nav__item">
-                                    <a href="{{ item.url }}"
-                                       aria-controls="modal-header__menu"
-                                       target="{{ item.target|default:"_self" }}"
-                                       {% if  item.selected %}aria-current="page"{% endif %}
-                                       class="fr-nav__link">{{ item.title }}</a>
+                                    {% if item.children %}
+                                        <button class="fr-nav__btn"
+                                                aria-expanded="false"
+                                                aria-controls="{{ item.menu_id }}"
+                                                {% if item.selected %}aria-current="page"{% endif %}>
+                                            {{ item.title }}
+                                        </button>
+                                        <div class="fr-collapse fr-menu" id="{{ item.menu_id }}">
+                                            <ul class="fr-menu__list">
+                                                {% for subitem in item.children %}
+                                                    <li>
+                                                        <a href="{{ subitem.url }}"
+                                                           aria-controls="modal-header__menu"
+                                                           target="{{ subitem.target|default:"_self" }}"
+                                                           {% if  subitem.selected %}aria-current="page"{% endif %}
+                                                           class="fr-nav__link">{{ subitem.title }}</a>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    {% else %}
+                                        <a href="{{ item.url }}"
+                                           aria-controls="modal-header__menu"
+                                           target="{{ item.target|default:"_self" }}"
+                                           {% if item.selected %}aria-current="page"{% endif %}
+                                           class="fr-nav__link">{{ item.title }}</a>
+                                    {% endif %}
                                 </li>
                             {% endfor %}
-                            <li class="fr-nav__item">
-                                <form action="{% url "logout" %}" method="post">
-                                    {% csrf_token %}
-                                    <button class="fr-nav__link "
-                                            aria-controls="modal-header__menu"
-                                            style="padding: 1rem">Déconnexion</button>
-                                </form>
-                            </li>
                         </ul>
                     </nav>
                 </div>
@@ -119,10 +149,12 @@
             </div>
         {% endif %}
         {% block main %}{% endblock %}
+        {% if user.is_verified %}
+            <script type="module" src="{% static "js/dsfr.module.min.js" %}"></script>
+        {% endif %}
         <script src="{% static "js/plotly-2.18.1.min.js" %}" charset="utf-8"></script>
         <script src="{% static "js/plotly-locale-fr.js" %}"></script>
         <script src="{% static "js/htmx.1.8.5.min.js" %}"></script>
-        {% block scripts %}
-        {% endblock %}
+        {% block scripts %}{% endblock %}
     </body>
 </html>

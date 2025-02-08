@@ -234,7 +234,7 @@ class AiotOpenIDConnectTests(OpenIDConnectTests, TestCase):
             resp_mock,
         )
 
-        self.assertRedirects(resp, reverse("prepare"))
+        self.assertRedirects(resp, reverse("sheet_prepare"))
 
         user.refresh_from_db()
         self.assertTrue(user.monaiot_connexion)

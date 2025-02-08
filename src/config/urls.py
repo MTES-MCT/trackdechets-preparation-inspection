@@ -40,6 +40,7 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
     path("content/", include("content.urls")),
     path("sheets/", include("sheets.urls")),
+    path("registry/", include("registry.urls")),
     path("roadcontrol/", include("roadcontrol.urls")),
     path("map/", include("maps.urls")),
     path("data-exports/", include("data_exports.urls")),

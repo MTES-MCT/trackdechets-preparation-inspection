@@ -13,7 +13,7 @@
                 <a href="{% url "prepare_pdf" sheet.pk %}" target="_blank">Voir la fiche en Pdf</a>
             {% endif %}
             -
-            <a href="{% url "prepare" %}">Préparer une autre fiche</a>
+            <a href="{% url "sheet_prepare" %}">Préparer une autre fiche</a>
             {% if user.is_superuser and debug %}
                 -
                 <a href="{% url "sheet_pdf_debug" sheet.pk %}" target="_blank">PDF debug</a>

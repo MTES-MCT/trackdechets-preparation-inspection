@@ -52,7 +52,7 @@ class FullyLoggedMixin(AccessMixin):
             self.get_redirect_field_name(),
         )
 
-    def test_is_fullly_logged(self, user):
+    def test_is_fully_logged(self, user):
         """Verify if a user has completed all required authentication steps."""
         if not user.is_authenticated:
             return False
@@ -82,7 +82,7 @@ class FullyLoggedMixin(AccessMixin):
 
     def dispatch(self, request, *args, **kwargs):
         """Check if user is fully logged, then if has appropriate categories"""
-        user_test_result = self.test_is_fullly_logged(request.user)
+        user_test_result = self.test_is_fully_logged(request.user)
 
         if not user_test_result:
             return self.handle_no_permission(request)

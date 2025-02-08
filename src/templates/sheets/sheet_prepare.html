@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block main %}
+    <div class="fr-container fr-mt-1v">
+        <h3>Fiche établissement</h3>
+        <form method="post" {% url "sheet_prepare" %}>
+            {% csrf_token %}
+            {% if form.errors or has_errors %}
+                {% if not form.non_field_errors %}
+                    <div class="fr-alert fr-alert--error fr-mb-2w">Le formulaire comporte des erreurs.</div>
+                {% endif %}
+            {% endif %}
+            {% if form.non_field_errors %}
+                <div class="fr-alert fr-alert--error fr-mb-2w">
+                    <p>{{ form.non_field_errors.0 }}</p>
+                </div>
+            {% endif %}
+            <div class="fr-grid-row fr-grid-row--gutters">
+                <div class="fr-col-6">{% include 'forms/_field.html' with field=form.siret %}</div>
+            </div>
+            <p class="fr-text--bold fr-mt-4v fr-mb-2v">Période concernée</p>
+            <div class="fr-grid-row fr-grid-row--gutters">
+                <div class="fr-col">
+                    <button class="fr-btn fr-btn--tertiary"
+                            data-period-btn="current_year"
+                            type="button">
+                        Année
+                        courante
+                    </button>
+                    <button class="fr-btn fr-btn--tertiary"
+                            data-period-btn="this_year"
+                            type="button">{{ label_this_year }}</button>
+                    <button class="fr-btn fr-btn--tertiary"
+                            data-period-btn="prev_year"
+                            type="button">{{ label_prev_year }}</button>
+                </div>
+            </div>
+            <div class="fr-grid-row fr-grid-row--gutters">
+                <div class="fr-col-3">{% include 'forms/_field.html' with field=form.start_date %}</div>
+                <div class="fr-col-3">{% include 'forms/_field.html' with field=form.end_date %}</div>
+            </div>
+            <div class="fr-mt-5v">
+                <input type="submit"
+                       class="fr-btn"
+                       name="inspection"
+                       value="Préparer la fiche" />
+            </div>
+        </form>
+        {% if computed %}
+            <p>
+                <a href="{% url "sheet" computed.pk %}">voir</a>
+            </p>
+        {% endif %}
+    </div>
+{% endblock %}
+{% block scripts %}
+    {% include "scripts/siret_form_script.html" %}
+{% endblock %}

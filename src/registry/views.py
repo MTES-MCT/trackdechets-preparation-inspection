@@ -3,14 +3,16 @@ import json
 
 import httpx
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
 from django.utils import timezone
-from django.views.generic import TemplateView
+from django.views.generic import FormView, TemplateView
 
 from accounts.models import ALL_BUT_OBSERVATOIRE
 from common.mixins import FullyLoggedMixin
+from common.sirets import validate_siret
 
-from ..constants import (
+from .constants import (
     REGISTRY_FORMAT_CSV,
     REGISTRY_FORMAT_XLS,
     REGISTRY_TYPE_ALL,
@@ -18,8 +20,9 @@ from ..constants import (
     REGISTRY_TYPE_OUTGOING,
     REGISTRY_TYPE_TRANSPORTED,
 )
-from ..gql import graphql_query_csv, graphql_query_xls
-from ..models import RegistryDownload
+from .forms import RegistryPrepareForm
+from .gql import graphql_query_csv, graphql_query_xls
+from .models import RegistryDownload
 
 
 class RegistryDownloadException(Exception):
@@ -30,6 +33,47 @@ class RegistryDownloadException(Exception):
 
 CHECK_INSPECTION = False
 
+
+class RegistryPrepare(FullyLoggedMixin, FormView):
+    """
+    View to download a registry
+    """
+
+    template_name = "sheets/../../templates/registry/registry_prepare.html"
+    form_class = RegistryPrepareForm
+    allowed_user_categories = ALL_BUT_OBSERVATOIRE
+
+    def get_initial(self):
+        # prefill siret field when coming from map
+        siret = self.request.GET.get("siret", "")
+        init = super().get_initial()
+        if validate_siret(siret):
+            init["siret"] = siret
+        return init
+
+    def form_valid(self, form):
+        return self.handle_registry(form)
+
+    def handle_registry(self, form):
+        # store form data in session and redirect to download view
+        for fn in [
+            "siret",
+            "registry_type",
+            "registry_format",
+        ]:
+            self.request.session[fn] = form.cleaned_data[fn]
+        for fn in ["start_date", "end_date"]:
+            self.request.session[fn] = form.cleaned_data[fn].isoformat()
+
+        return HttpResponseRedirect(reverse("registry"))
+
+    def get_context_data(self, **kwargs):
+        year = dt.date.today().year
+        label_this_year = year
+        label_prev_year = year - 1
+        return super().get_context_data(**kwargs, label_this_year=label_this_year, label_prev_year=label_prev_year)
+
+
 CONFIG = {
     "csv": {"query": graphql_query_csv, "name": "wastesRegistryCsv"},
     "xls": {"query": graphql_query_xls, "name": "wastesRegistryXls"},
@@ -37,7 +81,7 @@ CONFIG = {
 
 
 class RegistryView(FullyLoggedMixin, TemplateView):
-    template_name = "sheets/registry_download.html"
+    template_name = "sheets/../../templates/registry/registry_download.html"
     allowed_user_categories = ALL_BUT_OBSERVATOIRE
 
     def get_file_name(self, siret, registry_format, registry_type):

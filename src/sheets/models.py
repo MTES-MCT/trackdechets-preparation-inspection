@@ -300,22 +300,3 @@ class ComputedInspectionData(models.Model):
         if self.pdf_rendering_start and self.pdf_rendering_end:
             return self.pdf_rendering_end - self.pdf_rendering_start
         return None
-
-
-class RegistryDownload(models.Model):
-    org_id = models.CharField(_("Organization ID"), max_length=20)
-
-    data_start_date = models.DateTimeField(_("Data Start Date"), default=datetime(2022, 1, 1))
-    data_end_date = models.DateTimeField(_("Data End Date"), default=timezone.now)
-
-    created = models.DateTimeField(_("Created"), default=timezone.now)
-
-    created_by = models.EmailField(verbose_name=_("Created by"), blank=True)
-
-    objects = ComputedInspectionDataCustomManager()
-
-    class Meta:
-        verbose_name = _("Téléchargement de registre")
-        verbose_name_plural = _("Téléchargements de registre")
-        ordering = ("-created",)
-        app_label = "sheets"

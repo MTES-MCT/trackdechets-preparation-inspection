@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "sheets",
     "maps",
     "data_exports",
+    "registry",
 ]
 
 MIDDLEWARE = [

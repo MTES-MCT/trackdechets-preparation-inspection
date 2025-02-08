@@ -4,18 +4,16 @@ from django.urls import path
 from .views import (
     ComputingView,
     FragmentResultView,
-    Prepare,
     PrepareSheetPdf,
-    RegistryView,
     RenderingView,
     Sheet,
     SheetPdf,
     SheetPdfHtml,
+    SheetPrepare,
 )
 
 urlpatterns = [
-    path("prepare/", Prepare.as_view(), name="prepare"),
-    path("registry/", RegistryView.as_view(), name="registry"),
+    path("sheet-prepare/", SheetPrepare.as_view(), name="sheet_prepare"),
     path(
         "compute/<str:task_id>/<uuid:compute_pk>/",
         ComputingView.as_view(),
@@ -35,6 +33,7 @@ urlpatterns = [
     path("prepare-pdf/<uuid:pk>", PrepareSheetPdf.as_view(), name="prepare_pdf"),
     path("pdf/<uuid:pk>", SheetPdf.as_view(), name="sheet_pdf"),
 ]
+
 if settings.DEBUG:
     urlpatterns += [
         path("pdf-debug/<uuid:pk>", SheetPdfHtml.as_view(), name="sheet_pdf_debug"),

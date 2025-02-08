@@ -1,0 +1,35 @@
+<script>
+        (function () {
+
+            const toisoStr = (dt) => dt.toISOString().substring(0, 10);
+            const subtractYear = (dt) => {
+                dt.setFullYear(dt.getFullYear() - 1);
+                return dt;
+            }
+
+            const today = new Date();
+            const oneYearAgo = subtractYear(new Date())
+
+            const buttons = document.querySelectorAll('[data-period-btn]');
+            const startDateInput = document.getElementById('id_start_date');
+            const endDateInput = document.getElementById('id_end_date');
+
+            buttons.forEach(item => {
+                item.addEventListener('click', e => {
+                    const period = e.target.getAttribute("data-period-btn")
+                    if (period === "current_year") {
+                        endDateInput.value = toisoStr(today)
+                        startDateInput.value = toisoStr(oneYearAgo)
+                    }
+                    if (period === "this_year") {
+                        endDateInput.value = toisoStr(new Date(new Date().getFullYear(), 11, 32))
+                        startDateInput.value = toisoStr(new Date(new Date().getFullYear(), 0, 2))
+                    }
+                    if (period === "prev_year") {
+                        endDateInput.value = toisoStr(new Date(new Date().getFullYear() - 1, 11, 32))
+                        startDateInput.value = toisoStr(new Date(new Date().getFullYear() - 1, 0, 2))
+                    }
+                })
+            })
+        })()
+</script>

@@ -2,7 +2,9 @@
 {% block main %}
     <div class="fr-container fr-mt-1v">
         <h3>Registre</h3>
-        <form method="post" {% url "registry_prepare" %}>
+        <form method="post"
+              {% url "registry_prepare" %}
+              id="id_registry_prepare_form">
             {% csrf_token %}
             {% if form.errors or has_errors %}
                 {% if not form.non_field_errors %}
@@ -44,13 +46,16 @@
             </div>
             <div class="fr-mt-5v">
                 <input type="submit"
+                       id="id_registry_prepare_button"
                        class="fr-btn fr-btn--primary"
                        name="registry"
                        value="Préparer le registre" />
+                <span id="id_registry_prepare_message"></span>
             </div>
         </form>
     </div>
 {% endblock %}
 {% block scripts %}
     {% include "scripts/siret_form_script.html" %}
+    {% include "scripts/registry_form_submit.html" %}
 {% endblock %}

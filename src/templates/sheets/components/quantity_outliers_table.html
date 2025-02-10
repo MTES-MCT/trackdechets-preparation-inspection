@@ -32,7 +32,8 @@
                             {% else %}
                                 {{ row.emitter_company_siret|default:"N/A" }}
                             {% endif %}
-                        </td><td>
+                        </td>
+                        <td>
                             {% if row.transporter_company_siret == company_siret %}
                                 <span class="fr-text--bold">{{ row.transporter_company_siret }}</span>
                             {% else %}

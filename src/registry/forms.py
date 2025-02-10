@@ -26,5 +26,5 @@ class RegistryPrepareForm(SiretForm):
     )
     registry_format = ChoiceField(
         label="Format",
-        choices=((REGISTRY_FORMAT_CSV, ".csv (données tabulées)"), (REGISTRY_FORMAT_XLS, ".xls (Excel)")),
+        choices=((REGISTRY_FORMAT_XLS, ".xls (Excel)"), (REGISTRY_FORMAT_CSV, ".csv (données tabulées)")),
     )

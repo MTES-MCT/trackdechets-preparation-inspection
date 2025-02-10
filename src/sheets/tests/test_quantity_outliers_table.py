@@ -1,9 +1,11 @@
-import pytest
-import pandas as pd
-import numpy as np
 from datetime import datetime
 
+import numpy as np
+import pandas as pd
+import pytest
+
 from sheets.constants import BSDD, BSFF
+
 from ..graph_processors.html_components_processors import QuantityOutliersTableProcessor
 
 

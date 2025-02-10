@@ -1,3 +1,4 @@
+import datetime as dt
 import json
 import uuid
 from datetime import datetime
@@ -49,6 +50,10 @@ class ComputedInspectionDataCustomManager(models.Manager):
 
     def by_api(self):
         return self.filter(creation_mode="API")
+
+    def to_void(self):
+        three_month_ago = timezone.now() - dt.timedelta(days=3 * 30)
+        return self.filter(created__lte=three_month_ago)
 
 
 class ComputedInspectionData(models.Model):
@@ -300,3 +305,21 @@ class ComputedInspectionData(models.Model):
         if self.pdf_rendering_start and self.pdf_rendering_end:
             return self.pdf_rendering_end - self.pdf_rendering_start
         return None
+
+    @classmethod
+    def get_json_fields_to_void(cls):
+        fields = []
+        for field in cls._meta.get_fields():
+            if isinstance(field, models.JSONField):
+                fields.append(field.name)
+
+        return fields
+
+    @classmethod
+    def get_text_fields_to_void(cls):
+        fields = []
+        for field in cls._meta.get_fields():
+            if isinstance(field, models.TextField):
+                fields.append(field.name)
+
+        return fields

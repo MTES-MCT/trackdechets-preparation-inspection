@@ -13,7 +13,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: admin
           POSTGRES_DB: inspection_test
-        ports: [ '5432:5432' ]
+        ports: ["5432:5432"]
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
       redis:
         image: redis
@@ -27,7 +27,6 @@ jobs:
     steps:
       - name: Set locales
         run: sudo apt-get install -y tzdata locales && sudo locale-gen fr_FR && sudo dpkg-reconfigure --frontend=noninteractive locales
-
 
       - uses: actions/checkout@v4
 
@@ -93,3 +92,6 @@ jobs:
           AWS_ACCESS_KEY_ID: "XYZ"
           AWS_SECRET_ACCESS_KEY: "xyz2"
           USE_CONTROL_BSDS_QUERY: true
+          GUN_DATA_UPDATE_DATE_STRING: "Février 2025"
+          GISTRID_DATA_UPDATE_DATE_STRING: "Février 2025"
+          RNDTS_DATA_UPDATE_DATE_STRING: "Novembre 2024"

@@ -89,6 +89,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "config.context_processors.settings_processor",
             ],
         },
     },
@@ -299,3 +300,7 @@ STORAGES = {
 
 SKIP_ROAD_CONTROL_SIRET_CHECK = False
 USE_CONTROL_BSDS_QUERY = env.bool("USE_CONTROL_BSDS_QUERY")
+
+GUN_DATA_UPDATE_DATE_STRING = env("GUN_DATA_UPDATE_DATE_STRING")
+GISTRID_DATA_UPDATE_DATE_STRING = env("GISTRID_DATA_UPDATE_DATE_STRING")
+RNDTS_DATA_UPDATE_DATE_STRING = env("RNDTS_DATA_UPDATE_DATE_STRING")

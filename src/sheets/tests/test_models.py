@@ -29,7 +29,11 @@ def test_computed_inspection_data_to_void():
     a_lot_more_than_three_month_ago = timezone.now() - dt.timedelta(days=4 * 30)
     more_than_three_month_ago = timezone.now() - dt.timedelta(days=3 * 30 + 5)
     less_than_three_month_ago = timezone.now() - dt.timedelta(days=3 * 30 - 5)
+
     computed_a_lot_more_than_three_month_ago = ComputedInspectionDataFactory(created=a_lot_more_than_three_month_ago)
+    computed_a_lot_more_than_three_month_ago_but_voided = ComputedInspectionDataFactory(
+        created=a_lot_more_than_three_month_ago, voided=True
+    )
     computed_more_than_three_month_ago = ComputedInspectionDataFactory(created=more_than_three_month_ago)
     computed_less_than_three_month_ago = ComputedInspectionDataFactory(created=less_than_three_month_ago)
     computed_today = ComputedInspectionDataFactory()
@@ -38,6 +42,7 @@ def test_computed_inspection_data_to_void():
     pks = [sheet.pk for sheet in to_void]
 
     assert computed_a_lot_more_than_three_month_ago.pk in pks
+    assert computed_a_lot_more_than_three_month_ago_but_voided.pk not in pks
     assert computed_more_than_three_month_ago.pk in pks
     assert computed_less_than_three_month_ago.pk not in pks
     assert computed_today.pk not in pks

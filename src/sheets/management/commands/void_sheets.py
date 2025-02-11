@@ -1,8 +1,12 @@
+import logging
+
 from django.core.management.base import BaseCommand
 
 from sheets.models import ComputedInspectionData
 
 batch_size = 100
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -12,7 +16,7 @@ class Command(BaseCommand):
 
         json_fields = ComputedInspectionData.get_json_fields_to_void()
         text_fields = ComputedInspectionData.get_text_fields_to_void()
-        all_fields = json_fields + text_fields
+        all_fields = json_fields + text_fields + ["voided"]
 
         payload_json = {field_name: {} for field_name in json_fields}
         payload_text = {field_name: "" for field_name in text_fields}
@@ -21,5 +25,6 @@ class Command(BaseCommand):
         for sheet in qs:
             for attr, value in payload.items():
                 setattr(sheet, attr, value)
-
-        ComputedInspectionData.objects.bulk_update(qs, all_fields, batch_size=batch_size)
+            sheet.voided = True
+        updated_count = ComputedInspectionData.objects.bulk_update(qs, all_fields, batch_size=batch_size)
+        logger.info(f"{updated_count} sheets voided")

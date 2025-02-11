@@ -41,11 +41,15 @@ def test_void_sheets_command():
     # voided
     assert computed_a_lot_more_than_three_month_ago.bsdd_created_rectified_data == {}
     assert computed_a_lot_more_than_three_month_ago.rndts_transporter_quantities_graph == ""
+    assert computed_a_lot_more_than_three_month_ago.voided
     assert computed_more_than_three_month_ago.bsdd_created_rectified_data == {}
     assert computed_more_than_three_month_ago.rndts_transporter_quantities_graph == ""
+    assert computed_more_than_three_month_ago.voided
 
     # non voided
     assert computed_less_than_three_month_ago.bsdd_created_rectified_data == {"lorem": "ipsum"}
     assert computed_less_than_three_month_ago.rndts_transporter_quantities_graph == "blabla"
+    assert not computed_less_than_three_month_ago.voided
     assert computed_today.bsdd_created_rectified_data == {"lorem": "ipsum"}
     assert computed_today.rndts_transporter_quantities_graph == "blabla"
+    assert not computed_today.voided

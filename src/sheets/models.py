@@ -53,7 +53,7 @@ class ComputedInspectionDataCustomManager(models.Manager):
 
     def to_void(self):
         three_month_ago = timezone.now() - dt.timedelta(days=3 * 30)
-        return self.filter(created__lte=three_month_ago)
+        return self.filter(created__lte=three_month_ago, voided=False)
 
 
 class ComputedInspectionData(models.Model):
@@ -248,6 +248,7 @@ class ComputedInspectionData(models.Model):
     processing_end = models.DateTimeField(_("Processing end"), blank=True, null=True)
     pdf_rendering_start = models.DateTimeField(_("Pdf rendering start"), blank=True, null=True)
     pdf_rendering_end = models.DateTimeField(_("Pdf rendering end"), blank=True, null=True)
+    voided = models.BooleanField(_("Data voided"), default=False, blank=True)  # tell apart voided sheets from other
 
     objects = ComputedInspectionDataCustomManager()
 

@@ -5,6 +5,10 @@ Les changements importants de Trackdéchets préparation inspection sont documen
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 et le projet suit un schéma de versioning inspiré de [Calendar Versioning](https://calver.org/).
 
+## 11/02/2025
+
+- Ajout d'une commande de nettoygae des fiches établissment pour gagner de l'espace db.
+
 ## 06/02/2025
 
 - Dissociation des formulaires de création de fiche et de téléchargement de registre

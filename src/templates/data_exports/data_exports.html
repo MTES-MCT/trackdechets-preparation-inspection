@@ -6,7 +6,9 @@
         <ul>
             <li>Les données ci-dessous sont mise à jour mensuellement.</li>
             <li>Les fichiers sont au format Parquet.</li>
-            {#            <li>Pour en savoir plus consulter la documentation.</li>#}
+            <li>
+                Pour en savoir plus consulter la <a href="https://docs.google.com/spreadsheets/d/1hZu37EOZnnraTYvNKt2XA3nhHxIgxDBz9uNCCTojRQE/edit?gid=0#gid=0">documentation des champs</a> .
+            </li>
         </ul>
         {% for year,export_set in exports.items %}
             <h3>{{ year|default_if_none:"Exports complets" }}</h3>

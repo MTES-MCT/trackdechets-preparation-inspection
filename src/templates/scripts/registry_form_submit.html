@@ -4,17 +4,16 @@
 
         const form = document.querySelector('#id_registry_prepare_form');
         const messageContainer = document.querySelector('#id_registry_prepare_message');
-        const  button = document.querySelector('#id_registry_prepare_button');
+        const button = document.querySelector('#id_registry_prepare_button');
 
 
         form.addEventListener('submit', e => {
-
-
             button.disabled = true;
             messageContainer.innerText = "Le téléchargement va débuter, veuillez patienter"
-
-
-
+            setTimeout(() => {
+                button.disabled = false;
+                messageContainer.innerText = ""
+            }, 3000)
         })
     })()
 </script>

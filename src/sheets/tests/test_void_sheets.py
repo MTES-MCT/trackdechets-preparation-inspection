@@ -32,9 +32,7 @@ def test_void_sheets_command():
         bsdd_created_rectified_data={"lorem": "ipsum"}, rndts_transporter_quantities_graph="blabla"
     )
 
-    call_command(
-        "void_sheets",
-    )
+    call_command("void_sheets")
     computed_a_lot_more_than_three_month_ago.refresh_from_db()
     computed_more_than_three_month_ago.refresh_from_db()
     computed_less_than_three_month_ago.refresh_from_db()

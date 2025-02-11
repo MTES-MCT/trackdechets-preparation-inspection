@@ -7,7 +7,7 @@ batch_size = 100
 
 class Command(BaseCommand):
     def handle(self, verbosity=0, **options):
-        """Set computed field to empty sring or json for ComputedInspectionData older than 3 months iot save db space."""
+        """Set computed field to empty string or json for ComputedInspectionData older than 90 days iot save db space."""
         qs = ComputedInspectionData.objects.to_void()
 
         json_fields = ComputedInspectionData.get_json_fields_to_void()

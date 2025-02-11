@@ -15,7 +15,12 @@
     }
       ,
     {
-      "command": "30 01 2 * * python /app/src/manage.py retrieve_data_exports  --settings=config.settings.production",
+      "command": "30 01 2 * * python /app/src/manage.py retrieve_data_exports --settings=config.settings.production",
+      "size": "M"
+    }
+         ,
+    {
+      "command": "18 23 * * * python /app/src/manage.py void_sheets --settings=config.settings.production",
       "size": "M"
     }
   ]

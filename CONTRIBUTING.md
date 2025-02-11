@@ -26,8 +26,13 @@ Workflow:
 
 ## Téléchargement de fichier parquets
 
- Des fichier parquet sont déposés régulièrement sur un hébergement s3 privé (les fichiers ne sont pas accessibles au public).
- La commande `manage.py retrieve_data_exports` permet de parcourir le bucket concerné et de récupérer les paths, noms années
+ Des fichiers parquet sont déposés régulièrement sur un hébergement s3 privé (les fichiers ne sont pas accessibles au public).
+ La commande `manage.py retrieve_data_exports` permet de parcourir le bucket concerné et de récupérer les paths, noms, années
  et tailles des exports pour reseigner les modèles `DataExport`. Les modèles `DataExport`
  permettent d'afficher la page de listing.
- AU clic, une url présignée est générée et renvoyée à l'utilisateur qui télécharge ainsi le fichier recherché.
+ Au clic, une url présignée est générée et renvoyée à l'utilisateur qui télécharge ainsi le fichier recherché.
+ 
+## Purge des fiches établissements
+
+Les fiches établissement consomment beaucoup d'espace db. La commande `manage.py void_sheets` vide le contenu des fiches de plus de 90
+jours tout en conservant l'historique.

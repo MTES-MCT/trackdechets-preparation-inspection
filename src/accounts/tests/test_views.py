@@ -5,6 +5,7 @@ from django.utils import timezone
 from django_otp.plugins.otp_email.models import EmailDevice
 
 from ..factories import DEFAULT_PASSWORD, EmailDeviceFactory, UserFactory
+from ..models import UserCategoryChoice
 
 pytestmark = pytest.mark.django_db
 
@@ -26,7 +27,25 @@ def test_private_home_view_redirects_logged_in_user_to_second_factor(logged_in_u
     assert res.url == f"{reverse('second_factor')}"
 
 
-def test_private_home_view(verified_user):
+@pytest.mark.parametrize(
+    "category",
+    [
+        UserCategoryChoice.OBSERVATOIRE,
+        UserCategoryChoice.STAFF_TD,
+        UserCategoryChoice.ADMINISTRATION_CENTRALE,
+        UserCategoryChoice.INSPECTEUR_ICPE,
+        UserCategoryChoice.CTT,
+        UserCategoryChoice.INSPECTION_TRAVAIL,
+        UserCategoryChoice.GENDARMERIE,
+        UserCategoryChoice.ARS,
+        UserCategoryChoice.DOUANE,
+    ],
+)
+def test_private_home_view(verified_user, category):
+    user = verified_user.user
+
+    user.user_category = category
+    user.save()
     private_home = reverse("private_home")
     res = verified_user.get(private_home)
     assert res.status_code == 200

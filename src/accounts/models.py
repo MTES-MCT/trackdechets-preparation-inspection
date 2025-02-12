@@ -24,9 +24,11 @@ class UserCategoryChoice(models.TextChoices):
 ALL_BUT_OBSERVATOIRE = [
     UserCategoryChoice.STAFF_TD,
     UserCategoryChoice.ADMINISTRATION_CENTRALE,
-    UserCategoryChoice.ARS,
     UserCategoryChoice.INSPECTEUR_ICPE,
+    UserCategoryChoice.CTT,
+    UserCategoryChoice.INSPECTION_TRAVAIL,
     UserCategoryChoice.GENDARMERIE,
+    UserCategoryChoice.ARS,
     UserCategoryChoice.DOUANE,
 ]
 OBSERVATOIRE_AND_STAFF = [UserCategoryChoice.STAFF_TD, UserCategoryChoice.OBSERVATOIRE]

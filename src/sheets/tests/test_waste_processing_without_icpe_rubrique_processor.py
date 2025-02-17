@@ -234,6 +234,50 @@ def test_preprocess_non_dangerous_rubriques(sample_data):
                 assert item[key] == expected_item[key]
 
 
+def test_preprocess_data_multi_rubriques_without_quantity_refused(sample_data):
+    """Test that multiple rubrique processing works correctly."""
+    bs_data_dfs, rndts_incoming_data, icpe_data, data_date_interval = sample_data
+    processor = WasteProcessingWithoutICPERubriqueProcessor(
+        company_siret="12345678900000",
+        bs_data_dfs={k: v for k, v in bs_data_dfs.items() if k == BSDA},
+        rndts_incoming_data=None,
+        icpe_data=pd.DataFrame({"rubrique": ["2791-1", "2718-1"]}),
+        data_date_interval=data_date_interval,
+        packagings_data_df=None,
+    )
+
+    processor._preprocess_data_multi_rubriques()
+    preprocessed_data = processor.preprocessed_data["dangerous"]
+    assert len(preprocessed_data) == 1
+
+    item = preprocessed_data[0]
+    expected_output = {
+        "missing_rubriques": "2760-1, 2760-2",
+        "num_missing_rubriques": 2,
+        "found_processing_codes": "D5",
+        "num_found_processing_codes": 1,
+        "bs_list": pd.DataFrame(
+            {
+                "recipient_company_siret": ["12345678900000"],
+                "processing_operation_code": ["D5"],
+                "processed_at": [Timestamp("2023-02-02 00:00:00")],
+                "quantity_received": [5],
+                "bs_type": ["BSDA"],
+            }
+        ),
+        "stats": {"total_bs": "1", "total_quantity": "5"},
+    }
+
+    assert item.keys() == expected_output.keys()
+
+    for key in item.keys():
+        if key == "bs_list":
+            # Dataframes equality test
+            assert item[key].equals(expected_output[key])
+        else:
+            assert item[key] == expected_output[key]
+
+
 def test_check_data_empty():
     """Test that the data check function works correctly."""
 

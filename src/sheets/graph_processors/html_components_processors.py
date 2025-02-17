@@ -1636,7 +1636,7 @@ class WasteProcessingWithoutICPERubriqueProcessor:
 
         if not has_2760_1:  # Means no authorization for ICPE 2760-1
             bs_2760_dfs = []
-            bsdd_data = self.bs_data_dfs[BSDD]
+            bsdd_data = self.bs_data_dfs.get(BSDD)
 
             if (bsdd_data is not None) and (len(bsdd_data) > 0):
                 bsdd_data_filtered = bsdd_data[
@@ -1649,21 +1649,26 @@ class WasteProcessingWithoutICPERubriqueProcessor:
                     bsdd_data_filtered["bs_type"] = "BSDD"
                     bs_2760_dfs.append(bsdd_data_filtered)
 
-                if not has_2760_2:  # Means no authorization for ICPE 2760-1 NEITHER 2760-2 (BSDA case)
-                    bsda_data = self.bs_data_dfs[BSDA]
+            if not has_2760_2:  # Means no authorization for ICPE 2760-1 NEITHER 2760-2 (BSDA case)
+                bsda_data = self.bs_data_dfs[BSDA]
 
-                    if (bsda_data is not None) and (len(bsda_data) > 0):
-                        bsda_data_filtered = bsda_data[
-                            (bsda_data["recipient_company_siret"] == self.siret)
-                            & (bsda_data["processing_operation_code"] == "D5")
-                            & (bsdd_data["processed_at"].between(*self.data_date_interval))
-                        ]
-                        if len(bsda_data_filtered) > 0:
-                            bsda_data_filtered["bs_type"] = "BSDA"
-                            bs_2760_dfs.append(bsda_data_filtered)
+                if (bsda_data is not None) and (len(bsda_data) > 0):
+                    bsda_data_filtered = bsda_data[
+                        (bsda_data["recipient_company_siret"] == self.siret)
+                        & (bsda_data["processing_operation_code"] == "D5")
+                        & (bsda_data["processed_at"].between(*self.data_date_interval))
+                    ]
+                    if len(bsda_data_filtered) > 0:
+                        bsda_data_filtered["bs_type"] = "BSDA"
+                        bs_2760_dfs.append(bsda_data_filtered)
 
             if len(bs_2760_dfs) > 0:
                 bs_df = pd.concat(bs_2760_dfs).reset_index(drop=True)  # Creates the list of bordereaux
+
+                total_quantity = bs_df["quantity_received"].sum()
+                if "quantity_refused" in bs_df.columns:
+                    total_quantity -= bs_df["quantity_refused"].fillna(0).sum()
+
                 self.preprocessed_data["dangerous"].append(
                     {
                         "missing_rubriques": "2760-1, 2760-2",
@@ -1673,9 +1678,7 @@ class WasteProcessingWithoutICPERubriqueProcessor:
                         "bs_list": bs_df,
                         "stats": {
                             "total_bs": format_number_str(len(bs_df), 0),  # Total number of bordereaux
-                            "total_quantity": format_number_str(
-                                (bs_df["quantity_received"] - bs_df["quantity_refused"].fillna(0)).sum(), 2
-                            ),  # Total quantity processed
+                            "total_quantity": format_number_str(total_quantity, 2),  # Total quantity processed
                         },
                     }
                 )

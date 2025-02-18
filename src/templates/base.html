@@ -149,9 +149,7 @@
             </div>
         {% endif %}
         {% block main %}{% endblock %}
-        {% if user.is_verified %}
-            <script type="module" src="{% static "js/dsfr.module.min.js" %}"></script>
-        {% endif %}
+        <script type="module" src="{% static "js/dsfr.module.min.js" %}"></script>
         <script src="{% static "js/plotly-2.18.1.min.js" %}" charset="utf-8"></script>
         <script src="{% static "js/plotly-locale-fr.js" %}"></script>
         <script src="{% static "js/htmx.1.8.5.min.js" %}"></script>

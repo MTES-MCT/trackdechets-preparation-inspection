@@ -374,48 +374,6 @@ query BspaohPdf ($id: ID!){
 """
 
 
-def query_td_bsds(siret=None, plate=None, start_cursor=None, end_cursor=None):
-    """Request SENT bsds matching siret and plate. Vhu do not have plates yet and are ignored"""
-
-    where = """  status: {_in: ["SENT", "RESENT"]}"""
-    after = ""
-    if siret:
-        where += """ \n isCollectedFor: "SIRET" """.replace("SIRET", siret)
-    if plate:
-        where += """\n transporter: {transport: {plates: {_itemContains: "PLATE"}}}""".replace("PLATE", plate)
-    if end_cursor:
-        after = f"""after: "{end_cursor}" """
-    query = graphql_query_bsds.substitute(
-        where=where,
-        after=after,
-        bsdd_fragment=bsdd_fragment,
-        bsdasri_fragment=bsdasri_fragment,
-        bsda_fragment=bsda_fragment,
-        bsvhu_fragment=bsvhu_fragment,
-        bspaoh_fragment=bspaoh_fragment,
-        bsff_fragment=bsff_fragment,
-    )
-
-    client = httpx.Client(timeout=60)
-    try:
-        res = client.post(
-            url=settings.TD_API_URL,
-            headers={"Authorization": f"Bearer {settings.TD_API_TOKEN}"},
-            json={
-                "query": query,
-                "variables": {
-                    "siret": siret,
-                    "plate": plate,
-                },
-            },
-        )
-        rep = res.json()
-    except httpx.HTTPError:
-        return []
-
-    return rep
-
-
 def query_td_pdf(bsd_type, bsd_id):
     configs = {
         TYPE_BSDD: {"query": graphql_query_bsdd_pdf, "field": "formPdf"},
@@ -445,39 +403,6 @@ def query_td_pdf(bsd_type, bsd_id):
     link = rep.get("data", {}).get(field, {}).get("downloadLink", None)
 
     return link
-
-
-def query_td_bsd_id(bsd_id):
-    """Request SENT bsds matching siret and plate. Vhu do not have plates yet and are ignored"""
-
-    where = """readableId: {_contains: "BSD_ID"}""".replace("BSD_ID", bsd_id)
-
-    query = graphql_query_bsds.substitute(
-        where=where,
-        after="",
-        bsdd_fragment=bsdd_fragment,
-        bsdasri_fragment=bsdasri_fragment,
-        bsda_fragment=bsda_fragment,
-        bsvhu_fragment=bsvhu_fragment,
-        bspaoh_fragment=bspaoh_fragment,
-        bsff_fragment=bsff_fragment,
-    )
-
-    client = httpx.Client(timeout=60)
-    try:
-        res = client.post(
-            url=settings.TD_API_URL,
-            headers={"Authorization": f"Bearer {settings.TD_API_TOKEN}"},
-            json={
-                "query": query,
-                "variables": {
-                    "siret": bsd_id,
-                },
-            },
-        )
-        return res.json()
-    except httpx.HTTPError:
-        return []
 
 
 graphql_query_control_bsds = Template("""

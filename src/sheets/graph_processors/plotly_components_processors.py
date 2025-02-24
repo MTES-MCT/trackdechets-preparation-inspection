@@ -98,18 +98,25 @@ class BsdQuantitiesGraph:
                 if self.packagings_data is None:
                     # Case when there is BSFFs but no packagings info
                     continue
-                incoming_data_by_month = (
-                    incoming_data.merge(self.packagings_data, left_on="id", right_on="bsff_id")
-                    .groupby(pd.Grouper(key="acceptation_date", freq="1M"))[variable_name]
-                    .sum()
-                    .replace(0, np.nan)
-                )
-                outgoing_data_by_month = (
-                    outgoing_data.merge(self.packagings_data, left_on="id", right_on="bsff_id")
-                    .groupby(pd.Grouper(key="sent_at", freq="1M"))[variable_name]
-                    .sum()
-                    .replace(0, np.nan)
-                )
+
+                incoming_data_by_month = pd.Series()
+                outgoing_data_by_month = pd.Series()
+
+                incoming_data = incoming_data.merge(self.packagings_data, left_on="id", right_on="bsff_id")
+                if not incoming_data["acceptation_date"].isna().all():
+                    incoming_data_by_month = (
+                        incoming_data.groupby(pd.Grouper(key="acceptation_date", freq="1M"))[variable_name]
+                        .sum()
+                        .replace(0, np.nan)
+                    )
+
+                outgoing_data = outgoing_data.merge(self.packagings_data, left_on="id", right_on="bsff_id")
+                if not outgoing_data["sent_at"].isna().all():
+                    outgoing_data_by_month = (
+                        outgoing_data.groupby(pd.Grouper(key="sent_at", freq="1M"))[variable_name]
+                        .sum()
+                        .replace(0, np.nan)
+                    )
             else:
                 # Handle quantity refused
                 if self.bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDASRI]:

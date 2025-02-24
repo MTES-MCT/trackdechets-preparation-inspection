@@ -47,7 +47,7 @@ def sample_packagings():
 
 def test_bsd_quantities_graph_bsdd(sample_data_bsdd):
     company_siret = "12345678900011"
-    bs_type = BSDD  # Remplace par la bonne valeur
+    bs_type = BSDD
     data_date_interval = (datetime(2024, 1, 1), datetime(2024, 12, 31))
     quantity_variables_names = ["quantity_received"]
 
@@ -83,9 +83,42 @@ def test_bsd_quantities_graph_bsdd(sample_data_bsdd):
     assert processor.outgoing_data_by_month_series[0].equals(expected_outgoing_data_by_month_series)
 
 
+def test_empty_data(sample_data_bsdd):
+    # Case no data matching dates
+    company_siret = "12345678900011"
+    bs_type = BSDD
+    data_date_interval = (datetime(2025, 1, 1), datetime(2025, 12, 31))
+    quantity_variables_names = ["quantity_received"]
+
+    processor = BsdQuantitiesGraph(
+        company_siret=company_siret,
+        bs_type=bs_type,
+        bs_data=sample_data_bsdd,
+        data_date_interval=data_date_interval,
+        quantity_variables_names=quantity_variables_names,
+    )
+
+    processor._preprocess_data()
+
+    assert processor._check_data_empty() is True
+
+    sample_data_bsdd["quantity_received"] = [np.nan] * len(sample_data_bsdd)
+    sample_data_bsdd["quantity_refused"] = [np.nan] * len(sample_data_bsdd)
+    data_date_interval = (datetime(2024, 1, 1), datetime(2024, 12, 31))
+    processor = BsdQuantitiesGraph(
+        company_siret=company_siret,
+        bs_type=bs_type,
+        bs_data=sample_data_bsdd,
+        data_date_interval=data_date_interval,
+        quantity_variables_names=quantity_variables_names,
+    )
+
+    processor._preprocess_data()
+
+
 def test_bsd_quantities_graph_bsff(sample_data_bsff, sample_packagings):
     company_siret = "12345678900011"
-    bs_type = BSFF  # Remplace par la bonne valeur
+    bs_type = BSFF
     data_date_interval = (datetime(2024, 1, 1), datetime(2024, 12, 31))
     quantity_variables_names = [
         "acceptation_weight",
@@ -126,7 +159,7 @@ def test_bsd_quantities_graph_bsff(sample_data_bsff, sample_packagings):
 
 def test_bsd_quantities_graph_bsff_without_acceptation_date(sample_data_bsff, sample_packagings):
     company_siret = "12345678900011"
-    bs_type = BSFF  # Remplace par la bonne valeur
+    bs_type = BSFF
     data_date_interval = (datetime(2024, 1, 1), datetime(2024, 12, 31))
     quantity_variables_names = [
         "acceptation_weight",

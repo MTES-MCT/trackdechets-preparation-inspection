@@ -5,6 +5,7 @@ import MapContainer from "./Map";
 import { LocMarker } from "./icons/LocMarker";
 import { Cluster } from "./icons/Cluster";
 import { Sidebar } from "./Sidebar";
+import { Filters } from "./search/filters.jsx";
 
 import { useShallow } from "zustand/react/shallow";
 import { useMapStore } from "./Store";
@@ -82,6 +83,7 @@ function App() {
 
   return (
     <div className="map-app">
+      <Filters />
       <Sidebar mapRef={mapRef} />
       <MapContainer lat={lat} lng={lng} pins={pins} mapRef={mapRef} />
     </div>

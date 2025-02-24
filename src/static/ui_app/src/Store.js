@@ -75,6 +75,10 @@ export const createSearchUiState = immer((set) => ({
 
   departmentFilters: { root: [] },
 
+  searchType: 1,
+  bsdWasteType: 1,
+  bsdWasteRole: 1,
+
   addFilter: ({ filterKey, subFilterKey = "root", value }) =>
     set((state) => {
       state[filterKey][subFilterKey].push(value);

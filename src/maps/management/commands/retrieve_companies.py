@@ -49,6 +49,9 @@ FROM
 """
 
 
+
+
+
 class Command(BaseCommand):
     def handle(self, verbosity=0, **options):
         CartoCompany.objects.all().delete()

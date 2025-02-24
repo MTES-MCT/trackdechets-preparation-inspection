@@ -21,26 +21,16 @@ MESSAGE_RECIPIENTS = ["lorem@ipsum.lol"]
 
 OTP_EMAIL_TOKEN_VALIDITY = 600
 
-MONAIOT_SERVER_URL = "http://lorem.test"
-MONAIOT_REALM = "realm"
-MONAIOT_CLIENT_ID = "td"
-MONAIOT_SECRET = "xyz"
+
 CSRF_TRUSTED_ORIGINS = ["http://url.test"]
 
-WELL_KNOWN_URL = f"{MONAIOT_SERVER_URL}/auth/realms/{MONAIOT_REALM}/.well-known/openid-configuration"
-SOCIALACCOUNT_PROVIDERS = {
-    "monaiot": {
-        "APPS": [
-            {
-                "provider_id": "monaiot",
-                "name": "monaiot",
-                "client_id": MONAIOT_CLIENT_ID,
-                "secret": MONAIOT_SECRET,
-                "settings": {"server_url": WELL_KNOWN_URL, "token_auth_method": "client_secret_jwt"},
-            }
-        ],
-        "SCOPE": ["openid"],
-    }
-}
+
+OIDC_RP_CLIENT_SECRET = "azer"
+MONAIOT_OIDC_OP_SERVER_URL = "https://monaiot.test/auth/realms/MonAIOT-integration/protocol/openid-connect"
+OIDC_OP_AUTHORIZATION_ENDPOINT = f"{MONAIOT_OIDC_OP_SERVER_URL}/auth"
+OIDC_OP_TOKEN_ENDPOINT = f"{MONAIOT_OIDC_OP_SERVER_URL}/token"
+OIDC_OP_USER_ENDPOINT = f"{MONAIOT_OIDC_OP_SERVER_URL}/userinfo"
+OIDC_OP_JWKS_ENDPOINT = f"{MONAIOT_OIDC_OP_SERVER_URL}/certs"
+
 DJANGO_VITE = {"default": {"dev_mode": True}}
 SKIP_SIRET_CHECK = True

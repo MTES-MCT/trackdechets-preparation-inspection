@@ -1,5 +1,5 @@
 {% extends "base_pdf.html" %}
-{% load static graph_tags %}
+{% load graph_tags static %}
 {% block main %}
     <div>
         <section class="horizontal">
@@ -60,15 +60,15 @@
                 </div>
             </div>
             <div class="row">
-                {#  linked companies table #}
+                {# linked companies table #}
                 {% render_linked_companies_data sheet graph_context="pdf" %}
-                {#  end linked companies table #}
+                {# end linked companies table #}
             </div>
             <h2 class="section-title">Données des bordereaux de suivi dématérialisés issues de Trackdéchets</h2>
             {% if sheet.all_bsd_data_empty %}
                 <div class="no-data-section">PAS DE DONNÉES TRACKDÉCHETS À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
             {% endif %}
-            {#  bsdd #}
+            {# bsdd #}
             <div class="row">
                 {% if sheet.bsdd_created_rectified_data %}
                     <div class="cell cell--bordered cell--third">
@@ -86,8 +86,8 @@
                     </div>
                 </div>
             {% endif %}
-            {#  end bsdd #}
-            {#  bsdd non dangereux #}
+            {# end bsdd #}
+            {# bsdd non dangereux #}
             {% if sheet.bsdd_non_dangerous_created_rectified_data %}
                 <div class="row">
                     <div class="cell cell--bordered cell--third">
@@ -106,8 +106,8 @@
                     </div>
                 </div>
             {% endif %}
-            {#  end bsdd non dangereux #}
-            {#  bsda #}
+            {# end bsdd non dangereux #}
+            {# bsda #}
             {% if sheet.bsda_created_rectified_data %}
                 <div class="row">
                     <div class="cell cell--bordered cell--third">
@@ -125,8 +125,8 @@
                     </div>
                 </div>
             {% endif %}
-            {#  end bsda #}
-            {#  bsdasri #}
+            {# end bsda #}
+            {# bsdasri #}
             {% if sheet.bsdasri_created_rectified_data %}
                 <div class="row">
                     <div class="cell cell--bordered cell--third">
@@ -145,8 +145,8 @@
                     </div>
                 </div>
             {% endif %}
-            {#  end bsdasri #}
-            {#  bsff #}
+            {# end bsdasri #}
+            {# bsff #}
             {% if sheet.bsff_created_rectified_data %}
                 <div class="row">
                     <div class="cell cell--bordered cell--third">
@@ -164,8 +164,8 @@
                     </div>
                 </div>
             {% endif %}
-            {#  end bsff #}
-            {#  bsvhu #}
+            {# end bsff #}
+            {# bsvhu #}
             {% if sheet.bsvhu_created_rectified_data %}
                 <div class="row">
                     <div class="cell cell--bordered cell--third">
@@ -183,7 +183,7 @@
                     </div>
                 </div>
             {% endif %}
-            {#  end bsvhu #}
+            {# end bsvhu #}
             {# BSDA worker stats #}
             {% if sheet.bsda_worker_stats_data %}
                 <div class="row">
@@ -237,7 +237,7 @@
                 </div>
             {% endif %}
             {# end eco-organisme #}
-            {#  "waste is dangerous" statements #}
+            {# "waste is dangerous" statements #}
             {% if sheet.waste_is_dangerous_statements_data %}
                 <div>{% render_waste_is_dangerous_statements sheet graph_context="pdf" %}</div>
             {% endif %}
@@ -321,7 +321,7 @@
                 {% endif %}
             {% endif %}
             {# end DND #}
-            {#  on site #}
+            {# on site #}
             <h2 class="section__title">Déchets sur site (théorique)</h2>
             <div class="row">
                 <div class="cell cell--bordered cell--third">
@@ -475,7 +475,7 @@
             {# input/output #}
             {% render_waste_flows_table sheet graph_context="pdf" %}
             {# endinput/output #}
-            {#  quantity outliers table #}
+            {# quantity outliers table #}
             <div>{% render_quantity_outliers_table sheet graph_context="pdf" %}</div>
             {# end quantity outliers table #}
         </section>
@@ -486,9 +486,9 @@
             {# same emitter recipient table #}
             <div>{% render_same_emitter_recipient_table sheet graph_context="pdf" %}</div>
             {# end same emitter recipient table #}
-            {#  private indivudals collections table #}
+            {# private indivudals collections table #}
             <div>{% render_private_individuals_collections_table sheet graph_context="pdf" %}</div>
-            {#  end private indivudals collections table #}
+            {# end private indivudals collections table #}
             {# start incinerator #}
             <div>{% render_incinerator_outgoing_waste_table sheet graph_context="pdf" %}</div>
             {# end incinerator #}
@@ -497,4 +497,4 @@
             {# end ssd table #}
         </section>
     </div>
-{% endblock %}
+{% endblock main %}

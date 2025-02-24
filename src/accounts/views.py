@@ -30,6 +30,9 @@ class SendSecondFactorMailMixin:
 
 
 class LoginView(SendSecondFactorMailMixin, BaseLoginView):
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
     def get_default_redirect_url(self):
         try:
             if self.request.user.is_authenticated_from_monaiot():
@@ -49,6 +52,13 @@ class VerifyView(LoginRequiredMixin, FormView):
     form_class = SecondFactorTokenForm
     template_name = "accounts/second_factor.html"
     success_url = reverse_lazy("private_home")
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_verified() or request.user.is_authenticated_from_monaiot():
+            return HttpResponseRedirect(self.success_url)
+
+        res = super().get(request, *args, **kwargs)
+        return res
 
     def get_form_kwargs(self):
         kw = super().get_form_kwargs()

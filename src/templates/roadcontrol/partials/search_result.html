@@ -1,4 +1,4 @@
-{% load static partials %}
+{% load partials static %}
 {% partialdef bundle-form-partial %}
 {% if bundle_download_available %}
     {% if search_params.siret and total_count <= 100 %}

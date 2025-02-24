@@ -45,11 +45,8 @@ INSTALLED_APPS = [
     "simple_menu",
     "rest_framework",
     "rest_framework.authtoken",
-    "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.openid_connect",
-    "aiot_provider",
+    "mozilla_django_oidc",
+    "oidc",
     "accounts",
     "content",
     "import_export",
@@ -72,8 +69,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "defender.middleware.FailedLoginMiddleware",
     "request.middleware.RequestMiddleware",
-    "allauth.account.middleware.AccountMiddleware",
-    "aiot_provider.middleware.MonaiotMiddleware",
+    "oidc.middleware.MonaiotMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -156,12 +152,11 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
+MONAIOT_BACKEND = "oidc.oidc.MonAiotOidcBackend"
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
     "django.contrib.auth.backends.ModelBackend",
-    # `allauth` specific authentication methods, such as login by email
-    "allauth.account.auth_backends.AuthenticationBackend",
+    MONAIOT_BACKEND,
 ]
 
 ADMIN_SLUG = env("ADMIN_SLUG")
@@ -224,38 +219,23 @@ if gdal_path := env.str("GDAL_LIBRARY_PATH", ""):
 if geos_path := env.str("GEOS_LIBRARY_PATH", ""):
     GEOS_LIBRARY_PATH = env.str("GEOS_LIBRARY_PATH")
 
-# allauth monaiot
-SOCIALACCOUNT_ONLY = True
-ACCOUNT_ADAPTER = "aiot_provider.account_adapter.MonaiotAccountAdapter"
-SOCIALACCOUNT_ADAPTER = "aiot_provider.account_adapter.MonaiotSocialAccountAdapter"
-SOCIALACCOUNT_ENABLED = True
-SOCIALACCOUNT_STORE_TOKENS = True
-SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
-SOCIALACCOUNT_AUTO_SIGNUP = True
-AUTO_SIGNUP = True
-ACCOUNT_EMAIL_VERIFICATION = "none"
-MONAIOT_SERVER_URL = env("MONAIOT_SERVER_URL")
-MONAIOT_REALM = env("MONAIOT_REALM")
-MONAIOT_CLIENT_ID = env("MONAIOT_CLIENT_ID")
-MONAIOT_SECRET = env("MONAIOT_SECRET")
-MONAIOT_SCOPES = env.list("MONAIOT_SCOPES", default=[])
-SOCIALACCOUNT_FORMS = {"signup": "aiot_provider.forms.MonAiotSignupForm"}
 
-WELL_KNOWN_URL = f"{MONAIOT_SERVER_URL}/auth/realms/{MONAIOT_REALM}/.well-known/openid-configuration"
-SOCIALACCOUNT_PROVIDERS = {
-    "monaiot": {
-        "APPS": [
-            {
-                "provider_id": "monaiot",
-                "name": "monaiot",
-                "client_id": MONAIOT_CLIENT_ID,
-                "secret": MONAIOT_SECRET,
-                "settings": {"server_url": WELL_KNOWN_URL, "token_auth_method": "client_secret_jwt"},
-            }
-        ],
-        "SCOPE": MONAIOT_SCOPES,
-    }
-}
+# moz oidc
+OIDC_RP_CLIENT_ID = "trackdechets"
+OIDC_RP_CLIENT_SECRET = env("MONAIOT_OIDC_RP_CLIENT_SECRET")
+
+MONAIOT_OIDC_OP_SERVER_URL = env("MONAIOT_OIDC_OP_SERVER_URL")
+
+OIDC_OP_AUTHORIZATION_ENDPOINT = f"{MONAIOT_OIDC_OP_SERVER_URL}/auth"
+OIDC_OP_TOKEN_ENDPOINT = f"{MONAIOT_OIDC_OP_SERVER_URL}/token"
+OIDC_OP_USER_ENDPOINT = f"{MONAIOT_OIDC_OP_SERVER_URL}/userinfo"
+OIDC_OP_JWKS_ENDPOINT = f"{MONAIOT_OIDC_OP_SERVER_URL}/certs"
+OIDC_CREATE_USER = True
+OIDC_RP_SIGN_ALGO = "RS256"
+
+OIDC_CALLBACK_CLASS = "oidc.views.MonaiotOIDCAuthenticationCallbackView"
+OIDC_LOGIN_REDIRECT_URL_FAILURE = reverse_lazy("mon_aiot_authent_error")
+OIDC_LOGIN_REDIRECT_URL = "private_home"
 
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 

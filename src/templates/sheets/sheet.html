@@ -1,6 +1,5 @@
 {% extends "base.html" %}
-{% load graph_tags %}
-{% load utils %}
+{% load graph_tags utils %}
 {% block main %}
     <div class="fr-container sheet">
         <h1>{{ sheet.company_name }}</h1>
@@ -492,10 +491,10 @@
         {# same emitter recipient table #}
         <div>{% render_same_emitter_recipient_table sheet %}</div>
         {# end same emitter recipient table #}
-        {#  private individuals collections table #}
+        {# private individuals collections table #}
         <div>{% render_private_individuals_collections_table sheet %}</div>
         {# end private individuals collections table #}
-        {#  quantity outliers table #}
+        {# quantity outliers table #}
         <div>{% render_quantity_outliers_table sheet %}</div>
         {# end quantity outliers table #}
         {# start incinerator #}
@@ -506,7 +505,8 @@
         {# end ssd table #}
         {# end Appendices section #}
     </div>
-{% endblock %}
+{% endblock main %}
+
 {% block scripts %}
     <script>
     {% autoescape off %}
@@ -708,4 +708,4 @@
         }
     };
     </script>
-{% endblock %}
+{% endblock scripts %}

@@ -4,7 +4,8 @@
     {% vite_hmr_client %}
     {% vite_react_refresh %}
     {% vite_asset 'main.jsx' %}
-{% endblock %}
+{% endblock extra_head %}
+
 {% block main %}
     <div class="fr-container fr-mt-4v ">
         <h3>Cartographie des établissements</h3>
@@ -12,4 +13,4 @@
     <div class="fr-mt-4v fr-p-2v">
         <div id="root"></div>
     </div>
-{% endblock %}
+{% endblock main %}

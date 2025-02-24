@@ -79,10 +79,8 @@ jobs:
           TD_WEBHOOK_URL: http://api.track.test/webhook
           TD_WEBHOOK_TOKEN: xyz123
           MESSAGE_RECIPIENTS: lorem@ipsum.lol
-          MONAIOT_SERVER_URL: https://test.fr
-          MONAIOT_REALM: realm
-          MONAIOT_CLIENT_ID: td
-          MONAIOT_SECRET: xyz
+          MONAIOT_OIDC_RP_CLIENT_SECRET: pxyz
+          MONAIOT_OIDC_OP_SERVER_URL: https://monaiot.test/auth/realms/MonAIOT-integration/protocol/openid-connect
           CSRF_TRUSTED_ORIGINS: "https://url.test"
           TD_API_URL: http://api.test
           TD_API_TOKEN: xyz"

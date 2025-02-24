@@ -6,7 +6,7 @@
             <ul class="grp-listing-small">
                 {% for user in module.children %}
                     <li class="grp-row">
-                        <a href="{% url "admin:accounts_user_change"  user.pk %}">{{ user.email }}
+                        <a href="{% url "admin:accounts_user_change" user.pk %}">{{ user.email }}
                             {% if user.monaiot_signup %}(MonAIOT){% endif %}
                         </a>
                         <br>
@@ -16,8 +16,8 @@
             </ul>
         {% else %}
             <div class="grp-row">
-                <p>{% trans 'None Available' %}</p>
+                <p>{% translate 'None Available' %}</p>
             </div>
         {% endif %}
     </div>
-{% endblock %}
+{% endblock module_content %}

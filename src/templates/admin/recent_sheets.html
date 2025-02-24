@@ -6,7 +6,7 @@
             <ul class="grp-listing-small">
                 {% for sheet in module.children %}
                     <li class="grp-row">
-                        <a href="{% url "admin:sheets_computedinspectiondata_change"  sheet.pk %}">{{ sheet.org_id }}   {{ sheet.company_name }} </a>
+                        <a href="{% url "admin:sheets_computedinspectiondata_change" sheet.pk %}">{{ sheet.org_id }}   {{ sheet.company_name }} </a>
                         <br>
                         {{ sheet.created }} ({{ sheet.get_creation_mode_display }})
                     </li>
@@ -14,8 +14,8 @@
             </ul>
         {% else %}
             <div class="grp-row">
-                <p>{% trans 'None Available' %}</p>
+                <p>{% translate 'None Available' %}</p>
             </div>
         {% endif %}
     </div>
-{% endblock %}
+{% endblock module_content %}

@@ -1,4 +1,4 @@
-{% load static simple_menu %}
+{% load simple_menu static %}
 <!DOCTYPE html>
 <html lang="fr" data-fr-scheme="light">
     <head>
@@ -79,7 +79,7 @@
                                         {% endif %}
                                         <li>
                                             <a target="_blank"
-                                               href="{% static  "user-manual/trackdechets-mode-emploi-fiche-inspection.pdf" %}"
+                                               href="{% static "user-manual/trackdechets-mode-emploi-fiche-inspection.pdf" %}"
                                                title="Trackdéchets - nouvelle fenêtre"
                                                class="fr-btn">Guide d'utilisation</a>
                                         </li>
@@ -119,7 +119,7 @@
                                                         <a href="{{ subitem.url }}"
                                                            aria-controls="modal-header__menu"
                                                            target="{{ subitem.target|default:"_self" }}"
-                                                           {% if  subitem.selected %}aria-current="page"{% endif %}
+                                                           {% if subitem.selected %}aria-current="page"{% endif %}
                                                            class="fr-nav__link">{{ subitem.title }}</a>
                                                     </li>
                                                 {% endfor %}

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+
 {% block main %}
     <div class="fr-container">
         {% if user.is_authenticated %}
@@ -18,4 +19,4 @@
             <a href="{% url "login" %}">Connectez-vous</a>
         {% endif %}
     </div>
-{% endblock %}
+{% endblock main %}

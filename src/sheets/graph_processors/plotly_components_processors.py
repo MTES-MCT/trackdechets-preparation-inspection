@@ -105,8 +105,7 @@ class BsdQuantitiesGraph:
                 incoming_data = incoming_data.merge(self.packagings_data, left_on="id", right_on="bsff_id")
                 if not incoming_data["acceptation_date"].isna().all():
                     incoming_data_by_month = (
-                        incoming_data.merge(self.packagings_data, left_on="id", right_on="bsff_id")
-                        .groupby(pd.Grouper(key="acceptation_date", freq="1M"))[variable_name]
+                        incoming_data.groupby(pd.Grouper(key="acceptation_date", freq="1M"))[variable_name]
                         .sum()
                         .replace(0, np.nan)
                     )
@@ -114,8 +113,7 @@ class BsdQuantitiesGraph:
                 outgoing_data = outgoing_data.merge(self.packagings_data, left_on="id", right_on="bsff_id")
                 if not outgoing_data["sent_at"].isna().all():
                     outgoing_data_by_month = (
-                        outgoing_data.merge(self.packagings_data, left_on="id", right_on="bsff_id")
-                        .groupby(pd.Grouper(key="sent_at", freq="1M"))[variable_name]
+                        outgoing_data.groupby(pd.Grouper(key="sent_at", freq="1M"))[variable_name]
                         .sum()
                         .replace(0, np.nan)
                     )

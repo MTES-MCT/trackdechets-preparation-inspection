@@ -1,4 +1,5 @@
 import pytest
+from django.test.client import Client
 from django_otp import DEVICE_ID_SESSION_KEY
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
@@ -18,7 +19,6 @@ def anon_client(db):
 @pytest.fixture()
 def logged_in_user(db):
     """A Django test client logged in as a base user (second factor not yet performed)."""
-    from django.test.client import Client
 
     user = UserFactory()
 
@@ -43,18 +43,73 @@ def verified_user(logged_in_user):
     return client
 
 
+def prepare_verified_client(**user_kwargs):
+    user = UserFactory(**user_kwargs)
+
+    client = Client()
+    client.login(email=user.email, password=DEFAULT_PASSWORD)
+    device = EmailDeviceFactory(user=user)
+    session = client.session
+    session[DEVICE_ID_SESSION_KEY] = device.persistent_id
+    session.save()
+    setattr(client, "user", user)
+    return client
+
+
+@pytest.fixture
+def verified_icpe():
+    client = prepare_verified_client(user_category=UserCategoryChoice.INSPECTEUR_ICPE)
+    return client
+
+
 @pytest.fixture()
-def verified_observatoire(verified_user):
-    user = verified_user.user
-    user.user_category = UserCategoryChoice.OBSERVATOIRE
-    user.save()
-    return verified_user
+def verified_ctt():
+    client = prepare_verified_client(user_category=UserCategoryChoice.CTT)
+    return client
+
+
+@pytest.fixture()
+def verified_inspection_travail():
+    client = prepare_verified_client(user_category=UserCategoryChoice.INSPECTEUR_ICPE)
+    return client
+
+
+@pytest.fixture()
+def verified_gendarme():
+    client = prepare_verified_client(user_category=UserCategoryChoice.GENDARMERIE)
+
+    return client
+
+
+@pytest.fixture()
+def verified_ars():
+    client = prepare_verified_client(user_category=UserCategoryChoice.ARS)
+
+    return client
+
+
+@pytest.fixture()
+def verified_douane():
+    client = prepare_verified_client(user_category=UserCategoryChoice.DOUANE)
+    return client
+
+
+@pytest.fixture()
+def verified_adm_centrale():
+    client = prepare_verified_client(user_category=UserCategoryChoice.ADMINISTRATION_CENTRALE)
+    return client
+
+
+@pytest.fixture()
+def verified_observatoire():
+    client = prepare_verified_client(user_category=UserCategoryChoice.OBSERVATOIRE)
+
+    return client
 
 
 @pytest.fixture()
 def logged_in_staff(db):
     """A Django test client logged in as a staff user."""
-    from django.test.client import Client
 
     user = UserFactory(is_staff=True)
     client = Client()
@@ -93,7 +148,6 @@ def token_auth_api():
 @pytest.fixture()
 def monaiot_logged_in_user(db):
     """A Django test client logged in as a base user (second factor not yet performed)."""
-    from django.test.client import Client
 
     user = UserFactory(monaiot_connexion=True)
 
@@ -126,6 +180,39 @@ def get_client(
         "logged_monaiot_client": monaiot_logged_in_user,
     }
     return clients.get(request.param)
+
+
+@pytest.fixture()
+def get_profile(
+    verified_icpe,
+    verified_ctt,
+    verified_inspection_travail,
+    verified_gendarme,
+    verified_ars,
+    verified_douane,
+    verified_observatoire,
+    verified_adm_centrale,
+    request,
+):
+    """This fixture allows to easily run test with different user profiles.
+
+    Just decorate your test with
+    `@pytest.mark.parametrize('get_client', ['get_profile', 'verified_gendarme', 'verified_adm_centrale'], indirect=True)`
+    """
+    clients = {
+        "verified_icpe": verified_icpe,
+        "verified_ctt": verified_ctt,
+        "verified_inspection_travail": verified_inspection_travail,
+        "verified_gendarme": verified_gendarme,
+        "verified_ars": verified_ars,
+        "verified_douane": verified_douane,
+        "verified_observatoire": verified_observatoire,
+        "verified_adm_centrale": verified_adm_centrale,
+    }
+
+    ret = clients.get(request.param)
+
+    return ret
 
 
 @pytest.fixture()

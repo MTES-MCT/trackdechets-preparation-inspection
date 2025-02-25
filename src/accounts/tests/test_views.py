@@ -41,7 +41,7 @@ def test_private_home_view_redirects_logged_in_user_to_second_factor(logged_in_u
         UserCategoryChoice.DOUANE,
     ],
 )
-def test_private_home_view(verified_user, category):
+def test_private_home_access_view(verified_user, category):
     user = verified_user.user
 
     user.user_category = category

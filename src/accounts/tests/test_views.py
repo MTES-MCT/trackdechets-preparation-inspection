@@ -4,8 +4,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django_otp.plugins.otp_email.models import EmailDevice
 
+from ..constants import UserCategoryChoice
 from ..factories import DEFAULT_PASSWORD, EmailDeviceFactory, UserFactory
-from ..models import UserCategoryChoice
 
 pytestmark = pytest.mark.django_db
 
@@ -56,21 +56,11 @@ def test_login_view_get(anon_client):
     assert res.status_code == 200
 
 
-def test_login_view_denies_bad_password(anon_client):
-    user = UserFactory()
-
-    anon_client.post(login_url, {"email": user.email, "password": "JUNK"})
-    assert "_auth_user_id" not in anon_client.session.keys()
-
-    assert len(mail.outbox) == 0
-
-
-def test_login_view_denies_inactive_user(anon_client):
-    user = UserFactory(is_active=False)
-
-    anon_client.post(login_url, {"email": user.email, "password": DEFAULT_PASSWORD})
-    assert "_auth_user_id" not in anon_client.session.keys()
-    assert len(mail.outbox) == 0
+def test_login_view_redirects_logged_in_user(logged_in_user):
+    res = logged_in_user.get(login_url, follow=True)
+    assert res.status_code == 200
+    assert reverse("second_factor") == res.redirect_chain[-1][0]
+    assert res.redirect_chain[-1][1] == 302
 
 
 def test_login_view_accepts_good_password_and_sends_email(anon_client):
@@ -97,11 +87,32 @@ def test_login_view_accepts_good_password_and_sends_email(anon_client):
     assert token in email_sent.body
 
 
-def test_login_view_redirects_logged_in_user(logged_in_user):
-    res = logged_in_user.get(login_url, follow=True)
-    assert res.status_code == 200
-    assert reverse("second_factor") == res.redirect_chain[-1][0]
-    assert res.redirect_chain[-1][1] == 302
+@pytest.mark.parametrize("oidc_connexion", ["MONAIOT", "PROCONNECT"])
+def test_login_view_denies_oidc_connexion_users(oidc_connexion, anon_client):
+    user = UserFactory(oidc_connexion=oidc_connexion)
+
+    anon_client.post(login_url, {"email": user.email, "password": DEFAULT_PASSWORD}, follow=True)
+    assert "_auth_user_id" not in anon_client.session.keys()
+
+    assert len(mail.outbox) == 0
+
+
+@pytest.mark.parametrize("oidc_signup", ["MONAIOT", "PROCONNECT"])
+def test_login_view_denies_oidc_signup_users(oidc_signup, anon_client):
+    user = UserFactory(oidc_signup=oidc_signup)
+
+    anon_client.post(login_url, {"email": user.email, "password": DEFAULT_PASSWORD}, follow=True)
+    assert "_auth_user_id" not in anon_client.session.keys()
+
+    assert len(mail.outbox) == 0
+
+
+def test_login_view_denies_inactive_user(anon_client):
+    user = UserFactory(is_active=False)
+
+    anon_client.post(login_url, {"email": user.email, "password": DEFAULT_PASSWORD})
+    assert "_auth_user_id" not in anon_client.session.keys()
+    assert len(mail.outbox) == 0
 
 
 def test_logout_view(verified_user):
@@ -238,3 +249,37 @@ def test_django_admin_denies_verified_user(verified_user):
 def test_django_admin_denies_logged_staff_user(logged_in_staff):
     res = logged_in_staff.get(reverse("admin:index"))
     assert res.status_code == 302
+
+
+def test_password_reset(anon_client):
+    user = UserFactory()
+
+    res = anon_client.post(
+        reverse("password_reset"),
+        {
+            "email": user.email,
+        },
+        follow=True,
+    )
+    assert res.status_code == 200
+    assert res.redirect_chain[-1][0] == reverse("password_reset_done")
+    assert len(mail.outbox)
+
+
+@pytest.mark.parametrize("oidc_connexion", ["MONAIOT", "PROCONNECT"])
+def test_password_reset_fails_for_oidc_users(oidc_connexion, anon_client):
+    user = UserFactory(oidc_connexion=oidc_connexion)
+
+    res = anon_client.post(
+        reverse("password_reset"),
+        {
+            "email": user.email,
+        },
+    )
+    assert res.status_code == 200
+
+    assert len(mail.outbox) == 0
+
+    assert res.context["form"].errors == {
+        "email": ["Cet utilisateur n'existe aps ou n'est pas autorisé à se connecter par mot de passe"]
+    }

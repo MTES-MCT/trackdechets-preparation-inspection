@@ -70,7 +70,7 @@
                         <div class="fr-header__tools">
                             <div class="fr-header__tools-links">
                                 <ul class="fr-btns-group">
-                                    {% if user.is_verified or user.is_authenticated_from_monaiot %}
+                                    {% if user.is_verified or user.is_authenticated_from_oidc %}
                                         {% if user.is_staff %}
                                             <li>
                                                 <a href="{% url "admin:index" %}"
@@ -97,7 +97,7 @@
                     </div>
                 </div>
             </div>
-            {% if user.is_verified or user.is_authenticated_from_monaiot %}
+            {% if user.is_verified or user.is_authenticated_from_oidc %}
                 {% generate_menu %}
                 <div class="fr-container">
                     <div class="fr-header__menu-links"></div>

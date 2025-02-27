@@ -69,7 +69,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "defender.middleware.FailedLoginMiddleware",
     "request.middleware.RequestMiddleware",
-    "oidc.middleware.MonaiotMiddleware",
+    "oidc.middleware.OidcMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -152,12 +152,11 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-MONAIOT_BACKEND = "oidc.oidc.MonAiotOidcBackend"
-AUTHENTICATION_BACKENDS = [
-    # Needed to login by username in Django admin, regardless of `allauth`
-    "django.contrib.auth.backends.ModelBackend",
-    MONAIOT_BACKEND,
-]
+
+MONAIOT_BACKEND = "oidc.backends.MonAiotOidcBackend"
+PROCONNECT_BACKEND = "oidc.backends.ProconnectOidcBackend"
+
+AUTHENTICATION_BACKENDS = ["accounts.backends.RestrictedLoginBackend", MONAIOT_BACKEND, PROCONNECT_BACKEND]
 
 ADMIN_SLUG = env("ADMIN_SLUG")
 API_SLUG = env("API_SLUG")
@@ -219,23 +218,47 @@ if gdal_path := env.str("GDAL_LIBRARY_PATH", ""):
 if geos_path := env.str("GEOS_LIBRARY_PATH", ""):
     GEOS_LIBRARY_PATH = env.str("GEOS_LIBRARY_PATH")
 
-
 # moz oidc
-OIDC_RP_CLIENT_ID = "trackdechets"
-OIDC_RP_CLIENT_SECRET = env("MONAIOT_OIDC_RP_CLIENT_SECRET")
-
+MONAIOT_OIDC_RP_CLIENT_ID = "trackdechets"
+MONAIOT_OIDC_RP_CLIENT_SECRET = env("MONAIOT_OIDC_RP_CLIENT_SECRET")
 MONAIOT_OIDC_OP_SERVER_URL = env("MONAIOT_OIDC_OP_SERVER_URL")
+MONAIOT_OIDC_OP_AUTHORIZATION_ENDPOINT = f"{MONAIOT_OIDC_OP_SERVER_URL}/auth"
+MONAIOT_OIDC_OP_TOKEN_ENDPOINT = f"{MONAIOT_OIDC_OP_SERVER_URL}/token"
+MONAIOT_OIDC_OP_USER_ENDPOINT = f"{MONAIOT_OIDC_OP_SERVER_URL}/userinfo"
+MONAIOT_OIDC_OP_JWKS_ENDPOINT = f"{MONAIOT_OIDC_OP_SERVER_URL}/certs"
+MONAIOT_OIDC_CREATE_USER = True
+MONAIOT_OIDC_RP_SIGN_ALGO = "RS256"
+MONAIOT_OIDC_AUTHENTICATION_CALLBACK_URL = "monaiot_oidc_authentication_callback"
+MONAIOT_OIDC_LOGIN_REDIRECT_URL = "private_home"
+MONAIOT_OIDC_LOGIN_REDIRECT_URL_FAILURE = reverse_lazy("mon_aiot_authent_error")
 
-OIDC_OP_AUTHORIZATION_ENDPOINT = f"{MONAIOT_OIDC_OP_SERVER_URL}/auth"
-OIDC_OP_TOKEN_ENDPOINT = f"{MONAIOT_OIDC_OP_SERVER_URL}/token"
-OIDC_OP_USER_ENDPOINT = f"{MONAIOT_OIDC_OP_SERVER_URL}/userinfo"
-OIDC_OP_JWKS_ENDPOINT = f"{MONAIOT_OIDC_OP_SERVER_URL}/certs"
-OIDC_CREATE_USER = True
-OIDC_RP_SIGN_ALGO = "RS256"
+PROCONNECT_OIDC_RP_CLIENT_ID = env("PROCONNECT_OIDC_RP_CLIENT_ID")
+PROCONNECT_OIDC_RP_CLIENT_SECRET = env("PROCONNECT_OIDC_RP_CLIENT_SECRET")
+PROCONNECT_OIDC_OP_SERVER_URL = env("PROCONNECT_OIDC_OP_SERVER_URL")
+PROCONNECT_OIDC_OP_AUTHORIZATION_ENDPOINT = f"{PROCONNECT_OIDC_OP_SERVER_URL}/api/v2/authorize"
+PROCONNECT_OIDC_OP_TOKEN_ENDPOINT = f"{PROCONNECT_OIDC_OP_SERVER_URL}/api/v2/token"
+PROCONNECT_OIDC_OP_USER_ENDPOINT = f"{PROCONNECT_OIDC_OP_SERVER_URL}/api/v2/userinfo"
+PROCONNECT_OIDC_OP_JWKS_ENDPOINT = f"{PROCONNECT_OIDC_OP_SERVER_URL}/api/v2/jwks"
+PROCONNECT_OIDC_RP_SCOPES = (
+    "openid email given_name usual_name uid siret idp_id organizational_unit belonging_population custom"
+)
+PROCONNECT_OIDC_CREATE_USER = False
+PROCONNECT_OIDC_RP_SIGN_ALGO = "RS256"
+PROCONNECT_OIDC_AUTHENTICATION_CALLBACK_URL = "proconnect_oidc_authentication_callback"
+PROCONNECT_OIDC_LOGIN_REDIRECT_URL = "private_home"
+PROCONNECT_OIDC_LOGIN_REDIRECT_URL_FAILURE = reverse_lazy("proconnect_authent_error")
 
-OIDC_CALLBACK_CLASS = "oidc.views.MonaiotOIDCAuthenticationCallbackView"
-OIDC_LOGIN_REDIRECT_URL_FAILURE = reverse_lazy("mon_aiot_authent_error")
+ID_ID_CURRASSO = env("ID_ID_CURRASSO")
+PROCONNECT_ALLOWED_IDP_IDS = [
+    ID_ID_CURRASSO,
+]
+
+
 OIDC_LOGIN_REDIRECT_URL = "private_home"
+
+# user
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 

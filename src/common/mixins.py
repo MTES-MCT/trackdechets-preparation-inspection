@@ -57,8 +57,8 @@ class FullyLoggedMixin(AccessMixin):
         if not user.is_authenticated:
             return False
         is_verified_with_otp = user.is_verified()
-        is_authenticated_from_monaiot = user.is_authenticated_from_monaiot()
-        return is_verified_with_otp or is_authenticated_from_monaiot
+        is_authenticated_from_oidc = user.is_authenticated_from_oidc()
+        return is_verified_with_otp or is_authenticated_from_oidc
 
     def get_allowed_user_categories(self):
         """Retrieve the list of allowed user categories.Raises an error if not set in the view"""

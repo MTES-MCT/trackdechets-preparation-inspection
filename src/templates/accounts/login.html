@@ -18,12 +18,7 @@
             <form action="" method="post">
                 {% csrf_token %}
                 <h2 class="text-center">{{ _("Connexion ") }}</h2>
-                <div class="fr-alert fr-alert--info fr-mb-3v">
-                    <p>
-                        Désormais, les agents disposant d'un accès GUN peuvent se connecter via <strong>MonAIOT</strong>.
-                    </p>
-                    <p>La connexion habituelle par email/mot de passe et code de vérification reste disponible.</p>
-                </div>
+
                 {% include "forms/_form_snippet.html" with form=form %}
                 <input type="hidden" name="next" value="{{ next }}"/>
                 <button class="fr-btn">{{ _("Connexion") }}</button>
@@ -42,15 +37,40 @@
 
             <div class="fr-mt-10v">
 
-
-                <div class="fr-grid-row   fr-grid-row--middle  fr-grid-row--center ">
+                <p>
+                    Les agents disposant d'un accès GUN peuvent se connecter via <strong>MonAIOT</strong>.
+                </p>
+                <div class="fr-grid-row fr-grid-row--middle fr-grid-row--center ">
                     <span>Se connecter avec</span>
-                    <a href="{% url 'oidc_authentication_init' %}" class="fr-btn fr-btn--tertiary fr-ml-1w">
+                    <a href="{% url 'monaiot_oidc_authentication_init' %}" class="fr-btn fr-btn--tertiary fr-ml-1w">
                         <img src="{% static "img/monaiot.png" %}" width="150px" alt="MonAIOT">
                     </a>
+
+
+                </div>
+
+                <div class="fr-grid-row fr-grid-row--center fr-grid-row--middle fr-grid-row--gutters fr-mt-10v">
+                    <div class="fr-col-3">
+                        <hr class="sep">
+                    </div>
+                    <div>OU</div>
+                    <div class="fr-col-3">
+                        <hr class="sep">
+                    </div>
                 </div>
 
 
+                <div class="fr-grid-row   fr-grid-row--middle  fr-grid-row--center  fr-mt-10v ">
+                    <p>
+                        <strong>Beta</strong> Les agents de la Gendarmerie Nationale préalablement enregistrés peuvent se
+                        connecter via  <strong>Proconnect</strong>.
+                    </p>
+
+                    <a href="{% url 'proconnect_oidc_authentication_init' %}" class="fr-mt-1w"
+                       style="text-decoration: none;background: none">
+                        <img src="{% static "img/proconnect.svg" %}" alt="S'identifier avec pro connect">
+                    </a>
+                </div>
             </div>
         </div>
     </div>

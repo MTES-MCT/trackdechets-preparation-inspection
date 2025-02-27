@@ -7,7 +7,7 @@ from django.http import Http404
 from django.utils import timezone
 from django.views.generic import FormView, TemplateView
 
-from accounts.models import ADMIN_CENTRALE_OBSERVATOIRE_AND_STAFF
+from accounts.constants import ADMIN_CENTRALE_OBSERVATOIRE_AND_STAFF
 from common.mixins import FullyLoggedMixin
 
 from .constants import PARQUET_BUCKET_NAME, PRESIGNED_URL_EXPIRATION

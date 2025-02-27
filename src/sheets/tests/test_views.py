@@ -37,7 +37,9 @@ def test_sheet_prepare_deny_observatoire(verified_observatoire):
     assert res.status_code == 403
 
 
-@pytest.mark.parametrize("get_client", ["verified_client", "logged_monaiot_client"], indirect=True)
+@pytest.mark.parametrize(
+    "get_client", ["verified_client", "logged_monaiot_client", "logged_proconnect_client"], indirect=True
+)
 def test_sheet_prepare(get_client):
     url = reverse("sheet_prepare")
     res = get_client.get(url)
@@ -62,7 +64,9 @@ def test_sheet_prepare(get_client):
     assert "id_end_date" in content
 
 
-@pytest.mark.parametrize("get_client", ["verified_client", "logged_monaiot_client"], indirect=True)
+@pytest.mark.parametrize(
+    "get_client", ["verified_client", "logged_monaiot_client", "logged_proconnect_client"], indirect=True
+)
 def test_sheet_prepare_post(get_client):
     url = reverse("sheet_prepare")
     res = get_client.post(

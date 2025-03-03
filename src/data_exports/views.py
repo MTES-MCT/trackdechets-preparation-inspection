@@ -7,7 +7,7 @@ from django.http import Http404
 from django.utils import timezone
 from django.views.generic import FormView, TemplateView
 
-from accounts.models import OBSERVATOIRE_AND_STAFF
+from accounts.models import ADMIN_CENTRALE_OBSERVATOIRE_AND_STAFF
 from common.mixins import FullyLoggedMixin
 
 from .constants import PARQUET_BUCKET_NAME, PRESIGNED_URL_EXPIRATION
@@ -20,7 +20,7 @@ class DummyForm(forms.Form):
 
 class ExportList(FullyLoggedMixin, TemplateView):
     template_name = "data_exports/data_exports.html"
-    allowed_user_categories = OBSERVATOIRE_AND_STAFF
+    allowed_user_categories = ADMIN_CENTRALE_OBSERVATOIRE_AND_STAFF
 
     def get_exports(self):
         oldest_year = 2022
@@ -44,7 +44,7 @@ class ExportDownload(FullyLoggedMixin, FormView):
     template_name = "dummy.html"
     form_class = DummyForm
     success_url = ""
-    allowed_user_categories = OBSERVATOIRE_AND_STAFF
+    allowed_user_categories = ADMIN_CENTRALE_OBSERVATOIRE_AND_STAFF
 
     def get(self, request, *args, **kwargs):
         raise Http404()

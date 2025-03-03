@@ -31,10 +31,15 @@ ALL_BUT_OBSERVATOIRE = [
     UserCategoryChoice.ARS,
     UserCategoryChoice.DOUANE,
 ]
-OBSERVATOIRE_AND_STAFF = [UserCategoryChoice.STAFF_TD, UserCategoryChoice.OBSERVATOIRE]
+
+ADMIN_CENTRALE_OBSERVATOIRE_AND_STAFF = [
+    UserCategoryChoice.STAFF_TD,
+    UserCategoryChoice.OBSERVATOIRE,
+    UserCategoryChoice.ADMINISTRATION_CENTRALE,
+]
 
 
-ALL_USER_CATEGORIES = ALL_BUT_OBSERVATOIRE + OBSERVATOIRE_AND_STAFF
+ALL_USER_CATEGORIES = ALL_BUT_OBSERVATOIRE + ADMIN_CENTRALE_OBSERVATOIRE_AND_STAFF
 
 
 class UserTypeChoice(models.TextChoices):
@@ -86,3 +91,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_observatoire(self):
         return self.user_category == UserCategoryChoice.OBSERVATOIRE
+
+    @property
+    def is_administration_centrale(self):
+        return self.user_category == UserCategoryChoice.ADMINISTRATION_CENTRALE

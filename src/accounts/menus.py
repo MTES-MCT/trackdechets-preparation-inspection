@@ -20,7 +20,7 @@ class ObservatoireMenuItem(MenuItem):
     """Custom MenuItem that checks permissions based on the view associated with a URL"""
 
     def check(self, request):
-        self.visible = request.user.is_staff or request.user.is_observatoire
+        self.visible = request.user.is_staff or request.user.is_observatoire or request.user.is_administration_centrale
 
 
 submenu = (

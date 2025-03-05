@@ -10,5 +10,5 @@ class UserIsVerifedPermission(permissions.BasePermission):
         if not user or not user.is_authenticated:
             return False
         is_verified_with_otp = user.is_verified()
-        is_authenticated_from_monaiot = user.is_authenticated_from_monaiot()
-        return is_verified_with_otp or is_authenticated_from_monaiot
+        is_authenticated_from_oidc = user.is_authenticated_from_oidc()
+        return is_verified_with_otp or is_authenticated_from_oidc

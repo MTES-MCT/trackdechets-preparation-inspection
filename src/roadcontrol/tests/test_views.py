@@ -24,7 +24,9 @@ def test_roadcontrol_observatoires(verified_observatoire):
     assert res.status_code == 403
 
 
-@pytest.mark.parametrize("get_client", ["verified_client", "logged_monaiot_client"], indirect=True)
+@pytest.mark.parametrize(
+    "get_client", ["verified_client", "logged_monaiot_client", "logged_proconnect_client"], indirect=True
+)
 def test_roadcontrol(get_client):
     url = reverse("roadcontrol")
     res = get_client.get(url)
@@ -136,7 +138,9 @@ def test_bsd_search_anon(anon_client):
     assert res.status_code == 302
 
 
-@pytest.mark.parametrize("get_client", ["verified_client", "logged_monaiot_client"], indirect=True)
+@pytest.mark.parametrize(
+    "get_client", ["verified_client", "logged_monaiot_client", "logged_proconnect_client"], indirect=True
+)
 def test_bsd_search(get_client):
     url = reverse("roadcontrol_bsd_search")
     res = get_client.get(url)

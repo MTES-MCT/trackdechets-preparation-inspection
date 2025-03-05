@@ -5,10 +5,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from accounts.models import User
-
-
-class ProviderChoice(models.TextChoices):
-    MONAIOT = "MONAIOT", _("MonAIOT")
+from oidc.constants import ProviderChoice
 
 
 class OidcLogin(models.Model):

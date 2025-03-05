@@ -5,10 +5,12 @@ import pytest
 from django.contrib import auth
 from django.urls import reverse
 
+from accounts.constants import UserCategoryChoice, UserTypeChoice
 from accounts.factories import UserFactory
-from accounts.models import User, UserCategoryChoice, UserTypeChoice
+from accounts.models import User
 
-from ..models import OidcLogin, ProviderChoice
+from ..constants import ProviderChoice
+from ..models import OidcLogin
 
 pytestmark = pytest.mark.django_db
 
@@ -62,9 +64,9 @@ def user_info(user_email, droits=default_droits):
     }
 
 
-def test_oidc_auth_request(anon_client):
+def test_monaiot_oidc_auth_request(anon_client):
     """Test that the OIDC authentication request redirects to the provider."""
-    login_url = reverse("oidc_authentication_init")
+    login_url = reverse("monaiot_oidc_authentication_init")
     response = anon_client.get(login_url)
 
     assert response.status_code == 302
@@ -73,10 +75,10 @@ def test_oidc_auth_request(anon_client):
     )
 
 
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.get_token")
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.verify_token")
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.get_userinfo")
-def test_oidc_callback_success_when_user_exists(
+@patch("oidc.backends.MonAiotOidcBackend.get_token")
+@patch("oidc.backends.MonAiotOidcBackend.verify_token")
+@patch("oidc.backends.MonAiotOidcBackend.get_userinfo")
+def test_monaiot_oidc_callback_success_when_user_exists(
     mock_get_userinfo,
     mock_verify_token,
     mock_get_token,
@@ -84,36 +86,36 @@ def test_oidc_callback_success_when_user_exists(
 ):
     """Test successful OIDC authentication callback."""
 
-    user = UserFactory(monaiot_signup=True)
+    user = UserFactory(oidc_signup="MONAIOT")
     mock_get_token.return_value = token_response
 
     mock_verify_token.return_value = verify_token_response(user.email)
-
-    mock_get_userinfo.return_value = user_info(user.email)
+    user_info_value = user_info(user.email)
+    mock_get_userinfo.return_value = user_info_value
 
     session = anon_client.session
     session["oidc_states"] = {"state_xyz": {"code_verifier": None, "nonce": "xyz"}}
     session.save()
 
-    callback_url = reverse("oidc_authentication_callback")
+    callback_url = reverse("monaiot_oidc_authentication_callback")
     response = anon_client.get(callback_url, {"code": "auth_code_123", "state": "state_xyz"})
 
     assert response.status_code == 302
-    assert response["Location"] == reverse("private_home")  # Default redirect URL
+    assert response["Location"] == reverse("private_home")
 
     logged_user = auth.get_user(anon_client)
     assert logged_user.is_authenticated
 
     user = User.objects.get(email=user.email)
-    assert OidcLogin.objects.get(user=user, provider=ProviderChoice.MONAIOT, account_created=False)
+    oidc_login = OidcLogin.objects.get(user=user, provider=ProviderChoice.MONAIOT, account_created=False)
+    assert oidc_login.info == user_info_value
+    assert user.oidc_connexion == "MONAIOT"
 
-    assert user.monaiot_connexion
 
-
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.get_token")
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.verify_token")
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.get_userinfo")
-def test_oidc_callback_success_when_user_does_not_exist(
+@patch("oidc.backends.MonAiotOidcBackend.get_token")
+@patch("oidc.backends.MonAiotOidcBackend.verify_token")
+@patch("oidc.backends.MonAiotOidcBackend.get_userinfo")
+def test_monaiot_oidc_callback_success_when_user_does_not_exist(
     mock_get_userinfo,
     mock_verify_token,
     mock_get_token,
@@ -131,16 +133,16 @@ def test_oidc_callback_success_when_user_does_not_exist(
     session["oidc_states"] = {"state_xyz": {"code_verifier": None, "nonce": "xyz"}}
     session.save()
 
-    callback_url = reverse("oidc_authentication_callback")
+    callback_url = reverse("monaiot_oidc_authentication_callback")
     response = anon_client.get(callback_url, {"code": "auth_code_123", "state": "state_xyz"})
 
     assert response.status_code == 302
-    assert response["Location"] == reverse("private_home")  # Default redirect URL
+    assert response["Location"] == reverse("private_home")
 
     # Verify user was created
     user = User.objects.get(email=user_email)
     assert user
-    assert user.monaiot_signup
+    assert user.oidc_signup == "MONAIOT"
     assert user.is_active
     assert not user.is_staff
     assert not user.is_superuser
@@ -151,10 +153,10 @@ def test_oidc_callback_success_when_user_does_not_exist(
 # fails
 
 
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.get_token")
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.verify_token")
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.get_userinfo")
-def test_oidc_callback_fails_when_no_droits(
+@patch("oidc.backends.MonAiotOidcBackend.get_token")
+@patch("oidc.backends.MonAiotOidcBackend.verify_token")
+@patch("oidc.backends.MonAiotOidcBackend.get_userinfo")
+def test_monaiot_oidc_callback_fails_when_no_droits(
     mock_get_userinfo,
     mock_verify_token,
     mock_get_token,
@@ -162,7 +164,7 @@ def test_oidc_callback_fails_when_no_droits(
 ):
     """Test failed OIDC authentication callback."""
 
-    user = UserFactory(monaiot_signup=True)
+    user = UserFactory(oidc_signup="MONAIOT")
     mock_get_token.return_value = token_response
 
     mock_verify_token.return_value = verify_token_response(user.email, droits="")
@@ -173,23 +175,23 @@ def test_oidc_callback_fails_when_no_droits(
     session["oidc_states"] = {"state_xyz": {"code_verifier": None, "nonce": "xyz"}}
     session.save()
 
-    callback_url = reverse("oidc_authentication_callback")
+    callback_url = reverse("monaiot_oidc_authentication_callback")
     response = anon_client.get(callback_url, {"code": "auth_code_123", "state": "state_xyz"})
 
     assert response.status_code == 302
-    assert response["Location"] == reverse("mon_aiot_authent_error")  # Default redirect URL
+    assert response["Location"] == reverse("mon_aiot_authent_error")
     logged_user = auth.get_user(anon_client)
     assert not logged_user.is_authenticated
 
     user = User.objects.get(email=user.email)
 
-    assert not user.monaiot_connexion
+    assert not user.oidc_connexion == "MONAIOT"
 
 
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.get_token")
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.verify_token")
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.get_userinfo")
-def test_oidc_callback_fails_when_wrong_id_profile(
+@patch("oidc.backends.MonAiotOidcBackend.get_token")
+@patch("oidc.backends.MonAiotOidcBackend.verify_token")
+@patch("oidc.backends.MonAiotOidcBackend.get_userinfo")
+def test_monaiot_oidc_callback_fails_when_wrong_id_profile(
     mock_get_userinfo,
     mock_verify_token,
     mock_get_token,
@@ -197,7 +199,7 @@ def test_oidc_callback_fails_when_wrong_id_profile(
 ):
     """Test failed OIDC authentication callback."""
 
-    user = UserFactory(monaiot_signup=True)
+    user = UserFactory(oidc_signup="MONAIOT")
     mock_get_token.return_value = token_response
     droits = '[{"profil" : "Gestionnaire", "id_profil" : 1, "application" : "GUNenv", "id_application" : 2, "nature_service" : "D(R)EAL, DRIEE ou DGTM", "id_nature_service" : 1, "etablissement" : null, "service_s3ic" : null, "code_entite" : null, "bassin" : null, "region" : "75", "departement" : null, "commune" : null, "station_epuration" : null, "code_sandre" : null, "perimetre_ic" : "ICPE", "droits_etendus" : null}]'
 
@@ -209,23 +211,23 @@ def test_oidc_callback_fails_when_wrong_id_profile(
     session["oidc_states"] = {"state_xyz": {"code_verifier": None, "nonce": "xyz"}}
     session.save()
 
-    callback_url = reverse("oidc_authentication_callback")
+    callback_url = reverse("monaiot_oidc_authentication_callback")
     response = anon_client.get(callback_url, {"code": "auth_code_123", "state": "state_xyz"})
 
     assert response.status_code == 302
-    assert response["Location"] == reverse("mon_aiot_authent_error")  # Default redirect URL
+    assert response["Location"] == reverse("mon_aiot_authent_error")
     logged_user = auth.get_user(anon_client)
     assert not logged_user.is_authenticated
 
     user = User.objects.get(email=user.email)
 
-    assert not user.monaiot_connexion
+    assert not user.oidc_connexion == "MONAIOT"
 
 
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.get_token")
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.verify_token")
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.get_userinfo")
-def test_oidc_callback_fails_when_invalid_perimeter(
+@patch("oidc.backends.MonAiotOidcBackend.get_token")
+@patch("oidc.backends.MonAiotOidcBackend.verify_token")
+@patch("oidc.backends.MonAiotOidcBackend.get_userinfo")
+def test_monaiot_oidc_callback_fails_when_invalid_perimeter(
     mock_get_userinfo,
     mock_verify_token,
     mock_get_token,
@@ -233,7 +235,7 @@ def test_oidc_callback_fails_when_invalid_perimeter(
 ):
     """Test failed OIDC authentication callback."""
 
-    user = UserFactory(monaiot_signup=True)
+    user = UserFactory(oidc_signup="MONAIOT")
     mock_get_token.return_value = token_response
     # invalid perimetre_ic
     droits = '[{"profil" : "Administrateur", "id_profil" : 2, "application" : "GUNenv", "id_application" : 3, "nature_service" : "D(R)EAL, DRIEE ou DGTM", "id_nature_service" : 1, "etablissement" : null, "code_entite" : "EQ00051", "bassin" : null, "region" : "28", "departement" : null, "commune" : null, "station_epuration" : null, "code_sandre" : null, "perimetre_ic" : "INVALID", "droits_etendus" : null}  ]'
@@ -246,29 +248,29 @@ def test_oidc_callback_fails_when_invalid_perimeter(
     session["oidc_states"] = {"state_xyz": {"code_verifier": None, "nonce": "xyz"}}
     session.save()
 
-    callback_url = reverse("oidc_authentication_callback")
+    callback_url = reverse("monaiot_oidc_authentication_callback")
     response = anon_client.get(callback_url, {"code": "auth_code_123", "state": "state_xyz"})
 
     assert response.status_code == 302
-    assert response["Location"] == reverse("mon_aiot_authent_error")  # Default redirect URL
+    assert response["Location"] == reverse("mon_aiot_authent_error")
     logged_user = auth.get_user(anon_client)
     assert not logged_user.is_authenticated
 
     user = User.objects.get(email=user.email)
 
-    assert not user.monaiot_connexion
+    assert not user.oidc_connexion == "MONAIOT"
 
 
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.get_token")
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.verify_token")
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.get_userinfo")
-def test_oidc_callback_fails_when_gun_reader_and_wrong_id_applications(
+@patch("oidc.backends.MonAiotOidcBackend.get_token")
+@patch("oidc.backends.MonAiotOidcBackend.verify_token")
+@patch("oidc.backends.MonAiotOidcBackend.get_userinfo")
+def test_monaiot_oidc_callback_fails_when_gun_reader_and_wrong_id_applications(
     mock_get_userinfo,
     mock_verify_token,
     mock_get_token,
     anon_client,
 ):
-    user = UserFactory(monaiot_signup=True)
+    user = UserFactory(oidc_signup="MONAIOT")
     mock_get_token.return_value = token_response
     # id_profil : 6,
     # id_application : 2 (wrong)
@@ -283,29 +285,29 @@ def test_oidc_callback_fails_when_gun_reader_and_wrong_id_applications(
     session["oidc_states"] = {"state_xyz": {"code_verifier": None, "nonce": "xyz"}}
     session.save()
 
-    callback_url = reverse("oidc_authentication_callback")
+    callback_url = reverse("monaiot_oidc_authentication_callback")
     response = anon_client.get(callback_url, {"code": "auth_code_123", "state": "state_xyz"})
 
     assert response.status_code == 302
-    assert response["Location"] == reverse("mon_aiot_authent_error")  # Default redirect URL
+    assert response["Location"] == reverse("mon_aiot_authent_error")
     logged_user = auth.get_user(anon_client)
     assert not logged_user.is_authenticated
 
     user = User.objects.get(email=user.email)
 
-    assert not user.monaiot_connexion
+    assert not user.oidc_connexion == "MONAIOT"
 
 
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.get_token")
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.verify_token")
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.get_userinfo")
-def test_oidc_callback_fails_when_gun_reader_and_wrong_id_nature_service(
+@patch("oidc.backends.MonAiotOidcBackend.get_token")
+@patch("oidc.backends.MonAiotOidcBackend.verify_token")
+@patch("oidc.backends.MonAiotOidcBackend.get_userinfo")
+def test_monaiot_oidc_callback_fails_when_gun_reader_and_wrong_id_nature_service(
     mock_get_userinfo,
     mock_verify_token,
     mock_get_token,
     anon_client,
 ):
-    user = UserFactory(monaiot_signup=True)
+    user = UserFactory(oidc_signup="MONAIOT")
     mock_get_token.return_value = token_response
     # id_profil : 6,
     # id_application : 3
@@ -320,23 +322,23 @@ def test_oidc_callback_fails_when_gun_reader_and_wrong_id_nature_service(
     session["oidc_states"] = {"state_xyz": {"code_verifier": None, "nonce": "xyz"}}
     session.save()
 
-    callback_url = reverse("oidc_authentication_callback")
+    callback_url = reverse("monaiot_oidc_authentication_callback")
     response = anon_client.get(callback_url, {"code": "auth_code_123", "state": "state_xyz"})
 
     assert response.status_code == 302
-    assert response["Location"] == reverse("mon_aiot_authent_error")  # Default redirect URL
+    assert response["Location"] == reverse("mon_aiot_authent_error")
     logged_user = auth.get_user(anon_client)
     assert not logged_user.is_authenticated
 
     user = User.objects.get(email=user.email)
 
-    assert not user.monaiot_connexion
+    assert not user.oidc_connexion == "MONAIOT"
 
 
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.get_token")
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.verify_token")
-@patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.get_userinfo")
-def test_oidc_callback_success_when_gun_reader_and_correct_parameters(
+@patch("oidc.backends.MonAiotOidcBackend.get_token")
+@patch("oidc.backends.MonAiotOidcBackend.verify_token")
+@patch("oidc.backends.MonAiotOidcBackend.get_userinfo")
+def test_monaiot_oidc_callback_success_when_gun_reader_and_correct_parameters(
     mock_get_userinfo,
     mock_verify_token,
     mock_get_token,
@@ -344,7 +346,7 @@ def test_oidc_callback_success_when_gun_reader_and_correct_parameters(
 ):
     """Test successful OIDC authentication callback."""
 
-    user = UserFactory(monaiot_signup=True)
+    user = UserFactory(oidc_signup="MONAIOT")
     mock_get_token.return_value = token_response
 
     # id_profil : 6,
@@ -360,15 +362,15 @@ def test_oidc_callback_success_when_gun_reader_and_correct_parameters(
     session["oidc_states"] = {"state_xyz": {"code_verifier": None, "nonce": "xyz"}}
     session.save()
 
-    callback_url = reverse("oidc_authentication_callback")
+    callback_url = reverse("monaiot_oidc_authentication_callback")
     response = anon_client.get(callback_url, {"code": "auth_code_123", "state": "state_xyz"})
 
     assert response.status_code == 302
-    assert response["Location"] == reverse("private_home")  # Default redirect URL
+    assert response["Location"] == reverse("private_home")
 
     logged_user = auth.get_user(anon_client)
     assert logged_user.is_authenticated
 
     user = User.objects.get(email=user.email)
 
-    assert user.monaiot_connexion
+    assert user.oidc_connexion == "MONAIOT"

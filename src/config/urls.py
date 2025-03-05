@@ -34,7 +34,7 @@ urlpatterns = [
     path("accounts/login/", not_found),
     path("accounts/logout/", not_found),
     path("accounts/inactive/", not_found),
-    path("accounts/", include("mozilla_django_oidc.urls")),
+    # path("accounts/", include("mozilla_django_oidc.urls")),
     path("oidc/", include("oidc.urls")),
     path("content/", include("content.urls")),
     path("sheets/", include("sheets.urls")),

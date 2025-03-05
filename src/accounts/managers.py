@@ -1,9 +1,20 @@
 from django.contrib.auth.models import BaseUserManager
+from django.db import models
 from django.utils import timezone
+
+from .constants import UserCategoryChoice
+
+
+class UserQueryset(models.QuerySet):
+    def allowed_for_proconnect(self):
+        return self.filter(user_category=UserCategoryChoice.GENDARMERIE)
 
 
 class UserManager(BaseUserManager):
     use_for_related_fields = True
+
+    def get_queryset(self):
+        return UserQueryset(self.model, using=self._db)
 
     def create_user(self, email, password, **extra_fields):
         """

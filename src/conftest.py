@@ -1,11 +1,12 @@
 import pytest
+from django.conf import settings
 from django.test.client import Client
 from django_otp import DEVICE_ID_SESSION_KEY
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
+from accounts.constants import OIDCTypeChoice, UserCategoryChoice
 from accounts.factories import DEFAULT_PASSWORD, ApiUserFactory, EmailDeviceFactory, UserFactory
-from accounts.models import UserCategoryChoice
 
 
 @pytest.fixture()
@@ -147,16 +148,35 @@ def token_auth_api():
 
 @pytest.fixture()
 def monaiot_logged_in_user(db):
-    """A Django test client logged in as a base user (second factor not yet performed)."""
+    """A Django test client logged in as a  mon aiot oidc user."""
 
-    user = UserFactory(monaiot_connexion=True)
+    user = UserFactory(oidc_connexion=OIDCTypeChoice.MONAIOT)
 
     client = Client()
-    client.login(email=user.email, password=DEFAULT_PASSWORD)
+    client.force_login(user=user, backend="oidc.backends.MonAiotOidcBackend")
 
     session = client.session
 
-    session["_auth_user_backend"] = "oidc.oidc.MonAiotOidcBackend"
+    session["_auth_user_backend"] = settings.MONAIOT_BACKEND
+
+    session.save()
+
+    setattr(client, "user", user)
+    return client
+
+
+@pytest.fixture()
+def proconnect_logged_in_user(db):
+    """A Django test client logged in as a ."""
+
+    user = UserFactory(oidc_connexion=OIDCTypeChoice.PROCONNECT)
+
+    client = Client()
+    client.force_login(user=user, backend="oidc.backends.ProconnectOidcBackend")
+
+    session = client.session
+
+    session["_auth_user_backend"] = settings.PROCONNECT_BACKEND
 
     session.save()
 
@@ -167,6 +187,7 @@ def monaiot_logged_in_user(db):
 @pytest.fixture()
 def get_client(
     monaiot_logged_in_user,
+    proconnect_logged_in_user,
     verified_user,
     request,
 ):
@@ -178,6 +199,7 @@ def get_client(
     clients = {
         "verified_client": verified_user,
         "logged_monaiot_client": monaiot_logged_in_user,
+        "logged_proconnect_client": proconnect_logged_in_user,
     }
     return clients.get(request.param)
 

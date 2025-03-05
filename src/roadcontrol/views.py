@@ -7,7 +7,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.views.generic import DetailView, FormView, TemplateView
 
-from accounts.models import ALL_BUT_OBSERVATOIRE
+from accounts.constants import ALL_BUT_OBSERVATOIRE
 from common.constants import STATE_DONE, STATE_RUNNING
 from common.mixins import FullyLoggedMixin
 from config.celery_app import app

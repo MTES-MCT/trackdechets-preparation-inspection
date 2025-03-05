@@ -46,7 +46,7 @@ jobs:
           python -m pip install --upgrade pipenv wheel
 
       - id: cache-pipenv
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.local/share/virtualenvs
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
@@ -81,6 +81,10 @@ jobs:
           MESSAGE_RECIPIENTS: lorem@ipsum.lol
           MONAIOT_OIDC_RP_CLIENT_SECRET: pxyz
           MONAIOT_OIDC_OP_SERVER_URL: https://monaiot.test/auth/realms/MonAIOT-integration/protocol/openid-connect
+          PROCONNECT_OIDC_OP_SERVER_URL: https://proconnect.test
+          PROCONNECT_OIDC_RP_CLIENT_ID: xyz
+          PROCONNECT_OIDC_RP_CLIENT_SECRET: abcd
+          ID_ID_CURRASSO: currasso-idp
           CSRF_TRUSTED_ORIGINS: "https://url.test"
           TD_API_URL: http://api.test
           TD_API_TOKEN: xyz"

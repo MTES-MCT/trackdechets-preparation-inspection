@@ -10,7 +10,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 
-from accounts.models import UserCategoryChoice
+from accounts.constants import UserCategoryChoice
 from common.mixins import FullyLoggedMixin
 
 from .centroids import DEPARTMENTS_CENTROIDS, REGIONS_CENTROIDS

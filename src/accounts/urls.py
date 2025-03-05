@@ -7,7 +7,7 @@ from django.contrib.auth.views import (
 )
 from django.urls import path
 
-from .forms import EmailAuthenticationForm
+from .forms import EmailAuthenticationForm, RestrictedPasswordResetForm
 from .views import LoginView, ResendTokenEmail, VerifyView
 
 urlpatterns = [
@@ -36,6 +36,7 @@ urlpatterns = [
         PasswordResetView.as_view(
             template_name="accounts/password_reset_form.html",
             email_template_name="emails/password_reset/body.html",
+            form_class=RestrictedPasswordResetForm,
         ),
         name="password_reset",
     ),

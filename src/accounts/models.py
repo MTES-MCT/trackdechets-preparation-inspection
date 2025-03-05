@@ -6,45 +6,8 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from .constants import OIDCTypeChoice, UserCategoryChoice, UserTypeChoice
 from .managers import UserManager
-
-
-class UserCategoryChoice(models.TextChoices):
-    STAFF_TD = "STAFF_TD", _("Staff Trackdéchets")
-    ADMINISTRATION_CENTRALE = "ADMINISTRATION_CENTRALE", _("Administration centrale")
-    INSPECTEUR_ICPE = "INSPECTEUR_ICPE", _("Inspecteur ICPE")
-    CTT = "CTT", _("CTT - Contrôleur des transports routiers")
-    INSPECTION_TRAVAIL = "INSPECTION_TRAVAIL", _("Inspection du travail")
-    GENDARMERIE = "GENDARMERIE", _("Gendarmerie")
-    ARS = "ARS", _("ARS")
-    DOUANE = "DOUANE", _("Douane")
-    OBSERVATOIRE = "OBSERVATOIRE", _("Observatoire")
-
-
-ALL_BUT_OBSERVATOIRE = [
-    UserCategoryChoice.STAFF_TD,
-    UserCategoryChoice.ADMINISTRATION_CENTRALE,
-    UserCategoryChoice.INSPECTEUR_ICPE,
-    UserCategoryChoice.CTT,
-    UserCategoryChoice.INSPECTION_TRAVAIL,
-    UserCategoryChoice.GENDARMERIE,
-    UserCategoryChoice.ARS,
-    UserCategoryChoice.DOUANE,
-]
-
-ADMIN_CENTRALE_OBSERVATOIRE_AND_STAFF = [
-    UserCategoryChoice.STAFF_TD,
-    UserCategoryChoice.OBSERVATOIRE,
-    UserCategoryChoice.ADMINISTRATION_CENTRALE,
-]
-
-
-ALL_USER_CATEGORIES = ALL_BUT_OBSERVATOIRE + ADMIN_CENTRALE_OBSERVATOIRE_AND_STAFF
-
-
-class UserTypeChoice(models.TextChoices):
-    HUMAN = "HUMAN", _("Human")
-    API = "API", _("api")
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -64,12 +27,17 @@ class User(AbstractBaseUser, PermissionsMixin):
         help_text=_("Can the user log into this admin site. ONLY SET THIS FOR SUPERADMINS USERS!"),
     )
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
-    monaiot_connexion = models.BooleanField(
-        _("MonAIOT connexion"), help_text=_("Did this user already log in with MonAIOT ?"), default=False
+
+    oidc_connexion = models.CharField(
+        _("OIDC connexion"),
+        choices=OIDCTypeChoice,
+        help_text=_("Did this user already log in with OIDC ?"),
+        blank=True,
     )
-    monaiot_signup = models.BooleanField(
-        _("MonAIOT inscription"), help_text=_("Did this user sign up in with MonAIOT ?"), default=False
+    oidc_signup = models.CharField(
+        _("OIDC inscription"), choices=OIDCTypeChoice, help_text=_("Did this user sign up in with OIDC ?"), blank=True
     )
+
     user_type = models.CharField(_("User Type"), choices=UserTypeChoice, default=UserTypeChoice.HUMAN, max_length=30)
     user_category = models.CharField(
         _("User Category"), choices=UserCategoryChoice, default=UserCategoryChoice.INSPECTEUR_ICPE, max_length=30
@@ -95,3 +63,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_administration_centrale(self):
         return self.user_category == UserCategoryChoice.ADMINISTRATION_CENTRALE
+
+    def is_allowed_to_login_with_password(self):
+        return not self.oidc_signup and not self.oidc_connexion

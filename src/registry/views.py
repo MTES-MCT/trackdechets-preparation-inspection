@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import FormView, TemplateView
 
-from accounts.models import ALL_BUT_OBSERVATOIRE
+from accounts.constants import ALL_BUT_OBSERVATOIRE
 from common.mixins import FullyLoggedMixin
 from common.sirets import validate_siret
 

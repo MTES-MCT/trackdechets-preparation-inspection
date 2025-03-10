@@ -7,7 +7,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import DetailView, FormView, TemplateView
 
-from accounts.models import ALL_BUT_OBSERVATOIRE
+from accounts.constants import ALL_BUT_OBSERVATOIRE
 from common.constants import STATE_DONE, STATE_RUNNING
 from common.mixins import FullyLoggedMixin
 from common.sirets import validate_siret

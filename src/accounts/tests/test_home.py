@@ -65,7 +65,9 @@ def test_home_menu(get_profile):
     assert "Observatoires" not in res.content.decode()
 
 
-@pytest.mark.parametrize("get_client", ["verified_client", "logged_monaiot_client"], indirect=True)
+@pytest.mark.parametrize(
+    "get_client", ["verified_client", "logged_monaiot_client", "logged_proconnect_client"], indirect=True
+)
 def test_private_home_menu(get_client):
     url = reverse("private_home")
     res = get_client.get(url)
@@ -84,7 +86,9 @@ def test_private_home_menu(get_client):
     assert "Guide" in res.content.decode()
 
 
-@pytest.mark.parametrize("get_client", ["verified_client", "logged_monaiot_client"], indirect=True)
+@pytest.mark.parametrize(
+    "get_client", ["verified_client", "logged_monaiot_client", "logged_proconnect_client"], indirect=True
+)
 def test_private_home_menu_for_observatoire(get_client):
     user = get_client.user
     user.user_category = UserCategoryChoice.OBSERVATOIRE

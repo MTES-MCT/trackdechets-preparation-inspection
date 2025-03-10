@@ -13,8 +13,9 @@ from import_export import resources
 from import_export.admin import ImportExportMixin
 from import_export.exceptions import FieldError
 
+from .constants import UserTypeChoice
 from .forms import AdminCustomUserChangeForm, AdminCustomUserCreationForm
-from .models import User, UserTypeChoice
+from .models import User
 
 
 class UserResource(resources.ModelResource):
@@ -88,8 +89,8 @@ class CustomUserAdmin(ImportExportMixin, UserAdmin):
         "is_superuser",
         "last_login",
         "date_joined",
-        "monaiot_connexion",
-        "monaiot_signup",
+        "oidc_connexion",
+        "oidc_signup",
     ]
     list_filter = ("is_staff", "is_superuser", "is_active", "user_type", "user_category", "date_joined")
     resource_classes = [
@@ -104,6 +105,15 @@ class CustomUserAdmin(ImportExportMixin, UserAdmin):
                 "fields": (
                     "user_type",
                     "user_category",
+                )
+            },
+        ),
+        (
+            _("OIDC"),
+            {
+                "fields": (
+                    "oidc_signup",
+                    "oidc_connexion",
                 )
             },
         ),

@@ -1,7 +1,7 @@
 from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
-from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+from django.contrib.auth.forms import PasswordResetForm, UserChangeForm, UserCreationForm
 from django.core.exceptions import ValidationError
 from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
@@ -145,3 +145,26 @@ class ResendTokenEmailForm(forms.Form):
                 f"Veuillez attendre {int(settings.OTP_EMAIL_THROTTLE_DELAY / 60)} minutes entre chaque demande d'email "
             )
         return super().clean()
+
+
+class RestrictedPasswordResetForm(PasswordResetForm):
+    """Limit password reset form to non oidc users"""
+
+    def clean_email(self):
+        """
+        Validate that only users meeting specific criteria can reset their password
+        """
+        email = self.cleaned_data["email"]
+        try:
+            user = UserModel.objects.get(email=email)
+
+            if not user.is_allowed_to_login_with_password():
+                raise ValidationError(
+                    "Cet utilisateur n'existe aps ou n'est pas autorisé à se connecter par mot de passe"
+                )
+
+            return email
+
+        except UserModel.DoesNotExist:
+            # Maintain default PasswordResetForm behavior for non-existent emails
+            return email

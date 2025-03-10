@@ -30,12 +30,9 @@ class SendSecondFactorMailMixin:
 
 
 class LoginView(SendSecondFactorMailMixin, BaseLoginView):
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
     def get_default_redirect_url(self):
         try:
-            if self.request.user.is_authenticated_from_monaiot():
+            if self.request.user.is_authenticated_from_oidc():
                 return resolve_url("private_home")
         except AttributeError:
             pass
@@ -54,7 +51,7 @@ class VerifyView(LoginRequiredMixin, FormView):
     success_url = reverse_lazy("private_home")
 
     def get(self, request, *args, **kwargs):
-        if request.user.is_verified() or request.user.is_authenticated_from_monaiot():
+        if request.user.is_verified() or request.user.is_authenticated_from_oidc():
             return HttpResponseRedirect(self.success_url)
 
         res = super().get(request, *args, **kwargs)

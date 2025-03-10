@@ -38,6 +38,8 @@ urlpatterns = [
         name="monaiot_oidc_authentication_callback",
     ),
     path(
-        "callback/", ProconnectOIDCAuthenticationCallbackView.as_view(), name="proconnect_oidc_authentication_callback"
-    ),  # changer en proconnect-cb
+        "proconnect-callback/",
+        ProconnectOIDCAuthenticationCallbackView.as_view(),
+        name="proconnect_oidc_authentication_callback",
+    ),
 ]

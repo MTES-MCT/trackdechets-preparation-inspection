@@ -1,3 +1,5 @@
+import os
+import tempfile
 from typing import Any, Union
 
 import pandas as pd
@@ -5,6 +7,7 @@ from django.conf import settings
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
 
+from .ssh import ssh_tunnel
 from .queries import (
     sql_bsda_query_str,
     sql_bsda_transporter_query_str,
@@ -36,7 +39,7 @@ from .queries import (
     sql_revised_bsdd_query_str,
 )
 
-wh_engine = create_engine(settings.WAREHOUSE_URL, pool_pre_ping=True)
+wh_engine = create_engine(settings.WAREHOUSE_URL)
 
 bsd_date_params = ["created_at", "sent_at", "received_at", "processed_at", "worker_work_signature_date"]
 
@@ -65,13 +68,13 @@ def build_query(
 ):
     query = text(query_str)
 
-    engine = wh_engine
-    df = pd.read_sql_query(
-        query,
-        params=query_params,
-        con=engine,
-        dtype=dtypes,
-    )
+    with ssh_tunnel(settings):
+        df = pd.read_sql_query(
+            query,
+            params=query_params,
+            con=wh_engine,
+            dtype=dtypes,
+        )
 
     if date_columns is not None:
         for col in date_columns:

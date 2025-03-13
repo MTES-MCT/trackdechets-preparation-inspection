@@ -1,12 +1,16 @@
 import datetime as dt
+import os
+import tempfile
 
 from django.conf import settings
 from django.forms import CharField, DateField, Form, ValidationError
 from django.forms.widgets import DateInput
 from sqlalchemy.sql import text
+import sshtunnel
 
 from .database import wh_engine
 from .queries import sql_company_query_exists_str
+from .ssh import ssh_tunnel
 
 
 class TypedDateInput(DateInput):
@@ -82,11 +86,18 @@ class SiretForm(Form):
         if getattr(settings, "SKIP_SIRET_CHECK", False):
             return siret
         prepared_query = text(sql_company_query_exists_str)
-        with wh_engine.connect() as con:
-            companies = con.execute(prepared_query, siret=siret).all()
-        if not companies:
-            raise ValidationError("Établissement non inscrit à Trackdéchets.")
-        return siret
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as fp:
+            fp.write(settings.DWH_SSH_KEY)
+            fp.close()
+
+            os.chmod(fp.name, 0o600)
+
+            with ssh_tunnel(settings):
+                with wh_engine.connect() as con:
+                    companies = con.execute(prepared_query, siret=siret).all()
+                if not companies:
+                    raise ValidationError("Établissement non inscrit à Trackdéchets.")
+                return siret
 
 
 class SheetPrepareForm(SiretForm):

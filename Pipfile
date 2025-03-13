@@ -39,6 +39,8 @@ django-vite = "*"
 django-filter = "*"
 boto3 = "*"
 mozilla-django-oidc = "*"
+clickhouse-sqlalchemy = "*"
+sshtunnel = "*"
 
 [dev-packages]
 ruff = "*"

@@ -41,9 +41,9 @@ where
     or recipient_company_siret = :siret
     or eco_organisme_siret = :siret
     )
-    and is_deleted = false
+    and not is_deleted
     and status::text not in ('DRAFT', 'INITIAL')
-    and (waste_details_code ~* '.*\*$' or waste_details_pop or waste_details_is_dangerous)
+    and (match(waste_details_code,'(?i).*\*$') or waste_details_pop or waste_details_is_dangerous)
     -- to avoid pandas datetime overflow
     and (
 		sent_at between '1677-09-22' and '2262-04-11'
@@ -101,9 +101,9 @@ where
     (emitter_company_siret = :siret
     or recipient_company_siret = :siret
     or eco_organisme_siret = :siret)
-    and is_deleted = false
+    and not is_deleted
     and status::text not in ('DRAFT', 'INITIAL')
-    and not (waste_details_code ~* '.*\*$' or waste_details_pop or waste_details_is_dangerous)
+    and not (match(waste_details_code,'(?i).*\*$') or waste_details_pop or waste_details_is_dangerous)
     -- to avoid pandas datetime overflow
     and (
 		sent_at between '1677-09-22' and '2262-04-11'
@@ -253,7 +253,7 @@ where
         or worker_company_siret = :siret
         or eco_organisme_siret = :siret    
     )
-    and is_deleted = false
+    and not is_deleted
     and status::text not in ('DRAFT', 'INITIAL')
     and not is_draft
     -- to avoid pandas datetime overflow
@@ -330,7 +330,7 @@ where
         or transporter_company_siret = :siret
         or eco_organisme_siret = :siret
         )
-    and is_deleted = false
+    and not is_deleted
     and status::text not in ('DRAFT', 'INITIAL')
     and not is_draft
     -- to avoid pandas datetime overflow
@@ -361,16 +361,11 @@ from
     trusted_zone_trackdechets.bsff
 where
     (emitter_company_siret = :siret
-        or destination_company_siret = :siret
-        or transporter_company_siret = :siret)
-    and is_deleted = false
+        or destination_company_siret = :siret)
+    and not is_deleted
     and status::text not in ('DRAFT', 'INITIAL')
     and not is_draft
     -- to avoid pandas datetime overflow
-    and (
-		transporter_transport_taken_over_at between '1677-09-22' and '2262-04-11'
-		or transporter_transport_taken_over_at is null
-	)
     and (
 		destination_reception_date between '1677-09-22' and '2262-04-11'
 		or destination_reception_date is null
@@ -399,7 +394,7 @@ where
     where
         (emitter_company_siret = :siret
             or destination_company_siret = :siret)
-        and is_deleted = false
+        and not is_deleted
         and status::text not in ('DRAFT', 'INITIAL')
             and not is_draft
 )
@@ -452,7 +447,7 @@ where
     (emitter_company_siret = :siret
         or destination_company_siret = :siret
         or transporter_company_siret = :siret)
-    and is_deleted = false
+    and not is_deleted
     and  status::text not in ('DRAFT', 'INITIAL')
     and not is_draft
     -- to avoid pandas datetime overflow
@@ -576,7 +571,7 @@ select
 from
     trusted_zone_trackdechets.company c
 where
-    substring(c.siret for 9) = substring(:siret for 9)
+    substring(c.siret,1,9) = substring(:siret,1,9)
 """
 
 sql_get_gistrid_data = """
@@ -616,7 +611,7 @@ SELECT
 FROM trusted_zone_rndts.dnd_entrant
 where
     etablissement_numero_identification = :siret
-    or (numeros_indentification_transporteurs @> array[:siret])
+    or has(numeros_indentification_transporteurs,:siret)
 """
 
 sql_get_outgoing_ndw_data = """
@@ -635,7 +630,7 @@ SELECT
 FROM trusted_zone_rndts.dnd_sortant
 where
     producteur_numero_identification = :siret
-    or (numeros_indentification_transporteurs @> array[:siret])
+    or has(numeros_indentification_transporteurs,:siret)
 """
 
 
@@ -653,7 +648,7 @@ SELECT
 FROM trusted_zone_rndts.texs_entrant
 where
     etablissement_numero_identification = :siret
-    or (numeros_indentification_transporteurs @> array[:siret])
+    or has(numeros_indentification_transporteurs,:siret)
 """
 
 sql_get_outgoing_excavated_land_data = """
@@ -672,7 +667,7 @@ SELECT
 FROM trusted_zone_rndts.texs_sortant
 where
     producteur_numero_identification = :siret
-    or (numeros_indentification_transporteurs @> array[:siret])
+    or has(numeros_indentification_transporteurs,:siret)
 """
 
 sql_get_ssd_data = """
@@ -699,5 +694,5 @@ select
  from
     trusted_zone_trackdechets.company
 where
-    siret = :siret ;
+    siret = :siret
 """

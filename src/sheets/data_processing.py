@@ -2,6 +2,9 @@ from typing import Dict, List, Tuple
 
 import pandas as pd
 from django.utils import timezone
+from django.conf import settings
+
+from sheets.ssh import ssh_tunnel
 
 from .constants import BS_TYPES_WITH_MULTIMODAL_TRANSPORT, BSDA, BSDASRI, BSDD, BSDD_NON_DANGEROUS, BSFF, BSVHU
 from .data_extract import (
@@ -194,12 +197,15 @@ class SheetProcessor:
             "excavated_land_outgoing": None,
             "ssd_data": None,
         }
+        self.gistrid_data = None
 
     def _extract_data(self):
-        self._extract_company_data()
-        self._extract_trackdechets_data()
-        self._extract_icpe_data()
-        self._extract_rndts_data()
+        with ssh_tunnel(settings):
+            self._extract_company_data()
+            self._extract_trackdechets_data()
+            self._extract_icpe_data()
+            self._extract_rndts_data()
+            self._extract_gistrid_data()
 
     def _extract_company_data(self):
         company_data_df = build_query_company(siret=self.siret, date_params=["created_at"])
@@ -258,6 +264,9 @@ class SheetProcessor:
         self.rndts_data["excavated_land_incoming"] = rndts_excavated_land_incoming_data
         self.rndts_data["excavated_land_outgoing"] = rndts_excavated_land_outgoing_data
         self.rndts_data["ssd_data"] = get_ssd_data(self.siret)
+
+    def _extract_gistrid_data(self):
+        self.gistrid_data = get_gistrid_data(self.siret)
 
     def _process_company_data(self):
         company_data_df = self.company_data
@@ -608,10 +617,9 @@ class SheetProcessor:
         )
         self.computed.followed_with_pnttd_data = followed_with_pnttd.build()
 
-        gistrid_data = get_gistrid_data(self.siret)
         gistrid_stats = GistridStatsProcessor(
             company_siret=self.siret,
-            gistrid_data_df=gistrid_data,
+            gistrid_data_df=self.gistrid_data,
         )
         self.computed.gistrid_stats_data = gistrid_stats.build()
 

@@ -7,7 +7,7 @@ from django.conf import settings
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
 
-from .ssh import ssh_tunnel
+
 from .queries import (
     sql_bsda_query_str,
     sql_bsda_transporter_query_str,
@@ -41,7 +41,7 @@ from .queries import (
 
 wh_engine = create_engine(settings.WAREHOUSE_URL)
 
-bsd_date_params = ["created_at", "sent_at", "received_at", "processed_at", "worker_work_signature_date"]
+bsd_date_params = ["created_at", "updated_at", "sent_at", "received_at", "processed_at", "worker_work_signature_date"]
 
 bs_dtypes = {
     "id": str,
@@ -68,13 +68,12 @@ def build_query(
 ):
     query = text(query_str)
 
-    with ssh_tunnel(settings):
-        df = pd.read_sql_query(
-            query,
-            params=query_params,
-            con=wh_engine,
-            dtype=dtypes,
-        )
+    df = pd.read_sql_query(
+        query,
+        params=query_params,
+        con=wh_engine,
+        dtype=dtypes,
+    )
 
     if date_columns is not None:
         for col in date_columns:

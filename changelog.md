@@ -5,6 +5,10 @@ Les changements importants de Trackdéchets préparation inspection sont documen
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 et le projet suit un schéma de versioning inspiré de [Calendar Versioning](https://calver.org/).
 
+## 08/04/2025
+
+- Amélioration de la cartographie
+
 ## 27/03/2025
 
 - Au premier login Proconnect, les utilisateurs sont créés (gendarmerie uniquement)

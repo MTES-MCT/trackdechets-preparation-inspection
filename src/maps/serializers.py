@@ -79,7 +79,7 @@ class CompanySerializer(serializers.ModelSerializer):
 class ClusterSerializer(serializers.Serializer):
     lat = serializers.SerializerMethodField()
     long = serializers.SerializerMethodField()
-    count = serializers.IntegerField(source="cnt")
+    count = serializers.IntegerField()
 
     def get_lat(self, obj):
         return obj["location"].coords[1]

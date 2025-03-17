@@ -26,7 +26,6 @@
 }
 
 .cell {
-
     vertical-align: top;
     padding: 1rem 0.5rem;
 }
@@ -49,7 +48,7 @@
 
 .cell--bordered {
     border: 1px solid #e3e3fd;
-    border-left: 5px solid #e3e3fd
+    border-left: 5px solid #e3e3fd;
 }
 
 .cell__title {
@@ -88,8 +87,7 @@ table .td--right {
     background-color: #ef9657;
 }
 
-
-.fr-input[type=date] {
+.fr-input[type="date"] {
     /* DSFR date field fix: prevent native and dsfr date input icon overlap */
     background-image: none;
 }
@@ -135,8 +133,8 @@ table .td--right {
 }
 
 .spinner .rect3 {
-    -webkit-animation-delay: -1.0s;
-    animation-delay: -1.0s;
+    -webkit-animation-delay: -1s;
+    animation-delay: -1s;
 }
 
 .spinner .rect4 {
@@ -150,22 +148,26 @@ table .td--right {
 }
 
 @-webkit-keyframes sk-stretchdelay {
-    0%, 40%, 100% {
-        -webkit-transform: scaleY(0.4)
+    0%,
+    40%,
+    100% {
+        -webkit-transform: scaleY(0.4);
     }
     20% {
-        -webkit-transform: scaleY(1.0)
+        -webkit-transform: scaleY(1);
     }
 }
 
 @keyframes sk-stretchdelay {
-    0%, 40%, 100% {
+    0%,
+    40%,
+    100% {
         transform: scaleY(0.4);
         -webkit-transform: scaleY(0.4);
     }
     20% {
-        transform: scaleY(1.0);
-        -webkit-transform: scaleY(1.0);
+        transform: scaleY(1);
+        -webkit-transform: scaleY(1);
     }
 }
 
@@ -192,23 +194,19 @@ table .td--right {
 
 /*Road control */
 .search-results {
-    width: 100%
+    width: 100%;
 }
 
 .bsd-card-list {
-
 }
 
 .bsd-card-list__item {
-
 }
 
 /* Style coming from TD UI dashboard*/
 .bsd-card-list {
     list-style-type: none;
     padding-inline-start: 0;
-
-
 }
 
 @media only screen and (min-width: 992px) {
@@ -238,7 +236,6 @@ table .td--right {
     margin-bottom: 0;
 }
 
-
 @media only screen and (min-width: 992px) {
     .bsd-card__header {
         border-bottom: 1px solid #dddddd;
@@ -255,7 +252,6 @@ table .td--right {
 
 .bsd-card__header p {
     font-size: 0.875rem;
-
 }
 
 .bsd-card__header > div {
@@ -265,7 +261,8 @@ table .td--right {
     width: 100%;
 }
 
-.bsd-card__header .bsd-number, .bsd-card__header .bsd-custom-id {
+.bsd-card__header .bsd-number,
+.bsd-card__header .bsd-custom-id {
     font-size: 0.875rem;
     color: #161616;
     width: 240px;
@@ -295,14 +292,12 @@ table .td--right {
     }
 }
 
-
 .bsd-card__content__infos {
     display: flex;
 
     flex-direction: column;
 
     width: 100%;
-
 }
 
 @media only screen and (min-width: 992px) {
@@ -312,10 +307,8 @@ table .td--right {
         align-items: center;
 
         min-width: 75%;
-
     }
 }
-
 
 .waste-details {
     display: flex;
@@ -330,7 +323,6 @@ table .td--right {
         width: 250px;
     }
 }
-
 
 .waste-details__infos {
     display: flex;
@@ -349,7 +341,6 @@ table .td--right {
         width: 180px;
     }
 }
-
 
 @media only screen and (min-width: 992px) {
     .bsd-card__content__infos__status {
@@ -398,7 +389,8 @@ table .td--right {
     width: fit-content;
 }
 
-.waste-details__infos__name, .waste-details__infos__workflow {
+.waste-details__infos__name,
+.waste-details__infos__workflow {
     margin: 0;
     padding: 0;
     font-size: 0.875rem;
@@ -418,11 +410,15 @@ table .td--right {
     margin: 0 0 0 -35px;
 }
 
-.fr-badge--SIGNED_BY_WORKER, .fr-badge--SENT, .fr-badge--RESENT, .fr-badge--SIGNED_BY_TEMP_STORER, .fr-badge--SIGNED_BY_EMITTER, .fr-badge--SIGNED_BY_PRODUCER {
+.fr-badge--SIGNED_BY_WORKER,
+.fr-badge--SENT,
+.fr-badge--RESENT,
+.fr-badge--SIGNED_BY_TEMP_STORER,
+.fr-badge--SIGNED_BY_EMITTER,
+.fr-badge--SIGNED_BY_PRODUCER {
     background-color: #e6eefe;
     color: #3558a2;
 }
-
 
 @media only screen and (min-width: 992px) {
     .bsd-card__content__infos__status {
@@ -449,8 +445,6 @@ table .td--right {
     background-image: url("/static/custom-icons/icon-bsd-workflow-type.svg");
     width: 24px;
     height: 24px;
-
-
 }
 
 .label-icon__LastModificationDate::before {
@@ -468,7 +462,6 @@ table .td--right {
 
     flex-shrink: 0;
     vertical-align: middle;
-
 }
 
 .label-icon__TransporterNumberPlate::before {
@@ -478,18 +471,14 @@ table .td--right {
 
     background-image: url("/static/custom-icons/transporter-number-plate-icon.svg");
 
-
     margin-right: 5px;
 
     flex-shrink: 0;
 
-
     width: 24px;
     height: 25px;
     vertical-align: middle;
-
 }
-
 
 .bsd-card__footer {
     display: flex;
@@ -552,7 +541,7 @@ table .td--right {
     z-index: 1000;
     background-color: #fff;
     width: 60%;
-    max-width: 700px ;
+    max-width: 700px;
 }
 
 .map-popup__close {
@@ -568,7 +557,6 @@ table .td--right {
     cursor: pointer;
 }
 
-
 .dropDownWrapper {
     padding: 10px 10px 0 10px;
     background: #ffffff;
@@ -578,11 +566,41 @@ table .td--right {
     max-height: 500px;
     overflow-y: scroll;
     width: 25%;
-
 }
 
 .optionCheckbox {
     margin: 0;
     padding: 0;
     margin-bottom: 16px;
+}
+
+/* utils*/
+.flex {
+    display: flex;
+}
+
+/* Map*/
+.fr-tabs__panel {
+    border: 1px solid #ccc;
+}
+
+.search-highlight {
+    background-color: yellow;
+}
+
+.map-loader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.fr-tabs__panel {
+    transition: none !important;
 }

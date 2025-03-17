@@ -1,9 +1,6 @@
-from functools import reduce
-from operator import ior
-
-from django.contrib.gis.geos import Point, Polygon
+from django.contrib.gis.geos import Point
 from django.db import connection
-from django.db.models import Count, Q
+from django.db.models import Count
 from django.views.generic import TemplateView
 from django_filters import rest_framework as filters
 from rest_framework.authentication import SessionAuthentication
@@ -14,6 +11,12 @@ from accounts.constants import UserCategoryChoice
 from common.mixins import FullyLoggedMixin
 
 from .centroids import DEPARTMENTS_CENTROIDS, REGIONS_CENTROIDS
+from .filters import (
+    ClusterCartoCompanyFilter,
+    DepartmentCartoCompanyFilter,
+    DetailCartoCompanyFilter,
+    RegionCartoCompanyFilter,
+)
 from .models import CartoCompany
 from .permissions import UserIsVerifedPermission
 from .serializers import ClusterSerializer, CompanySerializer, DepartmentCompanySerializer, RegionCompanySerializer
@@ -22,89 +25,6 @@ from .serializers import ClusterSerializer, CompanySerializer, DepartmentCompany
 class MapView(FullyLoggedMixin, TemplateView):
     template_name = "maps/map.html"
     allowed_user_categories = [UserCategoryChoice.STAFF_TD]
-
-
-class BaseCartoCompanyFilter(filters.FilterSet):
-    departments = filters.CharFilter(method="filter_departments")
-    profils = filters.CharFilter(method="filter_profils")
-    profils_collecteur = filters.CharFilter(method="filter_profils_collecteur")
-    profils_installation = filters.CharFilter(method="filter_profils_installation")
-    bsds = filters.CharFilter(method="filter_bsds")
-    operationcodes = filters.CharFilter(method="filter_operation_codes")
-
-    def filter_departments(self, queryset, name, value):
-        return queryset.filter(code_departement_insee__in=value.split(","))
-
-    def filter_profils(self, queryset, name, value):
-        return queryset.filter(profils__contains=value.split(","))
-
-    def filter_profils_collecteur(self, queryset, name, value):
-        return queryset.filter(profils_collecteur__contains=value.split(","))
-
-    def filter_profils_installation(self, queryset, name, value):
-        return queryset.filter(profils_installation__contains=value.split(","))
-
-    def filter_operation_codes(self, queryset, name, value):
-        values = value.split(",")
-        fields = ["bsdd", "bsda", "bsff", "bsdasri", "bsvhu"]
-
-        queryterms = [Q(**{f"processing_operations_{field}__overlap": values}) for field in fields]
-        if not queryterms:
-            return queryset
-        params = reduce(ior, queryterms)
-
-        return queryset.filter(params)
-
-    def filter_bsds(self, queryset, name, value):
-        allowed_params = ["bsdd", "bsda", "bsff", "bsdasri", "bsvhu"]
-        queryterms = [Q(**{bsd: True}) for bsd in value.split(",") if bsd in allowed_params]
-        if not queryterms:
-            return queryset
-        params = reduce(ior, queryterms)
-
-        return queryset.filter(params)
-
-    def filter_bounds(self, queryset, name, value):
-        bbox = [float(v) for v in value.split(",")]
-        # to avoid expensive api requests tha could exhaust our db, we compute the bbox diagonal and return
-        # an empty queryset if it exceeds  `max_bbox_diagonal`
-        p1 = Point(bbox[0], bbox[1], srid=4326)
-        p2 = Point(bbox[2], bbox[3], srid=4326)
-        dist = p1.distance(p2)
-
-        if dist > self.max_bbox_diagonal:
-            return CartoCompany.objects.none()
-
-        bbox_polygon = Polygon.from_bbox(bbox)
-
-        return queryset.filter(coords__within=bbox_polygon)
-
-    class Meta:
-        model = CartoCompany
-        fields = ["bsdd", "bsda", "bsff", "bsdasri", "bsvhu", "bsds", "profils"]
-
-
-class RegionCartoCompanyFilter(BaseCartoCompanyFilter):
-    max_bbox_diagonal = 500
-
-
-class DepartmentCartoCompanyFilter(BaseCartoCompanyFilter):
-    max_bbox_diagonal = 7
-
-
-class BasDetailCartoCompanyFilter(BaseCartoCompanyFilter):
-    bounds = filters.CharFilter(method="filter_bounds", required=True)
-
-    class Meta(BaseCartoCompanyFilter.Meta):
-        fields = ["bsdd", "bsda", "bsff", "bsdasri", "bsvhu", "bsds", "profils", "bounds"]
-
-
-class ClusterCartoCompanyFilter(BasDetailCartoCompanyFilter):
-    max_bbox_diagonal = 2
-
-
-class DetailCartoCompanyFilter(BasDetailCartoCompanyFilter):
-    max_bbox_diagonal = 0.5
 
 
 class BaseApiCompanies(ListAPIView):

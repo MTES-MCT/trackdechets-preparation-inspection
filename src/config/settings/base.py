@@ -153,7 +153,7 @@ STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 )
 STATICFILES_DIR = SRC_DIR / "static"
-DJANGO_VITE_ASSETS_PATH = STATICFILES_DIR / "ui_app" / "dist"
+DJANGO_VITE_ASSETS_PATH = STATICFILES_DIR / "ui_app_ts" / "dist"
 
 STATICFILES_DIRS = [
     str(STATICFILES_DIR),
@@ -270,6 +270,7 @@ ID_ID_CURRASSO = env("ID_ID_CURRASSO")
 PROCONNECT_ALLOWED_IDP_IDS = [
     ID_ID_CURRASSO,
 ]
+
 
 OIDC_LOGIN_REDIRECT_URL = "private_home"
 

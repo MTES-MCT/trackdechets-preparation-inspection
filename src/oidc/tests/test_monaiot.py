@@ -64,6 +64,15 @@ def user_info(user_email, droits=default_droits):
     }
 
 
+def test_former_monaiot_init_url_redirect_to_monaiot_oidc_auth_request(anon_client):
+    """Test that the OIDC authentication request redirects to the provider."""
+    login_url = reverse("former_monaiot_init")
+    response = anon_client.get(login_url)
+
+    assert response.status_code == 302
+    assert response["Location"].startswith(reverse("monaiot_oidc_authentication_init"))
+
+
 def test_monaiot_oidc_auth_request(anon_client):
     """Test that the OIDC authentication request redirects to the provider."""
     login_url = reverse("monaiot_oidc_authentication_init")

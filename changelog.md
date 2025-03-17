@@ -5,9 +5,13 @@ Les changements importants de Trackdéchets préparation inspection sont documen
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 et le projet suit un schéma de versioning inspiré de [Calendar Versioning](https://calver.org/).
 
-## 03/05/2025
+## 17/03/2025
 
-Implémentation de login via Proconnect
+- Correction d'un lien open ID cassé
+
+## 05/03/2025
+
+- Implémentation de login via Proconnect
 
 
 ## 25/02/2025

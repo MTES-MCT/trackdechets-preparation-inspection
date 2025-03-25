@@ -1,15 +1,11 @@
+import pandas as pd
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from sqlalchemy import create_engine
-from sqlalchemy.sql import text
-import pandas as pd
 
 from sheets.database import build_query
 from sheets.ssh import ssh_tunnel
 
 from ...models import CartoCompany
-
-wh_engine = create_engine(settings.WAREHOUSE_URL, pool_pre_ping=True)
 
 BATCH_SIZE = 10000
 query = """

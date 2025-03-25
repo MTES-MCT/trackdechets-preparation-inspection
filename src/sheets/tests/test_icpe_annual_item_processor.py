@@ -163,9 +163,9 @@ def test_zero_processed_quantities():
 
     processor._preprocess_data()
 
-    assert processor._check_data_empty(), (
-        "Data should be considered empty when all rows have zero processed quantities."
-    )
+    assert (
+        processor._check_data_empty()
+    ), "Data should be considered empty when all rows have zero processed quantities."
 
 
 def test_only_nan_processed_quantities():

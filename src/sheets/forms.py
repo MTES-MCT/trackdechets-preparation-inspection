@@ -2,11 +2,11 @@ import datetime as dt
 import os
 import tempfile
 
+import sshtunnel
 from django.conf import settings
 from django.forms import CharField, DateField, Form, ValidationError
 from django.forms.widgets import DateInput
 from sqlalchemy.sql import text
-import sshtunnel
 
 from .database import wh_engine
 from .queries import sql_company_query_exists_str

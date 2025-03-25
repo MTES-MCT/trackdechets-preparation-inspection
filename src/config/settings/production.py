@@ -41,4 +41,3 @@ SENTRY_URL = env("SENTRY_URL")
 sentry_sdk.init(SENTRY_URL, traces_sample_rate=1.0)
 
 DJANGO_VITE = {"default": {"dev_mode": False, "static_url_prefix": "ui_app/dist"}}
-

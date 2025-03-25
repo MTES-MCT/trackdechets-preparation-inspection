@@ -7,7 +7,6 @@ from django.conf import settings
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
 
-
 from .queries import (
     sql_bsda_query_str,
     sql_bsda_transporter_query_str,

@@ -1,7 +1,8 @@
-import tempfile
 import os
-import sshtunnel
+import tempfile
 from contextlib import contextmanager
+
+import sshtunnel
 
 
 @contextmanager

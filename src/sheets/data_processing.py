@@ -1,10 +1,10 @@
+import logging
 import time
 from typing import Dict, List, Tuple
-import logging
 
 import pandas as pd
-from django.utils import timezone
 from django.conf import settings
+from django.utils import timezone
 
 from sheets.ssh import ssh_tunnel
 

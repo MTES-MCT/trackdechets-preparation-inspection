@@ -1,4 +1,6 @@
+import time
 from typing import Dict, List, Tuple
+import logging
 
 import pandas as pd
 from django.utils import timezone
@@ -91,6 +93,8 @@ WASTE_CODES_DATA = load_waste_code_data()
 DEPARTEMENTS_REGION_DATA = load_departements_regions_data()
 REGIONS_GEODATA = load_and_preprocess_regions_geographical_data()
 PROCESSING_OPERATION_CODE_RUBRIQUE_MAPPING = load_mapping_rubrique_processing_operation_code()
+
+logger = logging.getLogger(__name__)
 
 
 def get_outliers_datetimes_df(
@@ -200,12 +204,17 @@ class SheetProcessor:
         self.gistrid_data = None
 
     def _extract_data(self):
+        start_time = time.time()
+
         with ssh_tunnel(settings):
             self._extract_company_data()
             self._extract_trackdechets_data()
             self._extract_icpe_data()
             self._extract_rndts_data()
             self._extract_gistrid_data()
+
+        end_time = time.time() - start_time
+        logger.info("Data extracted in %ss", end_time)
 
     def _extract_company_data(self):
         company_data_df = build_query_company(siret=self.siret, date_params=["created_at"])

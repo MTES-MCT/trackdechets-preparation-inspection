@@ -3,35 +3,63 @@ from django.core.management.base import BaseCommand
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
 
+from sheets.database import build_query
+from sheets.ssh import ssh_tunnel
+
 from ...models import CartoCompany
 
 wh_engine = create_engine(settings.WAREHOUSE_URL, pool_pre_ping=True)
 
 BATCH_SIZE = 10000
 query = """
- SELECT
-	*
+SELECT
+	siret,
+	nom_etablissement,
+	profils,
+	profils_collecteur,
+	profils_installation,
+	bsdd,
+	bsdnd,
+	bsda,
+	bsff,
+	bsdasri,
+	bsvhu,
+	texs_dd,
+	dnd,
+	texs,
+	ssd,
+	pnttd,
+	processing_operations_bsdd,
+	processing_operations_bsdnd,
+	processing_operations_bsda,
+	processing_operations_bsff,
+	processing_operations_bsdasri,
+	processing_operations_bsvhu,
+	processing_operation_dnd,
+	processing_operation_texs,
+	code_commune_insee,
+	code_departement_insee,
+	code_region_insee,
+	adresse_td,
+	adresse_insee,
+	latitude_td,
+	longitude_td,
+	latitude_ban,
+	longitude_ban,
+	coords
 FROM
-	refined_zone_analytics.cartographie_des_etablissements
-	ORDER BY siret
-LIMIT :limit
-OFFSET :offset
+	refined_zone_analytics.cartographie_des_etablissements_geocoded
 """
 
 
 class Command(BaseCommand):
     def handle(self, verbosity=0, **options):
         CartoCompany.objects.all().delete()
-        has_next_page = True
-        offset = 0
-        while has_next_page:
-            prepared_query = text(query)
-            with wh_engine.connect() as con:
-                companies = con.execute(prepared_query, {"offset": offset, "limit": BATCH_SIZE + 1}).all()
 
-            offset += BATCH_SIZE
+        with ssh_tunnel(settings):
+            companies_df = build_query(query)
 
-            data = [CartoCompany(**c._asdict()) for c in companies[:BATCH_SIZE]]
-            CartoCompany.objects.bulk_create(data)
+        companies_dicts = companies_df.to_dict(orient="records")
 
-            has_next_page = len(companies) > BATCH_SIZE
+        data = [CartoCompany(**c) for c in companies_dicts]
+        CartoCompany.objects.bulk_create(data)

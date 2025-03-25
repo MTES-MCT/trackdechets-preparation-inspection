@@ -57,6 +57,10 @@ def send_invitation_email(_, request, queryset):
     for user in queryset:
         if user.last_login:
             continue
+
+        if user.oidc_signup or user.oidc_connexion:
+            continue
+
         current_site = get_current_site(request)
 
         domain = current_site.domain

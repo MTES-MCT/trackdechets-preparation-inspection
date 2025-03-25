@@ -24,6 +24,11 @@ token_response = {
 }
 
 
+def test__callback_url():
+    # let's ensure we did not change inadvertently
+    assert reverse("proconnect_oidc_authentication_callback") == "/oidc/proconnect-callback/"
+
+
 def verify_token_response():
     return {
         "sub": "abcd-efgh1",
@@ -67,10 +72,10 @@ def test_proconnect_oidc_auth_request(anon_client):
 @patch("oidc.backends.ProconnectOidcBackend.verify_token")
 @patch("oidc.backends.ProconnectOidcBackend.get_userinfo")
 def test_proconnect_oidc_callback_success_when_user_exists(
-    mock_get_userinfo,
-    mock_verify_token,
-    mock_get_token,
-    anon_client,
+        mock_get_userinfo,
+        mock_verify_token,
+        mock_get_token,
+        anon_client,
 ):
     """Test successful OIDC authentication callback."""
 
@@ -109,15 +114,14 @@ def test_proconnect_oidc_callback_success_when_user_exists(
 @patch("oidc.backends.ProconnectOidcBackend.get_token")
 @patch("oidc.backends.ProconnectOidcBackend.verify_token")
 @patch("oidc.backends.ProconnectOidcBackend.get_userinfo")
-def test_proconnect_oidc_callback_success_when_user_is_not_gendarmerie(
-    mock_get_userinfo,
-    mock_verify_token,
-    mock_get_token,
-    user_category,
-    anon_client,
+def test_proconnect_oidc_callback_fails_when_user_is_not_gendarmerie(
+        mock_get_userinfo,
+        mock_verify_token,
+        mock_get_token,
+        user_category,
+        anon_client,
 ):
-    """Test successful OIDC authentication callback."""
-
+    # A user exists, workflow is correct, but user category is not GENDARME: deny access
     user = UserFactory(oidc_signup="PROCONNECT", user_category=user_category)
     mock_get_token.return_value = token_response
 
@@ -153,18 +157,21 @@ def test_proconnect_oidc_callback_success_when_user_is_not_gendarmerie(
 @patch("oidc.backends.ProconnectOidcBackend.get_token")
 @patch("oidc.backends.ProconnectOidcBackend.verify_token")
 @patch("oidc.backends.ProconnectOidcBackend.get_userinfo")
-def test_proconnect_oidc_callback_fails_when_user_does_not_exist(
-    mock_get_userinfo,
-    mock_verify_token,
-    mock_get_token,
-    anon_client,
+def test_proconnect_oidc_callback_creates_user_when_user_does_not_exist(
+        mock_get_userinfo,
+        mock_verify_token,
+        mock_get_token,
+        anon_client,
 ):
     user_email = "newuser@email.test"
+
+    # sanity check
+    assert not User.objects.filter(email=user_email).exists()
     mock_get_token.return_value = token_response
 
     mock_verify_token.return_value = verify_token_response()
-
-    mock_get_userinfo.return_value = user_info(user_email)
+    user_info_value = user_info(user_email)
+    mock_get_userinfo.return_value = user_info_value
 
     session = anon_client.session
     session["oidc_states"] = {
@@ -176,20 +183,25 @@ def test_proconnect_oidc_callback_fails_when_user_does_not_exist(
     response = anon_client.get(callback_url, {"code": "auth_code_123", "state": "state_xyz"})
 
     assert response.status_code == 302
-    assert response["Location"] == reverse("proconnect_authent_error")
+    assert response["Location"] == reverse("private_home")
 
-    # Verify user was not created
-    assert not User.objects.filter(email=user_email).first()
+    logged_user = auth.get_user(anon_client)
+    assert logged_user.is_authenticated
+
+    user = User.objects.get(email=user_email)
+    oidc_login = OidcLogin.objects.get(user=user, provider=ProviderChoice.PROCONNECT, account_created=True)
+    assert oidc_login.info == user_info_value
+    assert user.oidc_connexion == "PROCONNECT"
 
 
 @patch("oidc.backends.ProconnectOidcBackend.get_token")
 @patch("oidc.backends.ProconnectOidcBackend.verify_token")
 @patch("oidc.backends.ProconnectOidcBackend.get_userinfo")
 def test_proconnect_oidc_callback_fails_when_no_idp_id(
-    mock_get_userinfo,
-    mock_verify_token,
-    mock_get_token,
-    anon_client,
+        mock_get_userinfo,
+        mock_verify_token,
+        mock_get_token,
+        anon_client,
 ):
     """Test failed OIDC authentication callback."""
 
@@ -225,10 +237,10 @@ def test_proconnect_oidc_callback_fails_when_no_idp_id(
 @patch("oidc.backends.ProconnectOidcBackend.verify_token")
 @patch("oidc.backends.ProconnectOidcBackend.get_userinfo")
 def test_proconnect_oidc_callback_fails_when_idp_id_is_incorrect(
-    mock_get_userinfo,
-    mock_verify_token,
-    mock_get_token,
-    anon_client,
+        mock_get_userinfo,
+        mock_verify_token,
+        mock_get_token,
+        anon_client,
 ):
     """Test failed OIDC authentication callback."""
 

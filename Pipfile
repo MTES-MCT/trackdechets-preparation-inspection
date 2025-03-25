@@ -43,7 +43,6 @@ clickhouse-sqlalchemy = "*"
 sshtunnel = "*"
 
 [dev-packages]
-ruff = "*"
 isort = "*"
 djade = "*"
 pywatchman = "*"
@@ -52,6 +51,7 @@ django-extensions = "*"
 ipykernel = "*"
 bandit = "*"
 mypy = "*"
+ruff = "*"
 
 [requires]
 python_version = "3.11"

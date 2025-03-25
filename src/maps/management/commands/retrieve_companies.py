@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
+import pandas as pd
 
 from sheets.database import build_query
 from sheets.ssh import ssh_tunnel
@@ -60,6 +61,9 @@ class Command(BaseCommand):
             companies_df = build_query(query)
 
         companies_dicts = companies_df.to_dict(orient="records")
+        companies_dicts_without_nan = [
+            {k: (None if (isinstance(v, float) and pd.isna(v)) else v) for k, v in e.items()} for e in companies_dicts
+        ]
 
-        data = [CartoCompany(**c) for c in companies_dicts]
+        data = [CartoCompany(**c) for c in companies_dicts_without_nan]
         CartoCompany.objects.bulk_create(data)

@@ -8,7 +8,6 @@ from django.conf import LazySettings
 
 @contextmanager
 def ssh_tunnel(settings: LazySettings):
-    temp_key_file = tempfile.NamedTemporaryFile(mode="w", delete=False)
     """
     Establishes an SSH tunnel to a remote server and yields the tunnel object.
     Use it as a context manager to automatically close the SSH connection.
@@ -29,6 +28,8 @@ def ssh_tunnel(settings: LazySettings):
     It sets the appropriate permissions on the key file before establishing the tunnel.
     The tunnel is stopped and the key file is deleted when the context manager exits, ensuring cleanup.
     """
+
+    temp_key_file = tempfile.NamedTemporaryFile(mode="w", delete=False)
 
     try:
         temp_key_file.write(settings.DWH_SSH_KEY)

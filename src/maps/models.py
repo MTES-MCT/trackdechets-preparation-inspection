@@ -41,8 +41,8 @@ class CartoCompany(models.Model):
 
     latitude_td = models.DecimalField(max_digits=20, decimal_places=10, null=True, blank=True)
     longitude_td = models.DecimalField(max_digits=20, decimal_places=10, null=True, blank=True)
-    latitude_ban = models.FloatField(null=True, blank=True)
-    longitude_ban = models.FloatField(null=True, blank=True)
+    latitude_ban = models.DecimalField(max_digits=20, decimal_places=10, null=True, blank=True)
+    longitude_ban = models.DecimalField(max_digits=20, decimal_places=10, null=True, blank=True)
 
     coords = models.PointField(null=True, blank=True)
 

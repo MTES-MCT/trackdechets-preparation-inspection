@@ -39,9 +39,10 @@ django-vite = "*"
 django-filter = "*"
 boto3 = "*"
 mozilla-django-oidc = "*"
+clickhouse-sqlalchemy = "*"
+sshtunnel = "*"
 
 [dev-packages]
-ruff = "*"
 isort = "*"
 djade = "*"
 pywatchman = "*"
@@ -50,6 +51,7 @@ django-extensions = "*"
 ipykernel = "*"
 bandit = "*"
 mypy = "*"
+ruff = "*"
 
 [requires]
 python_version = "3.11"

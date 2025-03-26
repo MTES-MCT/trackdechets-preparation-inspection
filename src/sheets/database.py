@@ -36,9 +36,9 @@ from .queries import (
     sql_revised_bsdd_query_str,
 )
 
-wh_engine = create_engine(settings.WAREHOUSE_URL, pool_pre_ping=True)
+wh_engine = create_engine(settings.WAREHOUSE_URL)
 
-bsd_date_params = ["created_at", "sent_at", "received_at", "processed_at", "worker_work_signature_date"]
+bsd_date_params = ["created_at", "updated_at", "sent_at", "received_at", "processed_at", "worker_work_signature_date"]
 
 bs_dtypes = {
     "id": str,
@@ -65,11 +65,10 @@ def build_query(
 ):
     query = text(query_str)
 
-    engine = wh_engine
     df = pd.read_sql_query(
         query,
         params=query_params,
-        con=engine,
+        con=wh_engine,
         dtype=dtypes,
     )
 

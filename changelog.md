@@ -9,9 +9,13 @@ et le projet suit un schéma de versioning inspiré de [Calendar Versioning](htt
 
 Migration vers le nouveau DataWarehouse.
 
-## 03/05/2025
+## 17/03/2025
 
-Implémentation de login via Proconnect
+- Correction d'un lien open ID cassé
+
+## 05/03/2025
+
+- Implémentation de login via Proconnect
 
 ## 25/02/2025
 

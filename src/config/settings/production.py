@@ -19,7 +19,11 @@ ALLOWED_HOSTS = ["localhost"] + env.list("ALLOWED_HOST")
 
 ADMINS = [el.split(":") for el in env.list("DJANGO_ADMINS", default=[])]
 
-EMAIL_BACKEND = "anymail.backends.sendinblue.EmailBackend"
+USE_BREVO = env.bool("USE_BREVO", default=False)
+
+EMAIL_BACKEND = (
+    "anymail.backends.sendinblue.EmailBackend" if USE_BREVO else "django.core.mail.backends.smtp.EmailBackend"
+)
 ANYMAIL = {"SENDINBLUE_API_KEY": env("SENDINBLUE_API_KEY")}
 EMAIL_HOST = env("EMAIL_HOST")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")

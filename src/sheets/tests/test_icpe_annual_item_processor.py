@@ -7,7 +7,7 @@ from pandas import Timestamp
 
 from ..graph_processors.plotly_components_processors import (
     ICPEAnnualItemProcessor,
-)  # Import ICPEAnnualItemProcessor from the module where it is defined
+)
 
 
 # Sample data fixture

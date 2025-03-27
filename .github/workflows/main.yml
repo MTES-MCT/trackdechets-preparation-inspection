@@ -13,7 +13,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: admin
           POSTGRES_DB: inspection_test
-        ports: ["5432:5432"]
+        ports: [ "5432:5432" ]
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
       redis:
         image: redis
@@ -96,3 +96,12 @@ jobs:
           GUN_DATA_UPDATE_DATE_STRING: "Février 2025"
           GISTRID_DATA_UPDATE_DATE_STRING: "Février 2025"
           RNDTS_DATA_UPDATE_DATE_STRING: "Novembre 2024"
+          DWH_USERNAME: username
+          DWH_PASSWORD: xyz
+          DWH_PORT: 10001
+          DWH_SSH_HOST: 12.345.678.123
+          DWH_SSH_PORT: 22
+          DWH_SSH_USERNAME: user
+          DWH_SSH_LOCAL_BIND_HOST: 0.0.0.0
+          DWH_SSH_LOCAL_BIND_PORT: 12001
+          DWH_SSH_KEY: ssh key

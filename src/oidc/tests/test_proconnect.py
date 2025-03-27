@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 import pytest
 from django.contrib import auth
+from django.contrib.auth import SESSION_KEY
 from django.urls import reverse
 
 from accounts.constants import UserCategoryChoice
@@ -268,3 +269,19 @@ def test_proconnect_oidc_callback_fails_when_idp_id_is_incorrect(
     user = User.objects.get(email=user.email)
 
     assert not user.oidc_connexion == "PROCONNECT"
+
+
+def test_proconnect_logout_actually_logs_out_user(proconnect_logged_in_user):
+    """Test that the logout view actually logs out a logged-in user."""
+
+    assert SESSION_KEY in proconnect_logged_in_user.session
+
+    logout_url = reverse("proconnect_oidc_logout")
+
+    response = proconnect_logged_in_user.get(logout_url)
+
+    # Verify the user is logged out (SESSION_KEY should be gone)
+    assert SESSION_KEY not in proconnect_logged_in_user.session
+
+    # Verify we got redirected (either to settings.LOGOUT_REDIRECT_URL or the end_session_endpoint)
+    assert response.status_code == 302

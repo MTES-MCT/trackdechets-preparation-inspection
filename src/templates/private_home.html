@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load oidc_helpers %}
 {% block main %}
     <div class="fr-container">
         {% if user.is_authenticated %}
@@ -10,10 +10,10 @@
                 </p>
             {% endif %}
             <p>
-                <form action="{% url "logout" %}" method="post">
-                    {% csrf_token %}
-                    <button class="fr-fr-btn fr-btn--tertiary-no-outline fr-icon-logout-box-r-line">Déconnexion</button>
-                </form>
+            <form action="{% logout_url %}" method="post">
+                {% csrf_token %}
+                <button class="fr-fr-btn fr-btn--tertiary-no-outline fr-icon-logout-box-r-line">Déconnexion</button>
+            </form>
             </p>
         {% else %}
             <a href="{% url "login" %}">Connectez-vous</a>

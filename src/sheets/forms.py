@@ -1,6 +1,4 @@
 import datetime as dt
-import os
-import tempfile
 
 from django.conf import settings
 from django.forms import CharField, DateField, Form, ValidationError

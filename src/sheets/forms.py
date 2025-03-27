@@ -85,18 +85,13 @@ class SiretForm(Form):
         if getattr(settings, "SKIP_SIRET_CHECK", False):
             return siret
         prepared_query = text(sql_company_query_exists_str)
-        with tempfile.NamedTemporaryFile(mode="w", delete=False) as fp:
-            fp.write(settings.DWH_SSH_KEY)
-            fp.close()
 
-            os.chmod(fp.name, 0o600)
-
-            with ssh_tunnel(settings):
-                with wh_engine.connect() as con:
-                    companies = con.execute(prepared_query, siret=siret).all()
-                if not companies:
-                    raise ValidationError("Établissement non inscrit à Trackdéchets.")
-                return siret
+        with ssh_tunnel(settings):
+            with wh_engine.connect() as con:
+                companies = con.execute(prepared_query, siret=siret).all()
+            if not companies:
+                raise ValidationError("Établissement non inscrit à Trackdéchets.")
+            return siret
 
 
 class SheetPrepareForm(SiretForm):

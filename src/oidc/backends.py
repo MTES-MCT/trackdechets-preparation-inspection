@@ -7,7 +7,7 @@ from django.core.exceptions import PermissionDenied
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 from mozilla_django_oidc.utils import import_from_settings
 
-from accounts.constants import MONAIOT, PROCONNECT
+from accounts.constants import MONAIOT, PROCONNECT, UserCategoryChoice
 
 from .constants import (
     ALLOWED_PERIMETER,
@@ -102,7 +102,6 @@ class MonAiotOidcBackend(BaseOidcBackend):
             raise PermissionDenied("Invalid authorization data format")
 
         access_granted = False
-        matching_profile = None
 
         for droit in droits:
             id_profil = droit.get("id_profil")
@@ -153,9 +152,21 @@ class ProconnectOidcBackend(BaseOidcBackend):
         return user_response.json()
 
     def create_user(self, claims):
-        """Proconnect doesn't create new users."""
-        logger.info("User creation not supported for Proconnect authentication")
-        return None
+        """Create a new user account based on OIDC claims."""
+        email = claims.get("email")
+        if not email:
+            logger.error("No email found in claims, cannot create user")
+            raise PermissionDenied("No email provided in authentication data")
+
+        user = self.UserModel.objects.create_user(
+            username=email,
+            email=email,
+            password="",  # Empty password as auth is handled by OIDC
+            oidc_signup=self.provider_name,
+            user_category=UserCategoryChoice.GENDARMERIE,
+        )
+
+        return self.update_user_login_info(user, claims, account_created=True)
 
     def verify_claims(self, claims):
         """Verify user has appropriate access rights based on claims."""
@@ -175,5 +186,13 @@ class ProconnectOidcBackend(BaseOidcBackend):
     def filter_users_by_claims(self, claims):
         """Filter users eligible for Proconnect authentication."""
         users = super().filter_users_by_claims(claims)
-
-        return users.allowed_for_proconnect()
+        if not users:
+            # no user exist with this email, create it
+            return users
+        allowed = users.allowed_for_proconnect()
+        # users found, check if they are allowed (GENDARME)
+        if not allowed:
+            # The user category doesn't match our expected validation criteria
+            # Request should be denied
+            raise PermissionDenied("User not allowed")
+        return allowed

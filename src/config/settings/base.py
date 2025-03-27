@@ -255,7 +255,7 @@ DEFAULT_PROCONNECT_OIDC_RP_SCOPES = (
     "openid email given_name usual_name uid siret idp_id organizational_unit belonging_population custom"
 )
 PROCONNECT_OIDC_RP_SCOPES = env("PROCONNECT_OIDC_RP_SCOPES", default=DEFAULT_PROCONNECT_OIDC_RP_SCOPES)
-PROCONNECT_OIDC_CREATE_USER = False
+PROCONNECT_OIDC_CREATE_USER = True
 PROCONNECT_OIDC_RP_SIGN_ALGO = "RS256"
 PROCONNECT_OIDC_AUTHENTICATION_CALLBACK_URL = "proconnect_oidc_authentication_callback"
 PROCONNECT_OIDC_LOGIN_REDIRECT_URL = "private_home"

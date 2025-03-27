@@ -4,7 +4,6 @@ from django.views.generic import TemplateView
 
 from accounts.constants import ALL_USER_CATEGORIES
 from common.mixins import FullyLoggedMixin
-from content.models import FeedbackResult
 
 
 class PublicHomeView(TemplateView):
@@ -22,10 +21,3 @@ class PublicHomeView(TemplateView):
 class PrivateHomeView(FullyLoggedMixin, TemplateView):
     template_name = "private_home.html"
     allowed_user_categories = ALL_USER_CATEGORIES
-
-    def has_filled_survey(self):
-        return FeedbackResult.objects.filter(author=self.request.user.email).exists()
-
-    def get_context_data(self, **kwargs):
-        # display survey links until user fills it
-        return super().get_context_data(**kwargs, has_filled_survey=self.has_filled_survey())

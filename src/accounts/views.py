@@ -1,8 +1,10 @@
+import uuid
+
 from braces.views import LoginRequiredMixin
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.views import LoginView as BaseLoginView
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, QueryDict
 from django.shortcuts import resolve_url
 from django.urls import reverse_lazy
 from django.views.generic import FormView
@@ -98,3 +100,15 @@ class ResendTokenEmail(SendSecondFactorMailMixin, LoginRequiredMixin, FormView):
         kw = super().get_form_kwargs()
         kw.update({"user": self.request.user})
         return kw
+
+
+def proconnect_logout(request):
+    q = QueryDict(mutable=True)
+
+    id_token = request.session.get("oidc_id_token")
+
+    q["id_token_hint"] = id_token
+    q["state"] = str(uuid.uuid4())
+    q["post_logout_redirect_uri"] = "https://dev.inspection.trackdechets.beta.gouv.fr/oidc/logout/"
+    query_string = q.urlencode()
+    return f"{settings.OIDC_RP_LOGOUT_ENDPOINT}?{query_string}"

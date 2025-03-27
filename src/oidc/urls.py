@@ -8,6 +8,7 @@ from .views import (
     ProconnectAuthentError,
     ProconnectOIDCAuthenticationCallbackView,
     ProconnectOIDCAuthenticationRequestView,
+    ProconnectOIDCLogoutView,
 )
 
 urlpatterns = [
@@ -42,4 +43,5 @@ urlpatterns = [
         ProconnectOIDCAuthenticationCallbackView.as_view(),
         name="proconnect_oidc_authentication_callback",
     ),
+    path("logout/", ProconnectOIDCLogoutView.as_view(), name="proconnect_oidc_logout"),
 ]

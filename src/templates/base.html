@@ -1,4 +1,4 @@
-{% load simple_menu static %}
+{% load oidc_helpers simple_menu static %}
 <!DOCTYPE html>
 <html lang="fr" data-fr-scheme="light">
     <head>
@@ -84,7 +84,7 @@
                                                class="fr-btn">Guide d'utilisation</a>
                                         </li>
                                         <li>
-                                            <form action="{% url "logout" %}" method="post">
+                                            <form action="{% logout_url %}" method="post">
                                                 {% csrf_token %}
                                                 <button class="fr-btn  fr-icon-logout-box-r-line fr-link--icon-right"
                                                         aria-controls="modal-header__menu">Déconnexion</button>

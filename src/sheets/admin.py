@@ -22,7 +22,7 @@ class ComputedInspectionDataAdmin(admin.ModelAdmin):
         "pdf_rendering_duration",
     ]
     list_filter = ["created", "creation_mode"]
-    search_fields = ["org_id"]
+    search_fields = ["id", "org_id"]
 
     def get_queryset(self, request):
         # Don't load heavy unused fields

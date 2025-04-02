@@ -1,9 +1,60 @@
+from collections import OrderedDict
+
+from django import forms
 from django.contrib import admin
+from django.contrib.admin.widgets import AdminDateWidget
 from django.urls import reverse_lazy
 from django.utils.html import format_html
-from rangefilter.filters import DateRangeFilterBuilder
+from django.utils.translation import gettext_lazy as _
+from rangefilter.filters import DateRangeFilter
 
 from .models import ComputedInspectionData
+
+
+class CustomAdminDateWidget(AdminDateWidget):
+    input_type = "date"
+
+
+class CustomDateRangeFilter(DateRangeFilter):
+    def _get_form_fields(self):
+        return OrderedDict(
+            (
+                (
+                    self.lookup_kwarg_gte,
+                    forms.DateField(
+                        label="",
+                        widget=CustomAdminDateWidget(attrs={"placeholder": _("From date")}),
+                        localize=True,
+                        required=False,
+                        initial=self.default_gte,
+                    ),
+                ),
+                (
+                    self.lookup_kwarg_lte,
+                    forms.DateField(
+                        label="",
+                        widget=CustomAdminDateWidget(attrs={"placeholder": _("To date")}),
+                        localize=True,
+                        required=False,
+                        initial=self.default_lte,
+                    ),
+                ),
+            )
+        )
+
+
+def CustomDateRangeFilterBuilder(title=None, default_start=None, default_end=None):
+    filter_cls = type(
+        str("CustomDateRangeFilter"),
+        (CustomDateRangeFilter,),
+        {
+            "__from_builder": True,
+            "default_title": title,
+            "default_start": default_start,
+            "default_end": default_end,
+        },
+    )
+    return filter_cls
 
 
 @admin.register(ComputedInspectionData)
@@ -22,7 +73,7 @@ class ComputedInspectionDataAdmin(admin.ModelAdmin):
         "processing_duration",
         "pdf_rendering_duration",
     ]
-    list_filter = (("created", DateRangeFilterBuilder()), "creation_mode")
+    list_filter = (("created", CustomDateRangeFilterBuilder()), "creation_mode")
     search_fields = ["id", "org_id"]
 
     def get_queryset(self, request):

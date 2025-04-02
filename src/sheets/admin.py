@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import reverse_lazy
 from django.utils.html import format_html
+from rangefilter.filters import DateRangeFilterBuilder
 
 from .models import ComputedInspectionData
 
@@ -21,7 +22,7 @@ class ComputedInspectionDataAdmin(admin.ModelAdmin):
         "processing_duration",
         "pdf_rendering_duration",
     ]
-    list_filter = ["created", "creation_mode"]
+    list_filter = (("created", DateRangeFilterBuilder()), "creation_mode")
     search_fields = ["id", "org_id"]
 
     def get_queryset(self, request):

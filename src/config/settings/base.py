@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "mozilla_django_oidc",
+    "rangefilter",
     "oidc",
     "accounts",
     "content",

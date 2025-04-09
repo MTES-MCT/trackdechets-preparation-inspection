@@ -4,15 +4,15 @@ import { fetchPlots } from "./store/mapDataSlice";
 import { useFetchPlots } from "./store/hooks";
 import { Filters } from "./components/filtering/Filter";
 import { useAppDispatch } from "./store/root";
-import { MapRef } from "./types.ts";
 
+import { MapRef as ReactMapGLRef } from "react-map-gl/maplibre";
 import { lazy, Suspense } from "react";
 
 const MapContainer = lazy(() => import("./components/Map.tsx"));
 
 function App() {
   const dispatch = useAppDispatch();
-  const mapRef = useRef<MapRef | null>(null);
+  const mapRef = useRef<ReactMapGLRef>(null) as React.RefObject<ReactMapGLRef>;
 
   // Use the custom hook to fetch plots when filters change
   useFetchPlots();

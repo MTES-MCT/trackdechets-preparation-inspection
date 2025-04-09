@@ -147,7 +147,7 @@ export default function MapContainer({ mapRef, lat, lng }: MapContainerProps) {
     return instance;
   }, [points]);
 
-  const clustersSuper = useMemo(() => {
+  const clusteredCompanies = useMemo(() => {
     if (!supercluster || zoom < 8 || plots.length === 0) {
       return [];
     }
@@ -190,20 +190,21 @@ export default function MapContainer({ mapRef, lat, lng }: MapContainerProps) {
 
       const feature: MapGeoJSONFeature = features[0];
       if (hasCoordinates(feature.geometry)) {
-        // Inside this block, TypeScript knows that geometry has coordinates
-        const coordinates = feature.geometry.coordinates; // No error here
+        const coordinates = feature.geometry.coordinates;
 
-        // Check if it's a cluster
         if (feature.layer.id === "clusters") {
           const clusterId = feature.properties.cluster_id;
-          const mapboxSource = mapRef.current.getSource("plots");
-
-          mapboxSource.getClusterExpansionZoom(
+          const source = mapRef.current.getSource("plots");
+          if (!source) {
+            return;
+          } // @ts-expect-error library type def error
+          source.getClusterExpansionZoom(
             clusterId,
             (err: Error, newZoom: number) => {
               if (err) return;
 
               mapRef.current.flyTo({
+                // @ts-expect-error library type def error
                 center: coordinates,
                 zoom: newZoom,
               });
@@ -234,25 +235,7 @@ export default function MapContainer({ mapRef, lat, lng }: MapContainerProps) {
 
   const color = "#000091";
 
-  const unclusteredMarkers = useMemo(() => {
-    return plots.map((plot, index) => (
-      <Marker
-        key={`marker-${index}`}
-        longitude={plot.long}
-        latitude={plot.lat}
-        anchor="center"
-        onClick={(e) => {
-          e.originalEvent.stopPropagation();
-          dispatch(setPopupData(mapPlotToPopup(plot, zoom)));
-        }}
-      >
-        {zoom < ZOOM_ETABS ? (
-          <Cluster txt={`${plot.count}`} fill={color} />
-        ) : null}
-      </Marker>
-    ));
-  }, [plots, zoom, dispatch]);
-
+  // regions and departments markers
   const clustersMarkers = useMemo(() => {
     return clusters.map((plot, index) => (
       <Marker
@@ -262,7 +245,12 @@ export default function MapContainer({ mapRef, lat, lng }: MapContainerProps) {
         anchor="center"
         onClick={(e) => {
           e.originalEvent.stopPropagation();
-          dispatch(setPopupData(mapPlotToPopup(plot, zoom)));
+          console.log(zoom);
+          mapRef.current?.getMap().flyTo({
+            center: [plot.long, plot.lat],
+            zoom: zoom + 2,
+            duration: 500,
+          });
         }}
       >
         {zoom < ZOOM_ETABS ? (
@@ -272,7 +260,7 @@ export default function MapContainer({ mapRef, lat, lng }: MapContainerProps) {
         )}
       </Marker>
     ));
-  }, [zoom, clusters, dispatch]);
+  }, [zoom, clusters, mapRef]);
 
   const handleClusterClick = useCallback(
     (clusterId: number, longitude: number, latitude: number) => {
@@ -336,7 +324,7 @@ export default function MapContainer({ mapRef, lat, lng }: MapContainerProps) {
         <NavigationControl showCompass={false} />
         <ScaleControl />
 
-        {clustersSuper.map((cluster) => {
+        {clusteredCompanies.map((cluster) => {
           const [longitude, latitude] = cluster.geometry.coordinates;
           const {
             cluster: isCluster,
@@ -374,19 +362,14 @@ export default function MapContainer({ mapRef, lat, lng }: MapContainerProps) {
                   }
                 }}
               >
-                {zoom < ZOOM_ETABS ? (
-                  <Cluster txt={plot.count} fill={MARKER_BLUE} />
-                ) : (
-                  <LocMarker />
-                )}
+                <LocMarker />
               </Marker>
             );
           }
         })}
 
-        {zoom <= ZOOM_CLUSTERS && unclusteredMarkers}
-
         {clustersMarkers}
+
         {/* Administrative boundaries */}
         <Source
           id="departements"

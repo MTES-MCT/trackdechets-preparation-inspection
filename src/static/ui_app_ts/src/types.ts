@@ -1,3 +1,5 @@
+import { MapRef as ReactMapGLRef } from "react-map-gl/maplibre";
+
 export interface Bounds {
   _sw?: {
     lng: number;
@@ -101,7 +103,7 @@ export interface MapStoreState {
 
 // Component props types
 export interface MapContainerProps {
-  mapRef: React.RefObject<unknown>;
+  mapRef: React.RefObject<ReactMapGLRef>;
   lat: number;
   lng: number;
 }
@@ -137,15 +139,33 @@ export interface MapOptionsProps {
   selected: FilterValue;
 }
 
-export interface MapRef {
+export interface MapRefX {
   flyTo: (options: { center: [number, number]; zoom?: number }) => void;
+  getMap: () => {
+    flyTo: (options: {
+      center: [number, number];
+      zoom?: number;
+      duration?: number;
+    }) => void;
+    getBounds: () => {
+      getSouthWest: () => { lng: number; lat: number };
+      getNorthEast: () => { lng: number; lat: number };
+    };
+    getZoom: () => number;
+    getSource: (sourceId: string) => {
+      getClusterExpansionZoom: (
+        clusterId: number,
+        callback: (err: Error, zoom: number) => void,
+      ) => void;
+    };
+  };
 }
 export interface SidebarProps {
-  mapRef: React.RefObject<unknow>;
+  mapRef: React.RefObject<ReactMapGLRef>;
 }
 
 export interface FlyToProps {
-  mapRef: React.RefObject<unknow>;
+  mapRef: React.RefObject<ReactMapGLRef>;
   lat: number;
   long: number;
   label: string;

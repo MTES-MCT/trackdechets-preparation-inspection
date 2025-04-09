@@ -519,6 +519,22 @@ table .td--right {
     opacity: 1;
 }
 
+/* rotating spinner*/
+.spinning {
+    display: inline-block;
+    animation: rotating 1s infinite linear;
+}
+
+@keyframes rotating {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(359deg);
+    }
+}
+
+
 /* Company Map */
 
 .map-app {
@@ -577,6 +593,10 @@ table .td--right {
 /* utils*/
 .flex {
     display: flex;
+}
+
+.align-items-center {
+    align-items: center;
 }
 
 /* Map*/

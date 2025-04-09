@@ -3,11 +3,17 @@ import { FlyToProps, SidebarProps } from "../types";
 import { setModalState } from "../store/modalSlice";
 import { useAppDispatch, useAppSelector, RootState } from "../store/root";
 import { ProfileFilterState, removeFilter } from "../store/searchFiltersSlice";
-
 import { FRENCH_DEPARTMENTS } from "../constants/departments.ts";
+import { useFileDownload } from "../hooks/downloadHook";
 
 export function Sidebar({ mapRef }: SidebarProps) {
   const dispatch = useAppDispatch();
+  const { downloadWithPost, isDownloading, downloadError } = useFileDownload();
+  const { downloadUrl } = useAppSelector((state: RootState) => state.mapData);
+
+  const handleExport = async () => {
+    await downloadWithPost(downloadUrl);
+  };
 
   return (
     <div className="map__sidebar">
@@ -49,13 +55,38 @@ export function Sidebar({ mapRef }: SidebarProps) {
       </div>
       <p className="fr-text--lg fr-text--bold">Je cherche des établissements</p>
       <button
-        className="fr-btn fr-btn--secondary fr-icon-equalizer-line  fr-btn--icon-right"
+        className="fr-btn fr-btn--secondary fr-icon-equalizer-line fr-btn--icon-right"
         onClick={() => dispatch(setModalState(true))}
       >
         Paramétrer les filtres
       </button>
 
       <FilterDigest />
+
+      <button
+        className="fr-btn fr-btn--primary fr-icon-download-fill fr-btn--icon-right"
+        disabled={downloadUrl === ""}
+        title={
+          downloadUrl
+            ? "Exporter"
+            : "Le nombre d'établissements est trop important pour exporter"
+        }
+        onClick={() => handleExport()}
+      >
+        Exporter
+      </button>
+
+      {isDownloading && (
+        <p className="fr-mt-1w">
+          <span className="fr-icon-refresh-line spinning fr-mx-1w" />
+          Préparation du fichier...
+        </p>
+      )}
+      {downloadError && (
+        <div className="fr-alert fr-alert--error fr-mt-1w">
+          Erreur: {downloadError}
+        </div>
+      )}
     </div>
   );
 }

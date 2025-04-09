@@ -3,9 +3,13 @@ import axios from "axios";
 import { FilterValues } from "../types";
 import { RootState } from "./root";
 import { MapBounds } from "../types";
+import { MAX_ETAB_FOR_DOWNLOAD } from "../constants/constants";
 
-const baseUrl = "/map/api/companies/objects";
+const baseFetchPlotsUrl = "/map/api/companies/objects";
+const baseDownloadUrl = "/map/api/companies/export";
+
 type BuildUrlInput = {
+  fetchOrDownload?: string;
   zoom: number;
   profileFilters: {
     root: string[];
@@ -22,7 +26,7 @@ type BuildUrlInput = {
   bounds: MapBounds;
 };
 
-const buildUrl = ({
+const buildFetchPlotsUrls = ({
   profileFilters,
   roleFilters,
   bsdTypeFilters,
@@ -30,7 +34,7 @@ const buildUrl = ({
   departmentFilters,
   bounds,
   wasteCodesFilter,
-}: BuildUrlInput): string => {
+}: BuildUrlInput): { fetchPlotsUrl: string; downloadPlotsUrl: string } => {
   const bsdTypeFilter = bsdTypeFilters?.root[0] ?? null;
 
   // Handle BSD type and roles filtering combination
@@ -85,6 +89,8 @@ const buildUrl = ({
   if (wasteCodesFilter?.root.length) {
     params.append("waste_codes", wasteCodesFilter.root.join(","));
   }
+  // keep ti here to skip bounds params
+  const downloadPlotsUrl = `${baseDownloadUrl}?${params.toString()}`;
 
   // Add map bounds
   if (bounds._sw && bounds._ne) {
@@ -96,13 +102,15 @@ const buildUrl = ({
     );
   }
 
-  return `${baseUrl}?${params.toString()}`;
+  const fetchPlotsUrl = `${baseFetchPlotsUrl}?${params.toString()}`;
+  return { fetchPlotsUrl, downloadPlotsUrl };
 };
 
 interface ApiResponse {
   companies?: Plot[];
   clusters?: Plot[];
   total_count?: number;
+  downloadUrl?: string;
 }
 
 export const fetchPlots = createAsyncThunk<
@@ -127,7 +135,7 @@ export const fetchPlots = createAsyncThunk<
       wasteCodesFilter,
     } = state.searchFilters;
 
-    const url = buildUrl({
+    const { fetchPlotsUrl, downloadPlotsUrl } = buildFetchPlotsUrls({
       zoom,
       profileFilters,
       bsdTypeFilters,
@@ -137,9 +145,10 @@ export const fetchPlots = createAsyncThunk<
       wasteCodesFilter,
       bounds,
     });
-    const response = await axios.get(url);
 
-    return response.data;
+    const response = await axios.get(fetchPlotsUrl);
+
+    return { ...response.data, downloadUrl: downloadPlotsUrl };
   },
 );
 
@@ -162,14 +171,17 @@ export interface MapDataState {
   totalCount: number;
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
+  downloadUrl: string;
 }
 
 const initialState: MapDataState = {
   plots: [],
   clusters: [],
   totalCount: 0,
+
   status: "idle",
   error: null,
+  downloadUrl: "",
 };
 
 export const mapDataSlice = createSlice({
@@ -187,6 +199,11 @@ export const mapDataSlice = createSlice({
         state.plots = action.payload.companies ?? [];
         state.clusters = action.payload.clusters ?? [];
         state.totalCount = action.payload.total_count ?? 0;
+        state.totalCount = action.payload.total_count ?? 0;
+        state.downloadUrl =
+          state.totalCount < MAX_ETAB_FOR_DOWNLOAD
+            ? (action.payload.downloadUrl ?? "")
+            : "";
       })
       .addCase(fetchPlots.rejected, (state, action) => {
         state.status = "failed";

@@ -68,9 +68,7 @@ const Profiles: React.FC<ProfilesProps> = ({
             checked={isChecked}
             onChange={() => handleToggleCode(option)}
           />
-          <label htmlFor={`id_checkbox—${option.value}`} className="fr-label">
-            {option.label}
-          </label>
+          <label htmlFor={`id_checkbox—${option.value}`}>{option.label}</label>
         </div>
         {option.options && (
           <div>

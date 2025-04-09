@@ -5,6 +5,7 @@ export const WASTE_CODE = "WASTE_CODE";
 
 export const ZOOM_ETABS = 9;
 export const ZOOM_CLUSTERS = 8;
+export const MAX_ETAB_FOR_DOWNLOAD = 1500;
 
 const broker = "BROKER";
 /** Installation de Tri, transit regroupement de déchets */

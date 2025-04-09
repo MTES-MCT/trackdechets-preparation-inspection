@@ -18,9 +18,7 @@ export const Filters: React.FC = () => {
   const dispatch = useAppDispatch();
   return (
     <Modal>
-      <h1 id="fr-modal-title-modal-4" className="fr-modal__title">
-        Paramétrer les filtres
-      </h1>
+      <h1 className="fr-modal__title">Paramétrer les filtres</h1>
       <p>Je recherche par</p>
       <p>
         <label>

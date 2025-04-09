@@ -15,10 +15,12 @@ import {
   BSVHU,
   BSDND,
   TEXS,
-  ROLE_PRODUCER,
+  ROLE_EMITTER,
   ROLE_TRANSPORTER,
   ROLE_WORKER,
   ROLE_DESTINATION,
+  SSD,
+  TEXS_DD,
 } from "../../constants/constants";
 
 const BSD_TYPE_FILTER_KEY = "bsdTypeFilters";
@@ -42,7 +44,7 @@ const WasteTypesAndRoles: React.FC<WasteTypesProps> = () => {
           <div className="fr-fieldset__element">
             <div className="fr-radio-group">
               <input
-                id="id_waste_type_1"
+                id="id_waste_type_all"
                 type="radio"
                 checked={selectBsdTypeFilter.root.length === 0}
                 name="waste_type"
@@ -50,14 +52,16 @@ const WasteTypesAndRoles: React.FC<WasteTypesProps> = () => {
                   dispatch(clearFilter({ filterKey: BSD_TYPE_FILTER_KEY }))
                 }
               />
-              <label htmlFor="id_waste_type_1">Tous les types de déchets</label>
+              <label htmlFor="id_waste_type_all">
+                Tous les types de déchets
+              </label>
             </div>
           </div>
 
           <div className="fr-fieldset__element">
             <div className="fr-radio-group">
               <input
-                id="id_waste_type_2"
+                id="id_waste_type_bsda"
                 type="radio"
                 name="waste_type"
                 checked={selectBsdTypeFilter.root.includes(BSDA)}
@@ -67,14 +71,14 @@ const WasteTypesAndRoles: React.FC<WasteTypesProps> = () => {
                   )
                 }
               />
-              <label htmlFor="id_waste_type_2">Amiante</label>
+              <label htmlFor="id_waste_type_bsda">Amiante</label>
             </div>
           </div>
 
           <div className="fr-fieldset__element">
             <div className="fr-radio-group">
               <input
-                id="id_waste_type_3"
+                id="id_waste_type_bsdasri"
                 type="radio"
                 name="waste_type"
                 checked={selectBsdTypeFilter.root.includes(BSDASRI)}
@@ -87,14 +91,14 @@ const WasteTypesAndRoles: React.FC<WasteTypesProps> = () => {
                   )
                 }
               />
-              <label htmlFor="id_waste_type_3">DASRI</label>
+              <label htmlFor="id_waste_type_bsdasri">DASRI</label>
             </div>
           </div>
 
           <div className="fr-fieldset__element">
             <div className="fr-radio-group">
               <input
-                id="id_waste_type_4"
+                id="id_waste_type_bsdd"
                 type="radio"
                 name="waste_type"
                 checked={selectBsdTypeFilter.root.includes(BSDD)}
@@ -104,14 +108,14 @@ const WasteTypesAndRoles: React.FC<WasteTypesProps> = () => {
                   )
                 }
               />
-              <label htmlFor="id_waste_type_4">Déchets dangereux</label>
+              <label htmlFor="id_waste_type_bsdd">Déchets dangereux</label>
             </div>
           </div>
 
           <div className="fr-fieldset__element">
             <div className="fr-radio-group">
               <input
-                id="id_waste_type_5"
+                id="id_waste_type_bsdnd"
                 type="radio"
                 name="waste_type"
                 checked={selectBsdTypeFilter.root.includes(BSDND)}
@@ -121,7 +125,7 @@ const WasteTypesAndRoles: React.FC<WasteTypesProps> = () => {
                   )
                 }
               />
-              <label htmlFor="id_waste_type_5">Déchets non dangereux</label>
+              <label htmlFor="id_waste_type_bsdnd">Déchets non dangereux</label>
             </div>
           </div>
 
@@ -144,7 +148,25 @@ const WasteTypesAndRoles: React.FC<WasteTypesProps> = () => {
           <div className="fr-fieldset__element">
             <div className="fr-radio-group">
               <input
-                id="id_waste_type_7"
+                id="id_waste_type_ssd"
+                type="radio"
+                name="waste_type"
+                checked={selectBsdTypeFilter.root.includes(SSD)}
+                onChange={() =>
+                  dispatch(
+                    setFilter({ filterKey: BSD_TYPE_FILTER_KEY, value: SSD }),
+                  )
+                }
+              />
+              <label htmlFor="id_waste_type_ssd">
+                Sortie de statut de déchet
+              </label>
+            </div>
+          </div>
+          <div className="fr-fieldset__element">
+            <div className="fr-radio-group">
+              <input
+                id="id_waste_type_texs"
                 type="radio"
                 name="waste_type"
                 checked={selectBsdTypeFilter.root.includes(TEXS)}
@@ -154,22 +176,46 @@ const WasteTypesAndRoles: React.FC<WasteTypesProps> = () => {
                   )
                 }
               />
-              <label htmlFor="id_waste_type_7">Terres & sédiments</label>
+              <label htmlFor="id_waste_type_texs">
+                Terres et Sédiments - Déchets Non Dangereux
+              </label>
             </div>
           </div>
           <div className="fr-fieldset__element">
             <div className="fr-radio-group">
               <input
-                id="id_waste_type_8"
+                id="id_waste_type_texs_dd"
                 type="radio"
                 name="waste_type"
+                checked={selectBsdTypeFilter.root.includes(TEXS_DD)}
+                onChange={() =>
+                  dispatch(
+                    setFilter({
+                      filterKey: BSD_TYPE_FILTER_KEY,
+                      value: TEXS_DD,
+                    }),
+                  )
+                }
+              />
+              <label htmlFor="id_waste_type_texs_dd">
+                Terres et Sédiments - Déchets Dangereux
+              </label>
+            </div>
+          </div>
+          <div className="fr-fieldset__element">
+            <div className="fr-radio-group">
+              <input
+                id="id_waste_type_vhu"
+                type="radio"
+                name="waste_type"
+                checked={selectBsdTypeFilter.root.includes(BSVHU)}
                 onChange={() =>
                   dispatch(
                     setFilter({ filterKey: BSD_TYPE_FILTER_KEY, value: BSVHU }),
                   )
                 }
               />
-              <label htmlFor="id_waste_type_8">Véhicules hors d'usage</label>
+              <label htmlFor="id_waste_type_vhu">Véhicules hors d'usage</label>
             </div>
           </div>
         </div>
@@ -193,19 +239,20 @@ const WasteTypesAndRoles: React.FC<WasteTypesProps> = () => {
                   id="checkboxes-1"
                   type="checkbox"
                   aria-describedby="checkboxes-1-messages"
-                  checked={selectRoleFilters.root.includes(ROLE_PRODUCER)}
+                  disabled={selectBsdTypeFilter.root.includes(SSD)}
+                  checked={selectRoleFilters.root.includes(ROLE_EMITTER)}
                   onChange={(e) =>
                     e.target.checked
                       ? dispatch(
                           addFilter({
                             filterKey: ROLE_FILTER_KEY,
-                            value: ROLE_PRODUCER,
+                            value: ROLE_EMITTER,
                           }),
                         )
                       : dispatch(
                           removeFilter({
                             filterKey: ROLE_FILTER_KEY,
-                            value: ROLE_PRODUCER,
+                            value: ROLE_EMITTER,
                           }),
                         )
                   }
@@ -228,6 +275,10 @@ const WasteTypesAndRoles: React.FC<WasteTypesProps> = () => {
                   type="checkbox"
                   aria-describedby="checkboxes-2-messages"
                   checked={selectRoleFilters.root.includes(ROLE_TRANSPORTER)}
+                  disabled={
+                    selectBsdTypeFilter.root.includes(SSD) ||
+                    selectBsdTypeFilter.root.includes(TEXS)
+                  }
                   onChange={(e) =>
                     e.target.checked
                       ? dispatch(
@@ -294,6 +345,7 @@ const WasteTypesAndRoles: React.FC<WasteTypesProps> = () => {
                   id="checkboxes-4"
                   type="checkbox"
                   aria-describedby="checkboxes-4-messages"
+                  disabled={selectBsdTypeFilter.root.includes(SSD)}
                   checked={selectRoleFilters.root.includes(ROLE_DESTINATION)}
                   onChange={(e) =>
                     e.target.checked

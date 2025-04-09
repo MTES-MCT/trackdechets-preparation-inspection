@@ -93,6 +93,7 @@ class BsdTypeFilter(admin.SimpleListFilter):
             ("dnd", "DND - Déclarations"),
             ("texs", "TEXS - Terres excavées"),
             ("texs_dd", "TEXS DD - Terres excavées dangereuses"),
+            ("ssd", "SSD - Sortie de statut de déchet"),
         ]
 
     def queryset(self, request, queryset):

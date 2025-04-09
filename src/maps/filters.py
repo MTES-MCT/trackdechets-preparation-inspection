@@ -19,6 +19,7 @@ def prepare_role_specific_fields():
         "texs_dd": ["emitter", "transporter", "destination"],
         "dnd": ["emitter", "destination"],
         "texs": ["emitter", "destination"],
+        "ssd": [],
     }
 
     role_specific_fields = []
@@ -26,7 +27,7 @@ def prepare_role_specific_fields():
         for role in roles:
             field_name = f"{waste_type}_{role}"
             role_specific_fields.append(field_name)
-            role_specific_fields.append(waste_type)
+        role_specific_fields.append(waste_type)
     return role_specific_fields
 
 
@@ -101,7 +102,6 @@ class CartoCompanyFilter(filters.FilterSet):
         for requested_role in requested_roles:
             if requested_role in ROLE_SPECIFIC_FIELDS:
                 queryterms.append(Q(**{requested_role: True}))
-
         if not queryterms:
             return queryset
 
@@ -158,4 +158,6 @@ class CartoCompanyFilter(filters.FilterSet):
             # TEXS roles
             "texs_emitter",
             "texs_destination",
+            # ssd
+            "ssd",
         ]

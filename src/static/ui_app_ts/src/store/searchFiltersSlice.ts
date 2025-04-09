@@ -3,9 +3,12 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   PROFILE_OPTIONS,
   ROLE_DESTINATION,
+  ROLE_TRANSPORTER,
   TYPE_AND_ROLE,
   ROLE_WORKER,
   BSDA,
+  SSD,
+  TEXS,
 } from "../constants/constants.ts";
 
 import { FilterValue } from "../types.ts";
@@ -74,17 +77,7 @@ const getSubFilterKeyForProfileValue = (value: string): string | null => {
 
   return null;
 };
-const removeWorkerRoleIfNeeded = (state: SearchFilterState): void => {
-  // Only remove worker role if BSDA is not in the bsdTypeFilters
-  if (!state.bsdTypeFilters.root.includes(BSDA)) {
-    const workerIndex = state.roleFilters.root.findIndex(
-      (role: string) => role === ROLE_WORKER,
-    );
-    if (workerIndex !== -1) {
-      state.roleFilters.root.splice(workerIndex, 1);
-    }
-  }
-};
+
 export const searchFiltersSlice = createSlice({
   name: "searchFilters",
   initialState,
@@ -121,10 +114,6 @@ export const searchFiltersSlice = createSlice({
       const filterState = state[filterKey] as Record<string, string[]>;
 
       filterState[subFilterKey] = [value];
-
-      if (filterKey === "bsdTypeFilters" && value !== BSDA) {
-        removeWorkerRoleIfNeeded(state);
-      }
     },
     removeFilter: (state, action: PayloadAction<AddRemoveFilterPayload>) => {
       const { filterKey, subFilterKey = "root", value } = action.payload;
@@ -151,10 +140,6 @@ export const searchFiltersSlice = createSlice({
         // reset operation codes when destination role is removed
         state.operationCodeFilters = initialFilters.operationCodeFilters;
       }
-
-      if (filterKey === "bsdTypeFilters" && value !== BSDA) {
-        removeWorkerRoleIfNeeded(state);
-      }
     },
     clearFilter: (state, action: PayloadAction<ClearFilterPayload>) => {
       const { filterKey, subFilterKey = "root" } = action.payload;
@@ -180,16 +165,29 @@ export const searchFiltersSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addMatcher(
-      // Match all actions
       () => true,
       (state) => {
         // Post-process the state
+        // BSDA
         if (!state.bsdTypeFilters.root.includes(BSDA)) {
           const workerIndex = state.roleFilters.root.findIndex(
             (role) => role === ROLE_WORKER,
           );
           if (workerIndex !== -1) {
             state.roleFilters.root.splice(workerIndex, 1);
+          }
+        }
+        // SSD
+        if (state.bsdTypeFilters.root.includes(SSD)) {
+          state.roleFilters.root = [];
+        }
+        // TEXS
+        if (state.bsdTypeFilters.root.includes(TEXS)) {
+          const transporterIndex = state.roleFilters.root.findIndex(
+            (role) => role === ROLE_TRANSPORTER,
+          );
+          if (transporterIndex !== -1) {
+            state.roleFilters.root.splice(transporterIndex, 1);
           }
         }
       },

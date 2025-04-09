@@ -40,14 +40,16 @@ export const BSDASRI = "BSDASRI";
 export const BSFF = "BSFF";
 export const BSVHU = "BSVHU";
 export const TEXS = "TEXS";
+export const TEXS_DD = "TEXS_DD";
+export const SSD = "SSD";
 
-export const ROLE_PRODUCER = "producer";
+export const ROLE_EMITTER = "emitter";
 export const ROLE_TRANSPORTER = "transporter";
 export const ROLE_WORKER = "worker";
 export const ROLE_DESTINATION = "destination";
 
 export const VERBOSE_ROLES = {
-  [ROLE_PRODUCER]: "Producteur",
+  [ROLE_EMITTER]: "Producteur",
   [ROLE_TRANSPORTER]: "Transporteur",
   [ROLE_WORKER]: "Entreprise de travaux",
   [ROLE_DESTINATION]: "Destinataire",

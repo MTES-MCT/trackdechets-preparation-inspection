@@ -165,7 +165,7 @@ export const searchFiltersSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addMatcher(
-      () => true,
+      ({ type }) => type.startsWith("searchFilters"),
       (state) => {
         // Post-process the state
         // BSDA
@@ -178,7 +178,10 @@ export const searchFiltersSlice = createSlice({
           }
         }
         // SSD
-        if (state.bsdTypeFilters.root.includes(SSD)) {
+        if (
+          state.bsdTypeFilters.root.includes(SSD) &&
+          state.roleFilters.root.length
+        ) {
           state.roleFilters.root = [];
         }
         // TEXS

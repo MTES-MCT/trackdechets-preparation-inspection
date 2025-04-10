@@ -3,11 +3,10 @@
 {% block extra_head %}
     {% vite_hmr_client %}
     {% vite_react_refresh %}
-    {% vite_asset 'main.jsx' %}
+    {% vite_asset 'main.tsx' %}
 {% endblock extra_head %}
 
 {% block main %}
-    
     <div class="fr-mt-4v fr-p-2v">
         <div id="root"></div>
     </div>

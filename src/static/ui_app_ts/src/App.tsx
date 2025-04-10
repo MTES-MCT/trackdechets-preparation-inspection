@@ -4,11 +4,10 @@ import { fetchPlots } from "./store/mapDataSlice";
 import { useFetchPlots } from "./store/hooks";
 import { Filters } from "./components/filtering/Filter";
 import { useAppDispatch } from "./store/root";
+import MapContainer from "./components/Map.tsx";
 
 import { MapRef as ReactMapGLRef } from "react-map-gl/maplibre";
-import { lazy, Suspense } from "react";
-
-const MapContainer = lazy(() => import("./components/Map.tsx"));
+import { Suspense } from "react";
 
 function App() {
   const dispatch = useAppDispatch();

@@ -39,6 +39,7 @@ class CartoCompanyFilter(filters.FilterSet):
     profils = filters.CharFilter(method="filter_profils")
     profils_collecteur = filters.CharFilter(method="filter_profils_collecteur")
     profils_installation = filters.CharFilter(method="filter_profils_installation")
+    profils_installation_vhu = filters.CharFilter(method="filter_profils_installation_vhu")
     bsds = filters.CharFilter(method="filter_bsds")
     bsds_roles = filters.CharFilter(method="filter_bsds_roles")
     operation_codes = filters.CharFilter(method="filter_operation_codes")
@@ -56,6 +57,9 @@ class CartoCompanyFilter(filters.FilterSet):
 
     def filter_profils_installation(self, queryset, name, value):
         return queryset.filter(profils_installation__contains=value.split(","))
+
+    def filter_profils_installation_vhu(self, queryset, name, value):
+        return queryset.filter(profils_installation_vhu__contains=value.split(","))
 
     def filter_waste_codes(self, queryset, name, value):
         return queryset.filter(waste_codes_bordereaux__overlap=value.split(","))

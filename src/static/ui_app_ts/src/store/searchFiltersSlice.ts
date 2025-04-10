@@ -9,6 +9,7 @@ import {
   BSDA,
   SSD,
   TEXS,
+  SUB_PROFILES,
 } from "../constants/constants.ts";
 
 import { FilterValue } from "../types.ts";
@@ -60,12 +61,6 @@ interface ClearFilterPayload {
   subFilterKey?: string;
 }
 
-const getParentValueForSubFilterKey = (subFilterKey: string): string | null => {
-  const profileOption = PROFILE_OPTIONS.find(
-    (option) => option.subTypesName === subFilterKey,
-  );
-  return profileOption?.value || null;
-};
 const getSubFilterKeyForProfileValue = (value: string): string | null => {
   const profileOption = PROFILE_OPTIONS.find(
     (option) => option.value === value,
@@ -85,26 +80,18 @@ export const searchFiltersSlice = createSlice({
     addFilter: (state, action: PayloadAction<AddRemoveFilterPayload>) => {
       const { filterKey, subFilterKey = "root", value } = action.payload;
 
-      // Special handling for profileFilters
-      if (filterKey === "profileFilters" && subFilterKey !== "root") {
-        // Get the parent value for this subFilterKey
-        const parentValue = getParentValueForSubFilterKey(subFilterKey);
+      const filterState = state[filterKey] as Record<string, string[]>;
 
-        // Only allow adding if the parent value is in the root array
-        if (parentValue && state.profileFilters.root.includes(parentValue)) {
-          const filterState = state[filterKey] as Record<string, string[]>;
-          const arr = filterState[subFilterKey];
-          if (!arr.includes(value)) {
-            arr.push(value);
-          }
-        }
-        // If parent not checked, we don't add the value
-      } else {
-        // Normal handling for root and other filters
-        const filterState = state[filterKey] as Record<string, string[]>;
-        const arr = filterState[subFilterKey];
-        if (!arr.includes(value)) {
-          arr.push(value);
+      const arr = filterState[subFilterKey];
+      if (!arr.includes(value)) {
+        arr.push(value);
+      }
+      // special handling for subprofiles
+      if (filterKey === "profileFilters" && subFilterKey === "root") {
+        const childFilterKey = getSubFilterKeyForProfileValue(value);
+        if (childFilterKey) {
+          const subProfiles = SUB_PROFILES[childFilterKey];
+          filterState[childFilterKey] = subProfiles.map((p) => p.value);
         }
       }
     },
@@ -122,19 +109,8 @@ export const searchFiltersSlice = createSlice({
       const arr = filterState[subFilterKey];
 
       const index = arr.findIndex((el: string) => el === value);
+
       if (index !== -1) arr.splice(index, 1);
-
-      // Special handling for profileFilters - if removing from root, also clear related sub-filters
-      if (filterKey === "profileFilters" && subFilterKey === "root") {
-        const relatedSubFilterKey = getSubFilterKeyForProfileValue(value);
-
-        // If this root value has a related subFilterKey, clear all values in that subFilter
-        if (relatedSubFilterKey) {
-          state.profileFilters[
-            relatedSubFilterKey as keyof ProfileFilterState
-          ] = [];
-        }
-      }
 
       if (value === ROLE_DESTINATION) {
         // reset operation codes when destination role is removed

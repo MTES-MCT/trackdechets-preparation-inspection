@@ -2,7 +2,7 @@ import { VERBOSE_ROLES, PROFILE_MAPPING } from "../constants/constants.ts";
 import { FlyToProps, SidebarProps } from "../types";
 import { setModalState } from "../store/modalSlice";
 import { useAppDispatch, useAppSelector, RootState } from "../store/root";
-import { removeFilter } from "../store/searchFiltersSlice";
+import { ProfileFilterState, removeFilter } from "../store/searchFiltersSlice";
 
 import { FRENCH_DEPARTMENTS } from "../constants/departments.ts";
 
@@ -70,7 +70,16 @@ const FlyTo = ({ mapRef, lat, long, label, zoom = 9 }: FlyToProps) => {
     </button>
   );
 };
+const profileFilterToTag = (profileFilters: ProfileFilterState) => {
+  const result: { value: string; key: string }[] = [];
 
+  Object.keys(profileFilters).forEach((key) => {
+    profileFilters[key].forEach((value) => {
+      result.push({ value, key });
+    });
+  });
+  return result;
+};
 const FilterDigest = () => {
   const dispatch = useAppDispatch();
 
@@ -88,7 +97,8 @@ const FilterDigest = () => {
   const bsdTypeFilter = bsdTypeFilters.root.length
     ? bsdTypeFilters.root[0]
     : "Tous";
-  const profiles = Object.values(profileFilters).flat();
+
+  const profiles = profileFilterToTag(profileFilters);
 
   return (
     <div>
@@ -162,20 +172,21 @@ const FilterDigest = () => {
       {!!profiles.length && (
         <>
           <p className="fr-mb-0 fr-mt-2w">ET les profils déclarés sont :</p>
-          {profiles.map((profile: string) => (
+          {profiles.map((profile: Record<string, string>) => (
             <button
               className="fr-tag fr-tag--sm fr-tag--dismiss fr-mr-1v"
-              key={profile}
+              key={`${profile.value}-${profile.key}`}
               onClick={() =>
                 dispatch(
                   removeFilter({
                     filterKey: "profileFilters",
-                    value: profile,
+                    subFilterKey: profile.key,
+                    value: profile.value,
                   }),
                 )
               }
             >
-              {PROFILE_MAPPING[profile]}
+              {PROFILE_MAPPING[profile.value]}
             </button>
           ))}
         </>

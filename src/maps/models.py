@@ -1,5 +1,6 @@
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.indexes import GinIndex
 from django.utils.translation import gettext_lazy as _
 
 
@@ -10,6 +11,7 @@ class CartoCompany(models.Model):
     profils = ArrayField(models.TextField(), null=True, blank=True)
     profils_collecteur = ArrayField(models.TextField(), null=True, blank=True)
     profils_installation = ArrayField(models.TextField(), null=True, blank=True)
+    profils_installation_vhu = ArrayField(models.TextField(), null=True, blank=True)
 
     # Bsdd
     bsdd = models.BooleanField(null=True, blank=True)
@@ -134,6 +136,23 @@ class CartoCompany(models.Model):
             models.Index(fields=["siret"]),
             models.Index(fields=["code_departement_insee"]),
             models.Index(fields=["code_region_insee"]),
+            # GIN indexes for all ArrayFields
+            GinIndex(fields=["profils"]),
+            GinIndex(fields=["profils_collecteur"]),
+            GinIndex(fields=["profils_installation"]),
+            GinIndex(fields=["profils_installation_vhu"]),
+            GinIndex(fields=["processing_operations_bsdd"]),
+            GinIndex(fields=["processing_operations_bsdnd"]),
+            GinIndex(fields=["processing_operations_bsda"]),
+            GinIndex(fields=["processing_operations_bsff"]),
+            GinIndex(fields=["processing_operations_bsdasri"]),
+            GinIndex(fields=["processing_operations_bsvhu"]),
+            GinIndex(fields=["processing_operation_dnd"]),
+            GinIndex(fields=["processing_operation_texs"]),
+            GinIndex(fields=["waste_codes_bordereaux"]),
+            # GinIndex(fields=["waste_codes_dnd_statements"]),
+            # GinIndex(fields=["waste_codes_texs_statements"]),
+            # GinIndex(fields=["waste_codes_processed"]),
         ]
 
     def __str__(self):

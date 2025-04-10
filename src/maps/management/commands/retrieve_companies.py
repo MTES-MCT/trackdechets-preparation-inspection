@@ -14,6 +14,7 @@ SELECT
     profils,
     profils_collecteur,
     profils_installation,
+    profils_installation_vhu,
     bsdd,
     bsdd_emitter,
     bsdd_transporter,

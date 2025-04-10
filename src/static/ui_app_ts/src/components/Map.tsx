@@ -245,7 +245,6 @@ export default function MapContainer({ mapRef, lat, lng }: MapContainerProps) {
         anchor="center"
         onClick={(e) => {
           e.originalEvent.stopPropagation();
-          console.log(zoom);
           mapRef.current?.getMap().flyTo({
             center: [plot.long, plot.lat],
             zoom: zoom + 2,

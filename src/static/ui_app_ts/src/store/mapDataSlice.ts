@@ -69,7 +69,7 @@ const buildUrl = ({
 
   if (profileFilters.wasteVehiclesTypes.length) {
     params.append(
-      "waste_vehicles_types",
+      "profils_installation_vhu",
       profileFilters.wasteVehiclesTypes.join(","),
     );
   }

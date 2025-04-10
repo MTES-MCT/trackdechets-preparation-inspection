@@ -205,3 +205,16 @@ export interface MapUiState {
   zoom: number;
   bounds: MapBounds;
 }
+export type SubProfile = {
+  value: string;
+  label: string;
+  shortLabel: string;
+};
+
+export type Profile = {
+  value: string;
+  label: string;
+  shortLabel: string;
+  subTypesName?: string;
+  options?: SubProfile[];
+};

@@ -1,10 +1,10 @@
+import { Profile, SubProfile } from "../types";
+
 export const TYPE_AND_ROLE = "TYPE_AND_ROLE";
 export const WASTE_CODE = "WASTE_CODE";
 
 export const ZOOM_ETABS = 9;
 export const ZOOM_CLUSTERS = 8;
-export const ZOOM_DEPARTMENTS = 7;
-// beyond: (6 to 1) regions
 
 const broker = "BROKER";
 /** Installation de Tri, transit regroupement de déchets */
@@ -85,34 +85,7 @@ const WasteProcessorType = {
   OtherNonDangerousWastes: "OTHER_NON_DANGEROUS_WASTES",
 };
 
-export const BSDS_OPTIONS = [
-  {
-    value: BSDD,
-    label: "Déchets dangereux",
-    shortLabel: "Bsdd",
-  },
-  {
-    value: BSDA,
-    label: "Déchets d'amiante",
-    shortLabel: "Amiante",
-  },
-  {
-    value: BSFF,
-    label: "Déchets de Fluides Frigorigènes",
-    shortLabel: "Fluides frigo",
-  },
-  {
-    value: BSVHU,
-    label: "Véhicules hors d'usage",
-    shortLabel: "VHU",
-  },
-  {
-    value: BSDASRI,
-    label: "Déchets d'Activités de Soins à Risques Infectieux",
-    shortLabel: "Dasri",
-  },
-];
-export const COLLECTOR_TYPE_OPTIONS = [
+export const COLLECTOR_TYPE_OPTIONS: SubProfile[] = [
   {
     label: "Déchets non Dangereux (Rubriques 2713, 2714, 2715, 2716)",
     shortLabel: "Déchets non Dangereux",
@@ -142,7 +115,7 @@ export const COLLECTOR_TYPE_OPTIONS = [
   },
 ];
 
-export const WASTE_PROCESSOR_TYPE_OPTIONS = [
+export const WASTE_PROCESSOR_TYPE_OPTIONS: SubProfile[] = [
   {
     label: "Incinération de déchets dangereux (Rubrique 2770)",
     shortLabel: "Incinération dd",
@@ -189,16 +162,21 @@ export const WASTE_PROCESSOR_TYPE_OPTIONS = [
   },
 ];
 
-export const WASTE_VEHICLES_TYPE_OPTIONS = [
-  { label: "Broyeur VHU", shortLabel: "Broyeur VHU", value: "Broyeur" },
+export const WASTE_VEHICLES_TYPE_OPTIONS: SubProfile[] = [
+  { label: "Broyeur VHU", shortLabel: "Broyeur VHU", value: "BROYEUR" },
   {
     label: "Casse automobile / démolisseur",
     shortLabel: "Casse auto",
-    value: "Demolisseur",
+    value: "DEMOLISSEUR",
   },
 ];
+export const SUB_PROFILES: Record<string, SubProfile[]> = {
+  collectorTypes: COLLECTOR_TYPE_OPTIONS,
+  wasteProcessorTypes: WASTE_PROCESSOR_TYPE_OPTIONS,
+  wasteVehiclesTypes: WASTE_VEHICLES_TYPE_OPTIONS,
+};
 
-export const PROFILE_OPTIONS = [
+export const PROFILE_OPTIONS: Profile[] = [
   {
     value: producer,
     label: "Producteur de déchets, y compris terres et sédiments",

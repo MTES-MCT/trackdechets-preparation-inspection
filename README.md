@@ -125,6 +125,10 @@ Linter de scanning de sécurité
     $ bandit -c pyproject.toml -r
 ```
 
+### Déploiement
+
+Au 10/04/2025 il a été nécessaire d'augmenter la taille du build scalingo de 1.5 à 2 gb.
+
 ## Licence
 
 Le code source du logiciel est publié sous licence [MIT](https://fr.wikipedia.org/wiki/Licence_MIT).

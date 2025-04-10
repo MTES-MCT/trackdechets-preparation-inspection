@@ -1,4 +1,6 @@
-export const LocMarker = () => (
+import React from "react";
+
+export const LocMarker: React.FC = () => (
   <svg
     width="24"
     height="24"

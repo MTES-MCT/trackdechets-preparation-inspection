@@ -114,7 +114,6 @@ DWH_SSH_KEY = env.str("DWH_SSH_KEY", multiline=True)
 WAREHOUSE_URL = (
     f"clickhouse+native://{DWH_USERNAME}:{DWH_PASSWORD}@{DWH_SSH_LOCAL_BIND_HOST}:{DWH_SSH_LOCAL_BIND_PORT}"
 )
-
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
@@ -154,7 +153,7 @@ STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 )
 STATICFILES_DIR = SRC_DIR / "static"
-DJANGO_VITE_ASSETS_PATH = STATICFILES_DIR / "ui_app" / "dist"
+DJANGO_VITE_ASSETS_PATH = STATICFILES_DIR / "ui_app_ts" / "dist"
 
 STATICFILES_DIRS = [
     str(STATICFILES_DIR),
@@ -271,6 +270,7 @@ ID_ID_CURRASSO = env("ID_ID_CURRASSO")
 PROCONNECT_ALLOWED_IDP_IDS = [
     ID_ID_CURRASSO,
 ]
+
 
 OIDC_LOGIN_REDIRECT_URL = "private_home"
 

@@ -1,4 +1,14 @@
-export const Cluster = ({ txt = 11, fill = "#777" }) => (
+import React from "react";
+
+interface ClusterProps {
+  txt?: string | number;
+  fill?: string;
+}
+
+export const Cluster: React.FC<ClusterProps> = ({
+  txt = 11,
+  fill = "#777",
+}) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     height="80"

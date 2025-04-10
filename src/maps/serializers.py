@@ -46,7 +46,17 @@ class DepartmentCompanySerializer(BaseCompanySerializer):
     centroids = DEPARTMENTS_CENTROIDS
 
 
-WASTE_NAMES = ["Déchets dangereux", "Amiante", "Fluides Frigorigènes", "Dasri", "Vehicules hors d'usage"]
+WASTE_NAMES = [
+    "Déchets dangereux",
+    "Amiante",
+    "Fluides Frigorigènes",
+    "Dasri",
+    "Vehicules hors d'usage",
+    "Sortie de statut de déchet",
+    "Déchets non dangereux",
+    "Terres et sédiments - DD",
+    "Terres et sédiments - DND",
+]
 
 
 class CompanySerializer(serializers.ModelSerializer):
@@ -66,7 +76,7 @@ class CompanySerializer(serializers.ModelSerializer):
         return obj.coords[0]
 
     def get_wastes(self, obj):
-        vector = [obj.bsdd, obj.bsda, obj.bsff, obj.bsdasri, obj.bsvhu]
+        vector = [obj.bsdd, obj.bsda, obj.bsff, obj.bsdasri, obj.bsvhu, obj.ssd, obj.bsdnd, obj.texs_dd, obj.texs]
         return ", ".join([n for i, n in enumerate(WASTE_NAMES) if vector[i]])
 
     def get_profiles(self, obj):
@@ -79,7 +89,7 @@ class CompanySerializer(serializers.ModelSerializer):
 class ClusterSerializer(serializers.Serializer):
     lat = serializers.SerializerMethodField()
     long = serializers.SerializerMethodField()
-    count = serializers.IntegerField(source="cnt")
+    count = serializers.IntegerField()
 
     def get_lat(self, obj):
         return obj["location"].coords[1]

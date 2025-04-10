@@ -1,3 +1,5 @@
+import { PopupProps } from "../types";
+
 export function Popup({
   title,
   text,
@@ -6,7 +8,7 @@ export function Popup({
   row2 = null,
   row3 = null,
   link = null,
-}) {
+}: PopupProps) {
   return (
     <div className="map-popup">
       <div className="map-popup__close" onClick={onClose}>

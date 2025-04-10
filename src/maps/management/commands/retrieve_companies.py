@@ -7,7 +7,7 @@ from sheets.ssh import ssh_tunnel
 
 from ...models import CartoCompany
 
-query = """
+BASE_QUERY = """
 SELECT
     siret,
     nom_etablissement,
@@ -58,36 +58,70 @@ SELECT
     processing_operations_bsvhu,
     processing_operation_dnd,
     processing_operation_texs,
-    
+
     waste_codes_bordereaux,
     waste_codes_dnd_statements,
     waste_codes_texs_statements,
     waste_codes_processed,
-    
+
     code_commune_insee,
     code_departement_insee,
     code_region_insee,
     adresse_td,
     adresse_insee,
-    
-    coords
 
+    coords
 FROM
-	refined_zone_analytics.cartographie_des_etablissements_geocoded
+    refined_zone_analytics.cartographie_des_etablissements_geocoded
 """
+BATCH_SIZE = 10000
 
 
 class Command(BaseCommand):
-    def handle(self, verbosity=0, **options):
+    help = "Import CartoCompany data with pagination"
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--chunk-size",
+            type=int,
+            default=BATCH_SIZE,
+            help="Number of records to process in each batch",
+        )
+
+    def handle(self, *args, **options):
+        chunk_size = options["chunk_size"]
+        self.stdout.write("Deleting existing CartoCompany objects...")
         CartoCompany.objects.all().delete()
 
+        count_query = "SELECT COUNT(*) FROM refined_zone_analytics.cartographie_des_etablissements_geocoded"
+
         with ssh_tunnel(settings):
-            companies_df = build_query(query)
+            count_df = build_query(count_query)
+            total_count = count_df.iloc[0, 0]
 
-        companies_dicts = companies_df.to_dict(orient="records")
-        companies_dicts_without_nan = [
-            {k: (None if (isinstance(v, float) and pd.isna(v)) else v) for k, v in e.items()} for e in companies_dicts
-        ]
+            self.stdout.write(f"Found {total_count} records to import")
 
-        data = [CartoCompany(**c) for c in companies_dicts_without_nan]
-        CartoCompany.objects.bulk_create(data)
+            offset = 0
+            imported_count = 0
+
+            while offset < total_count:
+                paginated_query = f"{BASE_QUERY} LIMIT {chunk_size} OFFSET {offset}"
+                self.stdout.write(f"Processing records {offset + 1} to {min(offset + chunk_size, total_count)}")
+
+                companies_df = build_query(paginated_query)
+
+                companies_dicts = companies_df.to_dict(orient="records")
+                companies_dicts_without_nan = [
+                    {k: (None if (isinstance(v, float) and pd.isna(v)) else v) for k, v in e.items()}
+                    for e in companies_dicts
+                ]
+
+                data = [CartoCompany(**c) for c in companies_dicts_without_nan]
+                created = CartoCompany.objects.bulk_create(data)
+
+                imported_count += len(created)
+                self.stdout.write(f"Imported {len(created)} companies (total: {imported_count}/{total_count})")
+
+                offset += chunk_size
+
+        self.stdout.write(self.style.SUCCESS(f"Successfully imported {imported_count} companies"))

@@ -4,6 +4,9 @@ import pandas as pd
 from django.conf import settings
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
+from sqlalchemy.engine import Engine
+
+from sheets.ssh import get_tunnel_port
 
 from .queries import (
     sql_bsda_query_str,
@@ -36,7 +39,6 @@ from .queries import (
     sql_revised_bsdd_query_str,
 )
 
-wh_engine = create_engine(settings.WAREHOUSE_URL)
 
 bsd_date_params = ["created_at", "updated_at", "sent_at", "received_at", "processed_at", "worker_work_signature_date"]
 
@@ -57,6 +59,14 @@ bs_dtypes = {
 }
 
 
+def get_wh_sqlachemy_engine(dwh_username: str, dwh_password: str, dwh_ssh_local_bind_host: str) -> Engine:
+    tunnel_port = get_tunnel_port()
+    warehouse_url = f"clickhouse+native://{dwh_username}:{dwh_password}@{dwh_ssh_local_bind_host}:{tunnel_port}"
+    wh_engine = create_engine(warehouse_url)
+
+    return wh_engine
+
+
 def build_query(
     query_str,
     query_params: dict[str, Any] | None = None,
@@ -64,6 +74,8 @@ def build_query(
     dtypes: dict[str, Any] | None = None,
 ):
     query = text(query_str)
+
+    wh_engine = get_wh_sqlachemy_engine(settings.DWH_USERNAME, settings.DWH_PASSWORD, settings.DWH_SSH_LOCAL_BIND_HOST)
 
     df = pd.read_sql_query(
         query,

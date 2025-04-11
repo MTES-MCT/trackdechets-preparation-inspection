@@ -2,7 +2,7 @@ from django.conf import settings
 from django.forms import CharField, Form, HiddenInput, ValidationError
 from sqlalchemy.sql import text
 
-from sheets.database import wh_engine
+from sheets.database import get_wh_sqlachemy_engine
 from sheets.queries import sql_company_query_exists_str
 from sheets.ssh import ssh_tunnel
 
@@ -39,8 +39,10 @@ class RoadControlSearchForm(Form):
         siret = "".join(siret.split())  # strip all whitespace
 
         prepared_query = text(sql_company_query_exists_str)
-
         with ssh_tunnel(settings):
+            wh_engine = get_wh_sqlachemy_engine(
+                settings.DWH_USERNAME, settings.DWH_PASSWORD, settings.DWH_SSH_LOCAL_BIND_HOST
+            )
             with wh_engine.connect() as con:
                 companies = con.execute(prepared_query, siret=siret).all()
 

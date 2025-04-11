@@ -3,7 +3,7 @@ from django.utils import timezone
 from rest_framework import serializers
 from sqlalchemy.sql import text
 
-from sheets.database import wh_engine
+from sheets.database import get_wh_sqlachemy_engine
 from sheets.models import ComputedInspectionData
 from sheets.queries import sql_company_query_exists_str
 from sheets.ssh import ssh_tunnel
@@ -40,6 +40,9 @@ class ComputedInspectionDataCreateSerializer(serializers.Serializer):
         prepared_query = text(sql_company_query_exists_str)
 
         with ssh_tunnel(settings):
+            wh_engine = get_wh_sqlachemy_engine(
+                settings.DWH_USERNAME, settings.DWH_PASSWORD, settings.DWH_SSH_LOCAL_BIND_HOST
+            )
             with wh_engine.connect() as con:
                 companies = con.execute(prepared_query, siret=siret).all()
             if not companies:

@@ -109,14 +109,11 @@ DWH_SSH_HOST = env.str("DWH_SSH_HOST")
 DWH_SSH_PORT = env.str("DWH_SSH_PORT")
 DWH_SSH_USERNAME = env.str("DWH_SSH_USERNAME")
 DWH_SSH_LOCAL_BIND_HOST = env.str("DWH_SSH_LOCAL_BIND_HOST")
-DWH_SSH_LOCAL_BIND_PORT = env.str("DWH_SSH_LOCAL_BIND_PORT")
 DWH_SSH_KEY = env.str("DWH_SSH_KEY", multiline=True)
-WAREHOUSE_URL = (
-    f"clickhouse+native://{DWH_USERNAME}:{DWH_PASSWORD}@{DWH_SSH_LOCAL_BIND_HOST}:{DWH_SSH_LOCAL_BIND_PORT}"
-)
+
+
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",

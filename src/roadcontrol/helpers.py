@@ -2,7 +2,8 @@ from typing import TypedDict
 
 from sqlalchemy.sql import text
 
-from sheets.database import wh_engine
+from sheets.database import get_wh_sqlachemy_engine
+from sheets.ssh import ssh_tunnel
 
 sql_company_query_data_str = """
 select
@@ -24,8 +25,13 @@ class CompanyData(TypedDict):
 
 def get_company_data(siret) -> CompanyData:
     prepared_query = text(sql_company_query_data_str)
-    with wh_engine.connect() as con:
-        companies = con.execute(prepared_query, siret=siret).all()
+
+    with ssh_tunnel(settings):
+        wh_engine = get_wh_sqlachemy_engine(
+            settings.DWH_USERNAME, settings.DWH_PASSWORD, settings.DWH_SSH_LOCAL_BIND_HOST
+        )
+        with wh_engine.connect() as con:
+            companies = con.execute(prepared_query, siret=siret).all()
 
     company = companies[0]
     return {

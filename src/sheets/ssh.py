@@ -1,9 +1,20 @@
 import os
 import tempfile
 from contextlib import contextmanager
+from typing import Any
 
 import sshtunnel
 from django.conf import LazySettings
+
+_tunnel_info: dict[str, Any] = {}
+
+
+def set_tunnel_port(port: int):
+    _tunnel_info["port"] = port
+
+
+def get_tunnel_port() -> int:
+    return _tunnel_info.get("port")
 
 
 @contextmanager
@@ -41,10 +52,11 @@ def ssh_tunnel(settings: LazySettings):
             ssh_username=settings.DWH_SSH_USERNAME,
             ssh_pkey=temp_key_file.name,
             remote_bind_address=("localhost", int(settings.DWH_PORT)),
-            local_bind_address=(settings.DWH_SSH_LOCAL_BIND_HOST, int(settings.DWH_SSH_LOCAL_BIND_PORT)),
         )
 
         tunnel.start()
+        set_tunnel_port(tunnel.local_bind_port)
+
         yield tunnel
     finally:
         tunnel.stop()

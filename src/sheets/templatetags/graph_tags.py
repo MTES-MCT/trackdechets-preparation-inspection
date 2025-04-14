@@ -1,3 +1,5 @@
+import re
+
 from django import template
 
 register = template.Library()
@@ -213,3 +215,57 @@ def render_incinerator_outgoing_waste_table(computed, graph_context="web"):
         "non_dangerous_data": non_dangerous_data,
         "graph_context": graph_context,
     }
+
+
+@register.inclusion_tag("sheets/components/icpe_graphs.html")
+def render_icpe_graphs(computed, graph_context="web"):
+    attributes = [
+        "icpe_2760_1_data",
+        "icpe_2770_data",
+        "icpe_2790_data",
+        "icpe_2760_2_data",
+        "icpe_2771_data",
+        "icpe_2791_data",
+    ]
+
+    rubriques_data = []
+
+    icpe_rubriques_items = computed.icpe_data
+
+    for attribute in attributes:
+        rubrique = attribute[5:-5].replace("_", "-")
+        icpe_data = getattr(computed, attribute)
+        if ((icpe_data is None) or (icpe_data in ["", "{}"])) and not has_rubrique(rubrique, icpe_rubriques_items):
+            continue
+
+        data_source = "Trackdéchets" if rubrique in ["2760-1", "2770", "2790"] else "RNDTS"
+
+        graph_data = None
+        if graph_context == "pdf":
+            graph_data = getattr(computed, attribute.replace("_data", "_graph"))
+
+        rubriques_data.append({"icpe_rubrique": rubrique, "data_source": data_source, "graph_data": graph_data})
+
+    return {"rubriques_data": rubriques_data}
+
+
+def has_rubrique(rubrique_to_search: str, icpe_rubriques_items: list[dict]) -> bool:
+    for rubrique_item in icpe_rubriques_items:
+        rubrique_available = rubrique_item["rubrique"]
+
+        rubrique_cleaned = ""
+        if (
+            re.match(r"^2760-[1,2].*", rubrique_available) is not None
+        ):  # Handle the cases 2760-1, 27-60-2-7, 2760-2-b...
+            rubrique_cleaned = rubrique_available[:6]
+        elif rubrique_available.startswith("2791"):  # Handle the cases 2791-*
+            rubrique_cleaned = rubrique_available[:4]
+        elif rubrique_available in ["2770", "2790", "2771"]:
+            rubrique_cleaned = rubrique_available
+        else:
+            continue
+
+        if rubrique_to_search == rubrique_cleaned:
+            return True
+
+    return False

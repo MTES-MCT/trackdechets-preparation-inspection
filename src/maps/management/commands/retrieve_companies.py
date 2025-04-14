@@ -1,3 +1,5 @@
+import datetime as dt
+
 import pandas as pd
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -69,12 +71,37 @@ SELECT
     code_region_insee,
     adresse_td,
     adresse_insee,
+    date_inscription,
 
     coords
 FROM
     refined_zone_analytics.cartographie_des_etablissements_geocoded
+ORDER BY siret
 """
 BATCH_SIZE = 10000
+
+
+def cleanup_duplicate_sirets(may_have_duplicates):
+    """Take a list of dicts and remove those whose siret is duplicated"""
+    seen_sirets = set()
+    deduplicated = []
+
+    for item in may_have_duplicates:
+        siret = item.get("siret")
+        if siret not in seen_sirets:
+            seen_sirets.add(siret)
+            deduplicated.append(item)
+
+    return deduplicated
+
+
+def clean_pd_val(val):
+    """Cleanup pd rows for db insertion"""
+    if isinstance(val, dt.datetime) and pd.isna(val):
+        return None
+    if isinstance(val, float) and pd.isnat(val):
+        return None
+    return val
 
 
 class Command(BaseCommand):
@@ -93,8 +120,7 @@ class Command(BaseCommand):
         self.stdout.write("Deleting existing CartoCompany objects...")
         CartoCompany.objects.all().delete()
 
-        count_query = "SELECT COUNT(*) FROM refined_zone_analytics.cartographie_des_etablissements_geocoded"
-
+        count_query = "SELECT COUNT() FROM refined_zone_analytics.cartographie_des_etablissements_geocoded"
         with ssh_tunnel(settings):
             count_df = build_query(count_query)
             total_count = count_df.iloc[0, 0]
@@ -106,20 +132,28 @@ class Command(BaseCommand):
 
             while offset < total_count:
                 paginated_query = f"{BASE_QUERY} LIMIT {chunk_size} OFFSET {offset}"
+
                 self.stdout.write(f"Processing records {offset + 1} to {min(offset + chunk_size, total_count)}")
 
                 companies_df = build_query(paginated_query)
 
                 companies_dicts = companies_df.to_dict(orient="records")
+                dedup_companies_dicts = cleanup_duplicate_sirets(companies_dicts)
+
+                already_existing_sirets = CartoCompany.objects.all().values_list("siret", flat=True)
+                refined_companies_dicts = [
+                    dct for dct in dedup_companies_dicts if dct["siret"] not in already_existing_sirets
+                ]
+
                 companies_dicts_without_nan = [
-                    {k: (None if (isinstance(v, float) and pd.isna(v)) else v) for k, v in e.items()}
-                    for e in companies_dicts
+                    {k: clean_pd_val(v) for k, v in e.items()} for e in refined_companies_dicts
                 ]
 
                 data = [CartoCompany(**c) for c in companies_dicts_without_nan]
                 created = CartoCompany.objects.bulk_create(data)
 
                 imported_count += len(created)
+
                 self.stdout.write(f"Imported {len(created)} companies (total: {imported_count}/{total_count})")
 
                 offset += chunk_size

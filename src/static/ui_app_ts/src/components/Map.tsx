@@ -80,7 +80,7 @@ const MARKER_BLUE = "#000091";
 const mapPlotToPopup = (plot: Plot, zoom: number): PopupData | null => {
   if (zoom >= ZOOM_ETABS) {
     return {
-      popupTitle: plot.nom_etablissement || "",
+      popupTitle: plot.nom_etablissement || "Nom non renseigné",
       popupText: plot.adresse_td || "",
       popupRow1: ["Siret", plot.siret || ""],
       popupRow2: ["Profil", plot.profiles || ""],

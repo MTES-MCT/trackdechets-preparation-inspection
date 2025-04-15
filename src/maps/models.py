@@ -91,6 +91,7 @@ class CartoCompany(models.Model):
     adresse_td = models.TextField(null=True, blank=True)
     adresse_insee = models.TextField(null=True, blank=True)
 
+    date_inscription = models.DateTimeField(null=True, blank=True)
     coords = models.PointField(null=True, blank=True, spatial_index=True)
 
     class Meta:
@@ -150,10 +151,8 @@ class CartoCompany(models.Model):
             GinIndex(fields=["processing_operation_dnd"]),
             GinIndex(fields=["processing_operation_texs"]),
             GinIndex(fields=["waste_codes_bordereaux"]),
-            # GinIndex(fields=["waste_codes_dnd_statements"]),
-            # GinIndex(fields=["waste_codes_texs_statements"]),
-            # GinIndex(fields=["waste_codes_processed"]),
         ]
+        constraints = [models.UniqueConstraint(fields=["siret"], name="unique_siret")]
 
     def __str__(self):
         return f"{self.siret} - {self.nom_etablissement}"

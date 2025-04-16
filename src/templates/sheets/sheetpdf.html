@@ -355,72 +355,7 @@
                     En cas de différence avec la réalité, merci de vérifier et mettre à jour GUN,
                     de façon à pouvoir vous proposer une analyse plus fine en lien avec les rubriques.
                 </p>
-                <div class="row">
-                    <div class="cell cell--bordered cell--full">
-                        <h3 class="cell__title">Données relatives à la rubrique 2760-1</h3>
-                        <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : Trackdéchets</p>
-                        {% if icpe_2760_graph %}
-                            <img src="data:image/png;base64,{{ icpe_2760_1_graph }}" class="cell__img">
-                        {% else %}
-                            <div class="no-data">Pas de données à afficher.</div>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="cell cell--bordered cell--full">
-                        <h3 class="cell__title">Données relatives à la rubrique 2760-2</h3>
-                        <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
-                        {% if icpe_2760_2_graph %}
-                            <img src="data:image/png;base64,{{ icpe_2760_2_graph }}" class="cell__img">
-                        {% else %}
-                            <div class="no-data">Pas de données à afficher.</div>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="cell cell--bordered cell--full">
-                        <h3 class="cell__title">Données relatives à la rubrique 2770</h3>
-                        <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : Trackdéchets</p>
-                        {% if icpe_2770_graph %}
-                            <img src="data:image/png;base64,{{ icpe_2770_graph }}" class="cell__img">
-                        {% else %}
-                            <div class="no-data">Pas de données à afficher.</div>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="cell cell--bordered cell--full">
-                        <h3 class="cell__title">Données relatives à la rubrique 2771</h3>
-                        <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
-                        {% if icpe_2771_graph %}
-                            <img src="data:image/png;base64,{{ icpe_2771_graph }}" class="cell__img">
-                        {% else %}
-                            <div class="no-data">Pas de données à afficher.</div>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="cell cell--bordered cell--full">
-                        <h3 class="cell__title">Données relatives à la rubrique 2790</h3>
-                        <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : Trackdéchets</p>
-                        {% if icpe_2790_graph %}
-                            <img src="data:image/png;base64,{{ icpe_2790_graph }}" class="cell__img">
-                        {% else %}
-                            <div class="no-data">Pas de données à afficher.</div>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="cell cell--bordered cell--full">
-                        <h3 class="cell__title">Données relatives à la rubrique 2791</h3>
-                        <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
-                        {% if icpe_2791_graph %}
-                            <img src="data:image/png;base64,{{ icpe_2791_graph }}" class="cell__img">
-                        {% else %}
-                            <div class="no-data">Pas de données à afficher.</div>
-                        {% endif %}
-                    </div>
-                </div>
+                {% render_icpe_graphs sheet graph_context="pdf" %}
                 {% if sheet.bs_processed_without_icpe_authorization %}
                     <div class="row">
                         <div>

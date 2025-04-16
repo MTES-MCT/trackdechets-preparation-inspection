@@ -1,0 +1,17 @@
+{% for rubrique_data in rubriques_data %}
+    <div class="row">
+        <div class="cell cell--bordered cell--full">
+            <h3 class="cell__title">Données relatives à la rubrique {{ rubrique_data.icpe_rubrique }}</h3>
+            <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">
+                Source : {{ rubrique_data.data_source }}
+            </p>
+            <div id="icpe-{{ rubrique_data.icpe_rubrique }}-graph">
+                {% if rubrique_data.graph_data %}
+                    <img src="data:image/png;base64,{{ rubrique_data.graph_data }}" class="cell__img">
+                {% else %}
+                    <div class="no-data">Pas de données à afficher.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endfor %}

@@ -3,6 +3,7 @@ from rest_framework import serializers
 from sheets.constants import COMPANY_TYPES
 
 from .centroids import DEPARTMENTS_CENTROIDS, REGIONS_CENTROIDS
+from .constants import PROCESSING_OPERATIONS_FIELDS, ROLES_TYPES, WASTE_NAMES
 from .models import CartoCompany
 
 
@@ -46,19 +47,6 @@ class DepartmentCompanySerializer(BaseCompanySerializer):
     centroids = DEPARTMENTS_CENTROIDS
 
 
-WASTE_NAMES = [
-    "Déchets dangereux",
-    "Amiante",
-    "Fluides Frigorigènes",
-    "Dasri",
-    "Vehicules hors d'usage",
-    "Sortie de statut de déchet",
-    "Déchets non dangereux",
-    "Terres et sédiments - DD",
-    "Terres et sédiments - DND",
-]
-
-
 class CompanySerializer(serializers.ModelSerializer):
     lat = serializers.SerializerMethodField()
     long = serializers.SerializerMethodField()
@@ -76,7 +64,18 @@ class CompanySerializer(serializers.ModelSerializer):
         return obj.coords[0]
 
     def get_wastes(self, obj):
-        vector = [obj.bsdd, obj.bsda, obj.bsff, obj.bsdasri, obj.bsvhu, obj.ssd, obj.bsdnd, obj.texs_dd, obj.texs]
+        vector = [
+            obj.bsdd,
+            obj.bsda,
+            obj.bsff,
+            obj.bsdasri,
+            obj.bsvhu,
+            obj.ssd,
+            obj.bsdnd,
+            obj.texs,
+            obj.texs_dd,
+        ]
+
         return ", ".join([n for i, n in enumerate(WASTE_NAMES) if vector[i]])
 
     def get_profiles(self, obj):
@@ -96,3 +95,92 @@ class ClusterSerializer(serializers.Serializer):
 
     def get_long(self, obj):
         return obj["location"].coords[0]
+
+
+VERBOSE_ROLES = {
+    "emitter": "Producteur - émetteur",
+    "transporter": "Transporteur",
+    "worker": "Entreprise de travaux",
+    "destination": "Destinataire",
+}
+
+
+class CompanyExportSerializer(serializers.ModelSerializer):
+    """
+    Specialized serializer for company exports that includes basic information
+    and role information formatted as comma-separated values.
+    """
+
+    siret = serializers.CharField()
+    nom_etablissement = serializers.CharField()
+    adresse_td = serializers.CharField()
+
+    # Role fields as string representations
+    bsdd_roles = serializers.SerializerMethodField()
+    bsdnd_roles = serializers.SerializerMethodField()
+    bsda_roles = serializers.SerializerMethodField()
+    bsff_roles = serializers.SerializerMethodField()
+    bsdasri_roles = serializers.SerializerMethodField()
+    bsvhu_roles = serializers.SerializerMethodField()
+    texs_dd_roles = serializers.SerializerMethodField()
+    dnd_roles = serializers.SerializerMethodField()
+    texs_roles = serializers.SerializerMethodField()
+
+    profiles = serializers.SerializerMethodField()
+
+    processing_operations = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CartoCompany
+        fields = [
+            "siret",
+            "nom_etablissement",
+            "adresse_td",
+            "profiles",
+            "bsdd_roles",
+            "bsdnd_roles",
+            "bsda_roles",
+            "bsff_roles",
+            "bsdasri_roles",
+            "bsvhu_roles",
+            "texs_dd_roles",
+            "dnd_roles",
+            "texs_roles",
+            "processing_operations",
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for waste_type in ROLES_TYPES:
+            setattr(self, f"get_{waste_type}_roles", self._create_get_roles_method(waste_type))
+
+    def _create_get_roles_method(self, waste_type):
+        def get_roles(obj):
+            roles = []
+            for role in ROLES_TYPES[waste_type]:
+                field_name = f"{waste_type}_{role}"
+                if getattr(obj, field_name, False):
+                    verbose_role = VERBOSE_ROLES.get(role, role)
+                    roles.append(verbose_role)
+            return ", ".join(roles) if roles else ""
+
+        return get_roles
+
+    def get_processing_operations(self, obj):
+        """Combines processing operations into a string field"""
+        all_operations = []
+
+        # Combine operations from different fields
+        for field_name in PROCESSING_OPERATIONS_FIELDS:
+            operations = getattr(obj, field_name, None)
+            if operations:
+                all_operations.extend(operations)
+
+        return ", ".join(sorted(set(all_operations))) if all_operations else ""
+
+    def get_profiles(self, obj):
+        if not obj.profils:
+            return ""
+
+        return ", ".join([COMPANY_TYPES.get(p) for p in obj.profils if p in COMPANY_TYPES])

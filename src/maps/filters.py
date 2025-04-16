@@ -5,25 +5,13 @@ from django.contrib.gis.geos import Point, Polygon
 from django.db.models import Q
 from django_filters import rest_framework as filters
 
+from .constants import ROLES_TYPES
 from .models import CartoCompany
 
 
 def prepare_role_specific_fields():
-    role_types = {
-        "bsdd": ["emitter", "transporter", "destination"],
-        "bsdnd": ["emitter", "transporter", "destination"],
-        "bsda": ["emitter", "transporter", "destination", "worker"],
-        "bsff": ["emitter", "transporter", "destination"],
-        "bsdasri": ["emitter", "transporter", "destination"],
-        "bsvhu": ["emitter", "transporter", "destination"],
-        "texs_dd": ["emitter", "transporter", "destination"],
-        "dnd": ["emitter", "destination"],
-        "texs": ["emitter", "destination"],
-        "ssd": [],
-    }
-
     role_specific_fields = []
-    for waste_type, roles in role_types.items():
+    for waste_type, roles in ROLES_TYPES.items():
         for role in roles:
             field_name = f"{waste_type}_{role}"
             role_specific_fields.append(field_name)

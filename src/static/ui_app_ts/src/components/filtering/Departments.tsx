@@ -95,7 +95,7 @@ const RegionDepartmentSelector: React.FC = () => {
     <div>
       {FRENCH_REGIONS_WITH_DEPARTMENTS.map((region) => (
         <div key={region.code}>
-          <div className="flex items-center fr-fle">
+          <div className="flex align-items-center">
             <button
               className="fr-btn--tertiary-no-outline fr-btn--sm"
               onClick={() => handleToggleRegion(region.code)}
@@ -120,13 +120,8 @@ const RegionDepartmentSelector: React.FC = () => {
                 onChange={(e) =>
                   handleRegionCheck(region.code, e.target.checked)
                 }
-                className="mr-2"
               />
-              <label
-                htmlFor={`region-${region.code}`}
-                className="pointable"
-                // onClick={() => handleToggleRegion(region.code)}
-              >
+              <label htmlFor={`region-${region.code}`} className="pointable">
                 {region.name}
               </label>
             </div>

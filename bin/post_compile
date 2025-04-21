@@ -1,5 +1,3 @@
 #!/bin/sh
 bash bin/build_front.sh
 
-rm staticfiles -Rf
-python src/manage.py collectstatic --noinput --settings=config.settings.production

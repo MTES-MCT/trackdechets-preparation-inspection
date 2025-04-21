@@ -2,3 +2,4 @@ binutils
 libproj-dev
 gdal-bin
 libgdal-dev
+libopenexr-dev

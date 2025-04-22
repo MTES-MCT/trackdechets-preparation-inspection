@@ -5,6 +5,10 @@ Les changements importants de Trackdéchets préparation inspection sont documen
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 et le projet suit un schéma de versioning inspiré de [Calendar Versioning](https://calver.org/).
 
+## 22/04/2025
+
+- Ajout de l'objectif de quantité traitée pour les installations 2760-2
+
 ## 15/04/2025
 
 - Téléchargement des établissements sélectionnés sur la cartographie

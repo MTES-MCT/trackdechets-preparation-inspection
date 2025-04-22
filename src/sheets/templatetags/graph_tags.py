@@ -217,21 +217,20 @@ def render_incinerator_outgoing_waste_table(computed, graph_context="web"):
 
 @register.inclusion_tag("sheets/components/icpe_graphs.html")
 def render_icpe_graphs(computed, graph_context="web"):
-    attributes = [
-        "icpe_2760_1_data",
-        "icpe_2770_data",
-        "icpe_2790_data",
-        "icpe_2760_2_data",
-        "icpe_2771_data",
-        "icpe_2791_data",
-    ]
+    attributes = {
+        "icpe_2760_1_data": "2760_1",
+        "icpe_2770_data": "2770",
+        "icpe_2790_data": "2790",
+        "icpe_2760_2_data": "2760_2",
+        "icpe_2771_data": "2771",
+        "icpe_2791_data": "2791",
+    }
 
     rubriques_data = []
 
     icpe_rubriques_items = computed.icpe_data
 
-    for attribute in attributes:
-        rubrique = attribute[5:-5].replace("_", "-")
+    for attribute, rubrique in attributes.items():
         icpe_data = getattr(computed, attribute)
         if ((icpe_data is None) or (icpe_data in ["", "{}"])) and not has_rubrique(rubrique, icpe_rubriques_items):
             continue

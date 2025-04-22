@@ -26,6 +26,7 @@ def sample_icpe_data():
         ],
         "processed_quantity": [10, 20, 15, 0, 5, 0, 25, 30, 0, 5],
         "authorized_quantity": [50, 50, 50, 50, 50, 50, 50, 50, 50, 50],
+        "target_quantity": [25, 25, 25, 25, 25, 25, 25, 25, 25, 25],
     }
 
     return pd.DataFrame(data)
@@ -153,6 +154,7 @@ def test_zero_processed_quantities():
         "day_of_processing": [datetime(2023, 1, 1), datetime(2023, 1, 2), datetime(2023, 1, 3)],
         "processed_quantity": [0, 0, 0],
         "authorized_quantity": [50, 50, 50],
+        "target_quantity": [25, 25, 25],
     }
 
     icpe_data_df = pd.DataFrame(data)
@@ -171,6 +173,7 @@ def test_only_nan_processed_quantities():
         "day_of_processing": [datetime(2023, 1, 1), datetime(2023, 1, 2), datetime(2023, 1, 3)],
         "processed_quantity": [float("nan"), float("nan"), float("nan")],
         "authorized_quantity": [50, 50, 50],
+        "target_quantity": [25, 25, 25],
     }
 
     icpe_data_df = pd.DataFrame(data)

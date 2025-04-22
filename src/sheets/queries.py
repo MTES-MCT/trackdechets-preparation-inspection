@@ -553,7 +553,8 @@ sql_get_icpe_item_data = """
 SELECT
     day_of_processing,
     quantite_traitee AS processed_quantity,
-    quantite_autorisee AS authorized_quantity
+    quantite_autorisee AS authorized_quantity,
+    objectif_quantite_traitee AS target_quantity
 FROM
     refined_zone_icpe.installations_daily_processed_wastes
 WHERE

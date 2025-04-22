@@ -909,7 +909,9 @@ class ICPEDailyItemProcessor:
 
 
 class ICPEAnnualItemProcessor:
-    """Component with a figure representing the cummulative quantity of waste processed by day for a particular ICPE "rubrique".
+    """
+    Component with a figure representing the cummulative quantity of waste processed by day
+    for a particular ICPE "rubrique".
 
 
     Parameters:
@@ -926,6 +928,7 @@ class ICPEAnnualItemProcessor:
 
         self.preprocessed_df = None
         self.authorized_quantity = None
+        self.target_quantity = None
 
         self.figure = None
 
@@ -942,6 +945,7 @@ class ICPEAnnualItemProcessor:
 
         self.preprocessed_df = final_df
         self.authorized_quantity = self.icpe_item_daily_data["authorized_quantity"].max()
+        self.target_quantity = self.icpe_item_daily_data["target_quantity"].max()
 
     def _check_data_empty(self) -> bool:
         if (self.preprocessed_df is None) or len(self.preprocessed_df) == 0:
@@ -1012,10 +1016,11 @@ class ICPEAnnualItemProcessor:
                 font_size=13,
             )
 
-            if authorized_quantity > 0:
+            target_quantity = self.target_quantity
+            if target_quantity is not None:
                 # Target for 2025
                 fig.add_hline(
-                    y=authorized_quantity / 2,
+                    y=target_quantity,
                     line_dash="dot",
                     line_color="black",
                     line_width=2,
@@ -1024,8 +1029,8 @@ class ICPEAnnualItemProcessor:
                     xref="x domain",
                     yref="y",
                     x=0.7,
-                    y=authorized_quantity / 2,
-                    text=f"Objectif 50% pour 2025 : <b>{format_number_str(authorized_quantity / 2, 2)}</b> t/an",
+                    y=target_quantity,
+                    text=f"Objectif pour 2025 : <b>{format_number_str(target_quantity, 2)}</b> t/an",
                     font_color="black",
                     xanchor="left",
                     yanchor="bottom",

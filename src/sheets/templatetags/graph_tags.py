@@ -1,5 +1,3 @@
-import re
-
 from django import template
 
 register = template.Library()
@@ -252,20 +250,19 @@ def render_icpe_graphs(computed, graph_context="web"):
 def has_rubrique(rubrique_to_search: str, icpe_rubriques_items: list[dict]) -> bool:
     for rubrique_item in icpe_rubriques_items:
         rubrique_available = rubrique_item["rubrique"]
-
-        rubrique_cleaned = ""
-        if (
-            re.match(r"^2760-[1,2].*", rubrique_available) is not None
-        ):  # Handle the cases 2760-1, 27-60-2-7, 2760-2-b...
-            rubrique_cleaned = rubrique_available[:6]
-        elif rubrique_available.startswith("2791"):  # Handle the cases 2791-*
-            rubrique_cleaned = rubrique_available[:4]
-        elif rubrique_available in ["2770", "2790", "2771"]:
-            rubrique_cleaned = rubrique_available
-        else:
-            continue
-
-        if rubrique_to_search == rubrique_cleaned:
+        rubrique_available_cleaned = get_cleaned_rubrique(rubrique_available)
+        if rubrique_to_search == rubrique_available_cleaned:
             return True
 
     return False
+
+
+def get_cleaned_rubrique(rubrique_str: str) -> str:
+    rubrique_mapping = {
+        "2791-1": "2791",
+        "2791-2": "2791",
+        "2760-2-a": "2760-2",
+        "2760-2-b": "2760-2",
+    }
+
+    return rubrique_mapping.get(rubrique_str, rubrique_str)

@@ -4,6 +4,7 @@ from sqlalchemy.sql import text
 
 from sheets.database import wh_engine
 from sheets.queries import sql_company_query_exists_str
+from sheets.ssh import ssh_tunnel
 
 
 class RoadControlSearchForm(Form):
@@ -38,8 +39,10 @@ class RoadControlSearchForm(Form):
         siret = "".join(siret.split())  # strip all whitespace
 
         prepared_query = text(sql_company_query_exists_str)
-        with wh_engine.connect() as con:
-            companies = con.execute(prepared_query, siret=siret).all()
+
+        with ssh_tunnel(settings):
+            with wh_engine.connect() as con:
+                companies = con.execute(prepared_query, siret=siret).all()
 
         if not companies and not settings.SKIP_ROAD_CONTROL_SIRET_CHECK:
             raise ValidationError("Établissement non inscrit sur Trackdéchets.")

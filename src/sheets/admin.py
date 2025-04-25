@@ -71,6 +71,7 @@ class ComputedInspectionDataAdmin(admin.ModelAdmin):
         "creation_mode",
         "created_by",
         "processing_duration",
+        "data_extraction_duration",
         "pdf_rendering_duration",
     ]
     list_filter = (("created", CustomDateRangeFilterBuilder()), "creation_mode")
@@ -93,6 +94,8 @@ class ComputedInspectionDataAdmin(admin.ModelAdmin):
                 "created_by",
                 "processing_end",
                 "processing_start",
+                "data_extraction_end",
+                "data_extraction_start",
                 "pdf_rendering_end",
                 "pdf_rendering_start",
             )

@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
 import time
 from typing import Dict, List, Tuple
@@ -205,14 +206,26 @@ class SheetProcessor:
 
     def _extract_data(self):
         start_time = time.time()
-
+        self.computed.data_extraction_start = timezone.now()
         with ssh_tunnel(settings):
-            self._extract_company_data()
-            self._extract_trackdechets_data()
-            self._extract_icpe_data()
-            self._extract_rndts_data()
-            self._extract_gistrid_data()
+            tasks = {
+                "company": self._extract_company_data,
+                "trackdechets": self._extract_trackdechets_data,
+                "icpe": self._extract_icpe_data,
+                "rndts": self._extract_rndts_data,
+                "gistrid": self._extract_gistrid_data,
+            }
 
+            with ThreadPoolExecutor(max_workers=5) as executor:
+                futures = {executor.submit(func): name for name, func in tasks.items()}
+                for future in as_completed(futures):
+                    name = futures[future]
+                    try:
+                        future.result()
+                    except Exception as e:
+                        logger.exception(f"Error in extracting {name}: {e}")
+
+        self.computed.data_extraction_end = timezone.now()
         end_time = time.time() - start_time
         logger.info("Data extracted in %ss", end_time)
 

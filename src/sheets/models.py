@@ -246,6 +246,8 @@ class ComputedInspectionData(models.Model):
 
     processing_start = models.DateTimeField(_("Processing start"), blank=True, null=True)
     processing_end = models.DateTimeField(_("Processing end"), blank=True, null=True)
+    data_extraction_start = models.DateTimeField(_("Data extraction start"), blank=True, null=True)
+    data_extraction_end = models.DateTimeField(_("Data extraction end"), blank=True, null=True)
     pdf_rendering_start = models.DateTimeField(_("Pdf rendering start"), blank=True, null=True)
     pdf_rendering_end = models.DateTimeField(_("Pdf rendering end"), blank=True, null=True)
     voided = models.BooleanField(_("Data voided"), default=False, blank=True)  # tell apart voided sheets from other
@@ -299,6 +301,12 @@ class ComputedInspectionData(models.Model):
     def processing_duration(self):
         if self.processing_start and self.processing_end:
             return self.processing_end - self.processing_start
+        return None
+
+    @property
+    def data_extraction_duration(self):
+        if self.data_extraction_start and self.data_extraction_end:
+            return self.data_extraction_end - self.data_extraction_start
         return None
 
     @property

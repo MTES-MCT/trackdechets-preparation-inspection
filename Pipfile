@@ -52,6 +52,7 @@ ipykernel = "*"
 bandit = "*"
 mypy = "*"
 ruff = "*"
+py-spy = "*"
 
 [requires]
 python_version = "3.11"

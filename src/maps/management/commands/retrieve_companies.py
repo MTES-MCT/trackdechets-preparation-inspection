@@ -4,7 +4,7 @@ import pandas as pd
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from sheets.database import build_query
+from sheets.data_extraction import build_query
 from sheets.ssh import ssh_tunnel
 
 from ...models import CartoCompany

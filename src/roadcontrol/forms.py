@@ -2,7 +2,7 @@ from django.conf import settings
 from django.forms import CharField, Form, HiddenInput, ValidationError
 from sqlalchemy.sql import text
 
-from sheets.database import get_wh_sqlachemy_engine
+from sheets.data_extraction import get_wh_sqlachemy_engine
 from sheets.queries import sql_company_query_exists_str
 from sheets.ssh import ssh_tunnel
 

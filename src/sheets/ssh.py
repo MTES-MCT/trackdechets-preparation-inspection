@@ -31,7 +31,6 @@ def is_tunnel_active(tunnel: sshtunnel.SSHTunnelForwarder) -> bool:
     return tunnel.is_active
 
 
-@contextmanager
 def ssh_tunnel(settings: LazySettings):
     """
     Maintains a single active SSH tunnel across the application lifetime.
@@ -43,9 +42,8 @@ def ssh_tunnel(settings: LazySettings):
 
         if tunnel and is_tunnel_active(tunnel):
             # Tunnel is already open and active
-            logger.info("Reusing existing ssh tunnel")
-            yield tunnel
-            return
+            logger.debug("Reusing existing ssh tunnel")
+            return tunnel
 
         logger.info("Creating new ssh tunnel")
         # Otherwise, create a new tunnel
@@ -66,7 +64,6 @@ def ssh_tunnel(settings: LazySettings):
             tunnel.start()
             set_tunnel(tunnel)
 
-            yield tunnel
-
+            return tunnel
         finally:
             os.unlink(temp_key_file.name)

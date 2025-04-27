@@ -16,7 +16,7 @@ from .data_extract import (
     load_mapping_rubrique_processing_operation_code,
     load_waste_code_data,
 )
-from .database import (
+from .data_extraction import (
     build_bsda_query,
     build_bsda_transporter_query,
     build_bsdasri_query,
@@ -207,23 +207,23 @@ class SheetProcessor:
     def _extract_data(self):
         start_time = time.time()
         self.computed.data_extraction_start = timezone.now()
-        with ssh_tunnel(settings):
-            tasks = {
-                "company": self._extract_company_data,
-                "trackdechets": self._extract_trackdechets_data,
-                "icpe": self._extract_icpe_data,
-                "rndts": self._extract_rndts_data,
-                "gistrid": self._extract_gistrid_data,
-            }
 
-            with ThreadPoolExecutor(max_workers=5) as executor:
-                futures = {executor.submit(func): name for name, func in tasks.items()}
-                for future in as_completed(futures):
-                    name = futures[future]
-                    try:
-                        future.result()
-                    except Exception as e:
-                        logger.exception(f"Error in extracting {name}: {e}")
+        tasks = {
+            "company": self._extract_company_data,
+            "trackdechets": self._extract_trackdechets_data,
+            "icpe": self._extract_icpe_data,
+            "rndts": self._extract_rndts_data,
+            "gistrid": self._extract_gistrid_data,
+        }
+
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            futures = {executor.submit(func): name for name, func in tasks.items()}
+            for future in as_completed(futures):
+                name = futures[future]
+                try:
+                    future.result()
+                except Exception as e:
+                    logger.exception(f"Error in extracting {name}: {e}")
 
         self.computed.data_extraction_end = timezone.now()
         end_time = time.time() - start_time

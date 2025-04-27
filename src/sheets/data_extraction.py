@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.sql import text
 from sqlalchemy.engine import Engine
 
-from sheets.ssh import get_tunnel_port
+from sheets.datawarehouse import get_wh_sqlachemy_engine
 
 from .queries import (
     sql_bsda_query_str,
@@ -57,14 +57,6 @@ bs_dtypes = {
     "waste_code": str,
     "status": str,
 }
-
-
-def get_wh_sqlachemy_engine(dwh_username: str, dwh_password: str, dwh_ssh_local_bind_host: str) -> Engine:
-    tunnel_port = get_tunnel_port()
-    warehouse_url = f"clickhouse+native://{dwh_username}:{dwh_password}@{dwh_ssh_local_bind_host}:{tunnel_port}"
-    wh_engine = create_engine(warehouse_url)
-
-    return wh_engine
 
 
 def build_query(

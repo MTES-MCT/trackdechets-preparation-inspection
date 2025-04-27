@@ -3,7 +3,7 @@ from django.utils import timezone
 from rest_framework import serializers
 from sqlalchemy.sql import text
 
-from sheets.database import get_wh_sqlachemy_engine
+from sheets.data_extraction import get_wh_sqlachemy_engine
 from sheets.models import ComputedInspectionData
 from sheets.queries import sql_company_query_exists_str
 from sheets.ssh import ssh_tunnel

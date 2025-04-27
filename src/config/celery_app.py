@@ -1,6 +1,14 @@
 import os
+import logging
 
 from celery import Celery
+from celery.signals import celeryd_after_setup, celeryd_init
+
+from sheets.datawarehouse import get_wh_sqlachemy_engine
+
+from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 # Set the default Django settings module for the 'celery' program.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.production")
@@ -14,6 +22,12 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 
 # Load task modules from all registered Django apps.
 app.autodiscover_tasks()
+
+
+@celeryd_after_setup.connect
+def setup_connection(**kwargs):
+    logger.info("Creating tunnel and DWH engine.")
+    get_wh_sqlachemy_engine(settings.DWH_USERNAME, settings.DWH_PASSWORD, settings.DWH_SSH_LOCAL_BIND_HOST)
 
 
 @app.task(bind=True)

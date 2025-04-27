@@ -3,7 +3,7 @@ from typing import TypedDict
 from django.conf import settings
 from sqlalchemy.sql import text
 
-from sheets.database import get_wh_sqlachemy_engine
+from sheets.data_extraction import get_wh_sqlachemy_engine
 from sheets.ssh import ssh_tunnel
 
 sql_company_query_data_str = """

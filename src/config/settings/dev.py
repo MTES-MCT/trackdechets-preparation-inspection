@@ -49,3 +49,5 @@ LOGGING = {
 
 
 DJANGO_VITE = {"default": {"dev_mode": True}}
+
+SKIP_SIRET_CHECK = True  # do not commit me idiot

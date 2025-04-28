@@ -36,3 +36,17 @@ Workflow:
 
 Les fiches établissement consomment beaucoup d'espace db. La commande `manage.py void_sheets` vide le contenu des fiches de plus de 90
 jours tout en conservant l'historique.
+
+## Permissions
+
+| Profil                      | Fiche + registre | Contrôle routier | Bordereau | Cartographie | Obesrvatoires | 🆕 Cartographie des exutoires | Accès admin |
+|-----------------------------|------------------|------------------|-----------|--------------|---------------|-------------------------------|-------------|
+| **Staff Track déchets**     | ✅                | ✅                | ✅         | ✅            | ✅             | ✅                             | ✅           |
+| **Administration centrale** | ✅                | ✅                | ✅         | ✅            | ✅             | ✅                             | ❌           |
+| **Inspecteur ICPE**         | ✅                | ✅                | ✅         | ✅            | ❌             | ✅                             | ❌           |
+| **CTT**                     | ✅                | ✅                | ✅         | ✅            | ❌             | ❌                             | ❌           |
+| **Inspection du travail**   | ✅                | ❌                | ✅         | ✅            | ❌             | ❌                             | ❌           |
+| **Gendarmerie**             | ✅                | ✅                | ✅         | ✅            | ❌             | ✅                             | ❌           |
+| **ARS**                     | ✅                | ❌                | ✅         | ✅            | ❌             | ❌                             | ❌           |
+| **Douanes**                 | ✅                | ✅                | ✅         | ✅            | ❌             | ❌                             | ❌           |
+| **Observatoires**           | ❌                | ❌                | ❌         | ✅            | ✅             | ❌                             | ❌           |

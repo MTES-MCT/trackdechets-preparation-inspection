@@ -1,0 +1,56 @@
+{% load registry_tags %}
+
+
+<table>
+    <thead>
+    <tr>
+        <th scope="col">Date</th>
+        <th scope="col">Établissement</th>
+        <th scope="col">Type de registre</th>
+        <th scope="col">Type de déclaration</th>
+        <th scope="col">Période</th>
+        <th scope="col">Fichier</th>
+
+    </tr>
+    </thead>
+    <tbody>
+    {% for export in exports %}
+        <tr>
+            <td>
+                <div>{{ export.created_at }}</div>
+
+
+                <p class="fr-badge {% registry_badge_class export.state %} fr-badge--sm">{{ export.get_state_display }}</p>
+
+            </td>
+            <td>{{ export.siret }}</td>
+            <td> {{ export.get_registry_type_display }}</td>
+            <td> {{ export.get_declaration_type_display }}</td>
+            <td>{{ export.start_date|date:"SHORT_DATE_FORMAT" }}
+                - {{ export.end_date|date:"SHORT_DATE_FORMAT" }}</td>
+
+            <td>
+
+                {% if export.in_progress %}
+                        <span class="fr-icon-refresh-line spinning fr-mx-1w"  ></span>
+            {% endif %}
+                {% if export.successful %}
+                    <form action="{% url "registry_v2_retrieve" export.pk %}" method="post">
+                        {% csrf_token %}
+                        <button class="fr-btn fr-btn--tertiary fr-icon-download-line">download</button>
+                    </form>
+                {% endif %}
+            </td>
+
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="6">
+                <p class="text-cente"> Aucun export récent</p>
+            </td>
+        </tr>
+    {% endfor %}
+
+
+    </tbody>
+</table>

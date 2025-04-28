@@ -3,14 +3,17 @@ import json
 
 import httpx
 from django.conf import settings
+from django.contrib import messages
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
-from django.views.generic import FormView, TemplateView
+from django.views.generic import CreateView, FormView, ListView, TemplateView
+from rest_framework.reverse import reverse_lazy
 
 from accounts.constants import ALL_BUT_OBSERVATOIRE
 from common.mixins import FullyLoggedMixin
 from common.sirets import validate_siret
+from data_exports.views import DummyForm
 
 from .constants import (
     REGISTRY_FORMAT_CSV,
@@ -20,9 +23,10 @@ from .constants import (
     REGISTRY_TYPE_OUTGOING,
     REGISTRY_TYPE_TRANSPORTED,
 )
-from .forms import RegistryPrepareForm
-from .gql import graphql_query_csv, graphql_query_xls
-from .models import RegistryDownload
+from .forms import RegistryPrepareForm, RegistryV2PrepareForm
+from .gql import graphql_query_csv, graphql_query_xls, graphql_registry_V2_export_download_signed_url
+from .models import RegistryDownload, RegistryV2Export
+from .task import generate_registry_export
 
 
 class RegistryDownloadException(Exception):
@@ -39,7 +43,7 @@ class RegistryPrepare(FullyLoggedMixin, FormView):
     View to download a registry
     """
 
-    template_name = "sheets/../../templates/registry/registry_prepare.html"
+    template_name = "registry/registry_prepare.html"
     form_class = RegistryPrepareForm
     allowed_user_categories = ALL_BUT_OBSERVATOIRE
 
@@ -81,7 +85,7 @@ CONFIG = {
 
 
 class RegistryView(FullyLoggedMixin, TemplateView):
-    template_name = "sheets/../../templates/registry/registry_download.html"
+    template_name = "registry/registry_download.html"
     allowed_user_categories = ALL_BUT_OBSERVATOIRE
 
     def get_file_name(self, siret, registry_format, registry_type):
@@ -186,3 +190,79 @@ class RegistryView(FullyLoggedMixin, TemplateView):
             data_end_date=data_end_date,
         )
         return response
+
+
+class RegistryV2Prepare(FullyLoggedMixin, CreateView):
+    """
+    View to download a registry
+    """
+
+    template_name = "registry/registry_v2_prepare.html"
+    form_class = RegistryV2PrepareForm
+    allowed_user_categories = ALL_BUT_OBSERVATOIRE
+    success_url = reverse_lazy("registry_v2_list")
+
+    def get_form_kwargs(self):
+        kw = super().get_form_kwargs()
+        kw["created_by"] = self.request.user
+        return kw
+
+    def get_context_data(self, **kwargs):
+        year = dt.date.today().year
+        label_this_year = year
+        label_prev_year = year - 1
+        return super().get_context_data(**kwargs, label_this_year=label_this_year, label_prev_year=label_prev_year)
+
+    def form_valid(
+        self,
+        form,
+    ):
+        res = super().form_valid(form)
+        generate_registry_export.delay(self.object.pk)
+        return res
+
+
+class RegistryV2ListWrapper(FullyLoggedMixin, TemplateView):
+    template_name = "registry/registry_v2_list_wrapper.html"
+    allowed_user_categories = ALL_BUT_OBSERVATOIRE
+
+
+class RegistryV2ListContent(FullyLoggedMixin, ListView):
+    template_name = "registry/fragments/_registry_v2_list_content.html"
+    allowed_user_categories = ALL_BUT_OBSERVATOIRE
+    model = RegistryV2Export
+    context_object_name = "exports"
+
+    def get_queryset(self):
+        return super().get_queryset().recent().filter(created_by=self.request.user)
+
+
+class RegistryV2Retrieve(FullyLoggedMixin, FormView):
+    template_name = "registry/registry_v2_list_wrapper.html"  # Create this template
+    form_class = DummyForm
+    success_url = None
+    allowed_user_categories = ALL_BUT_OBSERVATOIRE
+
+    def form_valid(self, form):
+        registry_pk = self.kwargs.get("registry_pk")
+        export = RegistryV2Export.objects.get(pk=registry_pk)
+
+        client = httpx.Client(timeout=60)  # 60 seconds
+
+        res = client.post(
+            url=settings.TD_API_URL,
+            headers={"Authorization": f"Bearer {settings.TD_API_TOKEN}"},
+            json={
+                "query": graphql_registry_V2_export_download_signed_url,
+                "variables": {
+                    "exportId": export.registry_export_id,
+                },
+            },
+        )
+        resp = res.json()
+        try:
+            url = resp["data"]["registryV2ExportDownloadSignedUrl"]["signedUrl"]
+        except (TypeError, KeyError):
+            messages.add_message(self.request, messages.ERROR, "Erreur, le registre n'a pu être téléchargé")
+            return HttpResponseRedirect(reverse_lazy("registry_v2_list"))
+        return HttpResponseRedirect(url)

@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% load static %}
+{% block extra_head %}
+
+    <link rel="stylesheet" href="{% static 'js/choicejs-11.1.0/styles/choices.min.css' %}"/>
+
+{% endblock extra_head %}
+
+{% block main %}
+    <div class="fr-container fr-mt-1v">
+        <h3>Exporter</h3>
+
+        <form method="post"
+                {% url "registry_v2_prepare" %}
+              id="id_registry_prepare_form">
+            {% csrf_token %}
+            {% if form.errors or has_errors %}
+                {% if not form.non_field_errors %}
+                    <div class="fr-alert fr-alert--error fr-mb-2w">Le formulaire comporte des erreurs.</div>
+                {% endif %}
+            {% endif %}
+            {% if form.non_field_errors %}
+                <div class="fr-alert fr-alert--error fr-mb-2w">
+                    <p>{{ form.non_field_errors.0 }}</p>
+                </div>
+            {% endif %}
+            <div class="fr-grid-row fr-grid-row--gutters">
+                <div class="fr-col-6">{% include 'forms/_field.html' with field=form.siret %}</div>
+            </div>
+            <div class="fr-grid-row fr-grid-row--gutters">
+                <div class="fr-col-6">{% include 'forms/_field.html' with field=form.registry_type %}</div>
+            </div>
+
+            <div class="fr-grid-row fr-grid-row--gutters">
+                <div class="fr-col-6">{% include 'forms/_field.html' with field=form.declaration_type %}</div>
+            </div>
+            <fieldset class="fr-fieldset fr-mt-2w">
+                <legend id="fr-fieldset-checkbox-:rg:-legend" class="fr-fieldset__legend fr-text--regular">Type de
+                    déchets<span class="fr-hint-text">Sélectionner au moins un type de déchets</span></legend>
+
+                <div class="fr-fieldset__content">
+                    <div class="fr-grid-row fr-grid-row--gutters">
+                        <div class="fr-col-6">{% include 'forms/_checkbox.html' with field=form.waste_types_dnd %}</div>
+                    </div>
+                    <div class="fr-grid-row fr-grid-row--gutters">
+                        <div class="fr-col-6">{% include 'forms/_checkbox.html' with field=form.waste_types_dd %}</div>
+                    </div>
+                    <div class="fr-grid-row fr-grid-row--gutters">
+                        <div class="fr-col-6">{% include 'forms/_checkbox.html' with field=form.waste_types_texs %}</div>
+                    </div>
+                </div>
+            </fieldset>
+            <div class="fr-grid-row fr-grid-row--gutters">
+                <div class="fr-col-7">
+
+                    {{ form.waste_codes.as_field_group }}
+
+                </div>
+            </div>
+            <p class="fr-text--bold fr-mt-4v fr-mb-2v">Période concernée</p>
+            <div class="fr-grid-row fr-grid-row--gutters">
+                <div class="fr-col">
+                    <button class="fr-btn fr-btn--tertiary"
+                            data-period-btn="current_year"
+                            type="button">
+                        Année
+                        courante
+                    </button>
+                    <button class="fr-btn fr-btn--tertiary"
+                            data-period-btn="this_year"
+                            type="button">{{ label_this_year }}</button>
+                    <button class="fr-btn fr-btn--tertiary"
+                            data-period-btn="prev_year"
+                            type="button">{{ label_prev_year }}</button>
+                </div>
+            </div>
+            <div class="fr-grid-row fr-grid-row--gutters">
+                <div class="fr-col-3">{% include 'forms/_field.html' with field=form.start_date %}</div>
+                <div class="fr-col-3">{% include 'forms/_field.html' with field=form.end_date %}</div>
+            </div>
+            <div class="fr-grid-row fr-grid-row--gutters">
+                <div class="fr-col-3">{% include 'forms/_field.html' with field=form.export_format %}</div>
+            </div>
+            <div class="fr-mt-5v">
+                <input type="submit"
+                       id="id_registry_prepare_button"
+                       class="fr-btn fr-btn--primary"
+                       name="registry"
+                       value="Préparer le registre"/>
+                <span id="id_registry_prepare_message"></span>
+            </div>
+        </form>
+    </div>
+{% endblock main %}
+
+{% block scripts %}
+    <script src="{% static 'js/choicejs-11.1.0/scripts/choices.min.js' %}"></script>
+    {% include "scripts/siret_form_script.html" %}
+    <script>
+        const element = document.querySelector('#id_waste_codes');
+        const choices = new Choices(element, {
+            removeItems: true,
+            removeItemButton: true,
+            searchEnabled: true,
+            searchChoices: true,
+            noResultsText: 'Pas de résultat',
+            noChoicesText: 'Pas de résultat',
+            itemSelectText: 'Cliquer pour sélectionner'
+        })
+    </script>
+{% endblock scripts %}

@@ -29,6 +29,9 @@ CSRF_TRUSTED_ORIGINS = ["http://url.test"]
 DEFENDER_DISABLE_IP_LOCKOUT = True
 DEFENDER_DISABLE_USERNAME_LOCKOUT = True
 
+TD_API_URL = "https://testapi.test"
+TD_API_TOKEN = "thetoken"
+
 OIDC_RP_CLIENT_SECRET = "azer"
 MONAIOT_OIDC_OP_SERVER_URL = "https://monaiot.test/auth/realms/MonAIOT-integration/protocol/openid-connect"
 MONAIOT_OIDC_OP_AUTHORIZATION_ENDPOINT = f"{MONAIOT_OIDC_OP_SERVER_URL}/auth"

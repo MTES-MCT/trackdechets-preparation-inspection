@@ -25,7 +25,8 @@ class ObservatoireMenuItem(MenuItem):
 
 submenu = (
     MainMenuItem("Préparer une fiche", reverse("sheet_prepare"), icon="tools"),
-    MainMenuItem("Registre", reverse("registry_prepare"), icon="tools"),
+    MainMenuItem("Registre exhaustif", reverse("registry_prepare"), icon="tools"),
+    MainMenuItem("Exports (Registre V2)", reverse("registry_v2_list"), icon="tools"),
 )
 Menu.add_item("main", MenuItem("Établissements", "", children=submenu, menu_id="id_companies"))
 

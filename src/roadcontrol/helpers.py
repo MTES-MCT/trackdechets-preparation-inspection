@@ -1,6 +1,5 @@
 from typing import TypedDict
 
-from django.conf import settings
 from sqlalchemy.sql import text
 
 from sheets.data_extraction import get_wh_sqlachemy_engine

@@ -1,7 +1,6 @@
 from typing import Any, Union
 
 import pandas as pd
-from django.conf import settings
 from sqlalchemy.sql import text
 
 from sheets.datawarehouse import get_wh_sqlachemy_engine

@@ -3,7 +3,6 @@ import os
 
 from celery import Celery
 from celery.signals import celeryd_after_setup, worker_shutdown
-from django.conf import settings
 
 from sheets.datawarehouse import get_wh_sqlachemy_engine
 from sheets.ssh import get_tunnel

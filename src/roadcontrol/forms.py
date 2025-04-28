@@ -39,9 +39,7 @@ class RoadControlSearchForm(Form):
 
         prepared_query = text(sql_company_query_exists_str)
 
-        wh_engine = get_wh_sqlachemy_engine(
-            settings.DWH_USERNAME, settings.DWH_PASSWORD, settings.DWH_SSH_LOCAL_BIND_HOST
-        )
+        wh_engine = get_wh_sqlachemy_engine()
         with wh_engine.connect() as con:
             companies = con.execute(prepared_query, siret=siret).all()
 

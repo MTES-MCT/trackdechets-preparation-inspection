@@ -3,7 +3,7 @@ from typing import Any, Optional
 
 from django.conf import settings
 from sqlalchemy import create_engine
-from sqlalchemy.engine.mock import MockConnection
+from sqlalchemy.engine import Engine
 
 from sheets.ssh import get_tunnel_port, ssh_tunnel
 
@@ -12,12 +12,12 @@ logger = logging.getLogger(__name__)
 _dwh_info: dict[str, Any] = {}  # Holds datawarehouse connection singleton
 
 
-def set_engine(dwh_engine: MockConnection, port: int):
+def set_engine(dwh_engine: Engine, port: int):
     _dwh_info["engine"] = dwh_engine
     _dwh_info["port"] = port
 
 
-def get_engine() -> Optional[MockConnection]:
+def get_engine() -> Optional[Engine]:
     return _dwh_info.get("engine")
 
 
@@ -25,7 +25,10 @@ def get_engine_port() -> Optional[int]:
     return _dwh_info.get("port")
 
 
-def get_wh_sqlachemy_engine(dwh_username: str, dwh_password: str, dwh_ssh_local_bind_host: str) -> MockConnection:
+def get_wh_sqlachemy_engine() -> Engine:
+    dwh_username = settings.DWH_USERNAME
+    dwh_password = settings.DWH_PASSWORD
+    dwh_ssh_local_bind_host = settings.DWH_SSH_LOCAL_BIND_HOST
     ssh_tunnel(settings)
 
     tunnel_port = get_tunnel_port()

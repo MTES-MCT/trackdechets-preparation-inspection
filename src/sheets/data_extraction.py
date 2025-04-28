@@ -64,7 +64,7 @@ def build_query(
 ):
     query = text(query_str)
 
-    wh_engine = get_wh_sqlachemy_engine(settings.DWH_USERNAME, settings.DWH_PASSWORD, settings.DWH_SSH_LOCAL_BIND_HOST)
+    wh_engine = get_wh_sqlachemy_engine()
 
     df = pd.read_sql_query(
         query,

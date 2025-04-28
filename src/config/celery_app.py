@@ -27,7 +27,7 @@ app.autodiscover_tasks()
 @celeryd_after_setup.connect
 def setup_connection(**kwargs):
     logger.info("Creating tunnel and DWH engine.")
-    get_wh_sqlachemy_engine(settings.DWH_USERNAME, settings.DWH_PASSWORD, settings.DWH_SSH_LOCAL_BIND_HOST)
+    get_wh_sqlachemy_engine()
 
 
 @worker_shutdown.connect

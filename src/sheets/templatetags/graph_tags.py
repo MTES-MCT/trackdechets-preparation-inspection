@@ -213,3 +213,55 @@ def render_incinerator_outgoing_waste_table(computed, graph_context="web"):
         "non_dangerous_data": non_dangerous_data,
         "graph_context": graph_context,
     }
+
+
+@register.inclusion_tag("sheets/components/icpe_graphs.html")
+def render_icpe_graphs(computed, graph_context="web"):
+    attributes = {
+        "icpe_2760_1_data": "2760_1",
+        "icpe_2770_data": "2770",
+        "icpe_2790_data": "2790",
+        "icpe_2760_2_data": "2760_2",
+        "icpe_2771_data": "2771",
+        "icpe_2791_data": "2791",
+    }
+
+    rubriques_data = []
+
+    icpe_rubriques_items = computed.icpe_data
+
+    for attribute, rubrique in attributes.items():
+        icpe_data = getattr(computed, attribute)
+        if ((icpe_data is None) or (icpe_data in ["", "{}"])) and not has_rubrique(rubrique, icpe_rubriques_items):
+            continue
+
+        data_source = "Trackdéchets" if rubrique in ["2760-1", "2770", "2790"] else "RNDTS"
+
+        graph_data = None
+        if graph_context == "pdf":
+            graph_data = getattr(computed, attribute.replace("_data", "_graph"))
+
+        rubriques_data.append({"icpe_rubrique": rubrique, "data_source": data_source, "graph_data": graph_data})
+
+    return {"rubriques_data": rubriques_data}
+
+
+def has_rubrique(rubrique_to_search: str, icpe_rubriques_items: list[dict]) -> bool:
+    for rubrique_item in icpe_rubriques_items:
+        rubrique_available = rubrique_item["rubrique"]
+        rubrique_available_cleaned = get_cleaned_rubrique(rubrique_available)
+        if rubrique_to_search == rubrique_available_cleaned:
+            return True
+
+    return False
+
+
+def get_cleaned_rubrique(rubrique_str: str) -> str:
+    rubrique_mapping = {
+        "2791-1": "2791",
+        "2791-2": "2791",
+        "2760-2-a": "2760-2",
+        "2760-2-b": "2760-2",
+    }
+
+    return rubrique_mapping.get(rubrique_str, rubrique_str)

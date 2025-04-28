@@ -375,60 +375,7 @@
                 En cas de différence avec la réalité, merci de vérifier et mettre à jour GUN,
                 de façon à pouvoir vous proposer une analyse plus fine en lien avec les rubriques.
             </p>
-            <div class="row">
-                <div class="cell cell--bordered cell--full">
-                    <h3 class="cell__title">Données relatives à la rubrique 2760-1</h3>
-                    <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : Trackdéchets</p>
-                    <div id="icpe_2760_1_graph">
-                        <div class="no-data">Pas de données à afficher.</div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="cell cell--bordered cell--full">
-                    <h3 class="cell__title">Données relatives à la rubrique 2760-2</h3>
-                    <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
-                    <div id="icpe_2760_2_graph">
-                        <div class="no-data">Pas de données à afficher.</div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="cell cell--bordered cell--full">
-                    <h3 class="cell__title">Données relatives à la rubrique 2770</h3>
-                    <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : Trackdéchets</p>
-                    <div id="icpe_2770_graph">
-                        <div class="no-data">Pas de données à afficher.</div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="cell cell--bordered cell--full">
-                    <h3 class="cell__title">Données relatives à la rubrique 2771</h3>
-                    <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
-                    <div id="icpe_2771_graph">
-                        <div class="no-data">Pas de données à afficher.</div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="cell cell--bordered cell--full">
-                    <h3 class="cell__title">Données relatives à la rubrique 2790</h3>
-                    <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : Trackdéchets</p>
-                    <div id="icpe_2790_graph">
-                        <div class="no-data">Pas de données à afficher.</div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="cell cell--bordered cell--full">
-                    <h3 class="cell__title">Données relatives à la rubrique 2791</h3>
-                    <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
-                    <div id="icpe_2791_graph">
-                        <div class="no-data">Pas de données à afficher.</div>
-                    </div>
-                </div>
-            </div>
+            {% render_icpe_graphs sheet %}
             {% if sheet.bs_processed_without_icpe_authorization.dangerous or sheet.bs_processed_without_icpe_authorization.non_dangerous %}
                 <div class="row">
                     <div class="cell cell--bordered cell--full">
@@ -615,27 +562,27 @@
     },
     {
         "data": icpe_2770_data,
-        "target": "icpe_2770_graph"
+        "target": "icpe-2770-graph"
     },
     {
         "data": icpe_2790_data,
-        "target": "icpe_2790_graph"
+        "target": "icpe-2790-graph"
     },
     {
         "data": icpe_2760_1_data,
-        "target": "icpe_2760_1_graph"
+        "target": "icpe-2760-1-graph"
     },
     {
         "data": icpe_2771_data,
-        "target": "icpe_2771_graph"
+        "target": "icpe-2771-graph"
     },
     {
         "data": icpe_2791_data,
-        "target": "icpe_2791_graph"
+        "target": "icpe-2791-graph"
     },
     {
         "data": icpe_2760_2_data,
-        "target": "icpe_2760_2_graph"
+        "target": "icpe-2760-2-graph"
     },
     {
         "data": bsda_worker_quantity_data,

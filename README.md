@@ -29,6 +29,7 @@ $ pipenv install -d
 ### Variable d'environnement
 
 2 db sont nécessaires:
+
 - DATABASE_URL, managée par django, pour les comptes, les données calculées etc.
 - WAREHOUSE_URL, en lecture seule, contenant un dump des données du data warehouse Trackdéchets
 
@@ -70,7 +71,7 @@ A la racine du projet :
 
 ### Lancement de l'UI de cartographie
 
-Dans un second terminal, 
+Dans un second terminal,
 
 ```
     $ npm run dev
@@ -84,19 +85,18 @@ Pour lancer un rendu de manière synchrone (et glisser plus facilement des break
     $ manage.py prepare_sheet <sheet_pk>
 ```
 
-
 Pour récupérer les établissements depuis le data warehouse:
 
 ```
     $ manage.py retrieve_companies
 ```
 
-
 ### Tests
 
 Cf. config/settings/tests.py
 
 Créer :
+
 - un rôle postgre `inspection`
 - une db postgre `inspection_test`
 
@@ -108,8 +108,29 @@ Lancer les tests avec :
 
 ### Création en masse d'utilisateurs
 
-Un template xls est disponible à la racine. 
+Un template xls est disponible à la racine.
 Un fois rempli le fichier est importable par la section users de l'interface d'admin (via django-import-export).
+
+### Profiling des workers celery
+
+`py-spy` peut être utilisé pour faire un profiling des tâches celery et créer un _flame graph_. Pour cela il faut dans un premier temps lancer un _worker celery_ comme expliqué dans la partie [Lancement de l'application](#lancement-de-lapplication).
+Ensuite il faut récupérer le PID du _worker_ :
+
+```sh
+ps | grep celery
+```
+
+Il va y avoir deux résultats, le bon PID est souvent le second listé.
+
+Ensuite il suffit de lancer `py-spy` en lui passant en paramètre le PID précédent :
+
+```bash
+sudo py-spy record -o profile.svg --pid $PID_CELERY --rate 100
+```
+
+le paramètre `-o` permet de donner le répertoire de sortie de l'image de profiling. Le paramètre `--rate` permet quant à lui de régler la fréquence d'échantillonage (ici à 100ms) pour affiner la mesure.
+
+`py-spy` ouvre automatiquement un navigateur permettant d'inspecter de manière interractive le _flame graph_ créé.
 
 ### Linting (python + templates)
 

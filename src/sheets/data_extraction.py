@@ -37,7 +37,6 @@ from .queries import (
     sql_revised_bsdd_query_str,
 )
 
-
 bsd_date_params = ["created_at", "updated_at", "sent_at", "received_at", "processed_at", "worker_work_signature_date"]
 
 bs_dtypes = {

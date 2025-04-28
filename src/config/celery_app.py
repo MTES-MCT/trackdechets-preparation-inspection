@@ -1,14 +1,12 @@
-import os
 import logging
+import os
 
 from celery import Celery
 from celery.signals import celeryd_after_setup, worker_shutdown
-
-from sheets.datawarehouse import get_wh_sqlachemy_engine
-
 from django.conf import settings
 
-from sheets.ssh import get_key_filepath, get_tunnel
+from sheets.datawarehouse import get_wh_sqlachemy_engine
+from sheets.ssh import get_tunnel
 
 logger = logging.getLogger(__name__)
 

@@ -1,11 +1,10 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Tuple
 
 import pandas as pd
 from django.utils import timezone
-
 
 from .constants import BS_TYPES_WITH_MULTIMODAL_TRANSPORT, BSDA, BSDASRI, BSDD, BSDD_NON_DANGEROUS, BSFF, BSVHU
 from .data_extract import (

@@ -1,9 +1,9 @@
 from typing import Any, Union
 
 import pandas as pd
-from django.conf import settings
-from sqlalchemy import create_engine
 from sqlalchemy.sql import text
+
+from sheets.datawarehouse import get_wh_sqlachemy_engine
 
 from .queries import (
     sql_bsda_query_str,
@@ -36,8 +36,6 @@ from .queries import (
     sql_revised_bsdd_query_str,
 )
 
-wh_engine = create_engine(settings.WAREHOUSE_URL)
-
 bsd_date_params = ["created_at", "updated_at", "sent_at", "received_at", "processed_at", "worker_work_signature_date"]
 
 bs_dtypes = {
@@ -64,6 +62,8 @@ def build_query(
     dtypes: dict[str, Any] | None = None,
 ):
     query = text(query_str)
+
+    wh_engine = get_wh_sqlachemy_engine()
 
     df = pd.read_sql_query(
         query,

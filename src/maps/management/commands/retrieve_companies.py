@@ -1,11 +1,9 @@
 import datetime as dt
 
 import pandas as pd
-from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from sheets.database import build_query
-from sheets.ssh import ssh_tunnel
+from sheets.data_extraction import build_query
 
 from ...models import CartoCompany
 
@@ -121,41 +119,39 @@ class Command(BaseCommand):
         CartoCompany.objects.all().delete()
 
         count_query = "SELECT COUNT() FROM refined_zone_analytics.cartographie_des_etablissements_geocoded"
-        with ssh_tunnel(settings):
-            count_df = build_query(count_query)
-            total_count = count_df.iloc[0, 0]
 
-            self.stdout.write(f"Found {total_count} records to import")
+        count_df = build_query(count_query)
+        total_count = count_df.iloc[0, 0]
 
-            offset = 0
-            imported_count = 0
+        self.stdout.write(f"Found {total_count} records to import")
 
-            while offset < total_count:
-                paginated_query = f"{BASE_QUERY} LIMIT {chunk_size} OFFSET {offset}"
+        offset = 0
+        imported_count = 0
 
-                self.stdout.write(f"Processing records {offset + 1} to {min(offset + chunk_size, total_count)}")
+        while offset < total_count:
+            paginated_query = f"{BASE_QUERY} LIMIT {chunk_size} OFFSET {offset}"
 
-                companies_df = build_query(paginated_query)
+            self.stdout.write(f"Processing records {offset + 1} to {min(offset + chunk_size, total_count)}")
 
-                companies_dicts = companies_df.to_dict(orient="records")
-                dedup_companies_dicts = cleanup_duplicate_sirets(companies_dicts)
+            companies_df = build_query(paginated_query)
 
-                already_existing_sirets = CartoCompany.objects.all().values_list("siret", flat=True)
-                refined_companies_dicts = [
-                    dct for dct in dedup_companies_dicts if dct["siret"] not in already_existing_sirets
-                ]
+            companies_dicts = companies_df.to_dict(orient="records")
+            dedup_companies_dicts = cleanup_duplicate_sirets(companies_dicts)
 
-                companies_dicts_without_nan = [
-                    {k: clean_pd_val(v) for k, v in e.items()} for e in refined_companies_dicts
-                ]
+            already_existing_sirets = CartoCompany.objects.all().values_list("siret", flat=True)
+            refined_companies_dicts = [
+                dct for dct in dedup_companies_dicts if dct["siret"] not in already_existing_sirets
+            ]
 
-                data = [CartoCompany(**c) for c in companies_dicts_without_nan]
-                created = CartoCompany.objects.bulk_create(data)
+            companies_dicts_without_nan = [{k: clean_pd_val(v) for k, v in e.items()} for e in refined_companies_dicts]
 
-                imported_count += len(created)
+            data = [CartoCompany(**c) for c in companies_dicts_without_nan]
+            created = CartoCompany.objects.bulk_create(data)
 
-                self.stdout.write(f"Imported {len(created)} companies (total: {imported_count}/{total_count})")
+            imported_count += len(created)
 
-                offset += chunk_size
+            self.stdout.write(f"Imported {len(created)} companies (total: {imported_count}/{total_count})")
+
+            offset += chunk_size
 
         self.stdout.write(self.style.SUCCESS(f"Successfully imported {imported_count} companies"))

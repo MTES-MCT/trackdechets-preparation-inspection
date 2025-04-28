@@ -5,9 +5,8 @@ from django.forms import CharField, DateField, Form, ValidationError
 from django.forms.widgets import DateInput
 from sqlalchemy.sql import text
 
-from .database import wh_engine
+from .data_extraction import get_wh_sqlachemy_engine
 from .queries import sql_company_query_exists_str
-from .ssh import ssh_tunnel
 
 
 class TypedDateInput(DateInput):
@@ -84,12 +83,12 @@ class SiretForm(Form):
             return siret
         prepared_query = text(sql_company_query_exists_str)
 
-        with ssh_tunnel(settings):
-            with wh_engine.connect() as con:
-                companies = con.execute(prepared_query, siret=siret).all()
-            if not companies:
-                raise ValidationError("Établissement non inscrit à Trackdéchets.")
-            return siret
+        wh_engine = get_wh_sqlachemy_engine()
+        with wh_engine.connect() as con:
+            companies = con.execute(prepared_query, siret=siret).all()
+        if not companies:
+            raise ValidationError("Établissement non inscrit à Trackdéchets.")
+        return siret
 
 
 class SheetPrepareForm(SiretForm):

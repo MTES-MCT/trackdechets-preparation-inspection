@@ -2,7 +2,7 @@ from typing import TypedDict
 
 from sqlalchemy.sql import text
 
-from sheets.database import wh_engine
+from sheets.data_extraction import get_wh_sqlachemy_engine
 
 sql_company_query_data_str = """
 select
@@ -24,6 +24,8 @@ class CompanyData(TypedDict):
 
 def get_company_data(siret) -> CompanyData:
     prepared_query = text(sql_company_query_data_str)
+
+    wh_engine = get_wh_sqlachemy_engine()
     with wh_engine.connect() as con:
         companies = con.execute(prepared_query, siret=siret).all()
 

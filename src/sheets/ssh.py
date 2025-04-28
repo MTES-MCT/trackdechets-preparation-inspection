@@ -1,51 +1,74 @@
+import logging
 import os
 import tempfile
-from contextlib import contextmanager
+import threading
+from typing import Any, Optional
 
 import sshtunnel
 from django.conf import LazySettings
 
+logger = logging.getLogger(__name__)
 
-@contextmanager
+_tunnel_info: dict[str, Any] = {}  # Holds tunnel singleton
+_tunnel_lock = threading.Lock()
+
+
+def set_tunnel(tunnel: sshtunnel.SSHTunnelForwarder, key_filepath: str):
+    _tunnel_info["tunnel"] = tunnel
+    _tunnel_info["port"] = tunnel.local_bind_port
+    _tunnel_info["key_filepath"] = key_filepath
+
+
+def get_tunnel() -> Optional[sshtunnel.SSHTunnelForwarder]:
+    return _tunnel_info.get("tunnel")
+
+
+def get_tunnel_port() -> Optional[int]:
+    return _tunnel_info.get("port")
+
+
+def get_key_filepath() -> Optional[str]:
+    return _tunnel_info.get("key_filepath")
+
+
+def is_tunnel_active(tunnel: sshtunnel.SSHTunnelForwarder) -> bool:
+    return tunnel.is_active
+
+
 def ssh_tunnel(settings: LazySettings):
     """
-    Establishes an SSH tunnel to a remote server and yields the tunnel object.
-    Use it as a context manager to automatically close the SSH connection.
-
-    Parameters
-    ----------
-    settings : Settings
-        A configuration object containing necessary SSH connection details such as host, port, username, key, local bind host, and local bind port.
-
-    Yields
-    ------
-    sshtunnel.SSHTunnelForwarder
-        An SSHTunnelForwarder object representing the active SSH tunnel.
-
-    Notes
-    -----
-    This function creates a temporary file to store the SSH private key securely.
-    It sets the appropriate permissions on the key file before establishing the tunnel.
-    The tunnel is stopped and the key file is deleted when the context manager exits, ensuring cleanup.
+    Maintains a single active SSH tunnel across the application lifetime.
+    Reuses the tunnel if already open, and reopens it if necessary.
     """
 
-    temp_key_file = tempfile.NamedTemporaryFile(mode="w", delete=False)
+    with _tunnel_lock:
+        tunnel = get_tunnel()
 
-    try:
-        temp_key_file.write(settings.DWH_SSH_KEY)
-        temp_key_file.close()
-        os.chmod(temp_key_file.name, 0o600)
+        if tunnel and is_tunnel_active(tunnel):
+            # Tunnel is already open and active
+            logger.debug("Reusing existing ssh tunnel")
+            return tunnel
 
-        tunnel = sshtunnel.open_tunnel(
-            (settings.DWH_SSH_HOST, int(settings.DWH_SSH_PORT)),
-            ssh_username=settings.DWH_SSH_USERNAME,
-            ssh_pkey=temp_key_file.name,
-            remote_bind_address=("localhost", int(settings.DWH_PORT)),
-            local_bind_address=(settings.DWH_SSH_LOCAL_BIND_HOST, int(settings.DWH_SSH_LOCAL_BIND_PORT)),
-        )
+        logger.info("Creating new ssh tunnel")
+        # Otherwise, create a new tunnel
+        temp_key_file = tempfile.NamedTemporaryFile(mode="w", prefix="trackdechets_key_", delete=False)
 
-        tunnel.start()
-        yield tunnel
-    finally:
-        tunnel.stop()
-        os.unlink(temp_key_file.name)
+        try:
+            temp_key_file.write(settings.DWH_SSH_KEY)
+            temp_key_file.close()
+            os.chmod(temp_key_file.name, 0o600)
+
+            tunnel = sshtunnel.open_tunnel(
+                (settings.DWH_SSH_HOST, int(settings.DWH_SSH_PORT)),
+                ssh_username=settings.DWH_SSH_USERNAME,
+                ssh_pkey=temp_key_file.name,
+                remote_bind_address=("localhost", int(settings.DWH_PORT)),
+            )
+
+            tunnel.start()
+            set_tunnel(tunnel, temp_key_file.name)
+
+            return tunnel
+        finally:
+            # Delete the key file after the tunnel has been established or if the tunnel creation has failed.
+            os.unlink(temp_key_file.name)

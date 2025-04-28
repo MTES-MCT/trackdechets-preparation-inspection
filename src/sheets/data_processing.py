@@ -1,12 +1,10 @@
 import logging
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Tuple
 
 import pandas as pd
-from django.conf import settings
 from django.utils import timezone
-
-from sheets.ssh import ssh_tunnel
 
 from .constants import BS_TYPES_WITH_MULTIMODAL_TRANSPORT, BSDA, BSDASRI, BSDD, BSDD_NON_DANGEROUS, BSFF, BSVHU
 from .data_extract import (
@@ -15,7 +13,7 @@ from .data_extract import (
     load_mapping_rubrique_processing_operation_code,
     load_waste_code_data,
 )
-from .database import (
+from .data_extraction import (
     build_bsda_query,
     build_bsda_transporter_query,
     build_bsdasri_query,
@@ -205,18 +203,32 @@ class SheetProcessor:
 
     def _extract_data(self):
         start_time = time.time()
+        self.computed.data_extraction_start = timezone.now()
 
-        with ssh_tunnel(settings):
-            self._extract_company_data()
-            self._extract_trackdechets_data()
-            self._extract_icpe_data()
-            self._extract_rndts_data()
-            self._extract_gistrid_data()
+        tasks = {
+            "company": self._extract_company_data,
+            "trackdechets": self._extract_trackdechets_data,
+            "icpe": self._extract_icpe_data,
+            "rndts": self._extract_rndts_data,
+            "gistrid": self._extract_gistrid_data,
+        }
 
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            # Execute all data extraction asynchronously in different threads
+            futures = {executor.submit(func): name for name, func in tasks.items()}
+            for future in as_completed(futures):
+                name = futures[future]
+                try:
+                    future.result()
+                except Exception as e:
+                    logger.exception(f"Error in extracting {name}: {e}")
+
+        self.computed.data_extraction_end = timezone.now()
         end_time = time.time() - start_time
         logger.info("Data extracted in %ss", end_time)
 
     def _extract_company_data(self):
+        """Extracts datasets containing company information and agreements."""
         company_data_df = build_query_company(siret=self.siret, date_params=["created_at"])
         self.company_data = company_data_df
         self.company_id = company_data_df["id"].item()
@@ -225,6 +237,7 @@ class SheetProcessor:
         self.linked_companies_data = get_linked_companies_data(self.siret)
 
     def _extract_trackdechets_data(self):
+        """Extracts datasets containing trackdechets' traceability data ('bordereaux' data)"""
         for bsd_config in bsds_config:
             bsd_type = bsd_config["bsd_type"]
             # compute and store df in a dict
@@ -257,12 +270,14 @@ class SheetProcessor:
                     self.bsff_packagings_df = bsff_packagings_data
 
     def _extract_icpe_data(self):
+        """Extracts datasets containing ICPE data"""
         self.icpe_data = get_icpe_data(self.computed.org_id)
 
         for rubrique in ["2770", "2790", "2760-1", "2771", "2791", "2760-2"]:
             self.icpe_rubriques_data[rubrique] = get_icpe_item_data(siret=self.siret, rubrique=rubrique)
 
     def _extract_rndts_data(self):
+        """Extracts datasets containing RNDTS' data about non dangerous waste (statements data)."""
         rndts_ndw_incoming_data, rndts_ndw_outgoing_data = get_rndts_ndw_data(self.siret)
         self.rndts_data["ndw_incoming"] = rndts_ndw_incoming_data
         self.rndts_data["ndw_outgoing"] = rndts_ndw_outgoing_data
@@ -275,6 +290,7 @@ class SheetProcessor:
         self.rndts_data["ssd_data"] = get_ssd_data(self.siret)
 
     def _extract_gistrid_data(self):
+        """Extracts datasets containing GISTRID' data about country waste exchanges."""
         self.gistrid_data = get_gistrid_data(self.siret)
 
     def _process_company_data(self):

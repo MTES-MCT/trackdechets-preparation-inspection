@@ -1,6 +1,5 @@
 import os
 import tempfile
-from contextlib import contextmanager
 import logging
 import threading
 from typing import Any, Optional
@@ -10,13 +9,14 @@ from django.conf import LazySettings
 
 logger = logging.getLogger(__name__)
 
-_tunnel_info: dict[str, Any] = {}
+_tunnel_info: dict[str, Any] = {}  # Holds tunnel singleton
 _tunnel_lock = threading.Lock()
 
 
-def set_tunnel(tunnel: sshtunnel.SSHTunnelForwarder):
+def set_tunnel(tunnel: sshtunnel.SSHTunnelForwarder, key_filepath: str):
     _tunnel_info["tunnel"] = tunnel
     _tunnel_info["port"] = tunnel.local_bind_port
+    _tunnel_info["key_filepath"] = key_filepath
 
 
 def get_tunnel() -> Optional[sshtunnel.SSHTunnelForwarder]:
@@ -25,6 +25,10 @@ def get_tunnel() -> Optional[sshtunnel.SSHTunnelForwarder]:
 
 def get_tunnel_port() -> Optional[int]:
     return _tunnel_info.get("port")
+
+
+def get_key_filepath() -> Optional[str]:
+    return _tunnel_info.get("key_filepath")
 
 
 def is_tunnel_active(tunnel: sshtunnel.SSHTunnelForwarder) -> bool:
@@ -47,7 +51,7 @@ def ssh_tunnel(settings: LazySettings):
 
         logger.info("Creating new ssh tunnel")
         # Otherwise, create a new tunnel
-        temp_key_file = tempfile.NamedTemporaryFile(mode="w", delete=False)
+        temp_key_file = tempfile.NamedTemporaryFile(mode="w", prefix="trackdechets_key_", delete=False)
 
         try:
             temp_key_file.write(settings.DWH_SSH_KEY)
@@ -62,8 +66,9 @@ def ssh_tunnel(settings: LazySettings):
             )
 
             tunnel.start()
-            set_tunnel(tunnel)
+            set_tunnel(tunnel, temp_key_file.name)
 
             return tunnel
         finally:
+            # Delete the key file after the tunnel has been established or if the tunnel creation has failed.
             os.unlink(temp_key_file.name)

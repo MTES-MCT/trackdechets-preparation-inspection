@@ -2,11 +2,13 @@ import os
 import logging
 
 from celery import Celery
-from celery.signals import celeryd_after_setup, celeryd_init
+from celery.signals import celeryd_after_setup, worker_shutdown
 
 from sheets.datawarehouse import get_wh_sqlachemy_engine
 
 from django.conf import settings
+
+from sheets.ssh import get_key_filepath, get_tunnel
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +30,13 @@ app.autodiscover_tasks()
 def setup_connection(**kwargs):
     logger.info("Creating tunnel and DWH engine.")
     get_wh_sqlachemy_engine(settings.DWH_USERNAME, settings.DWH_PASSWORD, settings.DWH_SSH_LOCAL_BIND_HOST)
+
+
+@worker_shutdown.connect
+def clean_connection(**kwargs):
+    logger.info("Deleting tunnel and associated artifacts.")
+    tunnel = get_tunnel()
+    tunnel.stop()
 
 
 @app.task(bind=True)

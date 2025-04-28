@@ -7,7 +7,6 @@ from sqlalchemy.sql import text
 
 from .data_extraction import get_wh_sqlachemy_engine
 from .queries import sql_company_query_exists_str
-from .ssh import ssh_tunnel
 
 
 class TypedDateInput(DateInput):

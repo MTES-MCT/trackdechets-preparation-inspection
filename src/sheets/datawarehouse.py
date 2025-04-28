@@ -10,7 +10,7 @@ from sheets.ssh import get_tunnel_port, ssh_tunnel
 
 logger = logging.getLogger(__name__)
 
-_dwh_info: dict[str, Any] = {}
+_dwh_info: dict[str, Any] = {}  # Holds datawarehouse connection singleton
 
 
 def set_engine(dwh_engine: MockConnection, port: int):

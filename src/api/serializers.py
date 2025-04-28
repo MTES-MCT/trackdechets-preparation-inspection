@@ -6,7 +6,6 @@ from sqlalchemy.sql import text
 from sheets.data_extraction import get_wh_sqlachemy_engine
 from sheets.models import ComputedInspectionData
 from sheets.queries import sql_company_query_exists_str
-from sheets.ssh import ssh_tunnel
 
 
 class ComputedInspectionDataSerializer(serializers.ModelSerializer):
@@ -39,12 +38,11 @@ class ComputedInspectionDataCreateSerializer(serializers.Serializer):
     def validate_orgId(self, siret):
         prepared_query = text(sql_company_query_exists_str)
 
-        with ssh_tunnel(settings):
-            wh_engine = get_wh_sqlachemy_engine(
-                settings.DWH_USERNAME, settings.DWH_PASSWORD, settings.DWH_SSH_LOCAL_BIND_HOST
-            )
-            with wh_engine.connect() as con:
-                companies = con.execute(prepared_query, siret=siret).all()
-            if not companies:
-                raise serializers.ValidationError("Établissement non inscrit à Trackdéchets.")
-            return siret
+        wh_engine = get_wh_sqlachemy_engine(
+            settings.DWH_USERNAME, settings.DWH_PASSWORD, settings.DWH_SSH_LOCAL_BIND_HOST
+        )
+        with wh_engine.connect() as con:
+            companies = con.execute(prepared_query, siret=siret).all()
+        if not companies:
+            raise serializers.ValidationError("Établissement non inscrit à Trackdéchets.")
+        return siret

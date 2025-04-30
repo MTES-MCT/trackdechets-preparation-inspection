@@ -52,6 +52,18 @@ export const FRENCH_REGIONS_WITH_DEPARTMENTS = [
     ],
   },
   {
+    code: "28",
+    name: "Normandie",
+    shortName: "Normandie",
+    departments: [
+      { code: "14", name: "14 - Calvados", shortName: "Calvados" },
+      { code: "27", name: "27 - Eure", shortName: "Eure" },
+      { code: "50", name: "50 - Manche", shortName: "Manche" },
+      { code: "61", name: "61 - Orne", shortName: "Orne" },
+      { code: "76", name: "76 - Seine Maritime", shortName: "Seine Maritime" },
+    ],
+  },
+  {
     code: "32",
     name: "Hauts-de-France",
     shortName: "Hauts-de-France",

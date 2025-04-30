@@ -7,7 +7,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import DetailView, FormView, TemplateView
 
-from accounts.constants import ALL_BUT_OBSERVATOIRE
+from accounts.constants import PERMS_SHEET_AND_REGISTRY
 from common.constants import STATE_DONE, STATE_RUNNING
 from common.mixins import FullyLoggedMixin
 from common.sirets import validate_siret
@@ -30,7 +30,7 @@ class SheetPrepare(FullyLoggedMixin, FormView):
 
     template_name = "sheets/sheet_prepare.html"
     form_class = SheetPrepareForm
-    allowed_user_categories = ALL_BUT_OBSERVATOIRE
+    allowed_user_categories = PERMS_SHEET_AND_REGISTRY
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -95,7 +95,7 @@ class ComputingView(FullyLoggedMixin, TemplateView):
     """Optional `task_id` trigger result polling in template"""
 
     template_name = "sheets/result.html"
-    allowed_user_categories = ALL_BUT_OBSERVATOIRE
+    allowed_user_categories = PERMS_SHEET_AND_REGISTRY
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -124,7 +124,7 @@ class FragmentResultView(FullyLoggedMixin, TemplateView):
     """View to be called by ResultView template to render api call results when done"""
 
     template_name = "sheets/_prepare_result.html"
-    allowed_user_categories = ALL_BUT_OBSERVATOIRE
+    allowed_user_categories = PERMS_SHEET_AND_REGISTRY
 
     def dispatch(self, request, *args, **kwargs):
         self.task_id = self.kwargs.get("task_id")
@@ -162,12 +162,12 @@ class Sheet(FullyLoggedMixin, DetailView):
     model = ComputedInspectionData
     template_name = "sheets/sheet.html"
     context_object_name = "sheet"
-    allowed_user_categories = ALL_BUT_OBSERVATOIRE
+    allowed_user_categories = PERMS_SHEET_AND_REGISTRY
 
 
 class PrepareSheetPdf(FullyLoggedMixin, DetailView):
     model = ComputedInspectionData
-    allowed_user_categories = ALL_BUT_OBSERVATOIRE
+    allowed_user_categories = PERMS_SHEET_AND_REGISTRY
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -191,7 +191,7 @@ class SheetPdfHtml(FullyLoggedMixin, DetailView):
     model = ComputedInspectionData
     template_name = "sheets/sheetpdf.html"
     context_object_name = "sheet"
-    allowed_user_categories = ALL_BUT_OBSERVATOIRE
+    allowed_user_categories = PERMS_SHEET_AND_REGISTRY
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data()
@@ -231,7 +231,7 @@ class SheetPdfHtml(FullyLoggedMixin, DetailView):
 
 class SheetPdf(FullyLoggedMixin, DetailView):
     model = ComputedInspectionData
-    allowed_user_categories = ALL_BUT_OBSERVATOIRE
+    allowed_user_categories = PERMS_SHEET_AND_REGISTRY
 
     def get(self, request, *args, **kwargs):
         sheet = self.get_object()

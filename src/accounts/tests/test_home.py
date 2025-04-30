@@ -89,6 +89,153 @@ def test_private_home_menu(get_client):
 @pytest.mark.parametrize(
     "get_client", ["verified_client", "logged_monaiot_client", "logged_proconnect_client"], indirect=True
 )
+def test_private_home_menu_for_administration_central(get_client):
+    user = get_client.user
+    user.user_category = UserCategoryChoice.ADMINISTRATION_CENTRALE
+    user.save()
+
+    user.refresh_from_db()
+
+    url = reverse("private_home")
+    res = get_client.get(url)
+    assert res.status_code == 200
+    assert "Préparer une fiche" in res.content.decode()
+
+    assert "Bordereau" in res.content.decode()
+
+    assert "Admin équipe" not in res.content.decode()
+    assert "Observatoires" in res.content.decode()
+    assert "Contrôle routier" in res.content.decode()
+    assert "Cartographie" not in res.content.decode()
+    assert "Bordereau" in res.content.decode()
+    assert "Guide" in res.content.decode()
+
+
+@pytest.mark.parametrize(
+    "get_client", ["verified_client", "logged_monaiot_client", "logged_proconnect_client"], indirect=True
+)
+def test_private_home_menu_for_icpe(get_client):
+    user = get_client.user
+    user.user_category = UserCategoryChoice.INSPECTEUR_ICPE
+    user.save()
+
+    user.refresh_from_db()
+
+    url = reverse("private_home")
+    res = get_client.get(url)
+    assert res.status_code == 200
+    assert "Préparer une fiche" in res.content.decode()
+
+    assert "Bordereau" in res.content.decode()
+
+    assert "Admin équipe" not in res.content.decode()
+    assert "Observatoires" not in res.content.decode()
+    assert "Contrôle routier" in res.content.decode()
+    assert "Cartographie" not in res.content.decode()
+    assert "Bordereau" in res.content.decode()
+    assert "Guide" in res.content.decode()
+
+
+@pytest.mark.parametrize(
+    "get_client", ["verified_client", "logged_monaiot_client", "logged_proconnect_client"], indirect=True
+)
+def test_private_home_menu_for_ctt(get_client):
+    user = get_client.user
+    user.user_category = UserCategoryChoice.CTT
+    user.save()
+
+    user.refresh_from_db()
+
+    url = reverse("private_home")
+    res = get_client.get(url)
+    assert res.status_code == 200
+    assert "Préparer une fiche" in res.content.decode()
+
+    assert "Bordereau" in res.content.decode()
+
+    assert "Admin équipe" not in res.content.decode()
+    assert "Observatoires" not in res.content.decode()
+    assert "Contrôle routier" in res.content.decode()
+    assert "Cartographie" not in res.content.decode()
+    assert "Bordereau" in res.content.decode()
+    assert "Guide" in res.content.decode()
+
+    @pytest.mark.parametrize(
+        "get_client", ["verified_client", "logged_monaiot_client", "logged_proconnect_client"], indirect=True
+    )
+    def test_private_home_menu_for_inspection_travail(get_client):
+        user = get_client.user
+        user.user_category = UserCategoryChoice.INSPECTION_TRAVAIL
+        user.save()
+
+        user.refresh_from_db()
+
+        url = reverse("private_home")
+        res = get_client.get(url)
+        assert res.status_code == 200
+        assert "Préparer une fiche" in res.content.decode()
+
+        assert "Bordereau" in res.content.decode()
+
+        assert "Admin équipe" not in res.content.decode()
+        assert "Observatoires" not in res.content.decode()
+        assert "Contrôle routier" not in res.content.decode()
+        assert "Cartographie" not in res.content.decode()
+        assert "Bordereau" in res.content.decode()
+        assert "Guide" in res.content.decode()
+
+    @pytest.mark.parametrize(
+        "get_client", ["verified_client", "logged_monaiot_client", "logged_proconnect_client"], indirect=True
+    )
+    def test_private_home_menu_for_poulets(get_client):
+        user = get_client.user
+        user.user_category = UserCategoryChoice.GENDARMERIE
+        user.save()
+
+        user.refresh_from_db()
+
+        url = reverse("private_home")
+        res = get_client.get(url)
+        assert res.status_code == 200
+        assert "Préparer une fiche" in res.content.decode()
+
+        assert "Bordereau" in res.content.decode()
+
+        assert "Admin équipe" not in res.content.decode()
+        assert "Observatoires" not in res.content.decode()
+        assert "Contrôle routier" not in res.content.decode()
+        assert "Cartographie" not in res.content.decode()
+        assert "Bordereau" in res.content.decode()
+        assert "Guide" in res.content.decode()
+
+    @pytest.mark.parametrize(
+        "get_client", ["verified_client", "logged_monaiot_client", "logged_proconnect_client"], indirect=True
+    )
+    def test_private_home_menu_for_douane(get_client):
+        user = get_client.user
+        user.user_category = UserCategoryChoice.DOUANE
+        user.save()
+
+        user.refresh_from_db()
+
+        url = reverse("private_home")
+        res = get_client.get(url)
+        assert res.status_code == 200
+        assert "Préparer une fiche" in res.content.decode()
+
+        assert "Bordereau" in res.content.decode()
+
+        assert "Admin équipe" not in res.content.decode()
+        assert "Observatoires" not in res.content.decode()
+        assert "Contrôle routier" not in res.content.decode()
+        assert "Cartographie" not in res.content.decode()
+        assert "Bordereau" in res.content.decode()
+        assert "Guide" in res.content.decode()
+
+
+@pytest.mark.parametrize(
+    "get_client", ["verified_client", "logged_monaiot_client", "logged_proconnect_client"], indirect=True
+)
 def test_private_home_menu_for_observatoire(get_client):
     user = get_client.user
     user.user_category = UserCategoryChoice.OBSERVATOIRE

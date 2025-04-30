@@ -7,7 +7,7 @@ from django.http import HttpResponseRedirect
 from django.views.generic import CreateView, FormView, ListView, TemplateView
 from rest_framework.reverse import reverse_lazy
 
-from accounts.constants import ALL_BUT_OBSERVATOIRE
+from accounts.constants import PERMS_SHEET_AND_REGISTRY
 from common.mixins import FullyLoggedMixin
 from data_exports.views import DummyForm
 
@@ -30,7 +30,7 @@ class RegistryV2Prepare(FullyLoggedMixin, CreateView):
 
     template_name = "registry/registry_v2_prepare.html"
     form_class = RegistryV2PrepareForm
-    allowed_user_categories = ALL_BUT_OBSERVATOIRE
+    allowed_user_categories = PERMS_SHEET_AND_REGISTRY
     success_url = reverse_lazy("registry_v2_list")
 
     def get_form_kwargs(self):
@@ -55,12 +55,12 @@ class RegistryV2Prepare(FullyLoggedMixin, CreateView):
 
 class RegistryV2ListWrapper(FullyLoggedMixin, TemplateView):
     template_name = "registry/registry_v2_list_wrapper.html"
-    allowed_user_categories = ALL_BUT_OBSERVATOIRE
+    allowed_user_categories = PERMS_SHEET_AND_REGISTRY
 
 
 class RegistryV2ListContent(FullyLoggedMixin, ListView):
     template_name = "registry/fragments/_registry_v2_list_content.html"
-    allowed_user_categories = ALL_BUT_OBSERVATOIRE
+    allowed_user_categories = PERMS_SHEET_AND_REGISTRY
     model = RegistryV2Export
     context_object_name = "exports"
 
@@ -72,7 +72,7 @@ class RegistryV2Retrieve(FullyLoggedMixin, FormView):
     template_name = "registry/registry_v2_list_wrapper.html"  # Create this template
     form_class = DummyForm
     success_url = None
-    allowed_user_categories = ALL_BUT_OBSERVATOIRE
+    allowed_user_categories = PERMS_SHEET_AND_REGISTRY
 
     def form_valid(self, form):
         registry_pk = self.kwargs.get("registry_pk")

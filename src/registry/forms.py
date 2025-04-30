@@ -6,7 +6,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.forms import ValidationError
 from sqlalchemy.sql import text
 
-from sheets.database import wh_engine
+from sheets.datawarehouse import get_wh_sqlachemy_engine
 from sheets.forms import TypedDateInput
 from sheets.queries import sql_company_query_exists_str
 from sheets.ssh import ssh_tunnel
@@ -90,6 +90,7 @@ class RegistryV2PrepareForm(forms.ModelForm):
         prepared_query = text(sql_company_query_exists_str)
 
         with ssh_tunnel(settings):
+            wh_engine = get_wh_sqlachemy_engine()
             with wh_engine.connect() as con:
                 companies = con.execute(prepared_query, siret=siret).all()
             if not companies:

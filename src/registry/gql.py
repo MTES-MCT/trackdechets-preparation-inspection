@@ -19,16 +19,13 @@ graphql_generate_registry_export = """
 
 graphql_read_registry_export = """
 query RegistryV2Export($id: ID!)
- 
   {
   registryV2Export(id: $id)
   {
-   
         id
         createdBy {id name}
         status
         format
-  
   }
 } 
 """

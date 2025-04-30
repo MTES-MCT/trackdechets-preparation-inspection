@@ -4,6 +4,7 @@ from unittest.mock import patch
 import pytest
 from django.urls import reverse
 
+from ..constants import RegistryV2ExportState
 from ..factories import RegistryV2ExportFactory
 from ..models import RegistryV2Export
 
@@ -59,28 +60,39 @@ def test_registry_v2_prepare_v2(get_client):
     "get_client", ["verified_client", "logged_monaiot_client", "logged_proconnect_client"], indirect=True
 )
 def test_registry_prepare_v2_post(get_client):
+    mock_response = {
+        "data": {
+            "generateRegistryV2Export": {
+                "id": "mock-export-id-123",
+                "status": RegistryV2ExportState.STARTED,
+            }
+        }
+    }
     url = reverse("registry_v2_prepare")
-    res = get_client.post(
-        url,
-        data={
-            "siret": "51212357100030",
-            "registry_type": "INCOMING",
-            "export_format": "CSV",
-            "declaration_type": "ALL",
-            "start_date": "2024-01-01",
-            "end_date": "2024-12-31",
-            "waste_types_dd": True,
-            "waste_types_dnd": False,
-            "waste_types_texs": False,
-            "waste_codes": [],
-        },
-    )
+    with patch("httpx.Client.post") as mock_post:
+        mock_post.return_value.json.return_value = mock_response
+
+        res = get_client.post(
+            url,
+            data={
+                "siret": "51212357100030",
+                "registry_type": "INCOMING",
+                "export_format": "CSV",
+                "declaration_type": "ALL",
+                "start_date": "2024-01-01",
+                "end_date": "2024-12-31",
+                "waste_types_dd": True,
+                "waste_types_dnd": False,
+                "waste_types_texs": False,
+                "waste_codes": [],
+            },
+        )
     assert res.status_code == 302
     assert res.url == reverse("registry_v2_list")
     reg = RegistryV2Export.objects.first()
     assert reg.pk
     assert reg.siret == "51212357100030"
-    assert reg.state == "PENDING"
+    assert reg.state == "STARTED"
 
 
 @pytest.mark.django_db

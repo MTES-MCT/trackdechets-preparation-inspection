@@ -15,7 +15,8 @@ PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]  # faster h
 
 SECRET_KEY = "xyz12345"
 
-CELERY_ALWAYS_EAGER = True
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_TASK_EAGER_PROPAGATES = True
 
 MESSAGE_RECIPIENTS = ["lorem@ipsum.lol"]
 

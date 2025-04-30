@@ -68,7 +68,7 @@ class SheetPrepare(FullyLoggedMixin, FormView):
             data_end_date=data_end_date,
             created_by=self.request.user.email,
         )
-        if getattr(settings, "CELERY_ALWAYS_EAGER", False):
+        if getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False):
             self.task_id = "fake-task-id"
         else:
             self.task_id = prepare_sheet.delay(self.new_inspection.pk)

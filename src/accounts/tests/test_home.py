@@ -20,7 +20,6 @@ def test_home_administration_centrale_menu(verified_adm_centrale):
     assert res.status_code == 200
 
     assert "Préparer une fiche" in res.content.decode()
-    assert "Registre exhaustif" in res.content.decode()
     assert "Exports (Registre V2)" in res.content.decode()
     assert "Bordereau" in res.content.decode()
     assert "Cartographie" not in res.content.decode()
@@ -34,7 +33,6 @@ def test_home_observatoire_menu(verified_observatoire):
     assert res.status_code == 200
 
     assert "Préparer une fiche" not in res.content.decode()
-    assert "Registre exhaustif" not in res.content.decode()
     assert "Exports (Registre V2)" not in res.content.decode()
     assert "Bordereau" not in res.content.decode()
     assert "Cartographie" not in res.content.decode()
@@ -60,7 +58,6 @@ def test_home_menu(get_profile):
     assert res.status_code == 200
 
     assert "Préparer une fiche" in res.content.decode()
-    assert "Registre exhaustif" in res.content.decode()
     assert "Exports (Registre V2)" in res.content.decode()
     assert "Bordereau" in res.content.decode()
     assert "Cartographie" not in res.content.decode()
@@ -78,7 +75,6 @@ def test_private_home_menu(get_client):
 
     assert "Établissements" in res.content.decode()
     assert "Préparer une fiche" in res.content.decode()
-    assert "Registre exhaustif" in res.content.decode()
     assert "Exports (Registre V2)" in res.content.decode()
     assert "Contrôle routier" in res.content.decode()
     assert "Bordereau" in res.content.decode()

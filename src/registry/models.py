@@ -53,6 +53,8 @@ class ChoiceArrayField(ArrayField):
 
 
 class RegistryDownload(models.Model):
+    """Deprecated model"""
+
     org_id = models.CharField(_("Organization ID"), max_length=20)
 
     data_start_date = models.DateTimeField(_("Data Start Date"), default=datetime(2022, 1, 1))

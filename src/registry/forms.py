@@ -3,41 +3,15 @@ import datetime as dt
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.forms import ChoiceField, ValidationError
+from django.forms import ValidationError
 from sqlalchemy.sql import text
 
 from sheets.database import wh_engine
-from sheets.forms import SiretForm, TypedDateInput
+from sheets.forms import TypedDateInput
 from sheets.queries import sql_company_query_exists_str
 from sheets.ssh import ssh_tunnel
 
-from .constants import (
-    REGISTRY_FORMAT_CSV,
-    REGISTRY_FORMAT_XLS,
-    REGISTRY_TYPE_ALL,
-    REGISTRY_TYPE_INCOMING,
-    REGISTRY_TYPE_OUTGOING,
-    REGISTRY_TYPE_TRANSPORTED,
-)
 from .models import RegistryV2Export
-
-
-class RegistryPrepareForm(SiretForm):
-    is_registry = True
-
-    registry_type = ChoiceField(
-        label="Type de registre",
-        choices=(
-            (REGISTRY_TYPE_ALL, "Exhaustif"),
-            (REGISTRY_TYPE_INCOMING, "Entrant"),
-            (REGISTRY_TYPE_OUTGOING, "Sortant"),
-            (REGISTRY_TYPE_TRANSPORTED, "Transporté"),
-        ),
-    )
-    registry_format = ChoiceField(
-        label="Format",
-        choices=((REGISTRY_FORMAT_XLS, ".xls (Excel)"), (REGISTRY_FORMAT_CSV, ".csv (données tabulées)")),
-    )
 
 
 class RegistryV2PrepareForm(forms.ModelForm):

@@ -1,15 +1,7 @@
 {
   "jobs": [
     {
-      "command": "3 23 * * * python /app/src/manage.py cleanup_django_defender --settings=config.settings.production",
-      "size": "M"
-    },
-    {
-      "command": "7 23 * * * python /app/src/manage.py clearsessions --settings=config.settings.production",
-      "size": "M"
-    },
-    {
-      "command": "7 23 * * * python /app/src/manage.py purgerequests 1 month --noinput --settings=config.settings.production",
+      "command": "3 23 * * * python /app/src/manage.py household --settings=config.settings.production",
       "size": "M"
     },
     {
@@ -17,10 +9,6 @@
       "size": "M"
     },
     {
-      "command": "18 23 * * * python /app/src/manage.py void_sheets --settings=config.settings.production",
-      "size": "M"
-    },
-       {
       "command": "27 23 * * * python /app/src/manage.py retrieve_companies --settings=config.settings.production",
       "size": "L"
     },

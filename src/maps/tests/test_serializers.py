@@ -52,4 +52,5 @@ def test_company_serializer():
         "long": company.coords.x,
         "wastes": "Déchets dangereux, Amiante, Fluides Frigorigènes, Dasri, Vehicules hors d'usage",
         "profiles": ", ".join(serialized_profiles),
+        "registered_on_td": True,
     }

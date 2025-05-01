@@ -7,6 +7,7 @@ const initialState = {
   popupRow2: [],
   popupRow3: [],
   popupLink: "",
+  registeredOnTd: false,
 };
 
 export const mapPopupSlice = createSlice({
@@ -21,6 +22,7 @@ export const mapPopupSlice = createSlice({
         popupRow2,
         popupRow3,
         popupLink,
+        registeredOnTd,
       } = action.payload;
       state.popupTitle = popupTitle || "";
       state.popupText = popupText || "";
@@ -28,6 +30,7 @@ export const mapPopupSlice = createSlice({
       state.popupRow2 = popupRow2 || [];
       state.popupRow3 = popupRow3 || [];
       state.popupLink = popupLink || "";
+      state.registeredOnTd = registeredOnTd;
     },
     closePopup: (state) => {
       state.popupTitle = "";

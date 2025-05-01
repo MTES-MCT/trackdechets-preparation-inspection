@@ -82,6 +82,7 @@ const mapPlotToPopup = (plot: Plot, zoom: number): PopupData | null => {
     return {
       popupTitle: plot.nom_etablissement || "Nom non renseigné",
       popupText: plot.adresse_td || "",
+      registeredOnTd: plot.registered_on_td,
       popupRow1: ["Siret", plot.siret || ""],
       popupRow2: ["Profil", plot.profiles || ""],
       popupRow3: ["Déchet", plot.wastes || ""],
@@ -116,8 +117,15 @@ export default function MapContainer({ mapRef, lat, lng }: MapContainerProps) {
 
   const dispatch = useAppDispatch();
 
-  const { popupTitle, popupText, popupRow1, popupRow2, popupRow3, popupLink } =
-    useAppSelector((state: RootState) => state.mapPopup);
+  const {
+    popupTitle,
+    popupText,
+    popupRow1,
+    popupRow2,
+    popupRow3,
+    popupLink,
+    registeredOnTd,
+  } = useAppSelector((state: RootState) => state.mapPopup);
 
   const points = useMemo(() => {
     return plots.map((plot) => ({
@@ -221,6 +229,7 @@ export default function MapContainer({ mapRef, lat, lng }: MapContainerProps) {
             siret: properties.siret,
             profiles: properties.profiles,
             wastes: properties.wastes,
+            registered_on_td: properties.registered_on_td,
             count: 1,
           };
 
@@ -361,7 +370,7 @@ export default function MapContainer({ mapRef, lat, lng }: MapContainerProps) {
                   }
                 }}
               >
-                <LocMarker />
+                <LocMarker color={plot.registered_on_td ? "#000091" : "#777"} />
               </Marker>
             );
           }
@@ -390,6 +399,7 @@ export default function MapContainer({ mapRef, lat, lng }: MapContainerProps) {
             row1={[popupRow1[0], popupRow1[1]]}
             row2={[popupRow2[0], popupRow2[1]]}
             row3={[popupRow3[0], popupRow3[1]]}
+            registeredOnTd={registeredOnTd}
             link={popupLink}
             onClose={() => dispatch(closePopup())}
           />

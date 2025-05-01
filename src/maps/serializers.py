@@ -55,7 +55,7 @@ class CompanySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CartoCompany
-        fields = ("siret", "nom_etablissement", "adresse_td", "lat", "long", "wastes", "profiles")
+        fields = ("siret", "nom_etablissement", "adresse_td", "lat", "long", "wastes", "profiles", "registered_on_td")
 
     def get_lat(self, obj):
         return obj.coords[1]

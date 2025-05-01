@@ -2,6 +2,7 @@ import random
 
 import factory
 from django.contrib.gis.geos import Point
+from django.utils import timezone
 
 from common.sirets import generate_siret
 
@@ -33,3 +34,4 @@ class CartoCompanyFactory(factory.django.DjangoModelFactory):
     nom_etablissement = factory.Sequence(lambda n: f"Company {n}")
 
     coords = factory.LazyFunction(rand_coord)
+    date_inscription = timezone.now()

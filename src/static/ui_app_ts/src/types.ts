@@ -16,6 +16,7 @@ export interface Plot {
   long: number;
   count?: number;
   nom_etablissement?: string;
+  registered_on_td: boolean;
   adresse_td?: string;
   siret?: string;
   profiles?: string;
@@ -46,6 +47,7 @@ export interface PopupData {
   popupRow2?: [string, string];
   popupRow3?: [string, string];
   popupLink?: string;
+  registeredOnTd?: boolean;
 }
 
 // Options types
@@ -111,6 +113,7 @@ export interface MapContainerProps {
 export interface PopupProps {
   title: string;
   text: string;
+  registeredOnTd: boolean;
   onClose: () => void;
   row1?: [string, string] | null;
   row2?: [string, string] | null;

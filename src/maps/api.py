@@ -58,7 +58,7 @@ class ApiObjects(ListAPIView):
             return self.get_regions()
         if self.diagonal >= DIAGONAL_DEPARTMENTS:
             return self.get_departments()
-        return CartoCompany.objects.exclude(coords__isnull=True)
+        return CartoCompany.objects.exclude(coords__isnull=True)  # .filter(date_inscription__year=1970)
 
     def get_regions(self):
         return (

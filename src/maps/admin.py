@@ -166,11 +166,34 @@ class RoleFilter(admin.SimpleListFilter):
         return queryset
 
 
+class RegisteredFilter(admin.SimpleListFilter):
+    """
+    Filter to show objects with a specific field filled or empty
+    """
+
+    title = "Registered on TD"
+    parameter_name = "registered_on_td"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("registered", "Registered"),
+            ("not_registered", "Not registered"),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "registered":
+            return queryset.filter(date_inscription__isnull=False)
+        if self.value() == "not_registered":
+            return queryset.filter(date_inscription__isnull=True)
+        return queryset
+
+
 @admin.register(CartoCompany)
 class CartoCompanyAdmin(admin.ModelAdmin):
     list_display = (
         "siret",
         "nom_etablissement",
+        "registered_on_td",
         "code_departement_insee",
         "has_bsdd",
         "has_bsda",
@@ -198,7 +221,14 @@ class CartoCompanyAdmin(admin.ModelAdmin):
         RoleFilter,
         ProfilsFilter,
         ProcessingOperationsFilter,
+        RegisteredFilter,
     )
+
+    def registered_on_td(self, obj):
+        return obj.registered_on_td
+
+    registered_on_td.short_description = "Registered on TD"
+    registered_on_td.boolean = True
 
     # Method to create virtual fields for display
     def has_bsdd(self, obj):

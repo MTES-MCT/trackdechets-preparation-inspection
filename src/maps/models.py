@@ -156,3 +156,7 @@ class CartoCompany(models.Model):
 
     def __str__(self):
         return f"{self.siret} - {self.nom_etablissement}"
+
+    @property
+    def registered_on_td(self):
+        return bool(self.date_inscription)

@@ -4,6 +4,7 @@ export function Popup({
   title,
   text,
   onClose,
+  registeredOnTd,
   row1 = null,
   row2 = null,
   row3 = null,
@@ -18,7 +19,16 @@ export function Popup({
       <p>{text}</p>
       {row1 && (
         <p className="fr-text">
-          {row1[0]} : <strong>{row1[1]}</strong>
+          {row1[0]} : <strong>{row1[1]}</strong>{" "}
+          {registeredOnTd ? (
+            <span className="fr-badge fr-badge--success">
+              Inscrit sur Trackdéchets
+            </span>
+          ) : (
+            <span className="fr-badge fr-badge--warning fr-badge--no-icon">
+              Non inscrit sur Trackdéchets
+            </span>
+          )}
         </p>
       )}
       {row2 && (

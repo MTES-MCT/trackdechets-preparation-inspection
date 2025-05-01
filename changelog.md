@@ -11,7 +11,7 @@ et le projet suit un schéma de versioning inspiré de [Calendar Versioning](htt
 
 ## 20/04/2025
 
-- Téléchargement du regsitre V2 depuis l'api TD'
+- Téléchargement du regsitre V2 depuis l'api TD
 
 ## 22/04/2025
 

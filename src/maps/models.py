@@ -159,4 +159,4 @@ class CartoCompany(models.Model):
 
     @property
     def registered_on_td(self):
-        return self.date_inscription.year != 1970
+        return bool(self.date_inscription)

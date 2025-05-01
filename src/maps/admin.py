@@ -174,8 +174,6 @@ class RegisteredFilter(admin.SimpleListFilter):
     title = "Registered on TD"
     parameter_name = "registered_on_td"
 
-    field_name = "date_inscription"
-
     def lookups(self, request, model_admin):
         return (
             ("registered", "Registered"),
@@ -183,14 +181,10 @@ class RegisteredFilter(admin.SimpleListFilter):
         )
 
     def queryset(self, request, queryset):
-        """
-        Returns the filtered queryset based on the value provided in the query string.
-        """
-        default_dt = "1970-01-01T00:00:00.000+0000"
         if self.value() == "registered":
-            return queryset.exclude(date_inscription=default_dt)
+            return queryset.filter(date_inscription__isnull=False)
         if self.value() == "not_registered":
-            return queryset.filter(date_inscription=default_dt)
+            return queryset.filter(date_inscription__isnull=True)
         return queryset
 
 

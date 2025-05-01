@@ -14,7 +14,19 @@ class UserCategoryChoice(models.TextChoices):
     OBSERVATOIRE = "OBSERVATOIRE", _("Observatoire")
 
 
-ALL_BUT_OBSERVATOIRE = [
+ALL_USER_CATEGORIES = [
+    UserCategoryChoice.STAFF_TD,
+    UserCategoryChoice.ADMINISTRATION_CENTRALE,
+    UserCategoryChoice.INSPECTEUR_ICPE,
+    UserCategoryChoice.CTT,
+    UserCategoryChoice.INSPECTION_TRAVAIL,
+    UserCategoryChoice.GENDARMERIE,
+    UserCategoryChoice.ARS,
+    UserCategoryChoice.DOUANE,
+    UserCategoryChoice.OBSERVATOIRE,
+]
+
+PERMS_SHEET_AND_REGISTRY = [
     UserCategoryChoice.STAFF_TD,
     UserCategoryChoice.ADMINISTRATION_CENTRALE,
     UserCategoryChoice.INSPECTEUR_ICPE,
@@ -24,12 +36,31 @@ ALL_BUT_OBSERVATOIRE = [
     UserCategoryChoice.ARS,
     UserCategoryChoice.DOUANE,
 ]
-OBSERVATOIRE_AND_STAFF = [UserCategoryChoice.STAFF_TD, UserCategoryChoice.OBSERVATOIRE]
-ALL_USER_CATEGORIES = ALL_BUT_OBSERVATOIRE + OBSERVATOIRE_AND_STAFF
-ADMIN_CENTRALE_OBSERVATOIRE_AND_STAFF = [
+PERMS_ROAD_CONTROL = [
     UserCategoryChoice.STAFF_TD,
-    UserCategoryChoice.OBSERVATOIRE,
     UserCategoryChoice.ADMINISTRATION_CENTRALE,
+    UserCategoryChoice.INSPECTEUR_ICPE,
+    UserCategoryChoice.CTT,
+    UserCategoryChoice.GENDARMERIE,
+    UserCategoryChoice.DOUANE,
+]
+PERMS_BSD = PERMS_SHEET_AND_REGISTRY
+PERMS_MAPS = [
+    UserCategoryChoice.STAFF_TD,
+    UserCategoryChoice.ADMINISTRATION_CENTRALE,
+    UserCategoryChoice.INSPECTEUR_ICPE,
+    UserCategoryChoice.CTT,
+    UserCategoryChoice.INSPECTION_TRAVAIL,
+    UserCategoryChoice.GENDARMERIE,
+    UserCategoryChoice.ARS,
+    UserCategoryChoice.DOUANE,
+    UserCategoryChoice.OBSERVATOIRE,
+]
+
+PERMS_DATA_EXPORT = [
+    UserCategoryChoice.STAFF_TD,
+    UserCategoryChoice.ADMINISTRATION_CENTRALE,
+    UserCategoryChoice.OBSERVATOIRE,
 ]
 
 

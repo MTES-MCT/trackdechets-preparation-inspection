@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load registry_tags %}
+{% block main %}
+    <div class="fr-container fr-mt-1v">
+
+    <div class="fr-mt-2w fr-mb-2w">
+
+        <a class="fr-btn fr-icon-download-line fr-btn--icon-right" href="{% url "registry_v2_prepare" %}">Exporter</a>
+    </div>
+        <h3>Exports récents</h3>
+
+        <div class="fr-table" hx-get="{% url "registry_v2_list_content" %}" hx-trigger="load, every 10s" >
+
+
+        </div>
+    </div>
+{% endblock main %}

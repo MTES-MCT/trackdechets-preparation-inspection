@@ -15,7 +15,8 @@ PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]  # faster h
 
 SECRET_KEY = "xyz12345"
 
-CELERY_ALWAYS_EAGER = True
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_TASK_EAGER_PROPAGATES = True
 
 MESSAGE_RECIPIENTS = ["lorem@ipsum.lol"]
 
@@ -28,6 +29,9 @@ CSRF_TRUSTED_ORIGINS = ["http://url.test"]
 # circumnvent defender when testing
 DEFENDER_DISABLE_IP_LOCKOUT = True
 DEFENDER_DISABLE_USERNAME_LOCKOUT = True
+
+TD_API_URL = "https://testapi.test"
+TD_API_TOKEN = "thetoken"
 
 OIDC_RP_CLIENT_SECRET = "azer"
 MONAIOT_OIDC_OP_SERVER_URL = "https://monaiot.test/auth/realms/MonAIOT-integration/protocol/openid-connect"

@@ -599,6 +599,10 @@ table .td--right {
     align-items: center;
 }
 
+.text-center {
+    text-align: center;
+}
+
 /* Map*/
 .fr-tabs__panel {
     border: 1px solid #ccc;
@@ -623,4 +627,15 @@ table .td--right {
 
 .fr-tabs__panel {
     transition: none !important;
+}
+
+/* Choice js custom styles*/
+
+
+.choices__inner .choices__item[aria-selected=true] {
+    background-color: rgb(0, 0, 145) !important;
+}
+
+.choices__button:hover {
+    background-color: rgb(0, 0, 145) !important;
 }

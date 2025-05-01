@@ -13,7 +13,7 @@
       "size": "L"
     },
     {
-      "command": "* * * * * python /app/src/manage.py refresh_export_states --settings=config.settings.production",
+      "command": "10 * * * * python /app/src/manage.py refresh_export_states --settings=config.settings.production",
       "size": "M"
     }
   ]

@@ -81,7 +81,7 @@ def setup_registry_exports():
 @pytest.mark.django_db
 def test_refresh_states_command(setup_registry_exports):
     with patch("registry.task.refresh_registry_export.delay") as mock_delay:
-        call_command("refresh_export_states")
+        call_command("refresh_export_states", duration=1)
 
         assert mock_delay.call_count == 2
         mock_delay.assert_any_call(setup_registry_exports["recent_pending_with_id"].pk)
@@ -95,7 +95,7 @@ def test_refresh_states_command(setup_registry_exports):
 @pytest.mark.django_db
 def test_refresh_states_command_with_no_exports():
     with patch("registry.task.refresh_registry_export.delay") as mock_delay:
-        call_command("refresh_export_states")
+        call_command("refresh_export_states", duration=1)
 
         mock_delay.assert_not_called()
 
@@ -119,7 +119,7 @@ def test_refresh_states_command_only_processes_recent_exports(setup_registry_exp
         )
 
         with patch("registry.task.refresh_registry_export.delay") as mock_delay:
-            call_command("refresh_export_states")
+            call_command("refresh_export_states", duration=1)
 
             mock_recent.assert_called_once()
 

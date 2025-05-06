@@ -11,10 +11,6 @@
     {
       "command": "27 23 * * * python /app/src/manage.py retrieve_companies --settings=config.settings.production",
       "size": "L"
-    },
-    {
-      "command": "*/10 * * * * python /app/src/manage.py refresh_export_states --settings=config.settings.production",
-      "size": "M"
     }
   ]
 }

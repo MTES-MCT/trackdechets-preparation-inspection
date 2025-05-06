@@ -70,6 +70,7 @@ class CustomIndexDashboard(Dashboard):
                 models=(
                     "accounts.*",
                     "sheets.*",
+                    "registry.models.RegistryV2Export",
                 ),
             )
         )

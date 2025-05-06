@@ -14,7 +14,7 @@ from data_exports.views import DummyForm
 from .forms import RegistryV2PrepareForm
 from .gql import graphql_registry_V2_export_download_signed_url
 from .models import RegistryV2Export
-from .task import generate_registry_export
+from .task import process_export
 
 
 class RegistryDownloadException(Exception):
@@ -49,7 +49,8 @@ class RegistryV2Prepare(FullyLoggedMixin, CreateView):
         form,
     ):
         res = super().form_valid(form)
-        generate_registry_export.delay(self.object.pk)
+
+        process_export(self.object.pk)
         return res
 
 

@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def process_export(registry_v2_export_pk):
-    if settings.CELERY_TASK_ALWAYS_EAGER:
+    if getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False):
         # for testing purposes
         generate_registry_export.delay(registry_v2_export_pk)
         return

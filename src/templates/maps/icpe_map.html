@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Carte des ICPE - Fiche Établissement{% endblock %}
+
+{% block extra_head %}
+
+    <link rel="stylesheet"
+          href="{% static 'js/leaflet.css' %}"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="/>
+
+    <link rel="stylesheet" href="{% static 'css/map.css' %}"/>
+{% endblock extra_head %}
+
+{% block main %}
+    <!-- Define SVG pattern -->
+    <svg width="0" height="0" style="position: absolute; z-index: -1">
+        <defs>
+            <pattern id="stripes" patternUnits="userSpaceOnUse" width="4" height="4" patternTransform="rotate(45)">
+                <!-- Rect de couleur de fond pour le motif -->
+                <rect width="4" height="4" fill="rgba(86, 26, 2, 0.7)"></rect>
+                <!-- Rayures par-dessus la couleur de fond -->
+                <rect width="2" height="4" fill="white"></rect>
+            </pattern>
+        </defs>
+    </svg>
+    <div id="page-container">
+        <div id="main-container">
+            <div id="side-container">
+                <div class="side-container-header">
+                    <button class="fr-btn fr-btn--tertiary-no-outline fr-icon-arrow-left-s-line-double"
+                            title="Affichage panneau"
+                            id="toggle-side"
+                            data-display-side="true">
+                        Afficher / masquer le
+                        panneau
+                    </button>
+                </div>
+                <div class="side-container-body">
+                    <h6 class="fr-mb-1w">Informations</h6>
+                    <div class="fr-select-group fr-mb-1w">
+                        <label class="fr-label" for="year-select">Année</label>
+                        <select class="fr-select" id="year-select" name="select-annee">
+                            <option value="2024">2024</option>
+                            <option selected value="2023">2023</option>
+                            <option value="2022">2022</option>
+                        </select>
+                    </div>
+                    <div class="fr-select-group">
+                        <label class="fr-label" for="rubrique-select">Rubrique</label>
+                        <select class="fr-select" id="rubrique-select" name="select-rubrique">
+                            <option value="2760-1">2760-1 (Enfouissement DD)</option>
+                            <option selected value="2770">2770 (Incinération DD)</option>
+                            <option selected value="2790">2790 (Traitement DD)</option>
+                            <option value="2760-2">2760-2 (Enfouissement DND/TEXS)</option>
+                            <option selected value="2771">2771 (Incinération DND/TEXS)</option>
+                            <option selected value="2791">2791 (Traitement DND/TEXS)</option>
+                        </select>
+                    </div>
+                    <button id="back-to-france" class="fr-btn fr-btn--secondary fr-mb-2w">
+                        Afficher les données pour la
+                        France
+                    </button>
+                    <h6 class="fr-mb-1w">Affichage</h6>
+                    <div>
+                        <div class="fr-toggle fr-toggle--border-bottom fr-mb-1w">
+                            <input type="checkbox"
+                                   class="fr-toggle__input"
+                                   aria-describedby="toggle-installations-hint-text"
+                                   id="toggle-installations"/>
+                            <label class="fr-toggle__label" for="toggle-installations">
+                                Afficher les
+                                installations
+                            </label>
+                            <p class="fr-hint-text" id="toggle-installations-hint-text">
+                                Cliquez pour afficher les ICPE
+                                sur la carte.
+                            </p>
+                        </div>
+                        <div class="fr-select-group fr-mb-1w">
+                            <label class="fr-label" for="layer-select">Découpage</label>
+                            <select class="fr-select" id="layer-select" name="select-vue-carte">
+                                <option selected value="regions">Régional</option>
+                                <option value="departements">Départemental</option>
+                            </select>
+                        </div>
+                        <div class="fr-select-group">
+                            <label class="fr-label" for="zoom-select">Zoom</label>
+                            <select class="fr-select" id="zoom-select" name="select-zoom-carte">
+                                <option selected value="metropole">Métropole</option>
+                                <option value="mgg">Guadeloupe, Guyane et Martinique</option>
+                                <option value="mr">Mayotte et La Réunion</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="icon-legend">
+                        <h6 class="fr-mb-1w">Légende</h6>
+                        <div>
+                            <img src="/static/img/blue_icon.png" alt="Icone bleue" class="legend-img">
+                            <span>Installation non problématique</span>
+                        </div>
+                        <div>
+                            <img src="/static/img/yellow_icon.png"
+                                 alt="Icone Jaune"
+                                 class="legend-img">
+                            <span>Installation avec une quantité traitée nulle ou manquante</span>
+                        </div>
+                        <div>
+                            <img src="/static/img/red_icon.png" alt="Icone bleue" class="legend-img">
+                            <span>Installation avec une quantité autorisée nulle ou manquante</span>
+                        </div>
+                        <div>
+                            <img src="/static/img/dark_icon.png" alt="Icone Jaune" class="legend-img">
+                            <span>Installation avec un taux de consommation inférieur à 20%</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="stats-container">
+                    <div class="stats-container-header">
+                        <button class="fr-btn fr-btn--tertiary-no-outline fr-btn--icon-right fr-icon-close-line"
+                                title="Fermer"
+                                id="close-stats">Fermer
+                        </button>
+                    </div>
+                    <div id="region-stats-container">
+                        <div id="region-info"></div>
+                        <div id="region-title"></div>
+                        <div id="region-graph" class="graph"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="map">
+                <div id="map"></div>
+            </div>
+        </div>
+    </div>
+
+{% endblock main %}
+
+{% block scripts %}
+    <script src="{% static 'js/leaflet.js' %}"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="></script>
+    <script src="{% static 'js/d3.v7.min.js' %}"></script>
+    <script src="{% static 'js/map.js' %}"></script>
+    <script>
+        const regionsGeoJSONUrl =
+            '{% static "geo/regions-avec-outre-mer-light.geojson" %}';
+        const departementsGeoJSONUrl =
+            '{% static "geo/departements-avec-outre-mer-light.geojson" %}';
+
+        // Initialize map
+        var map = L.map("map").setView([47, -11], 5); // Centre de la France
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 18,
+            attribution: "Données de la carte &copy; contributeurs d'OpenStreetMap",
+        }).addTo(map);
+
+        map.zoomControl.setPosition("topright");
+
+        // States
+        var regionsGeojson,
+            departementsGeojson,
+            regionsLayer,
+            departementsLayer,
+            installationsLayer;
+        var featuresStats = {};
+
+        selectedYear = document.getElementById("year-select").value;
+        selectedRubrique = document.getElementById("rubrique-select").value;
+        selectedLayer = document.getElementById("layer-select").value;
+        installationsToggled = document.getElementById(
+            "toggle-installations"
+        ).checked;
+
+        currentLayer = null;
+        currentSelectedLayer = null;
+
+        var legend = L.control({position: "bottomright"});
+
+        legend.onAdd = function (map) {
+            // Create a div for the legend
+            var div = L.DomUtil.create("div", "info legend");
+
+            // Create a gradient bar for the scale
+            var grades = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]; // The intervals to show on the color scale
+            var labels = [];
+            var from, to;
+
+            labels.push("<div>% de la quantité autorisée <br>consommée</div>");
+
+            labels.push('<i style="background-color:#2f3640"></i> Pas de données');
+            // Loop through intervals and generate a label with colored square for each
+            for (var i = 0; i < grades.length - 1; i++) {
+                from = grades[i];
+                to = grades[i + 1];
+
+                labels.push(
+                    '<i style="background:' + colorScale(from / 100) + '"></i> ' +
+                    from +
+                    (to ? " &ndash; " + to : "+")
+                );
+            }
+
+            // Add one more label for values over 100
+            labels.push('<i class="stripe-pattern"></i> 100+');
+
+            // Insert the labels into the div as inner HTML
+            div.innerHTML = labels.join("<br>");
+
+            return div;
+        };
+
+        // Add the legend to the map
+        legend.addTo(map);
+
+        prepareMap(selectedLayer, selectedRubrique, selectedYear);
+        showFranceStats(selectedRubrique, selectedYear);
+    </script>
+{% endblock scripts %}

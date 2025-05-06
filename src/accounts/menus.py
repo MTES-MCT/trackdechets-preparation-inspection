@@ -1,7 +1,13 @@
 from django.urls import reverse
 from simple_menu import Menu, MenuItem
 
-from accounts.constants import PERMS_BSD, PERMS_DATA_EXPORT, PERMS_ROAD_CONTROL, PERMS_SHEET_AND_REGISTRY
+from accounts.constants import (
+    PERMS_BSD,
+    PERMS_DATA_EXPORT,
+    PERMS_MAP_ICPE,
+    PERMS_ROAD_CONTROL,
+    PERMS_SHEET_AND_REGISTRY,
+)
 
 
 class StaffMenuItem(MenuItem):
@@ -47,6 +53,10 @@ Menu.add_item(
         "Cartographie",
         reverse("map_view"),
     ),
+)
+Menu.add_item(
+    "main",
+    PermsItem("Carte des ICPE", reverse("icpe_map_view"), allowed_categories=PERMS_MAP_ICPE),
 )
 
 Menu.add_item(

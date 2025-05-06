@@ -1,7 +1,13 @@
 from django.contrib import admin
 from django.db.models import Q
 
-from .models import CartoCompany
+from .models import (
+    CartoCompany,
+    DepartementsComputation,
+    FranceComputation,
+    InstallationsComputation,
+    RegionsComputation,
+)
 
 
 class ProfilsFilter(admin.SimpleListFilter):
@@ -354,3 +360,27 @@ class CartoCompanyAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         return queryset.defer("waste_codes_bordereaux", "waste_codes_processed")
+
+
+@admin.register(FranceComputation)
+class FranceComputationAdmin(admin.ModelAdmin):
+    list_display = ["pk", "year", "created", "rubrique"]
+    list_filter = ["year"]
+
+
+@admin.register(RegionsComputation)
+class RegionsComputationAdmin(admin.ModelAdmin):
+    list_display = ["pk", "year", "created", "nom_region", "rubrique"]
+    list_filter = ["year", "nom_region"]
+
+
+@admin.register(DepartementsComputation)
+class DepartementsComputationAdmin(admin.ModelAdmin):
+    list_display = ["pk", "year", "created", "code_departement_insee", "rubrique"]
+    list_filter = ["year", "nom_departement"]
+
+
+@admin.register(InstallationsComputation)
+class InstallationsComputationAdmin(admin.ModelAdmin):
+    list_display = ["pk", "year", "created", "rubrique"]
+    list_filter = ["year"]

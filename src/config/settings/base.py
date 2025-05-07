@@ -209,6 +209,7 @@ LOGOUT_REDIRECT_URL = "login"
 
 PASSWORD_RESET_TIMEOUT = 3600 * 12  # 12 hours
 
+
 GRAPPELLI_ADMIN_TITLE = "Trackdéchets - Inspection"
 GRAPPELLI_INDEX_DASHBOARD = "config.dashboard.CustomIndexDashboard"
 
@@ -225,6 +226,11 @@ if gdal_path := env.str("GDAL_LIBRARY_PATH", ""):
     GDAL_LIBRARY_PATH = gdal_path
 if geos_path := env.str("GEOS_LIBRARY_PATH", ""):
     GEOS_LIBRARY_PATH = env.str("GEOS_LIBRARY_PATH")
+
+
+# Menu
+MENU_SELECT_PARENTS = True
+
 
 # moz oidc
 MONAIOT_OIDC_RP_CLIENT_ID = "trackdechets"

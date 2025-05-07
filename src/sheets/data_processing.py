@@ -298,7 +298,7 @@ class SheetProcessor:
         company_values = self.company_data.iloc[0]
         self.company_id = company_data_df.iloc[0].id
         self.computed.company_name = company_values.get("name")
-        self.computed.company_address = company_values.get("address")
+        self.computed.company_address = company_values.get("address") or ""
         self.computed.company_profiles = to_verbose_company_types(company_values.get("company_types"))
         self.computed.company_collector_profiles = to_verbose_collector_types(company_values.get("collector_types"))
         self.computed.company_waste_processor_profiles = to_verbose_waste_processor_types(

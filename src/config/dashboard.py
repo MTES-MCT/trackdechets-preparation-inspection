@@ -81,7 +81,6 @@ class CustomIndexDashboard(Dashboard):
                 collapsible=True,
                 column=1,
                 css_classes=("collapse closed grp-closed",),
-                exclude=("django.contrib.*",),
             )
         )
 

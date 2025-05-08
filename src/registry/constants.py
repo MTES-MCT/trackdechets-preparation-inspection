@@ -10,7 +10,7 @@ REGISTRY_FORMAT_XLS = "xls"
 
 class RegistryV2Format(models.TextChoices):
     CSV = "CSV", "Texte (.csv)"
-    XLS = "XLS", "Excel (.xlsx)"
+    XLSX = "XLSX", "Excel (.xlsx)"
 
 
 class RegistryV2ExportState(models.TextChoices):

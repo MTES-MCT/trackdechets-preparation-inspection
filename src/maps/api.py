@@ -321,7 +321,7 @@ class ICPEGraph(APIView):
         model = layer_config["cls"]
         specific_filter = layer_config["specific_filter"]
         result = model.objects.filter(year=year, rubrique=rubrique, **specific_filter).values("graph").first()
-
+        print(result)
         if not result:
             raise Http404
 

@@ -138,8 +138,10 @@
 {% endblock main %}
 
 {% block scripts %}
+        <script src="{% static "js/plotly-3.0.0.min.js" %}" charset="utf-8"></script>
     <script src="{% static 'js/leaflet.js' %}"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="></script>
+
     <script src="{% static 'js/d3.v7.min.js' %}"></script>
     <script src="{% static 'js/map.js' %}"></script>
     <script>

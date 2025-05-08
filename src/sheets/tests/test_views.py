@@ -5,6 +5,7 @@ from django.urls import reverse
 
 from content.models import FeedbackResult
 
+from ..factories import ComputedInspectionDataFactory
 from ..models import ComputedInspectionData
 
 pytestmark = pytest.mark.django_db
@@ -80,3 +81,20 @@ def test_sheet_prepare_post(get_client):
     assert res.status_code == 302
     sheet = ComputedInspectionData.objects.get()
     assert res.url == reverse("pollable_result", args=["fake-task-id", str(sheet.id)])
+
+
+def test_sheet_view_deny_anon(anon_client):
+    sheet = ComputedInspectionDataFactory()
+    url = reverse("sheet", args=[sheet.pk])
+    res = anon_client.get(url)
+    assert res.status_code == 302
+
+
+@pytest.mark.parametrize(
+    "get_client", ["verified_client", "logged_monaiot_client", "logged_proconnect_client"], indirect=True
+)
+def test_sheet_view(get_client):
+    sheet = ComputedInspectionDataFactory()
+    url = reverse("sheet", args=[sheet.pk])
+    res = get_client.get(url)
+    assert res.status_code == 200

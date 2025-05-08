@@ -81,12 +81,12 @@ var colorScale = d3.scaleSequential(d3.interpolateOranges);
 // Affiche les informations d'une région/département/installation dans une div
 async function showRegionInfo(event, rubrique, featureType) {
   key =
-    featureType == "installation"
+    featureType === "installation"
       ? event.target.options.code
       : event.target.feature.properties.code;
-  key = featureType == "region" ? parseInt(key) : key;
+  key = featureType === "region" ? parseInt(key) : key;
 
-  layer = featureType == "installation" ? "installations" : selectedLayer;
+  layer = featureType === "installation" ? "installations" : selectedLayer;
   var stats =
     featuresStats[`${layer}.${selectedYear}.${selectedRubrique}`][key];
 

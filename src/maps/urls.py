@@ -10,5 +10,5 @@ urlpatterns = [
     path("exutoires", ExutMapView.as_view(), name="icpe_map_view"),
     path("api/icpe/france/<int:year>/<str:rubrique>", ICPEFrance.as_view(), name="icpe_france"),
     path("api/icpe/<str:layer>/<int:year>/<str:rubrique>", ICPEViewMany.as_view(), name="icpe_many"),
-    path("appi/icpe/<str:layer>/<int:year>/<str:rubrique>/<str:code>", ICPEGraph.as_view(), name="icpe_get_graph"),
+    path("api/icpe/<str:layer>/<int:year>/<str:rubrique>/<str:code>", ICPEGraph.as_view(), name="icpe_get_graph"),
 ]

@@ -1,6 +1,9 @@
+import uuid
+
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.indexes import GinIndex
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
@@ -160,3 +163,109 @@ class CartoCompany(models.Model):
     @property
     def registered_on_td(self):
         return bool(self.date_inscription)
+
+
+class BaseComputation(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    year = models.PositiveSmallIntegerField(default=2023)
+    created = models.DateTimeField(_("Created"), default=timezone.now)
+    rubrique = models.TextField()
+    quantite_autorisee = models.FloatField(
+        null=True,
+    )
+    taux_consommation = models.FloatField(null=True)
+    cumul_quantite_traitee = models.FloatField(null=True)
+    moyenne_quantite_journaliere_traitee = models.FloatField(null=True)
+    graph = models.JSONField(default=dict, null=True)
+
+    class Meta:
+        abstract = True
+
+
+class DepartementsComputation(BaseComputation):
+    code_departement_insee = models.TextField()
+    nom_departement = models.TextField()
+    code_region_insee = models.TextField()
+    nombre_installations = models.FloatField(default=0)
+
+    class Meta:
+        verbose_name = _("Department Computation")
+        verbose_name_plural = _("Department Computations")
+        ordering = ("-created",)
+
+        indexes = [
+            models.Index(fields=["year", "rubrique"]),
+            models.Index(fields=["year", "rubrique", "code_departement_insee"]),
+        ]
+
+
+class RegionsComputation(BaseComputation):
+    code_region_insee = models.TextField()
+    nom_region = models.TextField()
+    nombre_installations = models.FloatField(default=0)
+
+    class Meta:
+        verbose_name = _("Regions Computation")
+        verbose_name_plural = _("Regions Computations")
+        ordering = ("-created",)
+
+        indexes = [
+            models.Index(fields=["year", "rubrique"]),
+            models.Index(fields=["year", "rubrique", "code_region_insee"]),
+        ]
+
+
+class FranceComputation(BaseComputation):
+    nombre_installations = models.FloatField(default=0)
+
+    class Meta:
+        verbose_name = _("France Computation")
+        verbose_name_plural = _("France Computations")
+        ordering = ("-created",)
+
+        indexes = [
+            models.Index(fields=["year", "rubrique"]),
+        ]
+
+
+class InstallationsComputation(BaseComputation):
+    code_aiot = models.TextField(null=False)
+
+    raison_sociale = models.TextField(
+        null=True,
+    )
+    siret = models.TextField(null=True)
+    adresse1 = models.TextField(
+        null=True,
+    )
+    adresse2 = models.TextField(
+        null=True,
+    )
+    code_postal = models.TextField(
+        null=True,
+    )
+    commune = models.TextField(
+        null=True,
+    )
+    etat_activite = models.TextField(
+        null=True,
+    )
+    regime = models.TextField(
+        null=True,
+    )
+
+    unite = models.TextField(
+        null=True,
+    )
+    latitude = models.FloatField(null=True, default=None)
+    longitude = models.FloatField(null=True, default=None)
+
+    class Meta:
+        verbose_name = _("Installations Computation")
+        verbose_name_plural = _("Installations Computations")
+        ordering = ("-created",)
+
+        indexes = [
+            models.Index(fields=["year", "rubrique"]),
+            models.Index(fields=["year", "rubrique", "code_aiot"]),
+        ]

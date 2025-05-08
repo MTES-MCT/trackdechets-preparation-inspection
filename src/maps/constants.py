@@ -34,3 +34,9 @@ PROCESSING_OPERATIONS_FIELDS = [
     "processing_operation_dnd",
     "processing_operation_texs",
 ]
+
+
+ANNUAL_ICPE_RUBRIQUES = ["2760-1", "2760-2"]  # unité t/an
+DAILY_ICPE_RUBRIQUES = ["2790", "2770", "2791", "2771"]  # unité t/jour
+
+ICPE_RUBRIQUES = ANNUAL_ICPE_RUBRIQUES + DAILY_ICPE_RUBRIQUES

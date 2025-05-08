@@ -26,6 +26,17 @@ type BuildUrlInput = {
   bounds: MapBounds;
 };
 
+const getBsdRoles = (bsdTypeFilter: string, roleFilters: FilterValues) => {
+  if (!bsdTypeFilter && roleFilters.root.length) {
+    return roleFilters.root.map((role) => role.toLowerCase()).join(",");
+  }
+  return bsdTypeFilter && roleFilters.root.length
+    ? roleFilters.root
+        .map((role) => `${bsdTypeFilter.toLowerCase()}_${role.toLowerCase()}`)
+        .join(",")
+    : "";
+};
+
 const buildFetchPlotsUrls = ({
   profileFilters,
   roleFilters,
@@ -38,12 +49,7 @@ const buildFetchPlotsUrls = ({
   const bsdTypeFilter = bsdTypeFilters?.root[0] ?? null;
 
   // Handle BSD type and roles filtering combination
-  const bsdRoles =
-    bsdTypeFilter && roleFilters.root.length
-      ? roleFilters.root
-          .map((role) => `${bsdTypeFilter.toLowerCase()}_${role.toLowerCase()}`)
-          .join(",")
-      : "";
+  const bsdRoles = getBsdRoles(bsdTypeFilter, roleFilters);
 
   const params = new URLSearchParams();
 

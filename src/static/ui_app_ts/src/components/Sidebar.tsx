@@ -1,4 +1,8 @@
-import { VERBOSE_ROLES, PROFILE_MAPPING } from "../constants/constants.ts";
+import {
+  VERBOSE_ROLES,
+  PROFILE_MAPPING,
+  VERBOSE_BSD_TYPES,
+} from "../constants/constants.ts";
 import { FlyToProps, SidebarProps } from "../types";
 import { setModalState } from "../store/modalSlice";
 import { useAppDispatch, useAppSelector, RootState } from "../store/root";
@@ -64,7 +68,7 @@ export function Sidebar({ mapRef }: SidebarProps) {
       <FilterDigest />
 
       <button
-        className="fr-btn fr-btn--primary fr-icon-download-fill fr-btn--icon-right"
+        className="fr-btn fr-btn--primary fr-icon-download-fill fr-btn--icon-right fr-mt-1w"
         disabled={downloadUrl === ""}
         title={
           downloadUrl
@@ -137,7 +141,7 @@ const FilterDigest = () => {
         (!!bsdTypeFilter && bsdTypeFilter !== "Tous")) && (
         <>
           <div className="fr-mb-0 fr-mt-2w">
-            Mentionné par déchets et rôles :
+            Mentionné par déchets et rôles&nbsp;:
           </div>
 
           {roleFilters.root.length ? (
@@ -154,8 +158,12 @@ const FilterDigest = () => {
                   )
                 }
               >
-                {bsdTypeFilter}/{" "}
-                {VERBOSE_ROLES[role as keyof typeof VERBOSE_ROLES]}
+                {
+                  VERBOSE_BSD_TYPES[
+                    bsdTypeFilter as keyof typeof VERBOSE_BSD_TYPES
+                  ]
+                }
+                / {VERBOSE_ROLES[role as keyof typeof VERBOSE_ROLES]}
               </button>
             ))
           ) : (
@@ -170,7 +178,11 @@ const FilterDigest = () => {
                 )
               }
             >
-              {bsdTypeFilter}
+              {
+                VERBOSE_BSD_TYPES[
+                  bsdTypeFilter as keyof typeof VERBOSE_BSD_TYPES
+                ]
+              }
             </button>
           )}
         </>
@@ -178,7 +190,7 @@ const FilterDigest = () => {
       {!!operationCodeFilters.root.length && (
         <>
           <p className="fr-mb-0 fr-mt-2w">
-            ET les traitements réalisés en tant que destinataire :
+            ET les traitements réalisés en tant que destinataire&nbsp;:
           </p>
 
           {operationCodeFilters.root.map((code) => (
@@ -202,7 +214,9 @@ const FilterDigest = () => {
 
       {!!profiles.length && (
         <>
-          <p className="fr-mb-0 fr-mt-2w">ET les profils déclarés sont :</p>
+          <p className="fr-mb-0 fr-mt-2w">
+            ET les profils déclarés sont&nbsp;:
+          </p>
           {profiles.map((profile: Record<string, string>) => (
             <button
               className="fr-tag fr-tag--sm fr-tag--dismiss fr-mr-1v"
@@ -224,7 +238,7 @@ const FilterDigest = () => {
       )}
       {!!wasteCodesFilter.root.length && (
         <>
-          <p className="fr-mb-0 fr-mt-2w">Codes déchet</p>
+          <p className="fr-mb-0 fr-mt-2w">Codes déchet&nbsp;:</p>
           {wasteCodesFilter.root.map((wc) => (
             <button
               className="fr-tag fr-tag--sm fr-tag--dismiss "
@@ -246,7 +260,7 @@ const FilterDigest = () => {
 
       {!!departmentFilters.root.length && (
         <>
-          <p className="fr-mb-0 fr-mt-2w">ET dans les départements</p>
+          <p className="fr-mb-0 fr-mt-2w">ET dans les départements&nbsp;:</p>
           {departmentFilters.root.map((dept) => (
             <button
               className="fr-tag fr-tag--sm fr-tag--dismiss fr-mr-1v"

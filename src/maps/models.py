@@ -78,8 +78,8 @@ class CartoCompany(models.Model):
     processing_operations_bsff = ArrayField(models.TextField(), null=True, blank=True)
     processing_operations_bsdasri = ArrayField(models.TextField(), null=True, blank=True)
     processing_operations_bsvhu = ArrayField(models.TextField(), null=True, blank=True)
-    processing_operation_dnd = ArrayField(models.CharField(max_length=255), null=True, blank=True)
-    processing_operation_texs = ArrayField(models.CharField(max_length=255), null=True, blank=True)
+    processing_operations_dnd = ArrayField(models.CharField(max_length=255), null=True, blank=True)
+    processing_operations_texs = ArrayField(models.CharField(max_length=255), null=True, blank=True)
 
     # Waste codes fields
     waste_codes_bordereaux = ArrayField(models.CharField(max_length=255), null=True, blank=True)
@@ -151,8 +151,8 @@ class CartoCompany(models.Model):
             GinIndex(fields=["processing_operations_bsff"]),
             GinIndex(fields=["processing_operations_bsdasri"]),
             GinIndex(fields=["processing_operations_bsvhu"]),
-            GinIndex(fields=["processing_operation_dnd"]),
-            GinIndex(fields=["processing_operation_texs"]),
+            GinIndex(fields=["processing_operations_dnd"]),
+            GinIndex(fields=["processing_operations_texs"]),
             GinIndex(fields=["waste_codes_bordereaux"]),
         ]
         constraints = [models.UniqueConstraint(fields=["siret"], name="unique_siret")]

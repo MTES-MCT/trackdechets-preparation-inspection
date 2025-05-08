@@ -206,11 +206,22 @@ class CartoCompanyAdmin(admin.ModelAdmin):
         "has_bsff",
         "has_bsvhu",
         "has_bsdasri",
+        "has_texs_dd",
+        "has_dnd",
+        "has_ssd",
         "is_emitter",
         "is_transporter",
         "is_destination",
         "is_worker",
         "waste_codes_bordereaux",
+        "processing_operations_bsdd",
+        "processing_operations_bsda",
+        "processing_operations_bsff",
+        "processing_operations_bsdasri",
+        "processing_operations_bsvhu",
+        "processing_operations_bsdnd",
+        "processing_operations_texs",
+        "processing_operations_dnd",
     )
 
     search_fields = (
@@ -266,6 +277,24 @@ class CartoCompanyAdmin(admin.ModelAdmin):
 
     has_bsdasri.short_description = "BSDASRI"
     has_bsdasri.boolean = True
+
+    def has_texs_dd(self, obj):
+        return bool(obj.texs_dd)
+
+    has_texs_dd.short_description = "TEXS DD"
+    has_texs_dd.boolean = True
+
+    def has_dnd(self, obj):
+        return bool(obj.dnd)
+
+    has_dnd.short_description = "TEXS DND"
+    has_dnd.boolean = True
+
+    def has_ssd(self, obj):
+        return bool(obj.ssd)
+
+    has_ssd.short_description = "SSD"
+    has_ssd.boolean = True
 
     def is_emitter(self, obj):
         return any(

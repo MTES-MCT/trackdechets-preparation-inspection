@@ -17,14 +17,14 @@ class RegistryV2ExportAdmin(admin.ModelAdmin):
         "id",
         "siret",
         "state",
+        "export_format",
         "created_at",
-        "created_by",
         "registry_type",
         "start_date",
         "end_date",
         "registry_export_id",
     ]
-    list_filter = ["registry_type"]
+    list_filter = ["registry_type", "export_format", "state"]
     search_fields = ["siret"]
     list_select_related = ["created_by"]
     actions = [

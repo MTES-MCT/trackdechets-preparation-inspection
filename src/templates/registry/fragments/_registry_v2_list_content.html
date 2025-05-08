@@ -20,7 +20,7 @@
                 <div>{{ export.created_at }}</div>
 
 
-                <p class="fr-badge {% registry_badge_class export.state %} fr-badge--sm">{{ export.get_state_display }}</p>
+             {% registry_badge_class export %}
 
             </td>
             <td>{{ export.siret }}</td>

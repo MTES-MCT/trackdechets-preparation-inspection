@@ -1,3 +1,4 @@
+import datetime as dt
 import uuid
 from datetime import datetime
 
@@ -70,6 +71,9 @@ class RegistryDownload(models.Model):
         ordering = ("-created",)
 
 
+MAX_PROCESSING_DELAY = 10  # minutes
+
+
 class RegistryV2Export(models.Model):
     """Export V2 model"""
 
@@ -139,8 +143,12 @@ class RegistryV2Export(models.Model):
         return self.state == RegistryV2ExportState.SUCCESSFUL
 
     @property
+    def is_timeout(self):
+        return timezone.now() - self.created_at > dt.timedelta(minutes=MAX_PROCESSING_DELAY)
+
+    @property
     def in_progress(self):
-        return self.state in [RegistryV2ExportState.PENDING, RegistryV2ExportState.STARTED]
+        return self.state in [RegistryV2ExportState.PENDING, RegistryV2ExportState.STARTED] and not self.is_timeout
 
     def mark_as_failed(self):
         self.state = RegistryV2ExportState.FAILED

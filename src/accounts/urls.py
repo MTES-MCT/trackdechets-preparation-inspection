@@ -35,7 +35,7 @@ urlpatterns = [
         "password-reset/",
         PasswordResetView.as_view(
             template_name="accounts/password_reset_form.html",
-            email_template_name="emails/password_reset/body.html",
+            html_email_template_name="emails/password_reset/body.html",
             form_class=RestrictedPasswordResetForm,
         ),
         name="password_reset",

@@ -1,10 +1,10 @@
 import uuid
 
 from django.conf import settings
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.sites.shortcuts import get_current_site
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMessage
 from django.http import HttpResponseRedirect
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -54,26 +54,38 @@ class UserResource(resources.ModelResource):
 
 @admin.action(description="Send invitation email")
 def send_invitation_email(_, request, queryset):
+    skipped_users = []
     for user in queryset:
         if user.last_login:
+            skipped_users.append(user.email)
             continue
 
         if user.oidc_signup or user.oidc_connexion:
+            skipped_users.append(user.email)
             continue
 
         current_site = get_current_site(request)
 
         domain = current_site.domain
-        body = render_to_string("emails/invitation/welcome.html", {"domain": domain})
+        body = render_to_string(
+            "emails/invitation/welcome.html", {"domain": domain, "password_reset_url": reverse("password_reset")}
+        )
 
-        message = EmailMultiAlternatives(
+        message = EmailMessage(
             subject="Trackdéchets - outil de préparation de fiche d'inspection",
             body=body,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[user.email],
         )
-
+        message.content_subtype = "html"  # This is the crucial line
         message.send(fail_silently=False)
+
+    if skipped_users:
+        messages.add_message(
+            request,
+            messages.WARNING,
+            f"Les utilisateurs suivants ont été ignorés car déjà activés {','.join(skipped_users)}",
+        )
 
 
 @admin.register(User)

@@ -1,6 +1,26 @@
-Bonjour,
-Vous êtes invité(e) sur l'outil de préparation de fiche établissement de Trackdéchets.
-Veuillez vous rendre sur cette page et effectuer une réinitalisation de mot de passe, à la suite de quoi vous pourrez vous connecter et utiliser l'outil :
-<a rel="noreferrer" href="https://{{ domain }}">https://{{ domain }}</a>
-Merci pour votre confiance.
-L’équipe Trackdéchets.
+{% extends "emails/base_email.html" %}
+{% load email_helpers %}
+{% block email_title %}Bienvenue sur la fiche établissment{% endblock %}
+
+{% block content %}
+    <p>Bonjour,</p>
+
+    <p>Bienvenue sur la plateforme "Fiche-établissement" de Trackdéchets.
+        Cet outil est destiné à être utilisé par des personnes habilitées, chargées du contrôle ou de la gestion des
+        données déchets.</p>
+
+    <p>Les données sont issues des bordereaux de traçabilité des déchets ou des déclarations des registres
+        règlementaires et peuvent concerner les déchets dangereux, les déchets non dangereux, les terres excavées et
+        sédiments.</p>
+
+    <p>Ces données comportent des informations confidentielles et commerciales et ne doivent pas être exposées
+        publiquement.</p>
+
+
+    <p>Afin de pouvoir vous connecter et commencer à utiliser l'outil, veuillez au préalable vous rendre sur cette page
+        pour réinitialiser votre mot de passe : <a rel="noreferrer" href="https://{{ domain }}{{ password_reset_url }}">https://{{ domain }}{{ password_reset_url }}</a>
+    </p>
+
+    <p>Merci pour votre confiance.</p>
+    <p>L’équipe Trackdéchets.</p>
+{% endblock content %}

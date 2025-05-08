@@ -7,7 +7,7 @@ import polars.selectors as cs
 from django.conf import settings
 from sqlalchemy import create_engine
 
-from sheets.ssh import ssh_tunnel
+from sheets.ssh import get_tunnel_port, ssh_tunnel
 
 from ..utils import format_waste_codes
 
@@ -52,17 +52,16 @@ def run_query_polars(sql_string: str, schema_overrides: dict = None) -> pl.DataF
     """
     started_time = time.time()
 
-    # Create SSH KEY:
-    with ssh_tunnel(settings) as tunnel:
-        local_port = tunnel.local_bind_port
-        local_host = tunnel.local_bind_host
+    ssh_tunnel(settings)
+    local_port = get_tunnel_port()
+    dwh_ssh_local_bind_host = settings.DWH_SSH_LOCAL_BIND_HOST
 
-        SQLALCHEMY_DATABASE_URL = (
-            f"clickhouse+native://{settings.DWH_USERNAME}:{settings.DWH_PASSWORD}@{local_host}:{local_port}"
-        )
+    SQLALCHEMY_DATABASE_URL = (
+        f"clickhouse+native://{settings.DWH_USERNAME}:{settings.DWH_PASSWORD}@{dwh_ssh_local_bind_host}:{local_port}"
+    )
 
-        engine = create_engine(SQLALCHEMY_DATABASE_URL)
-        data_df = pl.read_database(sql_string, connection=engine, schema_overrides=schema_overrides)
+    engine = create_engine(SQLALCHEMY_DATABASE_URL)
+    data_df = pl.read_database(sql_string, connection=engine, schema_overrides=schema_overrides)
 
     # Convert Decimal to Float64 to avoid compatibility issues
     data_df = data_df.cast({cs.decimal(): pl.Float64})
@@ -76,7 +75,7 @@ def run_query_polars(sql_string: str, schema_overrides: dict = None) -> pl.DataF
     return data_df
 
 
-def extract_dataset(sql_string: str, schema_overrides: dict = None) -> pl.DataFrame:
+def extract_dataset(sql_string: str, schema_overrides: dict | None = None) -> pl.DataFrame:
     """
     Extracts a dataset from the database using an SQL query and performs type casting on specified columns.
 

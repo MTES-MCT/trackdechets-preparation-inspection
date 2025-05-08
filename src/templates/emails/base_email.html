@@ -1,0 +1,137 @@
+{% load static  email_helpers %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block email_title %}{% endblock %} - Fiche établissement Trackdéchets</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+        }
+
+        /* Base styles */
+        * {
+            -ms-text-size-adjust: 100%;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        table {
+            border-spacing: 0;
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+
+        table td {
+            border-collapse: collapse;
+        }
+
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
+            max-width: 100%;
+        }
+
+        /* Email container */
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .email-header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .logo {
+            max-width: 200px;
+        }
+
+        /* Content */
+        .email-content {
+            background-color: #ffffff;
+            padding: 20px;
+        }
+
+        /* Button */
+        .button {
+            background-color: #3498db;
+            border-radius: 4px;
+            color: #ffffff;
+            display: inline-block;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 12px 24px;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+
+        /* Footer */
+        .email-footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666666;
+        }
+
+
+        /* Media queries */
+        @media screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+            }
+
+
+            .button {
+                display: block !important;
+                width: 80% !important;
+                margin: 20px auto !important;
+            }
+        }
+    </style>
+</head>
+<body>
+<center style="width: 100%; background-color: #e9ecef; padding: 30px 0;">
+    <div class="email-container">
+        <!-- Header -->
+        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+                <td class="email-header">
+                    <img src="{% logo_url %}" alt="Trackdechet" class="logo">
+                </td>
+            </tr>
+        </table>
+
+        <!-- Content -->
+        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+                <td class="email-content">
+                    {% block content %}{% endblock %}
+                </td>
+            </tr>
+        </table>
+
+        <!-- Footer -->
+        <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+                <td class="email-footer">
+                    <p>Trackdéchets</p>
+                </td>
+            </tr>
+        </table>
+    </div>
+</center>
+</body>
+</html>

@@ -1,10 +1,18 @@
-Vous recevez ce message en réponse à votre demande de réinitialisation du mot de passe de votre compte sur
-l'application de fiche établissement Trackdéchets.
-Veuillez vous rendre sur cette page et choisir un nouveau mot de passe :
-<a rel="noreferrer"
-   href="{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uid token %}">
-    {{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uid token %}
-</a>
-Votre nom d’utilisateur, en cas d’oubli: {{ user.get_username }}
-Merci pour votre confiance.
-L’équipe Trackdéchets.
+{% extends "emails/base_email.html" %}
+
+{% block email_title %}Réinitialisation de votre mot de passe{% endblock %}
+
+{% block content %}
+    <p>
+        Vous recevez ce message en réponse à votre demande de réinitialisation du mot de passe de votre compte sur
+        l'application de fiche établissement Trackdéchets.</p>
+    <p>Veuillez vous rendre sur cette page et choisir un nouveau mot de passe :
+        <a rel="noreferrer"
+           href="{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uid token %}">
+            {{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uid token %}
+        </a></p>
+    <p>Votre nom d’utilisateur, en cas d’oubli: {{ user.get_username }}</p>
+    <p>Merci pour votre confiance.</p>
+    <p>L’équipe Trackdéchets.</p>
+
+{% endblock content %}

@@ -7,6 +7,10 @@
     {
       "command": "30 01 2 * * python /app/src/manage.py retrieve_data_exports --settings=config.settings.production",
       "size": "M"
+    },
+    {
+      "command": "13 02 * * * python /app/src/manage.py  build_stats --settings=config.settings.production",
+      "size": "2XL"
     }
   ]
 }

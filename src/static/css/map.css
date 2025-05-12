@@ -1,0 +1,170 @@
+@media (max-width: 465px) {
+  #page-container #side-container {
+    width: 100%;
+    padding: 16px;
+  }
+
+  #page-container .side-container--closed {
+    margin-left: calc(-100% + 72px);
+  }
+}
+
+@media (max-width: 1080px) {
+  #page-container #stats-container {
+    position: fixed;
+    width: 100vw;
+    max-height: 100vw;
+    bottom: 0;
+    left: 0;
+    top: auto;
+    overflow: auto;
+  }
+
+  #page-container .data-title .fr-btn {
+    display: none;
+  }
+}
+
+#page-container {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+
+#main-container {
+  flex-grow: 1;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+}
+
+#map {
+  flex-grow: 1;
+  height: calc(100% - 300px);
+}
+
+#side-container {
+  position: relative;
+  width: 465px;
+  padding: 32px;
+  background: white;
+  border: 1px solid #ddd;
+  transition: margin-left 0.2s cubic-bezier(0.39, 0.575, 0.565, 1);
+}
+
+.side-container--closed {
+  margin-left: -361px;
+}
+
+.side-container-header {
+  display: flex;
+  justify-content: right;
+}
+
+.side-container-body {
+  opacity: 1;
+  transition: opacity 0.2s cubic-bezier(0.39, 0.575, 0.565, 1);
+}
+
+.side-container--closed .side-container-body {
+  opacity: 0;
+}
+
+#stats-container {
+  position: absolute;
+  z-index: 9999;
+  background-color: white;
+  top: 16px;
+  width: 645px;
+  left: calc(100% + 16px);
+  border-radius: 4px;
+  box-shadow: 0px 4px 12px 0px rgba(0, 0, 18, 0.16);
+  padding: 16px 24px 32px 24px;
+  transition: width 0.2s cubic-bezier(0.39, 0.575, 0.565, 1);
+}
+
+.stats-container--closed {
+  display: none;
+}
+
+#stats-container.stats-container--full {
+  width: calc(100vw - 534px);
+}
+
+.side-container--closed #stats-container.stats-container--full {
+  width: calc(100vw - 173px);
+}
+
+.stats-container-header {
+  display: flex;
+  justify-content: right;
+}
+
+.legend {
+  padding: 6px 8px;
+  font-size: 14px;
+  background: white;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  line-height: 18px;
+  color: #555;
+}
+
+.legend i {
+  width: 48px;
+  height: 18px;
+  float: left;
+  margin-right: 8px;
+  opacity: 0.7;
+}
+
+.stripe-pattern {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  background-image: url("data:image/svg+xml,%3Csvg%20height%3D%22100%25%22%20width%3D%22100%25%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpattern%20id%3D%22diaHatch%22%20width%3D%229%22%20height%3D%221%22%20patternUnits%3D%22userSpaceOnUse%22%20patternTransform%3D%22rotate(45)%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%224%22%20height%3D%222%22%20fill%3D%22rgba(86%2C%2026%2C%202%2C%200.7)%22%20%2F%3E%3C%2Fpattern%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22url(%23diaHatch)%22%20%2F%3E%3C%2Fsvg%3E");
+  background-size: contain;
+}
+
+.graph {
+  max-height: 350px;
+}
+
+.grouped-info {
+  margin-bottom: 24px;
+}
+
+.grouped-info p {
+  margin: 0;
+}
+
+.data-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #ddd;
+}
+
+.leaflet-control-zoom a {
+  /* Important car le DSFR ajoute sinon une barre au boutons de contrôle de Zoom de leaflet */
+  background-image: unset;
+}
+
+.leaflet-control-zoom a:hover,
+.leaflet-control-zoom a:focus {
+  background-color: #f4f4f4 !important;
+}
+
+.grouped-info span {
+  font-weight: bold;
+}
+
+.legend-img{
+  width: 35px;
+  height: 35px;
+}
+
+#icon-legend{
+  margin-top: 10px;
+}

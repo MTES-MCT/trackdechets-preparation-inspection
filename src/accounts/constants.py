@@ -45,7 +45,7 @@ PERMS_ROAD_CONTROL = [
     UserCategoryChoice.DOUANE,
 ]
 PERMS_BSD = PERMS_SHEET_AND_REGISTRY
-PERMS_MAPS = [
+PERMS_MAP = [
     UserCategoryChoice.STAFF_TD,
     UserCategoryChoice.ADMINISTRATION_CENTRALE,
     UserCategoryChoice.INSPECTEUR_ICPE,
@@ -55,6 +55,12 @@ PERMS_MAPS = [
     UserCategoryChoice.ARS,
     UserCategoryChoice.DOUANE,
     UserCategoryChoice.OBSERVATOIRE,
+]
+PERMS_MAP_ICPE = [
+    UserCategoryChoice.STAFF_TD,
+    UserCategoryChoice.ADMINISTRATION_CENTRALE,
+    UserCategoryChoice.INSPECTEUR_ICPE,
+    UserCategoryChoice.GENDARMERIE,
 ]
 
 PERMS_DATA_EXPORT = [

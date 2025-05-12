@@ -41,6 +41,7 @@ mozilla-django-oidc = "*"
 clickhouse-sqlalchemy = "*"
 sshtunnel = "*"
 django-admin-rangefilter = "*"
+polars = "*"
 
 [dev-packages]
 isort = "*"

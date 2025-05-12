@@ -34,8 +34,8 @@ from .data_extraction import (
     get_icpe_data,
     get_icpe_item_data,
     get_linked_companies_data,
-    get_rndts_excavated_land_data,
-    get_rndts_ndw_data,
+    get_registries_excavated_land_data,
+    get_registries_ndw_data,
     get_ssd_data,
 )
 from .graph_processors.html_components_processors import (
@@ -51,8 +51,8 @@ from .graph_processors.html_components_processors import (
     PrivateIndividualsCollectionsTableProcessor,
     QuantityOutliersTableProcessor,
     ReceiptAgrementsProcessor,
-    RNDTSStatsProcessor,
-    RNDTSTransporterStatsProcessor,
+    RegistryStatsProcessor,
+    RegistryTransporterStatsProcessor,
     SameEmitterRecipientTableProcessor,
     SSDProcessor,
     StorageStatsProcessor,
@@ -70,10 +70,10 @@ from .graph_processors.plotly_components_processors import (
     ICPEDailyItemProcessor,
     IntermediaryBordereauxCountsGraphProcessor,
     IntermediaryBordereauxQuantitiesGraphProcessor,
-    RNDTSQuantitiesGraphProcessor,
-    RNDTSStatementsGraphProcessor,
-    RNDTSTransporterQuantitiesGraphProcessor,
-    RNDTSTransporterStatementsStatsGraphProcessor,
+    RegistryQuantitiesGraphProcessor,
+    RegistryStatementsGraphProcessor,
+    RegistryTransporterQuantitiesGraphProcessor,
+    RegistryTransporterStatementsStatsGraphProcessor,
     TransportedQuantitiesGraphProcessor,
     TransporterBordereauxGraphProcessor,
     WasteOriginProcessor,
@@ -181,7 +181,7 @@ class SheetProcessor:
         self.company_data = pd.DataFrame()
 
         self.all_bsd_data_empty = True
-        self.all_rndts_data_empty = True
+        self.all_registry_data_empty = True
 
         self.company_id = None
         self.receipts_agreements_data = {}
@@ -192,7 +192,7 @@ class SheetProcessor:
         self.bsff_packagings_df = None
         self.icpe_data = None
         self.icpe_rubriques_data = {}
-        self.rndts_data = {
+        self.registry_data = {
             "ndw_incoming": None,
             "ndw_outgoing": None,
             "excavated_land_incoming:": None,
@@ -209,7 +209,7 @@ class SheetProcessor:
             "company": self._extract_company_data,
             "trackdechets": self._extract_trackdechets_data,
             "icpe": self._extract_icpe_data,
-            "rndts": self._extract_rndts_data,
+            "trackdechets_registries": self._extract_registries_data,
             "gistrid": self._extract_gistrid_data,
         }
 
@@ -276,18 +276,18 @@ class SheetProcessor:
         for rubrique in ["2770", "2790", "2760-1", "2771", "2791", "2760-2"]:
             self.icpe_rubriques_data[rubrique] = get_icpe_item_data(siret=self.siret, rubrique=rubrique)
 
-    def _extract_rndts_data(self):
-        """Extracts datasets containing RNDTS' data about non dangerous waste (statements data)."""
-        rndts_ndw_incoming_data, rndts_ndw_outgoing_data = get_rndts_ndw_data(self.siret)
-        self.rndts_data["ndw_incoming"] = rndts_ndw_incoming_data
-        self.rndts_data["ndw_outgoing"] = rndts_ndw_outgoing_data
+    def _extract_registries_data(self):
+        """Extracts datasets containing registries data about non dangerous waste (statements data)."""
+        registry_ndw_incoming_data, registry_ndw_outgoing_data = get_registries_ndw_data(self.siret)
+        self.registry_data["ndw_incoming"] = registry_ndw_incoming_data
+        self.registry_data["ndw_outgoing"] = registry_ndw_outgoing_data
 
-        rndts_excavated_land_incoming_data, rndts_excavated_land_outgoing_data = get_rndts_excavated_land_data(
-            self.siret
+        registry_excavated_land_incoming_data, registry_excavated_land_outgoing_data = (
+            get_registries_excavated_land_data(self.siret)
         )
-        self.rndts_data["excavated_land_incoming"] = rndts_excavated_land_incoming_data
-        self.rndts_data["excavated_land_outgoing"] = rndts_excavated_land_outgoing_data
-        self.rndts_data["ssd_data"] = get_ssd_data(self.siret)
+        self.registry_data["excavated_land_incoming"] = registry_excavated_land_incoming_data
+        self.registry_data["excavated_land_outgoing"] = registry_excavated_land_outgoing_data
+        self.registry_data["ssd_data"] = get_ssd_data(self.siret)
 
     def _extract_gistrid_data(self):
         """Extracts datasets containing GISTRID' data about country waste exchanges."""
@@ -406,76 +406,78 @@ class SheetProcessor:
             icpe_rubrique_graph_data = icpe_rubrique_graph.build()
             setattr(self.computed, f"icpe_{rubrique.replace('-', '_')}_data", icpe_rubrique_graph_data)
 
-        non_dangerous_waste_quantities_graph = RNDTSQuantitiesGraphProcessor(
-            self.siret, self.rndts_data["ndw_incoming"], self.rndts_data["ndw_outgoing"], data_date_interval
+        non_dangerous_waste_quantities_graph = RegistryQuantitiesGraphProcessor(
+            self.siret, self.registry_data["ndw_incoming"], self.registry_data["ndw_outgoing"], data_date_interval
         )
         self.computed.non_dangerous_waste_quantities_graph_data = non_dangerous_waste_quantities_graph.build()
         if self.computed.non_dangerous_waste_quantities_graph_data:
-            self.all_rndts_data_empty = False
+            self.all_registry_data_empty = False
 
-        non_dangerous_waste_statements_graph = RNDTSStatementsGraphProcessor(
+        non_dangerous_waste_statements_graph = RegistryStatementsGraphProcessor(
             self.siret,
-            self.rndts_data["ndw_incoming"],
-            self.rndts_data["ndw_outgoing"],
+            self.registry_data["ndw_incoming"],
+            self.registry_data["ndw_outgoing"],
             "non_dangerous_waste",
             data_date_interval,
         )
         self.computed.non_dangerous_waste_statements_graph_data = non_dangerous_waste_statements_graph.build()
         if self.computed.non_dangerous_waste_statements_graph_data:
-            self.all_rndts_data_empty = False
+            self.all_registry_data_empty = False
 
-        excavated_land_quantities_graph = RNDTSQuantitiesGraphProcessor(
+        excavated_land_quantities_graph = RegistryQuantitiesGraphProcessor(
             self.siret,
-            self.rndts_data["excavated_land_incoming"],
-            self.rndts_data["excavated_land_outgoing"],
+            self.registry_data["excavated_land_incoming"],
+            self.registry_data["excavated_land_outgoing"],
             data_date_interval,
         )
         self.computed.excavated_land_quantities_graph_data = excavated_land_quantities_graph.build()
         if self.computed.excavated_land_quantities_graph_data:
-            self.all_rndts_data_empty = False
+            self.all_registry_data_empty = False
 
-        excavated_land_statements_graph = RNDTSStatementsGraphProcessor(
+        excavated_land_statements_graph = RegistryStatementsGraphProcessor(
             self.siret,
-            self.rndts_data["excavated_land_incoming"],
-            self.rndts_data["excavated_land_outgoing"],
+            self.registry_data["excavated_land_incoming"],
+            self.registry_data["excavated_land_outgoing"],
             "excavated_land",
             data_date_interval,
         )
         self.computed.excavated_land_statements_graph_data = excavated_land_statements_graph.build()
         if self.computed.excavated_land_statements_graph_data:
-            self.all_rndts_data_empty = False
+            self.all_registry_data_empty = False
 
-        ssd_quantities_graph = RNDTSQuantitiesGraphProcessor(
-            self.siret, None, self.rndts_data["ssd_data"], data_date_interval
+        ssd_quantities_graph = RegistryQuantitiesGraphProcessor(
+            self.siret, None, self.registry_data["ssd_data"], data_date_interval
         )
         self.computed.ssd_quantities_graph_data = ssd_quantities_graph.build()
         if self.computed.ssd_quantities_graph_data:
-            self.all_rndts_data_empty = False
+            self.all_registry_data_empty = False
 
-        ssd_statements_graph = RNDTSStatementsGraphProcessor(
+        ssd_statements_graph = RegistryStatementsGraphProcessor(
             self.siret,
             None,
-            self.rndts_data["ssd_data"],
+            self.registry_data["ssd_data"],
             "ssd",
             data_date_interval,
         )
         self.computed.ssd_statements_graph_data = ssd_statements_graph.build()
         if self.computed.ssd_statements_graph_data:
-            self.all_rndts_data_empty = False
+            self.all_registry_data_empty = False
 
-        rndts_transporter_statements_stats_graph = RNDTSTransporterStatementsStatsGraphProcessor(
-            self.siret, self.rndts_data, data_date_interval
+        registry_transporter_statements_stats_graph = RegistryTransporterStatementsStatsGraphProcessor(
+            self.siret, self.registry_data, data_date_interval
         )
-        self.computed.rndts_transporter_statement_stats_graph_data = rndts_transporter_statements_stats_graph.build()
-        if self.computed.rndts_transporter_statement_stats_graph_data:
-            self.all_rndts_data_empty = False
+        self.computed.registry_transporter_statement_stats_graph_data = (
+            registry_transporter_statements_stats_graph.build()
+        )
+        if self.computed.registry_transporter_statement_stats_graph_data:
+            self.all_registry_data_empty = False
 
-        rndts_transporter_quantities_graph = RNDTSTransporterQuantitiesGraphProcessor(
-            self.siret, self.rndts_data, data_date_interval
+        registry_transporter_quantities_graph = RegistryTransporterQuantitiesGraphProcessor(
+            self.siret, self.registry_data, data_date_interval
         )
-        self.computed.rndts_transporter_quantities_graph_data = rndts_transporter_quantities_graph.build()
-        if self.computed.rndts_transporter_quantities_graph_data:
-            self.all_rndts_data_empty = False
+        self.computed.registry_transporter_quantities_graph_data = registry_transporter_quantities_graph.build()
+        if self.computed.registry_transporter_quantities_graph_data:
+            self.all_registry_data_empty = False
 
         eco_organisme_bordereaux_graph = IntermediaryBordereauxCountsGraphProcessor(
             company_siret=self.siret,
@@ -539,7 +541,7 @@ class SheetProcessor:
             self.siret,
             self.bs_dfs,
             self.transporter_data_dfs,
-            self.rndts_data,
+            self.registry_data,
             data_date_interval,
             WASTE_CODES_DATA,
             self.bsff_packagings_df,
@@ -602,7 +604,7 @@ class SheetProcessor:
         self.computed.quantity_outliers_data = quantity_outliers_table.build()
 
         waste_processing_without_icpe_data = WasteProcessingWithoutICPERubriqueProcessor(
-            self.siret, self.bs_dfs, self.rndts_data["ndw_incoming"], self.icpe_data, data_date_interval
+            self.siret, self.bs_dfs, self.registry_data["ndw_incoming"], self.icpe_data, data_date_interval
         )
         self.computed.bs_processed_without_icpe_authorization = waste_processing_without_icpe_data.build()
 
@@ -648,37 +650,39 @@ class SheetProcessor:
         )
         self.computed.gistrid_stats_data = gistrid_stats.build()
 
-        non_dangerous_waste_stats = RNDTSStatsProcessor(
-            self.siret, self.rndts_data["ndw_incoming"], self.rndts_data["ndw_outgoing"], data_date_interval
+        non_dangerous_waste_stats = RegistryStatsProcessor(
+            self.siret, self.registry_data["ndw_incoming"], self.registry_data["ndw_outgoing"], data_date_interval
         )
         self.computed.non_dangerous_waste_stats_data = non_dangerous_waste_stats.build()
         if self.computed.non_dangerous_waste_stats_data:
-            self.all_rndts_data_empty = False
+            self.all_registry_data_empty = False
 
-        excavated_land_stats = RNDTSStatsProcessor(
+        excavated_land_stats = RegistryStatsProcessor(
             self.siret,
-            self.rndts_data["excavated_land_incoming"],
-            self.rndts_data["excavated_land_outgoing"],
+            self.registry_data["excavated_land_incoming"],
+            self.registry_data["excavated_land_outgoing"],
             data_date_interval,
         )
         self.computed.excavated_land_stats_data = excavated_land_stats.build()
         if self.computed.excavated_land_stats_data:
-            self.all_rndts_data_empty = False
+            self.all_registry_data_empty = False
 
-        ssd_stats = RNDTSStatsProcessor(self.siret, None, self.rndts_data["ssd_data"], data_date_interval)
+        ssd_stats = RegistryStatsProcessor(self.siret, None, self.registry_data["ssd_data"], data_date_interval)
         self.computed.ssd_stats_data = ssd_stats.build()
         if self.computed.ssd_stats_data:
-            self.all_rndts_data_empty = False
+            self.all_registry_data_empty = False
 
-        ssd_table = SSDProcessor(self.siret, self.rndts_data["ssd_data"], data_date_interval)
+        ssd_table = SSDProcessor(self.siret, self.registry_data["ssd_data"], data_date_interval)
         self.computed.ssd_table_data = ssd_table.build()
         if self.computed.ssd_table_data:
-            self.all_rndts_data_empty = False
+            self.all_registry_data_empty = False
 
-        rndts_transporter_stats = RNDTSTransporterStatsProcessor(self.siret, self.rndts_data, data_date_interval)
-        self.computed.rndts_transporter_stats_data = rndts_transporter_stats.build()
-        if self.computed.rndts_transporter_stats_data:
-            self.all_rndts_data_empty = False
+        registry_transporter_stats = RegistryTransporterStatsProcessor(
+            self.siret, self.registry_data, data_date_interval
+        )
+        self.computed.registry_transporter_stats_data = registry_transporter_stats.build()
+        if self.computed.registry_transporter_stats_data:
+            self.all_registry_data_empty = False
 
         eco_organisme_bordereaux_stats = IntermediaryBordereauxStatsProcessor(
             company_siret=self.siret,
@@ -695,7 +699,7 @@ class SheetProcessor:
             self.bs_dfs,
             self.transporter_data_dfs,
             self.icpe_data,
-            self.rndts_data["ndw_outgoing"],
+            self.registry_data["ndw_outgoing"],
             data_date_interval,
         )
         self.computed.incinerator_outgoing_waste_data = incinerator_outgoing_waste_data.build()
@@ -714,7 +718,7 @@ class SheetProcessor:
         self._build_components()
 
         self.computed.all_bsd_data_empty = self.all_bsd_data_empty
-        self.computed.all_rndts_data_empty = self.all_rndts_data_empty
+        self.computed.all_registry_data_empty = self.all_registry_data_empty
 
         self.computed.processing_end = timezone.now()
 

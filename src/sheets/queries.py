@@ -598,95 +598,99 @@ from
 where (siret_notifiant = :siret or siret_installation_traitement = :siret)
 """
 
+###
+### REGISTRIES QUERIES
+###
+
 sql_get_incoming_ndw_data = """
 SELECT 
     id,
-    etablissement_numero_identification,
-    code_dechet,
-    denomination_usuelle,
-    quantite,
-    code_unite as unite,
-    date_reception,
-    code_traitement,
-    numeros_indentification_transporteurs
-FROM trusted_zone_rndts.dnd_entrant
+    report_for_company_siret as siret,
+    waste_code,
+    waste_description,
+    weight_value,
+    volume,
+    reception_date,
+    operation_code,
+    transporters_org_ids
+FROM trusted_zone_trackdechets.registry_incoming_waste
 where
-    etablissement_numero_identification = :siret
-    or has(numeros_indentification_transporteurs,:siret)
+    report_for_company_siret = :siret
+    or has(transporters_org_ids,:siret)
 """
 
 sql_get_outgoing_ndw_data = """
 SELECT 
     id,
-    producteur_numero_identification,
-    code_dechet,
-    denomination_usuelle,
-    quantite,
-    code_unite as unite,
-    date_expedition,
-    code_traitement,
-    destinataire_numero_identification,
-    destinataire_raison_sociale,
-    numeros_indentification_transporteurs
-FROM trusted_zone_rndts.dnd_sortant
+    report_for_company_siret as siret,
+    waste_code,
+    waste_description,
+    weight_value,
+    volume,
+    dispatch_date,
+    operation_code,
+    destination_company_org_id,
+    destination_company_name,
+    transporters_org_ids
+FROM trusted_zone_trackdechets.registry_outgoing_waste
 where
-    producteur_numero_identification = :siret
-    or has(numeros_indentification_transporteurs,:siret)
+    report_for_company_siret = :siret
+    or has(transporters_org_ids,:siret)
 """
 
 
 sql_get_incoming_excavated_land_data = """
 SELECT 
     id,
-    etablissement_numero_identification,
-    code_dechet,
-    denomination_usuelle,
-    quantite,
-    code_unite as unite,
-    date_reception,
-    code_traitement,
-    numeros_indentification_transporteurs
-FROM trusted_zone_rndts.texs_entrant
+    report_for_company_siret as siret,
+    waste_code,
+    waste_description,
+    weight_value,
+    volume,
+    reception_date,
+    operation_code,
+    transporters_org_ids
+FROM trusted_zone_trackdechets.registry_incoming_texs
 where
-    etablissement_numero_identification = :siret
-    or has(numeros_indentification_transporteurs,:siret)
+    report_for_company_siret = :siret
+    or has(transporters_org_ids,:siret)
 """
 
 sql_get_outgoing_excavated_land_data = """
 SELECT 
     id,
-    producteur_numero_identification,
-    code_dechet,
-    denomination_usuelle,
-    quantite,
-    code_unite as unite,
-    date_expedition,
-    code_traitement,
-    destinataire_numero_identification,
-    destinataire_raison_sociale,
-    numeros_indentification_transporteurs
-FROM trusted_zone_rndts.texs_sortant
+    report_for_company_siret as siret,
+    waste_code,
+    waste_description,
+    weight_value,
+    volume,
+    dispatch_date,
+    operation_code,
+    destination_company_org_id,
+    destination_company_name,
+    transporters_org_ids
+FROM trusted_zone_trackdechets.registry_outgoing_texs
 where
-    producteur_numero_identification = :siret
-    or has(numeros_indentification_transporteurs,:siret)
+    report_for_company_siret = :siret
+    or has(transporters_org_ids,:siret)
 """
 
 sql_get_ssd_data = """
 SELECT 
     id,
-    etablissement_numero_identification,
-    code_dechet,
-    denomination_usuelle,
-    nature,
-    quantite,
-    code_unite as unite,
-    date_expedition,
-    code_traitement,
-    destinataire_numero_identification,
-    destinataire_raison_sociale
-FROM trusted_zone_rndts.sortie_statut_dechet
+    report_for_company_siret as siret,
+    waste_code,
+    waste_description,
+    product,
+    weight_value,
+    volume,
+    dispatch_date,
+    waste_code,
+    destination_company_org_id,
+    destination_company_name
+FROM trusted_zone_trackdechets.registry_ssd
 where
-    etablissement_numero_identification = :siret
+    report_for_company_siret = :siret
 """
 
 sql_company_query_exists_str = """

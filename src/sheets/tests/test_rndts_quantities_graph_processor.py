@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas as pd
 import pytest
 
-from ..graph_processors.plotly_components_processors import RNDTSQuantitiesGraphProcessor
+from ..graph_processors.plotly_components_processors import RegistryQuantitiesGraphProcessor
 
 
 @pytest.fixture
@@ -65,16 +65,16 @@ def sample_data(request):
 def test_initialization(sample_data):
     incoming_data, outgoing_data, date_interval = sample_data
 
-    processor = RNDTSQuantitiesGraphProcessor(
+    processor = RegistryQuantitiesGraphProcessor(
         company_siret="12345678901234",
-        rndts_incoming_data=incoming_data,
-        rndts_outgoing_data=outgoing_data,
+        registry_incoming_data=incoming_data,
+        registry_outgoing_data=outgoing_data,
         data_date_interval=date_interval,
     )
 
     assert processor.company_siret == "12345678901234"
-    assert processor.rndts_incoming_data is incoming_data
-    assert processor.rndts_outgoing_data is outgoing_data
+    assert processor.registry_incoming_data is incoming_data
+    assert processor.registry_outgoing_data is outgoing_data
     assert processor.data_date_interval == date_interval
     assert processor.incoming_weight_by_month_serie.empty
     assert processor.outgoing_weight_by_month_serie.empty
@@ -87,10 +87,10 @@ def test_initialization(sample_data):
 def test_preprocess_data(sample_data):
     incoming_data, outgoing_data, date_interval = sample_data
 
-    processor = RNDTSQuantitiesGraphProcessor(
+    processor = RegistryQuantitiesGraphProcessor(
         company_siret="12345678901234",
-        rndts_incoming_data=incoming_data,
-        rndts_outgoing_data=outgoing_data,
+        registry_incoming_data=incoming_data,
+        registry_outgoing_data=outgoing_data,
         data_date_interval=date_interval,
     )
 
@@ -115,10 +115,10 @@ def test_preprocess_data(sample_data):
 def test_check_data_empty(sample_data):
     incoming_data, outgoing_data, date_interval = sample_data
 
-    processor = RNDTSQuantitiesGraphProcessor(
+    processor = RegistryQuantitiesGraphProcessor(
         company_siret="12345678901234",
-        rndts_incoming_data=incoming_data,
-        rndts_outgoing_data=outgoing_data,
+        registry_incoming_data=incoming_data,
+        registry_outgoing_data=outgoing_data,
         data_date_interval=date_interval,
     )
 
@@ -128,10 +128,10 @@ def test_check_data_empty(sample_data):
 
     incoming_data, outgoing_data, date_interval = sample_data
 
-    processor = RNDTSQuantitiesGraphProcessor(
+    processor = RegistryQuantitiesGraphProcessor(
         company_siret="12345678901234",
-        rndts_incoming_data=incoming_data,
-        rndts_outgoing_data=outgoing_data,
+        registry_incoming_data=incoming_data,
+        registry_outgoing_data=outgoing_data,
         data_date_interval=(datetime(2023, 8, 1), datetime(2024, 6, 30)),
     )
 
@@ -144,10 +144,10 @@ def test_check_data_empty(sample_data):
 def test_create_figure(sample_data):
     incoming_data, outgoing_data, date_interval = sample_data
 
-    processor = RNDTSQuantitiesGraphProcessor(
+    processor = RegistryQuantitiesGraphProcessor(
         company_siret="12345678901234",
-        rndts_incoming_data=incoming_data,
-        rndts_outgoing_data=outgoing_data,
+        registry_incoming_data=incoming_data,
+        registry_outgoing_data=outgoing_data,
         data_date_interval=date_interval,
     )
 
@@ -161,10 +161,10 @@ def test_create_figure(sample_data):
 def test_build_output(sample_data):
     incoming_data, outgoing_data, date_interval = sample_data
 
-    processor = RNDTSQuantitiesGraphProcessor(
+    processor = RegistryQuantitiesGraphProcessor(
         company_siret="12345678901234",
-        rndts_incoming_data=incoming_data,
-        rndts_outgoing_data=outgoing_data,
+        registry_incoming_data=incoming_data,
+        registry_outgoing_data=outgoing_data,
         data_date_interval=date_interval,
     )
 

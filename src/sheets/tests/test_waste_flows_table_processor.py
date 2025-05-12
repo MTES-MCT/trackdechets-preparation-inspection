@@ -216,7 +216,7 @@ def test_preprocess_bs_data(sample_data: dict, waste_code_data: pd.DataFrame):
         company_siret="12345678901234",
         bs_data_dfs=sample_data["bs_data_dfs"],
         transporters_data_df=sample_data["transporters_data_df"],
-        rndts_data=sample_data["rndts_data"],
+        registry_data=sample_data["rndts_data"],
         data_date_interval=(datetime(2023, 1, 1), datetime(2023, 6, 30)),
         waste_codes_df=waste_code_data,
         packagings_data=sample_data["packagings_data"],
@@ -271,13 +271,13 @@ def test_preprocess_rndts_data(sample_data: dict, waste_code_data: pd.DataFrame)
         company_siret="12345678901234",
         bs_data_dfs=sample_data["bs_data_dfs"],
         transporters_data_df=sample_data["transporters_data_df"],
-        rndts_data=sample_data["rndts_data"],
+        registry_data=sample_data["rndts_data"],
         data_date_interval=(datetime(2023, 1, 1), datetime(2023, 6, 30)),
         waste_codes_df=waste_code_data,
         packagings_data=sample_data["packagings_data"],
     )
 
-    preprocessed_rndts_data = processor._preprocess_rndts_data()
+    preprocessed_rndts_data = processor._preprocess_registry_data()
 
     expected_output = pd.DataFrame(
         {
@@ -322,7 +322,7 @@ def test_preprocess_data(sample_data: dict, waste_code_data: pd.DataFrame):
         company_siret="12345678901234",
         bs_data_dfs=sample_data["bs_data_dfs"],
         transporters_data_df=sample_data["transporters_data_df"],
-        rndts_data=sample_data["rndts_data"],
+        registry_data=sample_data["rndts_data"],
         data_date_interval=(datetime(2023, 1, 1), datetime(2023, 6, 30)),
         waste_codes_df=waste_code_data,
         packagings_data=sample_data["packagings_data"],
@@ -346,7 +346,7 @@ def test_empty_data():
         company_siret="12345678901234",
         bs_data_dfs={},
         transporters_data_df={},
-        rndts_data={},
+        registry_data={},
         data_date_interval=(datetime(2023, 1, 1), datetime(2023, 6, 30)),
         waste_codes_df=pd.DataFrame(),
         packagings_data=None,
@@ -390,7 +390,7 @@ def test_empty_bs_data_with_transport_data(waste_code_data: pd.DataFrame):
             )
         },
         transporters_data_df={BSDD: transport_df},
-        rndts_data={},
+        registry_data={},
         data_date_interval=(datetime(2023, 1, 1), datetime(2023, 6, 30)),
         waste_codes_df=waste_code_data,
         packagings_data=None,
@@ -416,7 +416,7 @@ def test_empty_packagings_data_with_bsff_and_transport_data(sample_data: dict, w
         company_siret="12345678901234",
         bs_data_dfs={BSFF: sample_data["bs_data_dfs"][BSFF]},
         transporters_data_df={BSFF: sample_data["transporters_data_df"][BSFF]},
-        rndts_data={},
+        registry_data={},
         data_date_interval=(datetime(2023, 1, 1), datetime(2023, 6, 30)),
         waste_codes_df=waste_code_data,
         packagings_data=None,
@@ -433,7 +433,7 @@ def test_build(sample_data: dict, waste_code_data: pd.DataFrame):
         company_siret="12345678901234",
         bs_data_dfs=sample_data["bs_data_dfs"],
         transporters_data_df=sample_data["transporters_data_df"],
-        rndts_data=sample_data["rndts_data"],
+        registry_data=sample_data["rndts_data"],
         data_date_interval=(datetime(2023, 1, 1), datetime(2023, 6, 30)),
         waste_codes_df=waste_code_data,
         packagings_data=sample_data["packagings_data"],

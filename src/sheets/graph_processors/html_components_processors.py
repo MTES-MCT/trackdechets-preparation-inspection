@@ -2943,21 +2943,24 @@ class SSDProcessor:
         ]
 
         if len(ssd_data) > 0:
+            dfs = []
             for quantity_colname in ["weight_value", "volume"]:
                 ssd_data_agg = ssd_data.groupby(
                     [
                         "waste_code",
-                        "product",
                     ],
                     as_index=False,
                 ).agg(
-                    quantite=pd.NamedAgg(column=quantity_colname, aggfunc="sum"),
-                    denomination_usuelle=pd.NamedAgg(column="waste_description", aggfunc="max"),
+                    quantity=pd.NamedAgg(column=quantity_colname, aggfunc="sum"),
+                    waste_description=pd.NamedAgg(column="waste_description", aggfunc="max"),
                 )
                 ssd_data_agg["unit"] = "t" if quantity_colname == "weight_value" else "m³"
                 ssd_data_agg = ssd_data_agg.sort_values(["waste_code", "unit"])
+                dfs.append(ssd_data_agg)
 
-            self.preprocessed_data = ssd_data_agg
+            if len(dfs) > 0:
+                final_df = pd.concat(dfs, ignore_index=True)
+                self.preprocessed_data = final_df
 
     def _check_data_empty(self) -> bool:
         if len(self.preprocessed_data) == 0:
@@ -2973,8 +2976,7 @@ class SSDProcessor:
                 {
                     "waste_code": row.waste_code,
                     "waste_name": row.waste_description,
-                    "nature": row.nature,
-                    "quantity": format_number_str(row.quantite, 2),
+                    "quantity": format_number_str(row.quantity, 2),
                     "unit": row.unit,
                 }
             )

@@ -55,7 +55,6 @@
                         <li>Trackdéchets (mise à jour chaque nuit) ;</li>
                         <li>l'outil GUN (dernière mise à jour : Février 2025) ;</li>
                         <li>GISTRID (dernière mise à jour : Février 2025) ;</li>
-                        <li>le RNDTS (dernière mise à jour : octobre 2024).</li>
                     </ul>
                 </div>
             </div>
@@ -243,12 +242,10 @@
             {% endif %}
             {# end "waste is dangerous" statements #}
             {# DND #}
-            <h2 class="section__title" id="bs-section-title">Données des déclarations issues du RNDTS</h2>
-            <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left fr-m-1w">
-                Dernière mise à jour des données : début juillet 2024
-            </p>
-            {% if sheet.all_rndts_data_empty %}
-                <div class="no-data-section">PAS DE DONNÉES ISSUES DU RNDTS À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
+            <h2 class="section__title" id="bs-section-title">Données des déclarations de déchets issues de Trackdéchets</h2>
+            <p>Les données de déclarations sont maintenant isues des données Trackdéchets suite à la fusion avec l'outil RNDTS.</p>
+            {% if sheet.all_registry_data_empty %}
+                <div class="no-data-section">PAS DE DONNÉES DE DÉCLARATIONS À AFFICHER POUR LE SIRET {{ sheet.org_id }}.</div>
             {% else %}
                 {% if sheet.non_dangerous_waste_quantities_graph_data %}
                     <div class="row">
@@ -264,7 +261,7 @@
                         </div>
                         <div class="cell cell--bordered cell--third">
                             <h3 class="cell__title">Déchets Non Dangereux - Statistiques sur la période</h3>
-                            {% render_rndts_stats sheet.non_dangerous_waste_stats_data graph_context="pdf" %}
+                            {% render_registry_stats sheet.non_dangerous_waste_stats_data graph_context="pdf" %}
                         </div>
                     </div>
                 {% endif %}
@@ -282,7 +279,7 @@
                         </div>
                         <div class="cell cell--bordered cell--third">
                             <h3 class="cell__title">Terres Exacavées et Sédiments - Statistiques sur la période</h3>
-                            {% render_rndts_stats sheet.excavated_land_stats_data graph_context="pdf" %}
+                            {% render_registry_stats sheet.excavated_land_stats_data graph_context="pdf" %}
                         </div>
                     </div>
                 {% endif %}
@@ -304,19 +301,19 @@
                         </div>
                     </div>
                 {% endif %}
-                {% if sheet.rndts_transporter_statement_stats_graph_data %}
+                {% if sheet.registry_transporter_statement_stats_graph_data %}
                     <div class="row">
                         <div class="cell cell--bordered cell--third">
                             <h3 class="cell__title">Déclarations transportées</h3>
-                            <img src="data:image/png;base64,{{ rndts_transporter_statement_stats_graph }}"
+                            <img src="data:image/png;base64,{{ registry_transporter_statement_stats_graph }}"
                                  class="cell__img">
                         </div>
                         <div class="cell cell--bordered cell--third">
                             <h3 class="cell__title">Quantité de déchets non dangereux transportés</h3>
-                            <img src="data:image/png;base64,{{ rndts_transporter_quantities_graph }}"
+                            <img src="data:image/png;base64,{{ registry_transporter_quantities_graph }}"
                                  class="cell__img">
                         </div>
-                        <div class="cell cell--bordered cell--third">{% render_rndts_transporter_stats sheet %}</div>
+                        <div class="cell cell--bordered cell--third">{% render_registry_transporter_stats sheet %}</div>
                     </div>
                 {% endif %}
             {% endif %}

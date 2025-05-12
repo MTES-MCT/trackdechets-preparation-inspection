@@ -29,7 +29,7 @@
 {% endif %}
 {% if non_dangerous_data %}
     <h3>Incinérateur - Liste des déchets non dangereux sortants</h3>
-    <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
+    <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : Trackdéchets</p>
     <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
         <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
             <thead>
@@ -47,8 +47,8 @@
                     <tr>
                         <td>{{ row.waste_code }}</td>
                         <td>{{ row.waste_name }}</td>
-                        <td>{{ row.destination_company_siret }}</td>
-                        <td>{{ row.processing_opration }}</td>
+                        <td>{{ row.destination_company_org_id }}</td>
+                        <td>{{ row.operation_code }}</td>
                         <td class="td--right">{{ row.quantity|number|safe|default:"N/A" }}</td>
                         <td class="td--right">{{ row.unit|default:"N/A" }}</td>
                     </tr>

@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas as pd
 import pytest
 
-from ..graph_processors.html_components_processors import RNDTSTransporterStatsProcessor
+from ..graph_processors.html_components_processors import RegistryTransporterStatsProcessor
 
 
 @pytest.fixture
@@ -59,14 +59,14 @@ def date_interval():
 
 
 def test_initialization(sample_rndts_data, date_interval):
-    processor = RNDTSTransporterStatsProcessor(
+    processor = RegistryTransporterStatsProcessor(
         company_siret="12345678901234",
-        rndts_data=sample_rndts_data,
+        registry_data=sample_rndts_data,
         data_date_interval=date_interval,
     )
 
     assert processor.company_siret == "12345678901234"
-    assert processor.rndts_data == sample_rndts_data
+    assert processor.registry_data == sample_rndts_data
     assert processor.data_date_interval == date_interval
     assert isinstance(processor.transported_statements_stats, dict)
     assert "ndw_incoming" in processor.transported_statements_stats
@@ -79,9 +79,9 @@ def test_empty_data(sample_rndts_data, date_interval):
         "excavated_land_incoming": pd.DataFrame(),
         "excavated_land_outgoing": pd.DataFrame(),
     }
-    processor = RNDTSTransporterStatsProcessor(
+    processor = RegistryTransporterStatsProcessor(
         company_siret="12345678901234",
-        rndts_data=empty_data,
+        registry_data=empty_data,
         data_date_interval=date_interval,
     )
 
@@ -91,16 +91,16 @@ def test_empty_data(sample_rndts_data, date_interval):
         "excavated_land_incoming": None,
         "excavated_land_outgoing": None,
     }
-    processor = RNDTSTransporterStatsProcessor(
+    processor = RegistryTransporterStatsProcessor(
         company_siret="12345678901234",
-        rndts_data=empty_data,
+        registry_data=empty_data,
         data_date_interval=date_interval,
     )
 
     # Test data not in date interval
-    processor = RNDTSTransporterStatsProcessor(
+    processor = RegistryTransporterStatsProcessor(
         company_siret="12345678901234",
-        rndts_data=sample_rndts_data,
+        registry_data=sample_rndts_data,
         data_date_interval=(datetime(2023, 8, 1), datetime(2024, 7, 30)),
     )
 
@@ -108,9 +108,9 @@ def test_empty_data(sample_rndts_data, date_interval):
 
 
 def test_data_preprocessing(sample_rndts_data, date_interval):
-    processor = RNDTSTransporterStatsProcessor(
+    processor = RegistryTransporterStatsProcessor(
         company_siret="12345678901234",
-        rndts_data=sample_rndts_data,
+        registry_data=sample_rndts_data,
         data_date_interval=date_interval,
     )
 
@@ -134,9 +134,9 @@ def test_data_preprocessing(sample_rndts_data, date_interval):
 
 
 def test_build_output(sample_rndts_data, date_interval):
-    processor = RNDTSTransporterStatsProcessor(
+    processor = RegistryTransporterStatsProcessor(
         company_siret="12345678901234",
-        rndts_data=sample_rndts_data,
+        registry_data=sample_rndts_data,
         data_date_interval=date_interval,
     )
 

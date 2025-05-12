@@ -1650,17 +1650,17 @@ class TransportedQuantitiesGraphProcessor:
         return figure
 
 
-class RNDTSQuantitiesGraphProcessor:
+class RegistryQuantitiesGraphProcessor:
     """Component with a Line Figure showing incoming and outgoing quantities of non dangerous waste.
 
     Parameters
     ----------
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
-    rndts_incoming_data: DataFrame
-        DataFrame containing data for incoming non dangerous waste (from RNDTS).
-    rndts_outgoing_data: DataFrame
-        DataFrame containing data for outgoing non dangerous waste (from RNDTS).
+    registry_incoming_data: DataFrame
+        DataFrame containing data for incoming non dangerous waste (from registry).
+    registry_outgoing_data: DataFrame
+        DataFrame containing data for outgoing non dangerous waste (from registry).
     data_date_interval: tuple
         Date interval to filter data.
     """
@@ -1668,13 +1668,13 @@ class RNDTSQuantitiesGraphProcessor:
     def __init__(
         self,
         company_siret: str,
-        rndts_incoming_data: pd.DataFrame | None,
-        rndts_outgoing_data: pd.DataFrame | None,
+        registry_incoming_data: pd.DataFrame | None,
+        registry_outgoing_data: pd.DataFrame | None,
         data_date_interval: tuple[datetime, datetime],
     ):
         self.company_siret = company_siret
-        self.rndts_incoming_data = rndts_incoming_data
-        self.rndts_outgoing_data = rndts_outgoing_data
+        self.registry_incoming_data = registry_incoming_data
+        self.registry_outgoing_data = registry_outgoing_data
         self.data_date_interval = data_date_interval
 
         self.incoming_weight_by_month_serie = pd.Series()
@@ -1688,48 +1688,40 @@ class RNDTSQuantitiesGraphProcessor:
     def _preprocess_data(self) -> None:
         # We need to account for quantities in m³ and t
 
-        incoming_data = self.rndts_incoming_data
+        incoming_data = self.registry_incoming_data
         if (incoming_data is not None) and (len(incoming_data) > 0):
             incoming_data = incoming_data[
-                (incoming_data["date_reception"].between(*self.data_date_interval))
-                & (incoming_data["etablissement_numero_identification"] == self.company_siret)
+                (incoming_data["reception_date"].between(*self.data_date_interval))
+                & (incoming_data["siret"] == self.company_siret)
             ]
 
             if len(incoming_data) > 0:
                 self.incoming_weight_by_month_serie = (
-                    incoming_data[incoming_data["unite"] == "T"]
-                    .groupby(pd.Grouper(key="date_reception", freq="1M"))["quantite"]
+                    incoming_data.groupby(pd.Grouper(key="reception_date", freq="1M"))["weight_value"]
                     .sum()
                     .replace(0, np.nan)
                 )
                 self.incoming_volume_by_month_serie = (
-                    incoming_data[incoming_data["unite"] == "M3"]
-                    .groupby(pd.Grouper(key="date_reception", freq="1M"))["quantite"]
+                    incoming_data.groupby(pd.Grouper(key="reception_date", freq="1M"))["volume"]
                     .sum()
                     .replace(0, np.nan)
                 )
 
-        outgoing_data = self.rndts_outgoing_data
+        outgoing_data = self.registry_outgoing_data
         if (outgoing_data is not None) and (len(outgoing_data) > 0):
-            colname = "producteur_numero_identification"
-            if "producteur_numero_identification" not in outgoing_data.columns:
-                colname = "etablissement_numero_identification"  # SSD case
-
             outgoing_data = outgoing_data[
-                outgoing_data["date_expedition"].between(*self.data_date_interval)
-                & (outgoing_data[colname] == self.company_siret)
+                outgoing_data["dispatch_date"].between(*self.data_date_interval)
+                & (outgoing_data["siret"] == self.company_siret)
             ]
 
             if len(outgoing_data) > 0:
                 self.outgoing_weight_by_month_serie = (
-                    outgoing_data[outgoing_data["unite"] == "T"]
-                    .groupby(pd.Grouper(key="date_expedition", freq="1M"))["quantite"]
+                    outgoing_data.groupby(pd.Grouper(key="dispatch_date", freq="1M"))["weight_value"]
                     .sum()
                     .replace(0, np.nan)
                 )
                 self.outgoing_volume_by_month_serie = (
-                    outgoing_data[outgoing_data["unite"] == "M3"]
-                    .groupby(pd.Grouper(key="date_expedition", freq="1M"))["quantite"]
+                    outgoing_data.groupby(pd.Grouper(key="dispatch_date", freq="1M"))["volume"]
                     .sum()
                     .replace(0, np.nan)
                 )
@@ -1770,7 +1762,7 @@ class RNDTSQuantitiesGraphProcessor:
 
         # We create two lines (for incoming and outgoing) for each quantity variable chosen
         for variable_name, incoming_data_by_month, outgoing_data_by_month in zip(
-            ["quantite", "volume"],
+            ["weight_value", "volume"],
             [
                 self.incoming_weight_by_month_serie,
                 self.incoming_volume_by_month_serie,
@@ -1879,17 +1871,17 @@ class RNDTSQuantitiesGraphProcessor:
         return figure
 
 
-class RNDTSStatementsGraphProcessor:
-    """Component with a Bar Figure of incoming and outgoing RNDTS statements.
+class RegistryStatementsGraphProcessor:
+    """Component with a Bar Figure of incoming and outgoing registry statements.
 
     Parameters
     ----------
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
-    rndts_incoming_data: DataFrame
-        DataFrame containing data for incoming non dangerous waste (from RNDTS).
-    rndts_outgoing_data: DataFrame
-        DataFrame containing data for outgoing non dangerous waste (from RNDTS).
+    registry_incoming_data: DataFrame
+        DataFrame containing data for incoming non dangerous waste (from registry).
+    registry_outgoing_data: DataFrame
+        DataFrame containing data for outgoing non dangerous waste (from registry).
     statement_type: str
         Type of statement used as input, either non dangerous waste statements, excavated lands statements or ssd.
     data_date_interval: tuple
@@ -1899,14 +1891,14 @@ class RNDTSStatementsGraphProcessor:
     def __init__(
         self,
         company_siret: str,
-        rndts_incoming_data: pd.DataFrame | None,
-        rndts_outgoing_data: pd.DataFrame | None,
+        registry_incoming_data: pd.DataFrame | None,
+        registry_outgoing_data: pd.DataFrame | None,
         statement_type: Literal["non_dangerous_waste"] | Literal["excavated_land"] | Literal["ssd"],
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
-        self.rndts_incoming_data = rndts_incoming_data
-        self.rndts_outgoing_data = rndts_outgoing_data
+        self.registry_incoming_data = registry_incoming_data
+        self.registry_outgoing_data = registry_outgoing_data
         self.statement_type = statement_type
         self.data_date_interval = data_date_interval
 
@@ -1916,33 +1908,30 @@ class RNDTSStatementsGraphProcessor:
         self.figure = None
 
     def _preprocess_bs_data(self) -> None:
-        """Preprocess raw RNDTS data to prepare it for plotting."""
+        """Preprocess raw registry data to prepare it for plotting."""
 
-        incoming_data = self.rndts_incoming_data
+        incoming_data = self.registry_incoming_data
         if (incoming_data is not None) and (len(incoming_data) > 0):
             incoming_data = incoming_data[
-                incoming_data["date_reception"].between(*self.data_date_interval)
-                & (incoming_data["etablissement_numero_identification"] == self.company_siret)
-            ].dropna(subset=["date_reception"])
+                incoming_data["reception_date"].between(*self.data_date_interval)
+                & (incoming_data["siret"] == self.company_siret)
+            ].dropna(subset=["reception_date"])
 
             if len(incoming_data) > 0:
                 self.statements_received_by_month_serie = incoming_data.groupby(
-                    pd.Grouper(key="date_reception", freq="1M")
+                    pd.Grouper(key="reception_date", freq="1M")
                 ).id.count()
 
-        outgoing_data = self.rndts_outgoing_data
+        outgoing_data = self.registry_outgoing_data
         if (outgoing_data is not None) and (len(outgoing_data) > 0):
-            colname = "producteur_numero_identification"
-            if "producteur_numero_identification" not in outgoing_data.columns:
-                colname = "etablissement_numero_identification"  # SSD case
             outgoing_data = outgoing_data[
-                outgoing_data["date_expedition"].between(*self.data_date_interval)
-                & (outgoing_data[colname] == self.company_siret)
-            ].dropna(subset=["date_expedition"])
+                outgoing_data["dispatch_date"].between(*self.data_date_interval)
+                & (outgoing_data["siret"] == self.company_siret)
+            ].dropna(subset=["dispatch_date"])
 
             if len(outgoing_data) > 0:
                 self.statements_emitted_by_month_serie = outgoing_data.groupby(
-                    pd.Grouper(key="date_expedition", freq="1M")
+                    pd.Grouper(key="dispatch_date", freq="1M")
                 ).id.count()
 
     def _check_data_empty(self) -> bool:
@@ -2459,15 +2448,15 @@ class IntermediaryBordereauxQuantitiesGraphProcessor:
         return figure
 
 
-class RNDTSTransporterStatementsStatsGraphProcessor:
-    """Component with a Bar Figure showing monthly number of RNDTS statements as transporter company.
+class RegistryTransporterStatementsStatsGraphProcessor:
+    """Component with a Bar Figure showing monthly number of registry statements as transporter company.
 
     Parameters
     ----------
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
-    rndts_data: dict
-        Dict with key being the 'RNDTS' data type and values the DataFrame containing the statements data.
+    registry_data: dict
+        Dict with key being the registry data type and values the DataFrame containing the statements data.
     data_date_interval: tuple
         Date interval to filter data.
     """
@@ -2475,11 +2464,11 @@ class RNDTSTransporterStatementsStatsGraphProcessor:
     def __init__(
         self,
         company_siret: str,
-        rndts_data: Dict[str, pd.DataFrame],
+        registry_data: Dict[str, pd.DataFrame],
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
-        self.rndts_data = rndts_data
+        self.registry_data = registry_data
         self.data_date_interval = data_date_interval
 
         self.transported_statements_stats = {
@@ -2493,22 +2482,22 @@ class RNDTSTransporterStatementsStatsGraphProcessor:
 
     def _preprocess_data(self) -> None:
         """Preprocess raw 'bordereaux' data to prepare it for plotting."""
-        rndts_data = self.rndts_data
+        registry_data = self.registry_data
 
         for key, date_col in [
-            ("ndw_incoming", "date_reception"),
-            ("ndw_outgoing", "date_expedition"),
-            ("excavated_land_incoming", "date_reception"),
-            ("excavated_land_outgoing", "date_expedition"),
+            ("ndw_incoming", "reception_date"),
+            ("ndw_outgoing", "dispatch_date"),
+            ("excavated_land_incoming", "reception_date"),
+            ("excavated_land_outgoing", "dispatch_date"),
         ]:
-            df = rndts_data[key]
+            df = registry_data[key]
 
             if df is None:
                 continue
 
             df = df[
                 df[date_col].between(*self.data_date_interval)
-                & (df["numeros_indentification_transporteurs"].apply(lambda x: self.company_siret in x))
+                & (df["transporters_org_ids"].apply(lambda x: self.company_siret in x))
             ]
 
             if len(df) > 0:
@@ -2632,15 +2621,15 @@ class RNDTSTransporterStatementsStatsGraphProcessor:
         return figure
 
 
-class RNDTSTransporterQuantitiesGraphProcessor:
-    """Component with a Bar Figure showing monthly number of RNDTS waste quantitied transported.
+class RegistryTransporterQuantitiesGraphProcessor:
+    """Component with a Bar Figure showing monthly number of waste quantity transported from registry data.
 
     Parameters
     ----------
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
-    rndts_data: dict
-        Dict with key being the 'RNDTS' data type and values the DataFrame containing the statements data.
+    registry_data: dict
+        Dict with key being the registry data type and values the DataFrame containing the statements data.
     data_date_interval: tuple
         Date interval to filter data.
     """
@@ -2648,11 +2637,11 @@ class RNDTSTransporterQuantitiesGraphProcessor:
     def __init__(
         self,
         company_siret: str,
-        rndts_data: Dict[str, pd.DataFrame],
+        registry_data: Dict[str, pd.DataFrame],
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
-        self.rndts_data = rndts_data
+        self.registry_data = registry_data
         self.data_date_interval = data_date_interval
 
         self.transported_quantities_stats = {
@@ -2666,29 +2655,28 @@ class RNDTSTransporterQuantitiesGraphProcessor:
 
     def _preprocess_data(self) -> None:
         """Preprocess raw 'bordereaux' data to prepare it for plotting."""
-        rndts_data = self.rndts_data
+        registry_data = self.registry_data
 
         for key, date_col in [
-            ("ndw_incoming", "date_reception"),
-            ("ndw_outgoing", "date_expedition"),
-            ("excavated_land_incoming", "date_reception"),
-            ("excavated_land_outgoing", "date_expedition"),
+            ("ndw_incoming", "reception_date"),
+            ("ndw_outgoing", "dispatch_date"),
+            ("excavated_land_incoming", "reception_date"),
+            ("excavated_land_outgoing", "dispatch_date"),
         ]:
-            df = rndts_data[key]
+            df = registry_data[key]
 
             if df is None:
                 continue
 
-            for unit in ["T", "M3"]:  # Handle multiple units
+            for quantity_col in ["weight_value", "volume"]:  # Handle multiple units
                 df = df[
-                    (df["unite"] == unit)
-                    & df[date_col].between(*self.data_date_interval)
-                    & (df["numeros_indentification_transporteurs"].apply(lambda x: self.company_siret in x))
+                    df[date_col].between(*self.data_date_interval)
+                    & (df["transporters_org_ids"].apply(lambda x: self.company_siret in x))
                 ]
 
                 if len(df) > 0:
-                    df_by_month = df.groupby(pd.Grouper(key=date_col, freq="1M"))["quantite"].sum()
-                    self.transported_quantities_stats[key][unit] = df_by_month
+                    df_by_month = df.groupby(pd.Grouper(key=date_col, freq="1M"))[quantity_col].sum()
+                    self.transported_quantities_stats[key][quantity_col] = df_by_month
 
     def _check_data_empty(self) -> bool:
         if all(
@@ -2731,7 +2719,7 @@ class RNDTSTransporterQuantitiesGraphProcessor:
             data = config["data"]
             hover_suffix = config["hover_suffix"]
             if data != {}:
-                for unit, data_df in data.items():
+                for quantity_col, data_df in data.items():
                     if (data_df is None) or len(data_df) == 0:
                         continue
 
@@ -2740,7 +2728,7 @@ class RNDTSTransporterQuantitiesGraphProcessor:
                     marker_line_style = "solid"
                     marker_symbol = "circle"
                     marker_size = 6
-                    if unit == "M3":
+                    if quantity_col == "volume":
                         unit_str = "m³"
                         unit_name_str = "volume"
                         marker_line_style = "dash"

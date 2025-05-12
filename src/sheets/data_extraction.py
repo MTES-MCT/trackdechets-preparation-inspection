@@ -382,48 +382,48 @@ def get_gistrid_data(siret: str) -> Union[pd.DataFrame, None]:
     return None
 
 
-def get_rndts_ndw_data(siret: str) -> tuple[pd.DataFrame | None, pd.DataFrame | None]:
-    rndts_ndw_incoming_data = build_query(
+def get_registries_ndw_data(siret: str) -> tuple[pd.DataFrame | None, pd.DataFrame | None]:
+    registries_ndw_incoming_data = build_query(
         sql_get_incoming_ndw_data,
         query_params={
             "siret": siret,
         },
-        date_columns=["date_reception"],
+        date_columns=["reception_date"],
     )
 
-    rndts_ndw_outgoing_data = build_query(
+    registries_ndw_outgoing_data = build_query(
         sql_get_outgoing_ndw_data,
         query_params={
             "siret": siret,
         },
-        date_columns=["date_expedition"],
+        date_columns=["dispatch_date"],
     )
 
-    if all(len(e) == 0 for e in [rndts_ndw_incoming_data, rndts_ndw_outgoing_data]):
+    if all(len(e) == 0 for e in [registries_ndw_incoming_data, registries_ndw_outgoing_data]):
         return None, None
-    return rndts_ndw_incoming_data, rndts_ndw_outgoing_data
+    return registries_ndw_incoming_data, registries_ndw_outgoing_data
 
 
-def get_rndts_excavated_land_data(siret: str) -> tuple[pd.DataFrame | None, pd.DataFrame | None]:
-    rndts_excavated_land_incoming_data = build_query(
+def get_registries_excavated_land_data(siret: str) -> tuple[pd.DataFrame | None, pd.DataFrame | None]:
+    registries_excavated_land_incoming_data = build_query(
         sql_get_incoming_excavated_land_data,
         query_params={
             "siret": siret,
         },
-        date_columns=["date_reception"],
+        date_columns=["reception_date"],
     )
 
-    rndts_excavated_land_outgoing_data = build_query(
+    registries_excavated_land_outgoing_data = build_query(
         sql_get_outgoing_excavated_land_data,
         query_params={
             "siret": siret,
         },
-        date_columns=["date_expedition"],
+        date_columns=["dispatch_date"],
     )
 
-    if all(len(e) == 0 for e in [rndts_excavated_land_incoming_data, rndts_excavated_land_outgoing_data]):
+    if all(len(e) == 0 for e in [registries_excavated_land_incoming_data, registries_excavated_land_outgoing_data]):
         return None, None
-    return rndts_excavated_land_incoming_data, rndts_excavated_land_outgoing_data
+    return registries_excavated_land_incoming_data, registries_excavated_land_outgoing_data
 
 
 def get_ssd_data(siret: str) -> Union[pd.DataFrame, None]:
@@ -432,7 +432,7 @@ def get_ssd_data(siret: str) -> Union[pd.DataFrame, None]:
         query_params={
             "siret": siret,
         },
-        date_columns=["date_expedition"],
+        date_columns=["dispatch_date"],
     )
 
     if len(ssd_data):

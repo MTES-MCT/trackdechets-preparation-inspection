@@ -101,7 +101,7 @@ def render_bs_without_icpe_authorization_tables(computed, graph_context="web"):
     data = computed.bs_processed_without_icpe_authorization
     return {
         "dangerous_data": data.get("dangerous", None),  # Trackdéchets data
-        "non_dangerous_data": data.get("non_dangerous", None),  # Non dangerous waste RNDTS data
+        "non_dangerous_data": data.get("non_dangerous", None),  # Non dangerous waste registry data
         "graph_context": graph_context,
     }
 
@@ -161,10 +161,10 @@ def render_gistrid_stats_table(computed, graph_context="web"):
     }
 
 
-@register.inclusion_tag("sheets/components/rndts_stats.html")
-def render_rndts_stats(rndts_data, graph_context="web"):
+@register.inclusion_tag("sheets/components/registry_stats.html")
+def render_registry_stats(registry_data, graph_context="web"):
     return_dict = {
-        "rndts_stats_data": rndts_data,
+        "registry_stats_data": registry_data,
         "graph_context": graph_context,
     }
 
@@ -188,10 +188,10 @@ def render_ssd_table(computed, graph_context="web"):
     return return_dict
 
 
-@register.inclusion_tag("sheets/components/rndts_transporter_stats.html")
-def render_rndts_transporter_stats(computed, graph_context="web"):
+@register.inclusion_tag("sheets/components/registry_transporter_stats.html")
+def render_registry_transporter_stats(computed, graph_context="web"):
     return {
-        "rndts_transporter_stats_data": computed.rndts_transporter_stats_data,
+        "registry_transporter_stats_data": computed.registry_transporter_stats_data,
         "graph_context": graph_context,
     }
 
@@ -235,7 +235,7 @@ def render_icpe_graphs(computed, graph_context="web"):
         if ((icpe_data is None) or (icpe_data in ["", "{}"])) and not has_rubrique(rubrique, icpe_rubriques_items):
             continue
 
-        data_source = "Trackdéchets" if rubrique in ["2760-1", "2770", "2790"] else "RNDTS"
+        data_source = "Trackdéchets"
 
         graph_data = None
         if graph_context == "pdf":

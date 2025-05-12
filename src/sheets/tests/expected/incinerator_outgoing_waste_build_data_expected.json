@@ -41,7 +41,7 @@
       "waste_code": "02 01 03",
       "waste_name": "",
       "destination_company_siret": "56789012345678",
-      "unit": "T",
+      "unit": "t",
       "processing_opration": "D5",
       "quantity": "35"
     },
@@ -49,7 +49,7 @@
       "waste_code": "04 01 01",
       "waste_name": "Déchet AA",
       "destination_company_siret": "98765432109876",
-      "unit": "M3",
+      "unit": "m³",
       "processing_opration": "R1",
       "quantity": "15"
     }

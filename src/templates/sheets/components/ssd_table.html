@@ -1,7 +1,6 @@
 {% load utils %}
 {% if ssd_data %}
     <h3>Résumé des Sorties de Statut de Déchet</h3>
-    <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">Source : RNDTS</p>
     <div {% if graph_context == "web" %}class="fr-table "{% endif %}>
         <table {% if graph_context != "web" %}class="pdf-table"{% endif %}>
             <thead>

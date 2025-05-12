@@ -73,7 +73,7 @@ def test_initialization(sample_data):
     processor = WasteProcessingWithoutICPERubriqueProcessor(
         company_siret="12345678900000",
         bs_data_dfs=bs_data_dfs,
-        rndts_incoming_data=rndts_incoming_data,
+        registry_incoming_data=rndts_incoming_data,
         icpe_data=icpe_data,
         data_date_interval=data_date_interval,
         packagings_data_df=None,
@@ -90,7 +90,7 @@ def test_preprocess_data_multi_rubriques(sample_data):
     processor = WasteProcessingWithoutICPERubriqueProcessor(
         company_siret="12345678900000",
         bs_data_dfs=bs_data_dfs,
-        rndts_incoming_data=rndts_incoming_data,
+        registry_incoming_data=rndts_incoming_data,
         icpe_data=icpe_data,
         data_date_interval=data_date_interval,
         packagings_data_df=None,
@@ -135,7 +135,7 @@ def test_preprocess_data_single_rubrique(sample_data):
     processor = WasteProcessingWithoutICPERubriqueProcessor(
         company_siret="12345678900000",
         bs_data_dfs=bs_data_dfs,
-        rndts_incoming_data=rndts_incoming_data,
+        registry_incoming_data=rndts_incoming_data,
         icpe_data=icpe_data,
         data_date_interval=data_date_interval,
         packagings_data_df=None,
@@ -180,7 +180,7 @@ def test_preprocess_non_dangerous_rubriques(sample_data):
     processor = WasteProcessingWithoutICPERubriqueProcessor(
         company_siret="12345678900000",
         bs_data_dfs=bs_data_dfs,
-        rndts_incoming_data=rndts_incoming_data,
+        registry_incoming_data=rndts_incoming_data,
         icpe_data=icpe_data,
         data_date_interval=data_date_interval,
         packagings_data_df=None,
@@ -240,7 +240,7 @@ def test_preprocess_data_multi_rubriques_without_quantity_refused(sample_data):
     processor = WasteProcessingWithoutICPERubriqueProcessor(
         company_siret="12345678900000",
         bs_data_dfs={k: v for k, v in bs_data_dfs.items() if k == BSDA},
-        rndts_incoming_data=None,
+        registry_incoming_data=None,
         icpe_data=pd.DataFrame({"rubrique": ["2791-1", "2718-1"]}),
         data_date_interval=data_date_interval,
         packagings_data_df=None,
@@ -284,7 +284,7 @@ def test_check_data_empty():
     processor = WasteProcessingWithoutICPERubriqueProcessor(
         company_siret="12345678900000",
         bs_data_dfs={BSDD: None, BSDA: pd.DataFrame()},
-        rndts_incoming_data=None,
+        registry_incoming_data=None,
         icpe_data=None,
         data_date_interval=(
             datetime(2023, 1, 1),

@@ -193,7 +193,7 @@ class ComputedInspectionData(models.Model):
     followed_with_pnttd_data = models.JSONField(default=dict)
     gistrid_stats_data = models.JSONField(default=dict)
 
-    all_rndts_data_empty = models.BooleanField(default=True)
+    all_registry_data_empty = models.BooleanField(default=True)
 
     non_dangerous_waste_quantities_graph_data = models.JSONField(default=dict)
     non_dangerous_waste_quantities_graph = models.TextField(blank=True)
@@ -214,11 +214,11 @@ class ComputedInspectionData(models.Model):
     ssd_stats_data = models.JSONField(default=dict)
     ssd_table_data = models.JSONField(default=dict)
 
-    rndts_transporter_statement_stats_graph_data = models.JSONField(default=dict)
-    rndts_transporter_statement_stats_graph = models.TextField(blank=True)
-    rndts_transporter_quantities_graph_data = models.JSONField(default=dict)
-    rndts_transporter_quantities_graph = models.TextField(blank=True)
-    rndts_transporter_stats_data = models.JSONField(default=dict)
+    registry_transporter_statement_stats_graph_data = models.JSONField(default=dict)
+    registry_transporter_statement_stats_graph = models.TextField(blank=True)
+    registry_transporter_quantities_graph_data = models.JSONField(default=dict)
+    registry_transporter_quantities_graph = models.TextField(blank=True)
+    registry_transporter_stats_data = models.JSONField(default=dict)
 
     eco_organisme_bordereaux_graph_data = models.JSONField(default=dict)
     eco_organisme_bordereaux_graph = models.TextField(blank=True)

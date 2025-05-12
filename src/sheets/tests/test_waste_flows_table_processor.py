@@ -150,22 +150,22 @@ def sample_data() -> dict:
     rndts_data = {
         "ndw_incoming": pd.DataFrame(
             {
-                "etablissement_numero_identification": ["12345678901234", "12345678901234", "98765432109876"],
-                "date_reception": [datetime(2023, 1, 10), datetime(2023, 3, 15), datetime(2023, 5, 20)],
-                "quantite": [10, 20, 30],
-                "code_dechet": ["03 01 01", "03 01 02", "03 01 01"],
-                "unite": ["T", "M3", "T"],
-                "numeros_indentification_transporteurs": [["98765432109876"], ["98765432109876"], ["12345678901234"]],
+                "siret": ["12345678901234", "12345678901234", "98765432109876"],
+                "reception_date": [datetime(2023, 1, 10), datetime(2023, 3, 15), datetime(2023, 5, 20)],
+                "weight_value": [10, None, 30],
+                "volume": [None, 20, None],
+                "waste_code": ["03 01 01", "03 01 02", "03 01 01"],
+                "transporters_org_ids": [["98765432109876"], ["98765432109876"], ["12345678901234"]],
             }
         ),
         "ndw_outgoing": pd.DataFrame(
             {
-                "producteur_numero_identification": ["12345678901234", "98765432109876", "12345678901234"],
-                "date_expedition": [datetime(2023, 2, 1), datetime(2023, 4, 20), datetime(2023, 6, 10)],
-                "quantite": [15, 25, 35],
-                "code_dechet": ["04 01 01", "04 01 02", "02 01 03"],
-                "unite": ["M3", "T", "T"],
-                "numeros_indentification_transporteurs": [
+                "siret": ["12345678901234", "98765432109876", "12345678901234"],
+                "dispatch_date": [datetime(2023, 2, 1), datetime(2023, 4, 20), datetime(2023, 6, 10)],
+                "weight_value": [None, 25, 35],
+                "volume": [15, None, None],
+                "waste_code": ["04 01 01", "04 01 02", "02 01 03"],
+                "transporters_org_ids": [
                     ["98765432109876"],
                     ["12345678901234", "98765432109876"],
                     ["98765432109876"],
@@ -174,22 +174,22 @@ def sample_data() -> dict:
         ),
         "excavated_land_incoming": pd.DataFrame(
             {
-                "etablissement_numero_identification": ["12345678901234", "12345678901234", "98765432109876"],
-                "date_reception": [datetime(2023, 2, 10), datetime(2023, 3, 18), datetime(2023, 5, 21)],
-                "quantite": [9.7, 12, 18],
-                "code_dechet": ["03 01 01", "03 01 02", "03 01 03"],
-                "unite": ["T", "M3", "T"],
-                "numeros_indentification_transporteurs": [["98765432109876"], ["98765432109876"], ["12345678901234"]],
+                "siret": ["12345678901234", "12345678901234", "98765432109876"],
+                "reception_date": [datetime(2023, 2, 10), datetime(2023, 3, 18), datetime(2023, 5, 21)],
+                "weight_value": [9.7, None, 18],
+                "volume": [None, 12, None],
+                "waste_code": ["03 01 01", "03 01 02", "03 01 03"],
+                "transporters_org_ids": [["98765432109876"], ["98765432109876"], ["12345678901234"]],
             }
         ),
         "excavated_land_outgoing": pd.DataFrame(
             {
-                "producteur_numero_identification": ["12345678901234", "98765432109876", "12345678901234"],
-                "date_expedition": [datetime(2023, 2, 1), datetime(2023, 2, 20), datetime(2023, 4, 17)],
-                "quantite": [15, 25, 35],
-                "code_dechet": ["05 01 01", "03 01 02", "02 01 03"],
-                "unite": ["M3", "T", "T"],
-                "numeros_indentification_transporteurs": [
+                "siret": ["12345678901234", "98765432109876", "12345678901234"],
+                "dispatch_date": [datetime(2023, 2, 1), datetime(2023, 2, 20), datetime(2023, 4, 17)],
+                "weight_value": [None, 25, 35],
+                "volume": [15, None, None],
+                "waste_code": ["05 01 01", "03 01 02", "02 01 03"],
+                "transporters_org_ids": [
                     ["98765432109876"],
                     ["12345678901234", "98765432109876"],
                     ["98765432109876"],
@@ -295,8 +295,8 @@ def test_preprocess_rndts_data(sample_data: dict, waste_code_data: pd.DataFrame)
                 "05 01 01",
                 "03 01 02",
             ],
-            "unit": ["t", "m³", "t", "t", "m³", "t", "t", "m³", "t", "t", "m³", "t"],
             "quantity_received": [10.0, 20.0, 30.0, 35.0, 15.0, 25.0, 9.7, 12.0, 18.0, 35.0, 15.0, 25.0],
+            "unit": ["t", "m³", "t", "t", "m³", "t", "t", "m³", "t", "t", "m³", "t"],
             "flow_status": [
                 "incoming",
                 "incoming",

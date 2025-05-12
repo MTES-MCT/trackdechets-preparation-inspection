@@ -565,6 +565,8 @@ class WasteFlowsTableProcessor:
             df_registry = self.registry_data.get(key)
 
             if (df_registry is not None) and (len(df_registry) > 0):
+                dfs_to_concat = []
+
                 df_registry = df_registry.rename(columns={"weight_value": "quantity_received"})
 
                 registry_weight_data = (
@@ -574,8 +576,12 @@ class WasteFlowsTableProcessor:
                     ]
                     .groupby(["waste_code"], as_index=False)["quantity_received"]
                     .sum()
+                    .dropna()
                 )
                 registry_weight_data["unit"] = "t"
+                registry_weight_data = registry_weight_data[registry_weight_data["quantity_received"] > 0]
+                if len(registry_weight_data) > 0:
+                    dfs_to_concat.append(registry_weight_data)
 
                 registry_volume_data = (
                     df_registry[
@@ -584,16 +590,24 @@ class WasteFlowsTableProcessor:
                     ]
                     .groupby(["waste_code"], as_index=False)["volume"]
                     .sum()
-                    .rename({"volume": "quantity_received"})
+                    .rename(columns={"volume": "quantity_received"})
+                    .dropna()
                 )
                 registry_volume_data["unit"] = "m³"
+                registry_volume_data = registry_volume_data[registry_volume_data["quantity_received"] > 0]
+                if len(registry_volume_data) > 0:
+                    dfs_to_concat.append(registry_volume_data)
 
-                # We group also by unit to account for some wastes quantities that are measured in m³
-                registry_grouped_data = pd.concat([registry_weight_data, registry_volume_data], ignore_index=True)
-                if len(registry_grouped_data) > 0:
-                    registry_grouped_data["flow_status"] = "incoming" if (date_col == "reception_date") else "outgoing"
-                    df_to_group.append(registry_grouped_data)
+                if len(dfs_to_concat) > 0:
+                    # We group also by unit to account for some wastes quantities that are measured in m³
+                    registry_grouped_data = pd.concat([registry_weight_data, registry_volume_data], ignore_index=True)
+                    if len(registry_grouped_data) > 0:
+                        registry_grouped_data["flow_status"] = (
+                            "incoming" if (date_col == "reception_date") else "outgoing"
+                        )
+                        df_to_group.append(registry_grouped_data)
 
+                dfs_to_concat = []
                 # Transport data
                 registry_transporter_weight_data = (
                     df_registry[
@@ -602,8 +616,14 @@ class WasteFlowsTableProcessor:
                     ]
                     .groupby(["waste_code"], as_index=False)["quantity_received"]
                     .sum()
+                    .dropna()
                 )
                 registry_transporter_weight_data["unit"] = "t"
+                registry_transporter_weight_data = registry_transporter_weight_data[
+                    registry_transporter_weight_data["quantity_received"] > 0
+                ]
+                if len(registry_transporter_weight_data) > 0:
+                    dfs_to_concat.append(registry_transporter_weight_data)
 
                 registry_transporter_volume_data = (
                     df_registry[
@@ -612,19 +632,26 @@ class WasteFlowsTableProcessor:
                     ]
                     .groupby(["waste_code"], as_index=False)["volume"]
                     .sum()
-                    .rename({"volume": "quantity_received"})
+                    .rename(columns={"volume": "quantity_received"})
+                    .dropna()
                 )
                 registry_transporter_volume_data["unit"] = "m³"
+                registry_transporter_volume_data = registry_transporter_volume_data[
+                    registry_transporter_volume_data["quantity_received"] > 0
+                ]
+                if len(registry_transporter_volume_data) > 0:
+                    dfs_to_concat.append(registry_transporter_volume_data)
 
-                registry_grouped_data = pd.concat(
-                    [registry_transporter_weight_data, registry_transporter_volume_data], ignore_index=True
-                )
-
-                if len(registry_grouped_data) > 0:
-                    registry_grouped_data["flow_status"] = (
-                        "transported_incoming" if (date_col == "reception_date") else "transported_outgoing"
+                if len(dfs_to_concat) > 0:
+                    registry_grouped_data = pd.concat(
+                        [registry_transporter_weight_data, registry_transporter_volume_data], ignore_index=True
                     )
-                    df_to_group.append(registry_grouped_data)
+
+                    if len(registry_grouped_data) > 0:
+                        registry_grouped_data["flow_status"] = (
+                            "transported_incoming" if (date_col == "reception_date") else "transported_outgoing"
+                        )
+                        df_to_group.append(registry_grouped_data)
 
         res = None
         if len(df_to_group) > 0:

@@ -578,9 +578,10 @@ class WasteFlowsTableProcessor:
                     .dropna()
                 )
                 registry_weight_data["unit"] = "t"
-                registry_weight_data = registry_weight_data[registry_weight_data["quantity_received"] > 0]
                 if len(registry_weight_data) > 0:
-                    dfs_to_concat.append(registry_weight_data)
+                    registry_weight_data_filtered = registry_weight_data[registry_weight_data["quantity_received"] > 0]
+                    if len(registry_weight_data_filtered) > 0:
+                        dfs_to_concat.append(registry_weight_data)
 
                 registry_volume_data = (
                     df_registry[
@@ -593,9 +594,10 @@ class WasteFlowsTableProcessor:
                     .dropna()
                 )
                 registry_volume_data["unit"] = "m³"
-                registry_volume_data = registry_volume_data[registry_volume_data["quantity_received"] > 0]
                 if len(registry_volume_data) > 0:
-                    dfs_to_concat.append(registry_volume_data)
+                    registry_volume_data_filtered = registry_volume_data[registry_volume_data["quantity_received"] > 0]
+                    if len(registry_volume_data_filtered) > 0:
+                        dfs_to_concat.append(registry_volume_data)
 
                 if len(dfs_to_concat) > 0:
                     # We group also by unit to account for some wastes quantities that are measured in m³
@@ -620,11 +622,13 @@ class WasteFlowsTableProcessor:
                     .dropna()
                 )
                 registry_transporter_weight_data["unit"] = "t"
-                registry_transporter_weight_data = registry_transporter_weight_data[
-                    registry_transporter_weight_data["quantity_received"] > 0
-                ]
+
                 if len(registry_transporter_weight_data) > 0:
-                    dfs_to_concat.append(registry_transporter_weight_data)
+                    registry_transporter_weight_data_filtered = registry_transporter_weight_data[
+                        registry_transporter_weight_data["quantity_received"] > 0
+                    ]
+                    if len(registry_transporter_weight_data_filtered) > 0:
+                        dfs_to_concat.append(registry_transporter_weight_data)
 
                 registry_transporter_volume_data = (
                     df_registry[
@@ -637,11 +641,13 @@ class WasteFlowsTableProcessor:
                     .dropna()
                 )
                 registry_transporter_volume_data["unit"] = "m³"
-                registry_transporter_volume_data = registry_transporter_volume_data[
-                    registry_transporter_volume_data["quantity_received"] > 0
-                ]
+
                 if len(registry_transporter_volume_data) > 0:
-                    dfs_to_concat.append(registry_transporter_volume_data)
+                    registry_transporter_volume_data_filtered = registry_transporter_volume_data[
+                        registry_transporter_volume_data["quantity_received"] > 0
+                    ]
+                    if len(registry_transporter_volume_data_filtered) > 0:
+                        dfs_to_concat.append(registry_transporter_volume_data)
 
                 if len(dfs_to_concat) > 0:
                     registry_grouped_data = pd.concat(

@@ -685,7 +685,6 @@ SELECT
     weight_value,
     volume,
     dispatch_date,
-    waste_code,
     destination_company_org_id,
     destination_company_name
 FROM trusted_zone_trackdechets.registry_ssd

@@ -80,11 +80,10 @@
                     <tbody>
                         {% for row in data.statements_list %}
                             <tr>
-                                <td>{{ row.received_at|default:"N/A" }}</td>
+                                <td>{{ row.reception_date|default:"N/A" }}</td>
                                 <td>{{ row.waste_code|default:"N/A" }}</td>
-                                <td>{{ row.waste_name|default:"N/A" }}</td>
                                 <td>{{ row.operation_code|default:"N/A" }}</td>
-                                <td>{{ row.quantity|default:"N/A"|number|safe }}</td>
+                                <td>{{ row.wieght_value|default:"N/A"|number|safe }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

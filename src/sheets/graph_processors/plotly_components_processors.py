@@ -2673,7 +2673,7 @@ class RegistryTransporterQuantitiesGraphProcessor:
                     df[date_col].between(*self.data_date_interval)
                     & (df["transporters_org_ids"].apply(lambda x: self.company_siret in x))
                 ]
-
+                df = df[df[quantity_col] > 0]
                 if len(df) > 0:
                     df_by_month = df.groupby(pd.Grouper(key=date_col, freq="1M"))[quantity_col].sum()
                     self.transported_quantities_stats[key][quantity_col] = df_by_month

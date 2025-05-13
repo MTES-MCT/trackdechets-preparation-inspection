@@ -567,13 +567,12 @@ class WasteFlowsTableProcessor:
             if (df_registry is not None) and (len(df_registry) > 0):
                 dfs_to_concat = []
 
-                df_registry = df_registry.rename(columns={"weight_value": "quantity_received"})
-
                 registry_weight_data = (
                     df_registry[
                         df_registry[date_col].between(*self.data_date_interval)
                         & (df_registry["siret"] == self.company_siret)
                     ]
+                    .rename(columns={"weight_value": "quantity_received"})
                     .groupby(["waste_code"], as_index=False)["quantity_received"]
                     .sum()
                     .dropna()
@@ -588,9 +587,9 @@ class WasteFlowsTableProcessor:
                         df_registry[date_col].between(*self.data_date_interval)
                         & (df_registry["siret"] == self.company_siret)
                     ]
-                    .groupby(["waste_code"], as_index=False)["volume"]
-                    .sum()
                     .rename(columns={"volume": "quantity_received"})
+                    .groupby(["waste_code"], as_index=False)["quantity_received"]
+                    .sum()
                     .dropna()
                 )
                 registry_volume_data["unit"] = "m³"
@@ -607,13 +606,15 @@ class WasteFlowsTableProcessor:
                         )
                         df_to_group.append(registry_grouped_data)
 
-                dfs_to_concat = []
                 # Transport data
+                dfs_to_concat = []
+
                 registry_transporter_weight_data = (
                     df_registry[
                         df_registry[date_col].between(*self.data_date_interval)
                         & (df_registry["transporters_org_ids"].apply(lambda x: self.company_siret in x))
                     ]
+                    .rename(columns={"weight_value": "quantity_received"})
                     .groupby(["waste_code"], as_index=False)["quantity_received"]
                     .sum()
                     .dropna()
@@ -630,9 +631,9 @@ class WasteFlowsTableProcessor:
                         df_registry[date_col].between(*self.data_date_interval)
                         & (df_registry["transporters_org_ids"].apply(lambda x: self.company_siret in x))
                     ]
-                    .groupby(["waste_code"], as_index=False)["volume"]
-                    .sum()
                     .rename(columns={"volume": "quantity_received"})
+                    .groupby(["waste_code"], as_index=False)["quantity_received"]
+                    .sum()
                     .dropna()
                 )
                 registry_transporter_volume_data["unit"] = "m³"

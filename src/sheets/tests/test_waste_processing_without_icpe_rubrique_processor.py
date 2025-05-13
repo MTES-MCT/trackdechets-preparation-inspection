@@ -47,13 +47,13 @@ def sample_data():
     # Sample RNDTS incoming data
     rndts_incoming_data = pd.DataFrame(
         {
-            "etablissement_numero_identification": ["12345678900000", "12345678900000"],
-            "date_reception": [
+            "siret": ["12345678900000", "12345678900000"],
+            "reception_date": [
                 datetime(2023, 1, 1),
                 datetime(2023, 2, 2),
             ],
-            "code_traitement": ["D5", "R1"],
-            "quantite": [30, 20],
+            "operation_code": ["D5", "R1"],
+            "weight_value": [30, 20],
         }
     )
 
@@ -199,9 +199,9 @@ def test_preprocess_non_dangerous_rubriques(sample_data):
             "statements_list": pd.DataFrame(
                 {
                     "siret": ["12345678900000"],
-                    "date_reception": [Timestamp("2023-01-01 00:00:00")],
-                    "code_traitement": ["D5"],
-                    "quantite": [30],
+                    "reception_date": [Timestamp("2023-01-01 00:00:00")],
+                    "operation_code": ["D5"],
+                    "weight_value": [30],
                 }
             ),
             "stats": {"total_statements": "1", "total_quantity": "30"},
@@ -214,9 +214,9 @@ def test_preprocess_non_dangerous_rubriques(sample_data):
             "statements_list": pd.DataFrame(
                 {
                     "siret": ["12345678900000"],
-                    "date_reception": [Timestamp("2023-02-02 00:00:00")],
-                    "code_traitement": ["R1"],
-                    "quantite": [20],
+                    "reception_date": [Timestamp("2023-02-02 00:00:00")],
+                    "operation_code": ["R1"],
+                    "weight_value": [20],
                 }
             ),
             "stats": {"total_statements": "1", "total_quantity": "20"},

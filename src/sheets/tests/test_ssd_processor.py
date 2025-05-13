@@ -12,7 +12,7 @@ from ..graph_processors.html_components_processors import (
 @pytest.fixture
 def sample_ssd_data():
     data = {
-        "etablissement_numero_identification": [
+        "siret": [
             "12345678901234",
             "12345678901234",
             "12345678901234",
@@ -24,7 +24,7 @@ def sample_ssd_data():
             "12345678901234",
             "56789012345678",
         ],
-        "date_expedition": [
+        "dispatch_date": [
             datetime(2023, 1, 10),
             datetime(2023, 2, 5),
             datetime(2023, 3, 15),
@@ -36,8 +36,9 @@ def sample_ssd_data():
             datetime(2023, 7, 1),
             datetime(2023, 2, 15),
         ],
-        "quantite": [10, 20.5, 15, 5, 25, 35, 50, 45, 5, 30.2],
-        "code_dechet": [
+        "weight_value": [10, 20.5, None, 5, None, 35, 50, 45, None, 30.2],
+        "volume": [None, None, 15, None, 25, None, None, None, 5, None],
+        "waste_code": [
             "13 01 10*",
             "13 01 10*",
             "16 01 14*",
@@ -49,8 +50,7 @@ def sample_ssd_data():
             "13 02 05*",
             "13 02 05*",
         ],
-        "unite": ["T", "T", "M3", "T", "M3", "T", "T", "T", "M3", "T"],
-        "denomination_usuelle": [
+        "waste_description": [
             "HUILE CLAIRE USAGEE",
             "HUILE CLAIRE USAGEE",
             "LIQUIDE DE REFROIDISSEMENT USAGE",
@@ -61,18 +61,6 @@ def sample_ssd_data():
             "HUILE CLAIRE USAGEE",
             "Huiles moteur, de boite de vitesses et de lubrification non chlorees a base minerale",
             "Huiles moteur, de boite de vitesses et de lubrification non chlorees a base minerale",
-        ],
-        "nature": [
-            "Huile de base OSI 100",
-            "Huile de base OSI 100",
-            "Asphalte OSI 935",
-            "Huile de base OSI 100",
-            "Asphalte OSI 935",
-            "Huile de base OSI 100",
-            "Huile de base OSI 100",
-            "Huile de base OSI 100",
-            "Asphalte OSI 935",
-            "Huile de base OSI 100",
         ],
     }
 
@@ -94,16 +82,17 @@ def test_preprocess_data(sample_ssd_data):
 
     expected_output = pd.DataFrame(
         {
-            "code_dechet": ["13 01 10*", "13 07 03*", "16 01 14*", "16 01 14*"],
-            "nature": ["Huile de base OSI 100", "Asphalte OSI 935", "Asphalte OSI 935", "Huile de base OSI 100"],
-            "unite": ["t", "m3", "m3", "t"],
-            "quantite": [75.5, 25.0, 15.0, 5.0],
-            "denomination_usuelle": [
+            "waste_code": ["13 01 10*", "13 07 03*", "16 01 14*", "13 01 10*", "13 07 03*", "16 01 14*"],
+            "quantity": [75.5, 0.0, 5.0, 0.0, 25.0, 15.0],
+            "waste_description": [
                 "HUILE CLAIRE USAGEE",
                 "LIQUIDE PETROLIER",
                 "LIQUIDE DE REFROIDISSEMENT USAGE",
+                "HUILE CLAIRE USAGEE",
+                "LIQUIDE PETROLIER",
                 "LIQUIDE DE REFROIDISSEMENT USAGE",
             ],
+            "unit": ["t", "t", "t", "m³", "m³", "m³"],
         }
     )
     # Check aggregated quantities and sorting
@@ -145,47 +134,24 @@ def test_correct_serialization(sample_ssd_data):
 
     assert isinstance(serialized_data, list), "Serialized data should be a list of dictionaries."
     expected_output = [
-        {
-            "waste_code": "13 01 10*",
-            "waste_name": "HUILE CLAIRE USAGEE",
-            "nature": "Huile de base OSI 100",
-            "quantity": "75.5",
-            "unit": "t",
-        },
-        {
-            "waste_code": "13 07 03*",
-            "waste_name": "LIQUIDE PETROLIER",
-            "nature": "Asphalte OSI 935",
-            "quantity": "25",
-            "unit": "m3",
-        },
-        {
-            "waste_code": "16 01 14*",
-            "waste_name": "LIQUIDE DE REFROIDISSEMENT USAGE",
-            "nature": "Asphalte OSI 935",
-            "quantity": "15",
-            "unit": "m3",
-        },
-        {
-            "waste_code": "16 01 14*",
-            "waste_name": "LIQUIDE DE REFROIDISSEMENT USAGE",
-            "nature": "Huile de base OSI 100",
-            "quantity": "5",
-            "unit": "t",
-        },
+        {"waste_code": "13 01 10*", "waste_name": "HUILE CLAIRE USAGEE", "quantity": "75.5", "unit": "t"},
+        {"waste_code": "13 07 03*", "waste_name": "LIQUIDE PETROLIER", "quantity": "0", "unit": "t"},
+        {"waste_code": "16 01 14*", "waste_name": "LIQUIDE DE REFROIDISSEMENT USAGE", "quantity": "5", "unit": "t"},
+        {"waste_code": "13 01 10*", "waste_name": "HUILE CLAIRE USAGEE", "quantity": "0", "unit": "m³"},
+        {"waste_code": "13 07 03*", "waste_name": "LIQUIDE PETROLIER", "quantity": "25", "unit": "m³"},
+        {"waste_code": "16 01 14*", "waste_name": "LIQUIDE DE REFROIDISSEMENT USAGE", "quantity": "15", "unit": "m³"},
     ]
     assert serialized_data == expected_output
 
 
 def test_incorrect_data_format():
     data = {
-        "etablissement_numero_identification": ["12345678901234"],
-        "date_expedition": ["Not a datetime"],  # Incorrect date format
-        "quantite": [10],
-        "code_dechet": ["01 01 01"],
-        "unite": ["T"],
-        "denomination_usuelle": ["Waste Type A"],
-        "nature": ["solid"],
+        "siret": ["12345678901234"],
+        "dispatch_date": ["Not a datetime"],  # Incorrect date format
+        "weight_value": [10],
+        "volume": [None],
+        "waste_code": ["01 01 01"],
+        "waste_description": ["Waste Type A"],
     }
 
     ssd_data_df = pd.DataFrame(data)
@@ -202,10 +168,10 @@ def test_incorrect_data_format():
 
 def test_missing_columns():
     data = {
-        "etablissement_numero_identification": ["12345678901234"],
-        "quantite": [10],
-        "code_dechet": ["01 01 01"],
-        "unite": ["T"],
+        "siret": ["12345678901234"],
+        "weight_value": [10],
+        "volume": [None],
+        "waste_code": ["01 01 01"],
     }
 
     ssd_data_df = pd.DataFrame(data)

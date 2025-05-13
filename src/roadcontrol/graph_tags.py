@@ -101,7 +101,7 @@ def render_bs_without_icpe_authorization_tables(computed, graph_context="web"):
     data = computed.bs_processed_without_icpe_authorization
     return {
         "dangerous_data": data.get("dangerous", None),  # Trackdéchets data
-        "non_dangerous_data": data.get("non_dangerous", None),  # Non dangerous waste RNDTS data
+        "non_dangerous_data": data.get("non_dangerous", None),  # Non dangerous waste registries data
         "graph_context": graph_context,
     }
 
@@ -161,10 +161,10 @@ def render_gistrid_stats_table(computed, graph_context="web"):
     }
 
 
-@register.inclusion_tag("sheets/components/rndts_stats.html")
-def render_rndts_stats(rndts_data, graph_context="web"):
+@register.inclusion_tag("sheets/components/registry_stats.html")
+def render_registry_stats(registry_data, graph_context="web"):
     return_dict = {
-        "rndts_stats_data": rndts_data,
+        "registry_stats_data": registry_data,
         "graph_context": graph_context,
     }
 

@@ -10,6 +10,8 @@ from django.urls import reverse
 
 from maps.factories import CartoCompanyFactory
 
+from ..constants import BSDA, BSDASRI, BSDD, BSDND, BSFF, BSVHU, DND, SSD, TEXS, TEXS_DD
+
 pytestmark = pytest.mark.django_db
 
 
@@ -82,6 +84,86 @@ def test_map_api_companies(verified_api):
     companies = data["companies"]
     assert len(companies) == 1
     assert companies[0]["siret"] == company.siret
+
+
+def test_map_api_companies_filter_by_operation_codes(verified_api):
+    c1 = CartoCompanyFactory(coords=Point(x=55.50, y=-21.22), bsda_destination=True, processing_operations_bsda=["R1"])
+    CartoCompanyFactory(coords=Point(x=55.50, y=-21.22), bsda_destination=True, processing_operations_bsda=["R2"])
+    c2 = CartoCompanyFactory(
+        coords=Point(x=55.50, y=-21.22),
+        bsda_destination=True,
+        bsdasri_destination=True,
+        processing_operations_bsdasri=["R1"],
+    )
+    CartoCompanyFactory(coords=Point(x=55.50, y=-21.22))
+    url = reverse("map_api_objects")
+    # filter on bsds_roles = bsda_destination+ operation code
+    res = verified_api.get(f"{url}?bounds=55.49,-21.23,55.5745,-21.191&bsds_roles=bsda_destination&operation_codes=R1")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["clusters"] == []
+    assert data["total_count"] == 1
+    companies = data["companies"]
+    assert len(companies) == 1
+    assert companies[0]["siret"] == c1.siret
+
+    # filter on bsds_roles = bsdasri_destination+ operation code
+    res = verified_api.get(
+        f"{url}?bounds=55.49,-21.23,55.5745,-21.191&bsds_roles=bsdasri_destination&operation_codes=R1"
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["clusters"] == []
+    assert data["total_count"] == 1
+    companies = data["companies"]
+    assert len(companies) == 1
+    assert companies[0]["siret"] == c2.siret
+
+
+@pytest.mark.parametrize(
+    "bsd_type",
+    [
+        BSDD,
+        BSDND,
+        BSDA,
+        BSDASRI,
+        BSFF,
+        BSVHU,
+        TEXS,
+        TEXS_DD,
+        DND,
+        SSD,
+    ],
+)
+def test_map_api_companies_filter_bsd_type(bsd_type, verified_api):
+    CartoCompanyFactory(coords=Point(x=55.50, y=-21.22))
+    url = reverse("map_api_objects")
+
+    res = verified_api.get(f"{url}?bounds=55.49,-21.23,55.5745,-21.191&bsds_roles={bsd_type}")
+    assert res.status_code == 200
+
+
+@pytest.mark.parametrize(
+    "bsd_type",
+    [
+        BSDD,
+        BSDND,
+        BSDA,
+        BSDASRI,
+        BSFF,
+        BSVHU,
+        TEXS,
+        TEXS_DD,
+        DND,
+        SSD,
+    ],
+)
+def test_map_api_companies_filter_bsd_role(bsd_type, verified_api):
+    CartoCompanyFactory(coords=Point(x=55.50, y=-21.22))
+    url = reverse("map_api_objects")
+
+    res = verified_api.get(f"{url}?bounds=55.49,-21.23,55.5745,-21.191&bsds_roles={bsd_type}_destination")
+    assert res.status_code == 200
 
 
 @pytest.fixture

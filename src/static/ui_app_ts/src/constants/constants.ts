@@ -44,6 +44,18 @@ export const TEXS = "TEXS";
 export const TEXS_DD = "TEXS_DD";
 export const SSD = "SSD";
 
+export const VERBOSE_BSD_TYPES = {
+  [BSDD]: "Bsdd",
+  [BSDND]: "Bsdnd",
+  [BSDA]: "Bsda",
+  [BSDASRI]: "Bsdasri",
+  [BSFF]: "Bsff",
+  [BSVHU]: "Bsvhu",
+  [TEXS]: "T. Exc.",
+  [TEXS_DD]: "T. Exc. DD",
+  [SSD]: "Ssd",
+};
+
 export const ROLE_EMITTER = "emitter";
 export const ROLE_TRANSPORTER = "transporter";
 export const ROLE_WORKER = "worker";

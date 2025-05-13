@@ -5,21 +5,41 @@ from django.contrib.gis.geos import Point, Polygon
 from django.db.models import Q
 from django_filters import rest_framework as filters
 
-from .constants import ROLES_TYPES
+from .constants import BASE_ROLES_TYPES, ROLES_CONFIG, ROLES_TYPES
 from .models import CartoCompany
 
 
 def prepare_role_specific_fields():
+    """
+    Create a list containing all possible combinations of waste types and roles for filtering purposes
+    eg. 'bsdd_emitter', 'bsdd_transporter', 'bsdd_destination' etc.
+    """
     role_specific_fields = []
     for waste_type, roles in ROLES_TYPES.items():
         for role in roles:
             field_name = f"{waste_type}_{role}"
             role_specific_fields.append(field_name)
-        role_specific_fields.append(waste_type)
+
     return role_specific_fields
 
 
 ROLE_SPECIFIC_FIELDS = prepare_role_specific_fields()
+
+BSD_TYPES = list(ROLES_TYPES.keys())
+# not all bsd types have a matching processing_operations_* field
+BSD_TYPES_FOR_OPERATION_CODE = [bsd_type for bsd_type, config in ROLES_CONFIG.items() if config["code_operation"]]
+
+
+def remove_after_last_underscore(s):
+    """Handle strings like bsdasri_emitter and text_dd_transporter"""
+    parts = s.rsplit("_", 1)
+    return parts[0]
+
+
+def map_to_operation_field(val):
+    if val == "texs_dd":  # because our data scientist is too lazy to handle separately `texs` and `texs_dd`
+        return "texs"
+    return val
 
 
 class CartoCompanyFilter(filters.FilterSet):
@@ -28,7 +48,6 @@ class CartoCompanyFilter(filters.FilterSet):
     profils_collecteur = filters.CharFilter(method="filter_profils_collecteur")
     profils_installation = filters.CharFilter(method="filter_profils_installation")
     profils_installation_vhu = filters.CharFilter(method="filter_profils_installation_vhu")
-    bsds = filters.CharFilter(method="filter_bsds")
     bsds_roles = filters.CharFilter(method="filter_bsds_roles")
     operation_codes = filters.CharFilter(method="filter_operation_codes")
     waste_codes = filters.CharFilter(method="filter_waste_codes")
@@ -53,19 +72,23 @@ class CartoCompanyFilter(filters.FilterSet):
         return queryset.filter(waste_codes_bordereaux__overlap=value.split(","))
 
     def filter_operation_codes(self, queryset, name, value):
+        # get a list of operation codes eg. ["R1", "R6"]
         values = value.split(",")
-        fields = ["bsdd", "bsda", "bsff", "bsdasri", "bsvhu"]
 
-        queryterms = [Q(**{f"processing_operations_{field}__overlap": values}) for field in fields]
-        if not queryterms:
+        if not values:
             return queryset
-        params = reduce(ior, queryterms)
+        # extract bsd types
+        bsds_roles_values = self.data.get("bsds_roles", "").split(",")
+        bsd_types = list(set([remove_after_last_underscore(role) for role in bsds_roles_values]))
 
-        return queryset.filter(params)
+        # ensure bsd_types exist and are allowed here
+        bsd_types = [map_to_operation_field(v) for v in bsd_types if v in BSD_TYPES_FOR_OPERATION_CODE]
+        # Bsd types not selected:  consider all bsds types
 
-    def filter_bsds(self, queryset, name, value):
-        allowed_params = ["bsdd", "bsda", "bsff", "bsdasri", "bsvhu"]
-        queryterms = [Q(**{bsd: True}) for bsd in value.split(",") if bsd in allowed_params]
+        if not bsd_types:
+            bsd_types = BSD_TYPES_FOR_OPERATION_CODE
+        # now query each relevant field eg. processing_operations_bsdasri__overlap: ["R1", "R6"]
+        queryterms = [Q(**{f"processing_operations_{field}__overlap": values}) for field in bsd_types]
         if not queryterms:
             return queryset
         params = reduce(ior, queryterms)
@@ -80,7 +103,7 @@ class CartoCompanyFilter(filters.FilterSet):
         diagonal = p1.distance(p2)
         if diagonal >= 2:  # explain
             return queryset
-        #
+
         bbox_polygon = Polygon.from_bbox(bbox)
 
         return queryset.filter(coords__within=bbox_polygon)
@@ -92,8 +115,16 @@ class CartoCompanyFilter(filters.FilterSet):
         queryterms = []
 
         for requested_role in requested_roles:
+            # handle bsdd + role when both are provided
             if requested_role in ROLE_SPECIFIC_FIELDS:
                 queryterms.append(Q(**{requested_role: True}))
+            # handle role only field to query all specific fields: bsda_emitter + bsdasri_emitter etc…
+            if requested_role in BASE_ROLES_TYPES:
+                queryterms += [Q(**{f"{bsd_type}_{requested_role}": True}) for bsd_type in BSD_TYPES]
+            # handle bsd type only field: bsda, bsvhu etc…
+            if requested_role in BSD_TYPES_FOR_OPERATION_CODE:
+                queryterms.append(Q(**{requested_role: True}))
+
         if not queryterms:
             return queryset
 
@@ -113,7 +144,7 @@ class CartoCompanyFilter(filters.FilterSet):
             "texs_dd",
             "dnd",
             "texs",
-            "bsds",
+            # "bsds",
             "bsds_roles",
             "profils",
             # BSDD roles

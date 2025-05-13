@@ -58,6 +58,7 @@ class ApiObjects(ListAPIView):
 
         # Apply all filters except bounds
         filterset = self.filterset_class(filter_params, CartoCompany.objects.exclude(coords__isnull=True))
+
         return filterset.qs.count()
 
     def get_queryset(self):
@@ -67,7 +68,7 @@ class ApiObjects(ListAPIView):
             return self.get_regions()
         if self.diagonal >= DIAGONAL_DEPARTMENTS:
             return self.get_departments()
-        return CartoCompany.objects.exclude(coords__isnull=True)  # .filter(date_inscription__year=1970)
+        return CartoCompany.objects.exclude(coords__isnull=True)
 
     def get_regions(self):
         return (
@@ -321,7 +322,6 @@ class ICPEGraph(APIView):
         model = layer_config["cls"]
         specific_filter = layer_config["specific_filter"]
         result = model.objects.filter(year=year, rubrique=rubrique, **specific_filter).values("graph").first()
-        print(result)
         if not result:
             raise Http404
 

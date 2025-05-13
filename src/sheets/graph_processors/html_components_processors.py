@@ -581,7 +581,7 @@ class WasteFlowsTableProcessor:
                 if len(registry_weight_data) > 0:
                     registry_weight_data_filtered = registry_weight_data[registry_weight_data["quantity_received"] > 0]
                     if len(registry_weight_data_filtered) > 0:
-                        dfs_to_concat.append(registry_weight_data)
+                        dfs_to_concat.append(registry_weight_data_filtered)
 
                 registry_volume_data = (
                     df_registry[
@@ -597,11 +597,11 @@ class WasteFlowsTableProcessor:
                 if len(registry_volume_data) > 0:
                     registry_volume_data_filtered = registry_volume_data[registry_volume_data["quantity_received"] > 0]
                     if len(registry_volume_data_filtered) > 0:
-                        dfs_to_concat.append(registry_volume_data)
+                        dfs_to_concat.append(registry_volume_data_filtered)
 
                 if len(dfs_to_concat) > 0:
                     # We group also by unit to account for some wastes quantities that are measured in m³
-                    registry_grouped_data = pd.concat([registry_weight_data, registry_volume_data], ignore_index=True)
+                    registry_grouped_data = pd.concat(dfs_to_concat, ignore_index=True)
                     if len(registry_grouped_data) > 0:
                         registry_grouped_data["flow_status"] = (
                             "incoming" if (date_col == "reception_date") else "outgoing"
@@ -628,7 +628,7 @@ class WasteFlowsTableProcessor:
                         registry_transporter_weight_data["quantity_received"] > 0
                     ]
                     if len(registry_transporter_weight_data_filtered) > 0:
-                        dfs_to_concat.append(registry_transporter_weight_data)
+                        dfs_to_concat.append(registry_transporter_weight_data_filtered)
 
                 registry_transporter_volume_data = (
                     df_registry[
@@ -641,18 +641,15 @@ class WasteFlowsTableProcessor:
                     .dropna()
                 )
                 registry_transporter_volume_data["unit"] = "m³"
-
                 if len(registry_transporter_volume_data) > 0:
                     registry_transporter_volume_data_filtered = registry_transporter_volume_data[
                         registry_transporter_volume_data["quantity_received"] > 0
                     ]
                     if len(registry_transporter_volume_data_filtered) > 0:
-                        dfs_to_concat.append(registry_transporter_volume_data)
+                        dfs_to_concat.append(registry_transporter_volume_data_filtered)
 
                 if len(dfs_to_concat) > 0:
-                    registry_grouped_data = pd.concat(
-                        [registry_transporter_weight_data, registry_transporter_volume_data], ignore_index=True
-                    )
+                    registry_grouped_data = pd.concat(dfs_to_concat, ignore_index=True)
 
                     if len(registry_grouped_data) > 0:
                         registry_grouped_data["flow_status"] = (

@@ -1,12 +1,12 @@
 from django.views.generic import TemplateView
 
-from accounts.constants import PERMS_MAP_ICPE, UserCategoryChoice
+from accounts.constants import PERMS_MAP, PERMS_MAP_ICPE
 from common.mixins import FullyLoggedMixin
 
 
 class MapView(FullyLoggedMixin, TemplateView):
     template_name = "maps/map.html"
-    allowed_user_categories = [UserCategoryChoice.STAFF_TD]
+    allowed_user_categories = PERMS_MAP
 
 
 class ExutMapView(FullyLoggedMixin, TemplateView):

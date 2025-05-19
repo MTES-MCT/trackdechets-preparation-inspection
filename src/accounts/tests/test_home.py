@@ -22,7 +22,7 @@ def test_home_administration_centrale_menu(verified_adm_centrale):
     assert "Préparer une fiche" in res.content.decode()
     assert "Exports (Registre V2)" in res.content.decode()
     assert "Bordereau" in res.content.decode()
-    assert "Cartographie" not in res.content.decode()
+    assert "Cartographie" in res.content.decode()
     assert "Admin équipe" not in res.content.decode()
     assert "Observatoires" in res.content.decode()
 
@@ -35,7 +35,7 @@ def test_home_observatoire_menu(verified_observatoire):
     assert "Préparer une fiche" not in res.content.decode()
     assert "Exports (Registre V2)" not in res.content.decode()
     assert "Bordereau" not in res.content.decode()
-    assert "Cartographie" not in res.content.decode()
+    assert "Cartographie" in res.content.decode()
     assert "Admin équipe" not in res.content.decode()
     assert "Observatoires" in res.content.decode()
 
@@ -60,7 +60,7 @@ def test_home_menu(get_profile):
     assert "Préparer une fiche" in res.content.decode()
     assert "Exports (Registre V2)" in res.content.decode()
     assert "Bordereau" in res.content.decode()
-    assert "Cartographie" not in res.content.decode()
+    assert "Cartographie" in res.content.decode()
     assert "Admin équipe" not in res.content.decode()
     assert "Observatoires" not in res.content.decode()
 
@@ -81,7 +81,7 @@ def test_private_home_menu(get_client):
 
     assert "Admin équipe" not in res.content.decode()
     assert "Observatoires" not in res.content.decode()
-    assert "Cartographie" not in res.content.decode()
+    assert "Cartographie" in res.content.decode()
 
     assert "Guide" in res.content.decode()
 
@@ -106,7 +106,7 @@ def test_private_home_menu_for_administration_central(get_client):
     assert "Admin équipe" not in res.content.decode()
     assert "Observatoires" in res.content.decode()
     assert "Contrôle routier" in res.content.decode()
-    assert "Cartographie" not in res.content.decode()
+    assert "Cartographie" in res.content.decode()
     assert "Bordereau" in res.content.decode()
     assert "Guide" in res.content.decode()
 
@@ -131,7 +131,7 @@ def test_private_home_menu_for_icpe(get_client):
     assert "Admin équipe" not in res.content.decode()
     assert "Observatoires" not in res.content.decode()
     assert "Contrôle routier" in res.content.decode()
-    assert "Cartographie" not in res.content.decode()
+    assert "Cartographie" in res.content.decode()
     assert "Bordereau" in res.content.decode()
     assert "Guide" in res.content.decode()
 
@@ -156,7 +156,7 @@ def test_private_home_menu_for_ctt(get_client):
     assert "Admin équipe" not in res.content.decode()
     assert "Observatoires" not in res.content.decode()
     assert "Contrôle routier" in res.content.decode()
-    assert "Cartographie" not in res.content.decode()
+    assert "Cartographie" in res.content.decode()
     assert "Bordereau" in res.content.decode()
     assert "Guide" in res.content.decode()
 
@@ -180,7 +180,7 @@ def test_private_home_menu_for_ctt(get_client):
         assert "Admin équipe" not in res.content.decode()
         assert "Observatoires" not in res.content.decode()
         assert "Contrôle routier" not in res.content.decode()
-        assert "Cartographie" not in res.content.decode()
+        assert "Cartographie" in res.content.decode()
         assert "Bordereau" in res.content.decode()
         assert "Guide" in res.content.decode()
 
@@ -204,7 +204,7 @@ def test_private_home_menu_for_ctt(get_client):
         assert "Admin équipe" not in res.content.decode()
         assert "Observatoires" not in res.content.decode()
         assert "Contrôle routier" not in res.content.decode()
-        assert "Cartographie" not in res.content.decode()
+        assert "Cartographie" in res.content.decode()
         assert "Bordereau" in res.content.decode()
         assert "Guide" in res.content.decode()
 
@@ -228,7 +228,7 @@ def test_private_home_menu_for_ctt(get_client):
         assert "Admin équipe" not in res.content.decode()
         assert "Observatoires" not in res.content.decode()
         assert "Contrôle routier" not in res.content.decode()
-        assert "Cartographie" not in res.content.decode()
+        assert "Cartographie" in res.content.decode()
         assert "Bordereau" in res.content.decode()
         assert "Guide" in res.content.decode()
 
@@ -255,7 +255,7 @@ def test_private_home_menu_for_observatoire(get_client):
     assert "Admin équipe" not in res.content.decode()
     assert "Observatoires" in res.content.decode()
     assert "Contrôle routier" not in res.content.decode()
-    assert "Cartographie" not in res.content.decode()
+    assert "Cartographie" in res.content.decode()
     assert "Bordereau" not in res.content.decode()
     assert "Guide" in res.content.decode()
 

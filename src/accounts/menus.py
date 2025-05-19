@@ -4,6 +4,7 @@ from simple_menu import Menu, MenuItem
 from accounts.constants import (
     PERMS_BSD,
     PERMS_DATA_EXPORT,
+    PERMS_MAP,
     PERMS_MAP_ICPE,
     PERMS_ROAD_CONTROL,
     PERMS_SHEET_AND_REGISTRY,
@@ -49,10 +50,7 @@ Menu.add_item(
 
 Menu.add_item(
     "main",
-    StaffMenuItem(
-        "Cartographie",
-        reverse("map_view"),
-    ),
+    PermsItem("Cartographie", reverse("map_view"), allowed_categories=PERMS_MAP),
 )
 Menu.add_item(
     "main",

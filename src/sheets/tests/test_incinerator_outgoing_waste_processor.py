@@ -104,22 +104,22 @@ def sample_data() -> dict:
         ),
     }
 
-    rndts_data_df = {
+    registry_data_df = {
         "ndw_outgoing": pd.DataFrame(
             {
-                "producteur_numero_identification": ["12345678901234", "98765432109876", "12345678901234"],
-                "destinataire_numero_identification": ["98765432109876", "98765432109876", "56789012345678"],
-                "date_expedition": [datetime(2023, 2, 1), datetime(2023, 4, 20), datetime(2023, 6, 10)],
-                "quantite": [15, 25, 35],
-                "code_dechet": ["04 01 01", "04 01 02", "02 01 03"],
-                "denomination_usuelle": ["Déchet AA", "Déchet BB", None],
-                "unite": ["M3", "T", "T"],
-                "numeros_indentification_transporteurs": [
+                "siret": ["12345678901234", "98765432109876", "12345678901234"],
+                "destination_company_org_id": ["98765432109876", "98765432109876", "56789012345678"],
+                "dispatch_date": [datetime(2023, 2, 1), datetime(2023, 4, 20), datetime(2023, 6, 10)],
+                "weight_value": [None, 25, 35],
+                "volume": [15, None, None],
+                "waste_code": ["04 01 01", "04 01 02", "02 01 03"],
+                "waste_description": ["Déchet AA", "Déchet BB", None],
+                "transporters_org_ids": [
                     ["98765432109876"],
                     ["12345678901234", "98765432109876"],
                     ["98765432109876"],
                 ],
-                "code_traitement": ["R1", "R2", "D5"],
+                "operation_code": ["R1", "R2", "D5"],
             }
         )
     }
@@ -129,7 +129,7 @@ def sample_data() -> dict:
     return {
         "bs_data": bs_data_dfs,
         "transporters_data": transporters_data_df,
-        "rndts_data": rndts_data_df,
+        "registry_data": registry_data_df,
         "icpe_data": icpe_data_df,
     }
 
@@ -147,7 +147,7 @@ def test_preprocess_bs_data(sample_data, sample_data_date_interval):
         bs_data_dfs=sample_data["bs_data"],
         transporters_data_df=sample_data["transporters_data"],
         icpe_data=sample_data["icpe_data"],
-        rndts_outgoing_data=None,  # Testing only BS data
+        registry_outgoing_data=None,  # Testing only BS data
         data_date_interval=sample_data_date_interval,
     )
     processor._preprocess_bs_data()
@@ -198,17 +198,17 @@ def test_preprocess_bs_data(sample_data, sample_data_date_interval):
     assert preprocessed_data.equals(expected_data)
 
 
-def test_preprocess_rndts_statements_data(sample_data, sample_data_date_interval):
-    """Test preprocessing of RNDTS data for non-dangerous waste"""
+def test_preprocess_registry_statements_data(sample_data, sample_data_date_interval):
+    """Test preprocessing of registry data for non-dangerous waste"""
     processor = IncineratorOutgoingWasteProcessor(
         company_siret="12345678901234",
         bs_data_dfs={},
         transporters_data_df={},
         icpe_data=sample_data["icpe_data"],
-        rndts_outgoing_data=sample_data["rndts_data"]["ndw_outgoing"],
+        registry_outgoing_data=sample_data["registry_data"]["ndw_outgoing"],
         data_date_interval=sample_data_date_interval,
     )
-    processor._preprocess_rndts_statements_data()
+    processor._preprocess_registry_statements_data()
 
     preprocessed_data = processor.preprocessed_data["non_dangerous"]
     assert len(preprocessed_data) == 2
@@ -216,20 +216,20 @@ def test_preprocess_rndts_statements_data(sample_data, sample_data_date_interval
     expected_data = pd.DataFrame(
         [
             {
-                "code_dechet": "02 01 03",
-                "destinataire_numero_identification": "56789012345678",
-                "code_traitement": "D5",
-                "unite": "T",
-                "quantite": 35,
-                "denomination_usuelle": "",
+                "waste_code": "02 01 03",
+                "destination_company_org_id": "56789012345678",
+                "operation_code": "D5",
+                "quantity": 35.0,
+                "waste_name": "",
+                "unit": "t",
             },
             {
-                "code_dechet": "04 01 01",
-                "destinataire_numero_identification": "98765432109876",
-                "code_traitement": "R1",
-                "unite": "M3",
-                "quantite": 15,
-                "denomination_usuelle": "Déchet AA",
+                "waste_code": "04 01 01",
+                "destination_company_org_id": "98765432109876",
+                "operation_code": "R1",
+                "quantity": 15.0,
+                "waste_name": "Déchet AA",
+                "unit": "m³",
             },
         ]
     )
@@ -244,7 +244,7 @@ def test_is_incinerator(sample_data):
         bs_data_dfs={},
         transporters_data_df={},
         icpe_data=sample_data["icpe_data"],
-        rndts_outgoing_data=None,
+        registry_outgoing_data=None,
         data_date_interval=(datetime(2024, 1, 1), datetime(2024, 12, 31)),
     )
     assert processor.is_incinerator(dangerous_waste=True), "Incinerator detection failed for dangerous waste"
@@ -258,7 +258,7 @@ def test_build_with_no_data(sample_data):
         bs_data_dfs={},
         transporters_data_df={},
         icpe_data=sample_data["icpe_data"],
-        rndts_outgoing_data=None,
+        registry_outgoing_data=None,
         data_date_interval=(datetime(2024, 1, 1), datetime(2024, 12, 31)),
     )
     result = processor.build()
@@ -270,13 +270,13 @@ def test_build_with_data(
     sample_data,
     sample_data_date_interval,
 ):
-    """Test build method with both BS and RNDTS data"""
+    """Test build method with both BS and registry data"""
     processor = IncineratorOutgoingWasteProcessor(
         company_siret="12345678901234",
         bs_data_dfs=sample_data["bs_data"],
         transporters_data_df=sample_data["transporters_data"],
         icpe_data=sample_data["icpe_data"],
-        rndts_outgoing_data=sample_data["rndts_data"]["ndw_outgoing"],  # Testing only BS data
+        registry_outgoing_data=sample_data["registry_data"]["ndw_outgoing"],  # Testing only BS data
         data_date_interval=sample_data_date_interval,
     )
     result = processor.build()

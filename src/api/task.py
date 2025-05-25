@@ -10,13 +10,13 @@ from sheets.rendering_helpers import prepare_sheet_fn, render_pdf_fn, render_pdf
 logger = logging.getLogger(__name__)
 
 
-@app.task(queue=settings.API_QUEUE)
+@app.task(queue=settings.WEB_QUEUE)
 def render_indiv_graph_api(computed_pk, name):
     render_pdf_graph_fn(computed_pk, name)
     return True
 
 
-@app.task(queue=settings.API_QUEUE)
+@app.task(queue=settings.WEB_QUEUE)
 def prepare_sheet_api(computed_pk):
     prepare_sheet_fn(computed_pk)
 
@@ -24,7 +24,7 @@ def prepare_sheet_api(computed_pk):
     return computed_pk
 
 
-@app.task(bind=True, queue=settings.API_QUEUE, default_retry_delay=3, max_retries=5)
+@app.task(bind=True, queue=settings.WEB_QUEUE, default_retry_delay=3, max_retries=5)
 def send_webhook(self, computed_pk):
     """
     Pollable task to prepare html view.

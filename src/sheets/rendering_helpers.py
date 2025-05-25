@@ -19,9 +19,6 @@ from .plotly_utils import data_to_bs64_plot
 
 logger = logging.getLogger(__name__)
 
-WEB_QUEUE = "web-queue"
-API_QUEUE = "api-queue"
-
 
 def render_pdf_graph_fn(computed_pk, name):
     """Render a plolty png to base64 from stored precomputed data"""

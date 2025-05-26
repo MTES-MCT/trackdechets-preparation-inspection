@@ -124,7 +124,7 @@ def create_icpe_graph(df: pl.DataFrame, key_column: str | None, rubrique: str) -
                 yref="y",
                 x=0,
                 y=target_quantity,
-                text=f"Objectif 2025 :{target_quantity:.0f} {authorized_quantity_unit}",
+                text=f"Seuil de TGAP majoré :{target_quantity:.0f} {authorized_quantity_unit}",
                 font_color="black",
                 xanchor="left",
                 yanchor="bottom",

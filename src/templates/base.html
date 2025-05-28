@@ -1,4 +1,7 @@
-{% load oidc_helpers simple_menu static %}
+{% load oidc_helpers simple_menu solo_tags static %}
+
+{% get_solo 'common.SiteConfiguration' as site_config %}
+
 <!DOCTYPE html>
 <html lang="fr" data-fr-scheme="light">
 <head>
@@ -31,6 +34,19 @@
     <meta name="theme-color" content="#ffffff">
 </head>
 <body>
+
+{% if site_config.banner_content or site_config.banner_title %}
+<div class="fr-notice fr-notice--info">
+    <div class="fr-container">
+        <div class="fr-notice__body">
+            <p>
+                <span class="fr-notice__title">{{ site_config.banner_title }}</span>
+                <span class="fr-notice__desc">{{ site_config.banner_content }}</span>
+             </p>
+         </div>
+    </div>
+</div>
+{% endif %}
  <header role="banner" class="fr-header fr-mb-2v">
             <div class="fr-header__body">
                 <div class="fr-container">

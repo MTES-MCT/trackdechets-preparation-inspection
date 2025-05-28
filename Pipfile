@@ -42,6 +42,7 @@ clickhouse-sqlalchemy = "*"
 sshtunnel = "*"
 django-admin-rangefilter = "*"
 polars = "*"
+django-solo = "*"
 
 [dev-packages]
 isort = "*"

@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas as pd
 import pytest
 
-from ..graph_processors.html_components_processors import RNDTSTransporterStatsProcessor
+from ..graph_processors.html_components_processors import RegistryTransporterStatsProcessor
 
 
 @pytest.fixture
@@ -13,41 +13,41 @@ def sample_rndts_data():
         "ndw_incoming": pd.DataFrame(
             {
                 "id": [1, 2, 3],
-                "date_reception": [datetime(2024, 8, 9), datetime(2024, 8, 10), datetime(2024, 8, 10)],
-                "numeros_indentification_transporteurs": [
+                "reception_date": [datetime(2024, 8, 9), datetime(2024, 8, 10), datetime(2024, 8, 10)],
+                "transporters_org_ids": [
                     ["12345678901234"],
                     ["23456789012345"],
                     ["12345678901234", "34567890123456"],
                 ],
-                "quantite": [25, 12, 9.7],
-                "unite": ["T", "T", "M3"],
+                "weight_value": [25, 12, None],
+                "volume": [None, None, 9.7],
             }
         ),
         "ndw_outgoing": pd.DataFrame(
             {
                 "id": [3],
-                "date_expedition": [datetime(2024, 8, 11)],
-                "numeros_indentification_transporteurs": [["12345678901234"]],
-                "quantite": [30],
-                "unite": ["M3"],
+                "dispatch_date": [datetime(2024, 8, 11)],
+                "transporters_org_ids": [["12345678901234"]],
+                "volume": [30],
+                "weight_value": [None],
             }
         ),
         "excavated_land_incoming": pd.DataFrame(
             {
                 "id": [4, 5],
-                "date_reception": [datetime(2024, 8, 12), datetime(2024, 8, 13)],
-                "numeros_indentification_transporteurs": [["34567890123456"], ["12345678901234"]],
-                "quantite": [12.6, 3],
-                "unite": ["M3", "T"],
+                "reception_date": [datetime(2024, 8, 12), datetime(2024, 8, 13)],
+                "transporters_org_ids": [["34567890123456"], ["12345678901234"]],
+                "weight_value": [None, 3],
+                "volume": [12.6, None],
             }
         ),
         "excavated_land_outgoing": pd.DataFrame(
             {
                 "id": [6],
-                "date_expedition": [datetime(2024, 8, 14)],
-                "numeros_indentification_transporteurs": [["12345678901234"]],
-                "quantite": [40],
-                "unite": ["T"],
+                "dispatch_date": [datetime(2024, 8, 14)],
+                "transporters_org_ids": [["12345678901234"]],
+                "weight_value": [40],
+                "volume": [None],
             }
         ),
     }
@@ -59,14 +59,14 @@ def date_interval():
 
 
 def test_initialization(sample_rndts_data, date_interval):
-    processor = RNDTSTransporterStatsProcessor(
+    processor = RegistryTransporterStatsProcessor(
         company_siret="12345678901234",
-        rndts_data=sample_rndts_data,
+        registry_data=sample_rndts_data,
         data_date_interval=date_interval,
     )
 
     assert processor.company_siret == "12345678901234"
-    assert processor.rndts_data == sample_rndts_data
+    assert processor.registry_data == sample_rndts_data
     assert processor.data_date_interval == date_interval
     assert isinstance(processor.transported_statements_stats, dict)
     assert "ndw_incoming" in processor.transported_statements_stats
@@ -79,9 +79,9 @@ def test_empty_data(sample_rndts_data, date_interval):
         "excavated_land_incoming": pd.DataFrame(),
         "excavated_land_outgoing": pd.DataFrame(),
     }
-    processor = RNDTSTransporterStatsProcessor(
+    processor = RegistryTransporterStatsProcessor(
         company_siret="12345678901234",
-        rndts_data=empty_data,
+        registry_data=empty_data,
         data_date_interval=date_interval,
     )
 
@@ -91,16 +91,16 @@ def test_empty_data(sample_rndts_data, date_interval):
         "excavated_land_incoming": None,
         "excavated_land_outgoing": None,
     }
-    processor = RNDTSTransporterStatsProcessor(
+    processor = RegistryTransporterStatsProcessor(
         company_siret="12345678901234",
-        rndts_data=empty_data,
+        registry_data=empty_data,
         data_date_interval=date_interval,
     )
 
     # Test data not in date interval
-    processor = RNDTSTransporterStatsProcessor(
+    processor = RegistryTransporterStatsProcessor(
         company_siret="12345678901234",
-        rndts_data=sample_rndts_data,
+        registry_data=sample_rndts_data,
         data_date_interval=(datetime(2023, 8, 1), datetime(2024, 7, 30)),
     )
 
@@ -108,9 +108,9 @@ def test_empty_data(sample_rndts_data, date_interval):
 
 
 def test_data_preprocessing(sample_rndts_data, date_interval):
-    processor = RNDTSTransporterStatsProcessor(
+    processor = RegistryTransporterStatsProcessor(
         company_siret="12345678901234",
-        rndts_data=sample_rndts_data,
+        registry_data=sample_rndts_data,
         data_date_interval=date_interval,
     )
 
@@ -134,9 +134,9 @@ def test_data_preprocessing(sample_rndts_data, date_interval):
 
 
 def test_build_output(sample_rndts_data, date_interval):
-    processor = RNDTSTransporterStatsProcessor(
+    processor = RegistryTransporterStatsProcessor(
         company_siret="12345678901234",
-        rndts_data=sample_rndts_data,
+        registry_data=sample_rndts_data,
         data_date_interval=date_interval,
     )
 

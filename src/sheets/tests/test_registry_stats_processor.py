@@ -3,55 +3,52 @@ from datetime import datetime, timedelta
 import pandas as pd
 import pytest
 
-from ..graph_processors.html_components_processors import RNDTSStatsProcessor
+from ..graph_processors.html_components_processors import RegistryStatsProcessor
 
 
 # Sample fixture for test data
 @pytest.fixture
-def rndts_test_data(request):
-    ssd_mode: bool = request.param
-
+def rndts_test_data():
     incoming_data = pd.DataFrame(
         {
             "id": [1, 2, 3, 4, 5],
-            "date_reception": [
+            "reception_date": [
                 datetime(2024, 8, 9),
                 datetime(2024, 8, 10),
                 datetime(2024, 7, 15),  # Outside date interval
                 datetime(2024, 8, 11),
                 datetime(2024, 9, 12),
             ],
-            "etablissement_numero_identification": [
+            "siret": [
                 "12345678901234",
                 "12345678901234",
                 "98765432109876",  # Different SIRET
                 "12345678901234",
                 "12345678901234",
             ],
-            "unite": ["T", "M3", "T", "M3", "T"],
-            "quantite": [10, 20, 30, 40, 50],
+            "weight_value": [10, None, 30, None, 50],
+            "volume": [None, 20, None, 40, None],
         }
     )
-    key_name = "producteur_numero_identification" if not ssd_mode else "etablissement_numero_identification"
     outgoing_data = pd.DataFrame(
         {
             "id": [6, 7, 8, 9, 10],
-            "date_expedition": [
+            "dispatch_date": [
                 datetime(2024, 8, 13),
                 datetime(2024, 8, 14),
                 datetime(2024, 10, 1),  # Outside date interval
                 datetime(2024, 8, 15),
                 datetime(2024, 8, 16),
             ],
-            key_name: [
+            "siret": [
                 "12345678901234",
                 "12345678901234",
                 "98765432109876",  # Different SIRET
                 "12345678901234",
                 "12345678901234",
             ],
-            "unite": ["T", "M3", "T", "M3", "T"],
-            "quantite": [15, 25, 35, 45, 55],
+            "weight_value": [15, None, 35, None, 55],
+            "volume": [None, 25, None, 45, None],
         }
     )
 
@@ -66,7 +63,7 @@ def test_preprocess_data(rndts_test_data):
     """Test preprocessing of incoming and outgoing data."""
     company_siret, incoming_data, outgoing_data, date_interval = rndts_test_data
 
-    processor = RNDTSStatsProcessor(company_siret, incoming_data, outgoing_data, date_interval)
+    processor = RegistryStatsProcessor(company_siret, incoming_data, outgoing_data, date_interval)
     processor._preprocess_data()
 
     assert processor.stats["total_weight_incoming"] == 60
@@ -83,13 +80,13 @@ def test_empty_data_handling(rndts_test_data):
     """Test handling of empty dataframes."""
     company_siret, incoming_data, outgoing_data, date_interval = rndts_test_data
 
-    processor = RNDTSStatsProcessor(company_siret, incoming_data.head(0), outgoing_data.head(0), date_interval)
+    processor = RegistryStatsProcessor(company_siret, incoming_data.head(0), outgoing_data.head(0), date_interval)
     processor._preprocess_data()
 
     assert processor._check_data_empty()
 
     # Case empty data due to date interval miss
-    processor = RNDTSStatsProcessor(
+    processor = RegistryStatsProcessor(
         company_siret,
         incoming_data.head(0),
         outgoing_data.head(0),
@@ -105,7 +102,7 @@ def test_bar_size_calculation(rndts_test_data):
     """Test bar size calculation for incoming and outgoing data."""
     company_siret, incoming_data, outgoing_data, date_interval = rndts_test_data
 
-    processor = RNDTSStatsProcessor(company_siret, incoming_data, outgoing_data, date_interval)
+    processor = RegistryStatsProcessor(company_siret, incoming_data, outgoing_data, date_interval)
     processor._preprocess_data()
 
     assert processor.stats["bar_size_weight_incoming"] == 85  # Relative size
@@ -120,7 +117,7 @@ def test_context_building(rndts_test_data):
     """Test that context is correctly built and formatted."""
     company_siret, incoming_data, outgoing_data, date_interval = rndts_test_data
 
-    processor = RNDTSStatsProcessor(company_siret, incoming_data, outgoing_data, date_interval)
+    processor = RegistryStatsProcessor(company_siret, incoming_data, outgoing_data, date_interval)
     processor._preprocess_data()
     context = processor.build_context()
 
@@ -135,7 +132,7 @@ def test_full_build(rndts_test_data):
     """Test the full build method."""
     company_siret, incoming_data, outgoing_data, date_interval = rndts_test_data
 
-    processor = RNDTSStatsProcessor(company_siret, incoming_data, outgoing_data, date_interval)
+    processor = RegistryStatsProcessor(company_siret, incoming_data, outgoing_data, date_interval)
     data = processor.build()
 
     expected_data = {

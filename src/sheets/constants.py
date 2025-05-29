@@ -72,8 +72,8 @@ PLOTLY_GRAPHS_TO_RENDER_IN_PDF = [
     "excavated_land_quantities_graph",
     "ssd_statements_graph",
     "ssd_quantities_graph",
-    "rndts_transporter_statement_stats_graph",
-    "rndts_transporter_quantities_graph",
+    "registry_transporter_statement_stats_graph",
+    "registry_transporter_quantities_graph",
     "eco_organisme_bordereaux_graph",
     "eco_organisme_quantities_graph",
 ]

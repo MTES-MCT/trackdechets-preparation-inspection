@@ -1,3 +1,4 @@
+{% load static %}   
 {% for rubrique_data in rubriques_data %}
     <div class="row">
         <div class="cell cell--bordered cell--full">
@@ -5,13 +6,83 @@
             <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">
                 Source : {{ rubrique_data.data_source }}
             </p>
-            <div id="icpe-{{ rubrique_data.icpe_rubrique }}-graph">
-                {% if rubrique_data.graph_data %}
-                    <img src="data:image/png;base64,{{ rubrique_data.graph_data }}" class="cell__img">
-                {% else %}
-                    <div class="no-data">Pas de données à afficher.</div>
-                {% endif %}
+            <div id="icpe-{{ rubrique_data.icpe_rubrique }}-graph-container">
+                    {% if rubrique_data.graph_data and graph_context == "pdf" %}
+                        <img src="data:image/png;base64,{{ rubrique_data.graph_data }}" class="cell__img">
+                    {% else %}
+                        <div id="icpe-{{ rubrique_data.icpe_rubrique }}-graph"></div>
+                    {% endif %}
             </div>
         </div>
     </div>
 {% endfor %}
+{% if graph_context != "pdf" %}
+{% block scripts %}
+    <script src="{% static "js/plotly-2.18.1.min.js" %}" charset="utf-8"></script>
+    <script src="{% static "js/plotly-locale-fr.js" %}"></script>
+    <script>
+        {% autoescape off %}
+            const icpe_2770_data = {{ sheet.icpe_2770_data }};
+            const icpe_2790_data = {{ sheet.icpe_2790_data }};
+            const icpe_2760_1_data = {{ sheet.icpe_2760_1_data }};
+            const icpe_2771_data = {{ sheet.icpe_2771_data }};
+            const icpe_2791_data = {{ sheet.icpe_2791_data }};
+            const icpe_2760_2_data = {{ sheet.icpe_2760_2_data }};
+        {% endautoescape %}
+    </script>
+    <script>
+        function removeNoDataClass(query) {
+            const divElement = document.querySelector(query);
+            if (divElement !== null) {
+                divElement.remove();
+            }
+        }
+
+        plot_configs = [
+            
+            {
+                "data": icpe_2770_data,
+                "target": "icpe-2770-graph"
+            },
+            {
+                "data": icpe_2790_data,
+                "target": "icpe-2790-graph"
+            },
+            {
+                "data": icpe_2760_1_data,
+                "target": "icpe-2760-1-graph"
+            },
+            {
+                "data": icpe_2771_data,
+                "target": "icpe-2771-graph"
+            },
+            {
+                "data": icpe_2791_data,
+                "target": "icpe-2791-graph"
+            },
+            {
+                "data": icpe_2760_2_data,
+                "target": "icpe-2760-2-graph"
+            }
+        ];
+
+        for (const config of plot_configs) {
+            if (isNotEmpty(config.data)) {
+                removeNoDataClass(`#${config.target} > .no-data`);
+                let newConfig = {
+                    ...config.data.config,
+                    locale: 'fr',
+                    autosize: true
+                }
+
+                Plotly.newPlot(
+                    config.target,
+                    config.data.data,
+                    config.data.layout,
+                    newConfig)
+            }
+        }
+        ;
+    </script>
+{% endblock scripts %}
+{% endif %}

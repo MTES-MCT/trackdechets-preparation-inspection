@@ -1030,7 +1030,7 @@ class ICPEAnnualItemProcessor:
                     yref="y",
                     x=0.7,
                     y=target_quantity,
-                    text=f"Objectif pour 2025 : <b>{format_number_str(target_quantity, 2)}</b> t/an",
+                    text=f"Seuil de TGAP majoré : <b>{format_number_str(target_quantity, 2)}</b> t/an",
                     font_color="black",
                     xanchor="left",
                     yanchor="bottom",

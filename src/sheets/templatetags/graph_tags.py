@@ -241,9 +241,11 @@ def render_icpe_graphs(computed, graph_context="web"):
         if graph_context == "pdf":
             graph_data = getattr(computed, attribute.replace("_data", "_graph"))
 
-        rubriques_data.append({"icpe_rubrique": rubrique, "data_source": data_source, "graph_data": graph_data})
+        rubriques_data.append(
+            {"icpe_rubrique": rubrique.replace("_", "-"), "data_source": data_source, "graph_data": graph_data}
+        )
 
-    return {"rubriques_data": rubriques_data}
+    return {"rubriques_data": rubriques_data, "graph_context": graph_context, "sheet": computed}
 
 
 def has_rubrique(rubrique_to_search: str, icpe_rubriques_items: list[dict]) -> bool:

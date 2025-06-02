@@ -494,7 +494,7 @@
         {% endautoescape %}
     </script>
     <script>
-        const isNotEmpty = (obj) => (Object.keys(obj).length !== 0);
+        var isNotEmpty = (obj) => (Object.keys(obj).length !== 0);
 
         function removeNoDataClass(query) {
             const divElement = document.querySelector(query);

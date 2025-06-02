@@ -23,6 +23,7 @@ class RegistryV2ExportAdmin(admin.ModelAdmin):
         "start_date",
         "end_date",
         "registry_export_id",
+        "created_by_email",
     ]
     list_filter = ["registry_type", "export_format", "state"]
     search_fields = ["siret"]

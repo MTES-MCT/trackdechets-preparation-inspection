@@ -8,6 +8,8 @@ from registry.constants import RegistryV2ExportState, RegistryV2ExportType, Regi
 from ..factories import RegistryV2ExportFactory
 from ..models import RegistryV2Export
 
+pytestmark = pytest.mark.django_db
+
 
 @pytest.fixture
 def create_exports():
@@ -60,7 +62,6 @@ def create_exports():
     return _create_exports
 
 
-@pytest.mark.django_db
 def test_recent_default_days(create_exports):
     exports = create_exports()
 
@@ -73,7 +74,6 @@ def test_recent_default_days(create_exports):
     assert exports["five_days_ago"] not in recent_exports
 
 
-@pytest.mark.django_db
 def test_recent_custom_days(create_exports):
     exports = create_exports()
 
@@ -86,7 +86,6 @@ def test_recent_custom_days(create_exports):
     assert exports["five_days_ago"] not in recent_exports
 
 
-@pytest.mark.django_db
 def test_recent_with_no_days(create_exports):
     create_exports()
 
@@ -95,7 +94,6 @@ def test_recent_with_no_days(create_exports):
     assert recent_exports.count() == 0
 
 
-@pytest.mark.django_db
 def test_recent_with_all_days(create_exports):
     exports = create_exports()
 
@@ -108,14 +106,12 @@ def test_recent_with_all_days(create_exports):
     assert exports["five_days_ago"] in recent_exports
 
 
-@pytest.mark.django_db
 def test_recent_with_empty_db():
     recent_exports = RegistryV2Export.objects.recent()
 
     assert recent_exports.count() == 0
 
 
-@pytest.mark.django_db
 def test_recent_chaining_with_other_filters(create_exports):
     exports = create_exports()
 

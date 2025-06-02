@@ -150,6 +150,31 @@ class RegistryV2Export(models.Model):
     def in_progress(self):
         return self.state in [RegistryV2ExportState.PENDING, RegistryV2ExportState.STARTED] and not self.is_timeout
 
+    @property
+    def waste_types(self):
+        WASTE_TYPES = ["DND", "DD", "TEXS"]
+        bool_vector = [self.waste_types_dnd, self.waste_types_dd, self.waste_types_texs]
+
+        return [item for item, keep in zip(WASTE_TYPES, bool_vector) if keep]
+
     def mark_as_failed(self):
         self.state = RegistryV2ExportState.FAILED
         self.save()
+
+    def get_gql_variables(self):
+        variables = {
+            "siret": self.siret,
+            "registryType": self.registry_type,
+            "format": self.export_format,
+            "dateRange": {"_gte": self.start_date.isoformat(), "_lte": self.end_date.isoformat()},
+        }
+        where = {"declarationType": {"_eq": self.declaration_type}}
+
+        if self.waste_types:
+            where.update({"wasteType": {"_in": self.waste_types}})
+        if self.waste_codes:
+            where.update({"wasteCode": {"_in": self.waste_codes}})
+
+        if where:
+            variables.update({"where": where})
+        return variables

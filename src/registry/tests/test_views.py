@@ -95,7 +95,6 @@ def test_registry_prepare_v2_post(get_client):
     assert reg.state == "STARTED"
 
 
-@pytest.mark.django_db
 def test_registry_v2_prepare_form_valid_calls_task(verified_user):
     """Test that form_valid method calls generate_registry_export.delay with correct args."""
 
@@ -193,7 +192,6 @@ def test_registry_v2_retrieve_deny_observatoire(verified_observatoire):
     assert res.status_code == 403
 
 
-@pytest.mark.django_db
 def test_registry_v2_retrieve_success(verified_user):
     """Test successful retrieval of signed URL."""
 
@@ -229,7 +227,6 @@ def test_registry_v2_retrieve_success(verified_user):
         assert variables["exportId"] == registry_export.registry_export_id
 
 
-@pytest.mark.django_db
 def test_registry_v2_retrieve_api_error(verified_user):
     """Test handling of API error response."""
 
@@ -255,7 +252,6 @@ def test_registry_v2_retrieve_api_error(verified_user):
         assert "Erreur, le registre n'a pu être téléchargé" in str(messages[0])
 
 
-@pytest.mark.django_db
 def test_registry_v2_retrieve_missing_data(
     verified_user,
 ):
@@ -285,7 +281,6 @@ def test_registry_v2_retrieve_missing_data(
         assert len(messages) == 1
         assert "Erreur, le registre n'a pu être téléchargé" in str(messages[0])
 
-    @pytest.mark.django_db
     def test_registry_v2_retrieve_request_exception(
         verified_user,
     ):

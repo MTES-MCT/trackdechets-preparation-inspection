@@ -478,6 +478,18 @@
             const bsvhu_stock_data = {{ sheet.bsvhu_stock_data }};
             const waste_origin_data = {{ sheet.waste_origin_data }};
             const waste_origin_map_data = {{ sheet.waste_origin_map_data }};
+
+
+                  const icpe_2770_data = {{ sheet.icpe_2770_data }};
+            const icpe_2790_data = {{ sheet.icpe_2790_data }};
+            const icpe_2760_1_data = {{ sheet.icpe_2760_1_data }};
+            const icpe_2771_data = {{ sheet.icpe_2771_data }};
+            const icpe_2791_data = {{ sheet.icpe_2791_data }};
+            const icpe_2760_2_data = {{ sheet.icpe_2760_2_data }};
+
+
+
+
             const bsda_worker_quantity_data = {{ sheet.bsda_worker_quantity_data }};
             const transporter_bordereaux_stats_graph_data = {{ sheet.transporter_bordereaux_stats_graph_data }};
             const quantities_transported_stats_graph_data = {{ sheet.quantities_transported_stats_graph_data }};
@@ -494,7 +506,7 @@
         {% endautoescape %}
     </script>
     <script>
-        var isNotEmpty = (obj) => (Object.keys(obj).length !== 0);
+        const isNotEmpty = (obj) => (Object.keys(obj).length !== 0);
 
         function removeNoDataClass(query) {
             const divElement = document.querySelector(query);
@@ -612,6 +624,32 @@
                 "data": registry_transporter_quantities_graph,
                 "target": "registry_quantities_transported_graph"
             }
+            ,
+
+            {
+                "data": icpe_2770_data,
+                "target": "icpe-2770-graph"
+            },
+            {
+                "data": icpe_2790_data,
+                "target": "icpe-2790-graph"
+            },
+            {
+                "data": icpe_2760_1_data,
+                "target": "icpe-2760-1-graph"
+            },
+            {
+                "data": icpe_2771_data,
+                "target": "icpe-2771-graph"
+            },
+            {
+                "data": icpe_2791_data,
+                "target": "icpe-2791-graph"
+            },
+            {
+                "data": icpe_2760_2_data,
+                "target": "icpe-2760-2-graph"
+            }
         ];
 
         for (const config of plot_configs) {
@@ -632,4 +670,32 @@
         }
         ;
     </script>
+
+
+
+    <script>
+
+
+
+
+
+        {# for (const config of plot_configs) { #}
+        {# if (isNotEmpty(config.data)) { #}
+        {# removeNoDataClass(`#${config.target} > .no-data`); #}
+        {# let newConfig = { #}
+        {# ...config.data.config, #}
+        {# locale: 'fr', #}
+        {# autosize: true #}
+        {# } #}
+        {#  #}
+        {# Plotly.newPlot( #}
+        {# config.target, #}
+        {# config.data.data, #}
+        {# config.data.layout, #}
+        {# newConfig) #}
+        {# } #}
+        {# } #}
+        {# ; #}
+    </script>
+
 {% endblock scripts %}

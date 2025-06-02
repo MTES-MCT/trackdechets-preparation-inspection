@@ -491,10 +491,16 @@
             const eco_organisme_quantities_graph = {{ sheet.eco_organisme_quantities_graph_data }};
             const registry_transporter_statement_stats_graph = {{ sheet.registry_transporter_statement_stats_graph_data }};
             const registry_transporter_quantities_graph = {{ sheet.registry_transporter_quantities_graph_data }};
+            const icpe_2770_data = {{ sheet.icpe_2770_data }};
+            const icpe_2790_data = {{ sheet.icpe_2790_data }};
+            const icpe_2760_1_data = {{ sheet.icpe_2760_1_data }};
+            const icpe_2771_data = {{ sheet.icpe_2771_data }};
+            const icpe_2791_data = {{ sheet.icpe_2791_data }};
+            const icpe_2760_2_data = {{ sheet.icpe_2760_2_data }};
         {% endautoescape %}
     </script>
     <script>
-        var isNotEmpty = (obj) => (Object.keys(obj).length !== 0);
+        const isNotEmpty = (obj) => (Object.keys(obj).length !== 0);
 
         function removeNoDataClass(query) {
             const divElement = document.querySelector(query);
@@ -611,6 +617,30 @@
             {
                 "data": registry_transporter_quantities_graph,
                 "target": "registry_quantities_transported_graph"
+            },
+            {
+                "data": icpe_2770_data,
+                "target": "icpe-2770-graph"
+            },
+            {
+                "data": icpe_2790_data,
+                "target": "icpe-2790-graph"
+            },
+            {
+                "data": icpe_2760_1_data,
+                "target": "icpe-2760-1-graph"
+            },
+            {
+                "data": icpe_2771_data,
+                "target": "icpe-2771-graph"
+            },
+            {
+                "data": icpe_2791_data,
+                "target": "icpe-2791-graph"
+            },
+            {
+                "data": icpe_2760_2_data,
+                "target": "icpe-2760-2-graph"
             }
         ];
 

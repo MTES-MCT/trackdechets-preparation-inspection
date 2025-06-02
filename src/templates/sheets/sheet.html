@@ -43,6 +43,10 @@
                     {% endfor %}
                 </ul>
                 <p>{{ sheet.company_address }}</p>
+                {% if sheet.company_has_enabled_registry_dnd_from_bsd_since %}
+                    <p>L'établissement a activé l'option de traçabilité des déchets non dangereux dans le registre 
+                        depuis le {{ sheet.company_has_enabled_registry_dnd_from_bsd_since|date:"d/m/Y" }}.</p>
+                {% endif %}
                 <p>
                     Période du {{ sheet.data_start_date|date:"SHORT_DATE_FORMAT" }}
                     au {{ sheet.data_end_date|date:"SHORT_DATE_FORMAT" }}

@@ -1,3 +1,4 @@
+{% load static %}   
 {% for rubrique_data in rubriques_data %}
     <div class="row">
         <div class="cell cell--bordered cell--full">
@@ -5,12 +6,12 @@
             <p class="fr-tag fr-tag fr-icon-info-fill fr-tag--icon-left">
                 Source : {{ rubrique_data.data_source }}
             </p>
-            <div id="icpe-{{ rubrique_data.icpe_rubrique }}-graph">
-                {% if rubrique_data.graph_data %}
-                    <img src="data:image/png;base64,{{ rubrique_data.graph_data }}" class="cell__img">
-                {% else %}
-                    <div class="no-data">Pas de données à afficher.</div>
-                {% endif %}
+            <div id="icpe-{{ rubrique_data.icpe_rubrique }}-graph-container">
+                    {% if rubrique_data.graph_data and graph_context == "pdf" %}
+                        <img src="data:image/png;base64,{{ rubrique_data.graph_data }}" class="cell__img">
+                    {% else %}
+                        <div id="icpe-{{ rubrique_data.icpe_rubrique }}-graph"></div>
+                    {% endif %}
             </div>
         </div>
     </div>

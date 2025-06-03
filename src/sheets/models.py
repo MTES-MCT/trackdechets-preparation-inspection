@@ -95,6 +95,9 @@ class ComputedInspectionData(models.Model):
     )
     company_address = models.CharField(_("Company address"), max_length=255, blank=True)
     company_created_at = models.DateTimeField(_("Company created at"), default=timezone.now)
+    company_has_enabled_registry_dnd_from_bsd_since = models.DateTimeField(
+        _("Company has enabled registry dnd from bsd since"), default=None, null=True
+    )
     created = models.DateTimeField(_("Created"), default=timezone.now)
 
     linked_companies_data = models.JSONField(default=dict)

@@ -37,6 +37,10 @@
                     </ul>
                     <p class="pdf-text bold mb-0">Adresse :</p>
                     <p class="pdf-text mt-0">{{ sheet.company_address }}</p>
+                    {% if sheet.company_has_enabled_registry_dnd_from_bsd_since %}
+                        <p>L'établissement a activé l'option de traçabilité des déchets 
+                            non dangereux dans le registre depuis le {{ sheet.company_has_enabled_registry_dnd_from_bsd_since|date:"d/m/Y" }}.</p>
+                    {% endif %}
                     <p class="pdf-text">
                         <span class="bold">Période :</span> {{ sheet.data_start_date|date:"SHORT_DATE_FORMAT" }}
                         - {{ sheet.data_end_date|date:"SHORT_DATE_FORMAT" }}

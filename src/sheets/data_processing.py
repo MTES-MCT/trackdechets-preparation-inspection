@@ -305,6 +305,9 @@ class SheetProcessor:
             company_values.get("waste_processor_types")
         )
         self.computed.company_created_at = company_values.get("created_at")
+        self.computed.company_has_enabled_registry_dnd_from_bsd_since = company_values.get(
+            "has_enabled_registry_dnd_from_bsd_since"
+        )
 
         self.computed.save()
 

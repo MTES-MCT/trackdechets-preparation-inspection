@@ -214,7 +214,8 @@ select id,
     vhu_agrement_demolisseur_id,
     vhu_agrement_broyeur_id,
     collector_types,
-    waste_processor_types
+    waste_processor_types,
+    has_enabled_registry_dnd_from_bsd_since
 from trusted_zone_trackdechets.company c
 where c.siret = :siret
 """

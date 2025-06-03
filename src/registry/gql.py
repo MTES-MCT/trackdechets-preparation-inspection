@@ -4,12 +4,14 @@ graphql_generate_registry_export = """
     $siret: String,
     $format: FormsRegisterExportFormat!
     $dateRange: DateFilter!
+    $where: RegistryV2ExportWhere
   ) {
     generateRegistryV2Export(
      registryType: $registryType, 
      format: $format, 
      siret: $siret, 
-     dateRange: $dateRange
+     dateRange: $dateRange,
+     where: $where
     ) {
       id
       status

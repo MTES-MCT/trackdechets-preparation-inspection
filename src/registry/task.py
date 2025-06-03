@@ -45,23 +45,21 @@ def generate_registry_export(self, registry_v2_export_pk):
         return None
 
     client = httpx.Client(timeout=60)  # 60 seconds
+    variables = export.get_gql_variables()
+
     try:
         res = client.post(
             url=settings.TD_API_URL,
             headers={"Authorization": f"Bearer {settings.TD_API_TOKEN}"},
             json={
                 "query": graphql_generate_registry_export,
-                "variables": {
-                    "siret": export.siret,
-                    "registryType": export.registry_type,
-                    "format": export.export_format,
-                    "dateRange": {"_gte": export.start_date.isoformat(), "_lte": export.end_date.isoformat()},
-                },
+                "variables": variables,
             },
         )
     except httpx.RequestError:
         logger.info("HTTP error")
         raise self.retry(countdown=geo_retry_delay)
+
     resp = res.json()
 
     try:

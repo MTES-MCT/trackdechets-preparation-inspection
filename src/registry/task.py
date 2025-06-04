@@ -28,7 +28,7 @@ def process_export(registry_v2_export_pk):
 MAX__GENERATE_DELAY = dt.timedelta(minutes=15)
 
 
-@app.task(bind=True, queue=settings.WEB_QUEUE)
+@app.task(bind=True)
 def generate_registry_export(self, registry_v2_export_pk):
     """Create a registry export on TD api"""
     geo_retry_delay = min(10 * self.request.retries, 300)
@@ -79,7 +79,7 @@ def generate_registry_export(self, registry_v2_export_pk):
 MAX__REFRESH_DELAY = dt.timedelta(minutes=15)
 
 
-@app.task(bind=True, queue=settings.WEB_QUEUE, max_retries=None)
+@app.task(bind=True, max_retries=None)
 def refresh_registry_export(self, registry_v2_export_pk):
     static_retry_delay = 10
     geo_retry_delay = min(10 * self.request.retries, 300)

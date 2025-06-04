@@ -285,8 +285,6 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 
-WEB_QUEUE = "web-queue"
-API_QUEUE = "api-queue"
 
 # API
 TD_API_URL = env("TD_API_URL")

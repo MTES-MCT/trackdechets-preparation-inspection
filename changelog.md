@@ -5,6 +5,10 @@ Les changements importants de Trackdéchets préparation inspection sont documen
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 et le projet suit un schéma de versioning inspiré de [Calendar Versioning](https://calver.org/).
 
+## 04/06/2025
+
+- Renommage en Vigidéchets
+
 ## 02/06/2025
 
 - Ajout de la date depuis laquelle l'établissement a activé l'option d'import auto des données de traçabilité de

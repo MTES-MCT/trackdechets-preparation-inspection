@@ -78,9 +78,7 @@ class RegistryV2PrepareForm(forms.ModelForm):
                 )
         else:
             if end_date > dt.date.today():
-                raise ValidationError(
-                    "Les dates postérieures à aujourd'hui ne sont pas acceptées  pour la fiche établissement"
-                )
+                raise ValidationError("Les dates postérieures à aujourd'hui ne sont pas acceptées pour le registre")
         return end_date
 
     def clean_siret(self):

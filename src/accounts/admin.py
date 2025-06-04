@@ -72,7 +72,7 @@ def send_invitation_email(_, request, queryset):
         )
 
         message = EmailMessage(
-            subject="Trackdéchets - outil de préparation de fiche d'inspection",
+            subject="Trackdéchets - Accès à Vigiedéchets",
             body=body,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[user.email],

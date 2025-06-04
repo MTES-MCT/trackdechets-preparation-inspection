@@ -20,6 +20,13 @@ def create_email_device(user):
     return device
 
 
+def fancy_print(message):
+    width = len(message) + 4
+    print("╔" + "═" * (width - 2) + "╗")
+    print(f"║\033[41m {message} \033[0m║")
+    print("╚" + "═" * (width - 2) + "╝")
+
+
 class SendSecondFactorMailMixin:
     def process(self):
         user = self.request.user
@@ -29,6 +36,10 @@ class SendSecondFactorMailMixin:
         else:
             device = devices[0]
         device.generate_challenge()
+
+        if settings.DEBUG:
+            # Print security code to console for quick reference, eliminating need to search through email output
+            fancy_print(f"SECURITY CODE : {device.token}")
 
 
 class LoginView(SendSecondFactorMailMixin, BaseLoginView):

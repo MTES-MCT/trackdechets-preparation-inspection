@@ -4,7 +4,6 @@ import zipfile
 
 import httpx
 from celery import current_task
-from django.conf import settings
 from django.core.files.base import ContentFile
 
 from config.celery_app import app
@@ -17,7 +16,7 @@ from .td_requests import query_td_pdf
 logger = logging.getLogger(__name__)
 
 
-@app.task(queue=settings.WEB_QUEUE)
+@app.task()
 def prepare_bundle(bundle_pk):
     """
     Pollable task to prepare html view.

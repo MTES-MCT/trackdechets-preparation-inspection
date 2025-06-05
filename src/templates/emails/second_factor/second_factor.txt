@@ -1,8 +1,8 @@
 Bonjour,
 
-Voici le code à recopier dans le formulaire de la fiche établissement de Trackdéchets :  {{ token }}
+Voici le code à recopier dans le formulaire de Vigiedéchets :  {{ token }}
 
-L'utilisation de ce code nous permet de sécuriser l'accès à la fiche établissement et aux données sensibles des entreprises.
+L'utilisation de ce code nous permet de sécuriser l'accès à Vigiedéchets et aux données sensibles des entreprises.
 
 Merci pour votre compréhension.
 

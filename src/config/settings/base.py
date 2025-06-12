@@ -212,14 +212,14 @@ LOGOUT_REDIRECT_URL = "login"
 PASSWORD_RESET_TIMEOUT = 3600 * 12  # 12 hours
 
 
-GRAPPELLI_ADMIN_TITLE = "Trackdéchets - Inspection"
+GRAPPELLI_ADMIN_TITLE = "Vigiedéchets"
 GRAPPELLI_INDEX_DASHBOARD = "config.dashboard.CustomIndexDashboard"
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "sender@test.fr"
 MESSAGE_RECIPIENTS = env.list("MESSAGE_RECIPIENTS", [])
 
-OTP_EMAIL_SUBJECT = "Votre code pour Trackdéchets fiche établissement"
+OTP_EMAIL_SUBJECT = "Votre code de sécurité pour l'accès à VigieDéchets de Trackdéchetst"
 OTP_EMAIL_BODY_TEMPLATE_PATH = "emails/second_factor/second_factor.txt"
 OTP_EMAIL_BODY_HTML_TEMPLATE_PATH = "emails/second_factor/second_factor.html"
 OTP_EMAIL_THROTTLE_DELAY = 300  # s

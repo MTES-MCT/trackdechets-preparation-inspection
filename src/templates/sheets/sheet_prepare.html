@@ -2,7 +2,7 @@
 
 {% block main %}
     <div class="fr-container fr-mt-1v">
-        <h3>Fiche établissement</h3>
+        <h3>Vigiedéchets</h3>
         <form method="post" {% url "sheet_prepare" %}>
             {% csrf_token %}
             {% if form.errors or has_errors %}

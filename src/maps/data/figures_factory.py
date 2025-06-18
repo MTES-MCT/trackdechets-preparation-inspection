@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import plotly.graph_objects as go
 import polars as pl
 
-from maps.constants import ANNUAL_ICPE_RUBRIQUES
+from ..constants import ANNUAL_ICPE_RUBRIQUES, MIN_TGAP_INFO_YEAR
 
 gridcolor = "#ccc"
 
@@ -111,8 +111,8 @@ def create_icpe_graph(df: pl.DataFrame, key_column: str | None, rubrique: str) -
             font_size=13,
         )
         max_y = max(max_y, authorized_quantity)
-
-        if target_quantity is not None:
+        current_year = min(data["day_of_processing"]).year
+        if target_quantity is not None and current_year >= MIN_TGAP_INFO_YEAR:
             fig.add_hline(
                 y=target_quantity,
                 line_dash="dot",

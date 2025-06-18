@@ -411,5 +411,8 @@ class DepartementsComputationAdmin(admin.ModelAdmin):
 
 @admin.register(InstallationsComputation)
 class InstallationsComputationAdmin(admin.ModelAdmin):
-    list_display = ["pk", "year", "created", "rubrique"]
+    list_display = ["pk", "siret", "year", "created", "rubrique"]
     list_filter = ["year"]
+    search_fields = [
+        "siret",
+    ]

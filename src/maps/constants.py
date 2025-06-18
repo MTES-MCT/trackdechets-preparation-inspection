@@ -66,3 +66,5 @@ BSD_TYPES = [
     "dnd",
     "texs",
 ]
+
+MIN_TGAP_INFO_YEAR = 2024

@@ -1,0 +1,15 @@
+{% autoescape off %}
+Vous recevez ce message en réponse à votre demande de réinitialisation du mot de passe de votre compte sur
+        l'application Vigiedéchets de Trackdéchets : {{ site_name }}.
+
+Veuillez vous rendre sur cette page et choisir un nouveau mot de passe :
+
+{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}
+
+Votre nom d’utilisateur, en cas d’oubli: {{ user.get_username }}
+
+Merci pour votre confiance
+
+L’équipe Trackdéchets
+
+{% endautoescape %}

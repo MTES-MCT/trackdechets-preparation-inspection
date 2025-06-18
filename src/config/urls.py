@@ -1,4 +1,4 @@
-"""Inspection URL Configuration"""
+"""Vigiedéchets URL Configuration"""
 
 from django.conf import settings
 from django.contrib import admin
@@ -11,7 +11,7 @@ from django_otp.admin import OTPAdminSite
 from sheets.views import PrivateHomeView, PublicHomeView
 
 # Admin config
-admin.site.index_title = "Administration de l'outil de fiche d'inspection"
+admin.site.index_title = "Administration de Vigiedéchets"
 admin.site.__class__ = OTPAdminSite
 
 

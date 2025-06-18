@@ -1,8 +1,8 @@
-# Trackdéchets préparation inspection
+# Trackdéchets - Vigiedéchets
 
-## Utilitaire de préparation de fiches d'inspection
+## Utilitaire de préparation de fiches d'inspection, téléchargement de registre, contrôle routier et visualisation cartographique
 
-Dépôt de code du projet **Trackdéchets préparation inspection** incubé à la Fabrique Numérique du Ministère de la
+Dépôt de code du projet **Trackdéchets Vigiedéchets** incubé à la Fabrique Numérique du Ministère de la
 Transition Écologique.
 
 ## Prérequis:

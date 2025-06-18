@@ -73,7 +73,7 @@ class SiretForm(Form):
         else:
             if end_date > dt.date.today():
                 raise ValidationError(
-                    "Les dates postérieures à aujourd'hui ne sont pas acceptées  pour la fiche établissement"
+                    "Les dates postérieures à aujourd'hui ne sont pas acceptées pour la fiche établissement"
                 )
         return end_date
 

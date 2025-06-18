@@ -113,7 +113,6 @@ DWH_SSH_USERNAME = env.str("DWH_SSH_USERNAME")
 DWH_SSH_LOCAL_BIND_HOST = env.str("DWH_SSH_LOCAL_BIND_HOST")
 DWH_SSH_KEY = env.str("DWH_SSH_KEY", multiline=True)
 
-
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
@@ -180,8 +179,6 @@ CSV_FILES_DIR = SRC_DIR / "csv"
 MEDIA_ROOT = BASE_DIR / "public" / "medias"
 MEDIA_URL = "/medias/"
 
-SITE_ID = env.int("SITE_ID", 1)
-
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
@@ -211,7 +208,6 @@ LOGOUT_REDIRECT_URL = "login"
 
 PASSWORD_RESET_TIMEOUT = 3600 * 12  # 12 hours
 
-
 GRAPPELLI_ADMIN_TITLE = "Vigiedéchets"
 GRAPPELLI_INDEX_DASHBOARD = "config.dashboard.CustomIndexDashboard"
 
@@ -229,10 +225,8 @@ if gdal_path := env.str("GDAL_LIBRARY_PATH", ""):
 if geos_path := env.str("GEOS_LIBRARY_PATH", ""):
     GEOS_LIBRARY_PATH = env.str("GEOS_LIBRARY_PATH")
 
-
 # Menu
 MENU_SELECT_PARENTS = True
-
 
 # moz oidc
 MONAIOT_OIDC_RP_CLIENT_ID = "trackdechets"
@@ -276,7 +270,6 @@ PROCONNECT_ALLOWED_IDP_IDS = [
     ID_ID_CURRASSO,
 ]
 
-
 OIDC_LOGIN_REDIRECT_URL = "private_home"
 
 # user
@@ -284,7 +277,6 @@ USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
-
 
 # API
 TD_API_URL = env("TD_API_URL")

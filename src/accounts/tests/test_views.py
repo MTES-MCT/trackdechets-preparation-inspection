@@ -1,4 +1,5 @@
 import pytest
+from django.contrib.sites.models import Site
 from django.core import mail
 from django.urls import reverse
 from django.utils import timezone
@@ -11,6 +12,14 @@ pytestmark = pytest.mark.django_db
 
 login_url = reverse("login")
 second_factor_url = reverse("second_factor")
+
+
+@pytest.fixture(autouse=True)
+def setup_site():
+    """Automatically create a site for all tests."""
+    site = Site.objects.get_or_create(domain="testserver", defaults={"name": "Test Site"})[0]
+
+    return site
 
 
 def test_private_home_view_redirects_anon_user_to_login(anon_client):
@@ -52,6 +61,7 @@ def test_private_home_access_view(verified_user, category):
 
 
 def test_login_view_get(anon_client):
+    ()
     res = anon_client.get(login_url)
     assert res.status_code == 200
 

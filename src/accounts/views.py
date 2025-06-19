@@ -4,6 +4,7 @@ from braces.views import LoginRequiredMixin
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.views import LoginView as BaseLoginView
+from django.contrib.sites.models import Site
 from django.http import HttpResponseRedirect, QueryDict
 from django.shortcuts import resolve_url
 from django.urls import reverse_lazy
@@ -31,11 +32,12 @@ class SendSecondFactorMailMixin:
     def process(self):
         user = self.request.user
         devices = EmailDevice.objects.devices_for_user(user)
+        current_site = Site.objects.get_current(self.request)
         if not devices:
             device = create_email_device(user)
         else:
             device = devices[0]
-        device.generate_challenge()
+        device.generate_challenge(extra_context={"current_site": current_site})
 
         if settings.DEBUG:
             # Print security code to console for quick reference, eliminating need to search through email output

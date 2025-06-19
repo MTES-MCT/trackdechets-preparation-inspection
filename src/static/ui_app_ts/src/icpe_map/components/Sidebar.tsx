@@ -4,13 +4,16 @@
 // import { ProfileFilterState, removeFilter } from "../store/searchFiltersSlice";
 // import { FRENCH_DEPARTMENTS } from "../constants/departments.ts";
 // import { useFileDownload } from "../hooks/downloadHook";
-
+import { setAdminDivision, toggleDisplayPlots } from "../store/uiSlice.ts";
 import { MapRef as ReactMapGLRef } from "react-map-gl/maplibre";
+import { useAppDispatch, useAppSelector, RootState } from "../store/root";
 
 export interface SidebarProps {
   mapRef: React.RefObject<ReactMapGLRef>;
 }
 export function Sidebar({ mapRef }: SidebarProps) {
+  const dispatch = useAppDispatch();
+
   return (
     <div className="icpe-map__sidebar">
       <p className="fr-text--lg fr-text--bold">Informations</p>
@@ -72,6 +75,7 @@ export function Sidebar({ mapRef }: SidebarProps) {
               className="fr-toggle__input"
               aria-describedby="toggle-installations-hint-text"
               id="toggle-installations"
+              onChange={(e) => dispatch(toggleDisplayPlots(e.target.checked))}
             />
             <label className="fr-toggle__label" htmlFor="toggle-installations">
               Afficher les installations
@@ -84,15 +88,17 @@ export function Sidebar({ mapRef }: SidebarProps) {
             <label className="fr-label" htmlFor="layer-select">
               Découpage
             </label>
+
             <select
               className="fr-select"
               id="layer-select"
               name="select-vue-carte"
+              onChange={(e) => dispatch(setAdminDivision(e.target.value))}
             >
               <option selected value="regions">
                 Régional
               </option>
-              <option value="departements">Départemental</option>
+              <option value="departments">Départemental</option>
             </select>
           </div>
           <div className="fr-select-group">

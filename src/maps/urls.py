@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .api import ApiCompanyExport, ApiObjects, ICPEFrance, ICPEGraph, ICPEViewMany
-from .views import ExutMapView, MapView, IcpeMapView
+from .views import ExutMapView, IcpeMapView, MapView
 
 urlpatterns = [
     path("", MapView.as_view(), name="map_view"),

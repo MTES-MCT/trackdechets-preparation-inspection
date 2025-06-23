@@ -2,15 +2,17 @@ import logging
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, List, Tuple
+from zoneinfo import ZoneInfo
 
 import pandas as pd
+import polars as pl
+
 from django.utils import timezone
 
 from .constants import BS_TYPES_WITH_MULTIMODAL_TRANSPORT, BSDA, BSDASRI, BSDD, BSDD_NON_DANGEROUS, BSFF, BSVHU
 from .data_extract import (
     load_and_preprocess_regions_geographical_data,
     load_departements_regions_data,
-    load_mapping_rubrique_processing_operation_code,
     load_waste_code_data,
 )
 from .data_extraction import (
@@ -90,7 +92,6 @@ from .utils import (
 WASTE_CODES_DATA = load_waste_code_data()
 DEPARTEMENTS_REGION_DATA = load_departements_regions_data()
 REGIONS_GEODATA = load_and_preprocess_regions_geographical_data()
-PROCESSING_OPERATION_CODE_RUBRIQUE_MAPPING = load_mapping_rubrique_processing_operation_code()
 
 logger = logging.getLogger(__name__)
 
@@ -231,7 +232,7 @@ class SheetProcessor:
         """Extracts datasets containing company information and agreements."""
         company_data_df = build_query_company(siret=self.siret, date_params=["created_at"])
         self.company_data = company_data_df
-        self.company_id = company_data_df["id"].item()
+        self.company_id = company_data_df.select(pl.col("id")).collect().item()
 
         self.receipts_agreements_data = get_agreement_data(company_data_df)
         self.linked_companies_data = get_linked_companies_data(self.siret)
@@ -251,7 +252,7 @@ class SheetProcessor:
                 revised_df = bs_revised_data(
                     company_id=self.company_id,
                 )
-                if len(revised_df) > 0:
+                if len(revised_df.collect()) > 0:
                     self.revised_bs_dfs[bsd_type] = revised_df
 
             bs_transporter_data = bsd_config.get("bs_transporter_data", None)
@@ -259,14 +260,14 @@ class SheetProcessor:
                 transporter_data_df = bs_transporter_data(
                     siret=self.computed.org_id,
                 )
-                if len(transporter_data_df) > 0:
+                if len(transporter_data_df.collect()) > 0:
                     self.transporter_data_dfs[bsd_type] = transporter_data_df
 
             if bsd_type == BSFF:
                 bsff_packagings_data = bsd_config.get("packagings_data")(
                     siret=self.computed.org_id,
                 )  # type: ignore
-                if len(bsff_packagings_data) > 0:
+                if len(bsff_packagings_data.collect()) > 0:
                     self.bsff_packagings_df = bsff_packagings_data
 
     def _extract_icpe_data(self):
@@ -294,20 +295,21 @@ class SheetProcessor:
         self.gistrid_data = get_gistrid_data(self.siret)
 
     def _process_company_data(self):
-        company_data_df = self.company_data
-        company_values = self.company_data.iloc[0]
-        self.company_id = company_data_df.iloc[0].id
-        self.computed.company_name = company_values.get("name")
-        self.computed.company_address = company_values.get("address") or ""
-        self.computed.company_profiles = to_verbose_company_types(company_values.get("company_types"))
-        self.computed.company_collector_profiles = to_verbose_collector_types(company_values.get("collector_types"))
+        company_data_df = self.company_data.collect()
+        self.company_id = company_data_df["id"].item()
+        self.computed.company_name = company_data_df["name"].item()
+        self.computed.company_address = company_data_df["address"].item() or ""
+        self.computed.company_profiles = to_verbose_company_types(company_data_df["company_types"].item())
+        self.computed.company_collector_profiles = to_verbose_collector_types(
+            company_data_df["collector_types"].item()
+        )
         self.computed.company_waste_processor_profiles = to_verbose_waste_processor_types(
-            company_values.get("waste_processor_types")
+            company_data_df["waste_processor_types"].item()
         )
-        self.computed.company_created_at = company_values.get("created_at")
-        self.computed.company_has_enabled_registry_dnd_from_bsd_since = company_values.get(
+        self.computed.company_created_at = company_data_df["created_at"].item()
+        self.computed.company_has_enabled_registry_dnd_from_bsd_since = company_data_df[
             "has_enabled_registry_dnd_from_bsd_since"
-        )
+        ].item()
 
         self.computed.save()
 
@@ -318,10 +320,13 @@ class SheetProcessor:
         self._build_html_components()
 
     def _build_graph_components(self):
-        data_date_interval = (self.data_start_date, self.data_end_date)
+        data_date_interval = (
+            self.data_start_date.replace(tzinfo=ZoneInfo("Europe/Paris")),
+            self.data_end_date.replace(tzinfo=ZoneInfo("Europe/Paris")),
+        )
 
         for bs_type, df in self.bs_dfs.items():
-            if not len(df):
+            if not len(df.collect()):
                 continue
 
             created_rectified_graph = BsdTrackedAndRevisedProcessor(

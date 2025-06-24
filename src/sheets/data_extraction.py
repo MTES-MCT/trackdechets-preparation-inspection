@@ -123,6 +123,7 @@ query_types = {
     "weight_value": pl.Float64,
     "transporters_org_ids": pl.List(inner=pl.String),
     "waste_description": pl.String,
+    "reception_date": pl.Datetime(time_zone=ZoneInfo("Europe/Paris")),
     "dispatch_date": pl.Datetime(time_zone=ZoneInfo("Europe/Paris")),
     "destination_company_org_id": pl.String,
 }

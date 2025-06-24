@@ -1764,7 +1764,7 @@ class RegistryQuantitiesGraphProcessor:
         ]
 
         # If DataFrames are empty then output is empty
-        if all(len(s) == 0 for s in series):
+        if all((s is None) or (len(s) == 0) for s in series):
             return True
 
         return False
@@ -1830,7 +1830,7 @@ class RegistryQuantitiesGraphProcessor:
                 numbers_of_data_points.append(len(incoming_data_by_month))
                 lines.append(incoming_line)
 
-            if len(outgoing_data_by_month) > 0:
+            if (outgoing_data_by_month is not None) and len(outgoing_data_by_month) > 0:
                 outgoing_line = go.Scatter(
                     x=outgoing_data_by_month["date"].to_list(),
                     y=outgoing_data_by_month[variable_name].to_list(),
@@ -1935,30 +1935,23 @@ class RegistryStatementsGraphProcessor:
     def _preprocess_bs_data(self) -> None:
         """Preprocess raw registry data to prepare it for plotting."""
 
-        incoming_data = self.registry_incoming_data
-        if (incoming_data is not None) and (len(incoming_data) > 0):
-            incoming_data = incoming_data.filter(pl.col("reception_date").is_between(*self.data_date_interval)
-                                                 & )[
-                incoming_data["reception_date"].between(*self.data_date_interval)
-                & (incoming_data["siret"] == self.company_siret)
-            ].dropna(subset=["reception_date"])
+        for name, data, date_col in [
+            ("received", self.registry_incoming_data, "reception_date"),
+            ("emitted", self.registry_outgoing_data, "dispatch_date"),
+        ]:
+            if data is not None:
+                data = data.filter(
+                    pl.col(date_col).is_between(*self.data_date_interval) & (pl.col("siret") == self.company_siret)
+                )
+                agg_serie = (
+                    data.group_by(pl.col(date_col).dt.truncate("1mo").alias("date"))
+                    .agg(pl.col("id").count())
+                    .collect()
+                )
 
-            if len(incoming_data) > 0:
-                self.statements_received_by_month_serie = incoming_data.groupby(
-                    pd.Grouper(key="reception_date", freq="1M")
-                ).id.count()
-
-        outgoing_data = self.registry_outgoing_data
-        if (outgoing_data is not None) and (len(outgoing_data) > 0):
-            outgoing_data = outgoing_data[
-                outgoing_data["dispatch_date"].between(*self.data_date_interval)
-                & (outgoing_data["siret"] == self.company_siret)
-            ].dropna(subset=["dispatch_date"])
-
-            if len(outgoing_data) > 0:
-                self.statements_emitted_by_month_serie = outgoing_data.groupby(
-                    pd.Grouper(key="dispatch_date", freq="1M")
-                ).id.count()
+                attr = f"statements_{name}_by_month_serie"
+                if len(agg_serie) > 0:
+                    setattr(self, attr, agg_serie)
 
     def _check_data_empty(self) -> bool:
         match [self.statements_emitted_by_month_serie, self.statements_received_by_month_serie]:
@@ -2001,14 +1994,14 @@ class RegistryStatementsGraphProcessor:
 
         if (statements_emitted_by_month is not None) and (len(statements_emitted_by_month) > 0):
             statements_emitted_bars = go.Bar(
-                x=statements_emitted_by_month.index,
-                y=statements_emitted_by_month,
+                x=statements_emitted_by_month["date"],
+                y=statements_emitted_by_month["id"],
                 name=f"{name} - sortant",
                 hovertext=[
                     "{} - <b>{}</b> déclaration(s) sortante(s) de {}".format(
                         index.strftime("%B %y").capitalize(), e, hover_suffix
                     )
-                    for index, e in statements_emitted_by_month.items()
+                    for index, e in statements_emitted_by_month.iter_rows()
                 ],
                 hoverinfo="text",
                 textfont_size=text_size,
@@ -2016,19 +2009,19 @@ class RegistryStatementsGraphProcessor:
                 constraintext="none",
                 marker_color="#6A6AF4",
             )
-            ticks0.append(statements_emitted_by_month.index.min())
-            max_y = max(max_y, statements_emitted_by_month.max())
+            ticks0.append(statements_emitted_by_month["date"].min())
+            max_y = max(max_y, statements_emitted_by_month["id"].max())
             nums_points.append(len(statements_emitted_by_month))
             bars.append(statements_emitted_bars)
 
         if (statements_received_by_month is not None) and (len(statements_received_by_month) > 0):
             statements_received_bars = go.Bar(
-                x=statements_received_by_month.index,
-                y=statements_received_by_month,
+                x=statements_received_by_month["date"],
+                y=statements_received_by_month["id"],
                 name=f"{name} - entrant",
                 hovertext=[
                     "{} - <b>{}</b> déclaration(s) de {}".format(index.strftime("%B %y").capitalize(), e, hover_suffix)
-                    for index, e in statements_received_by_month.items()
+                    for index, e in statements_received_by_month.iter_rows()
                 ],
                 hoverinfo="text",
                 textfont_size=text_size,
@@ -2036,8 +2029,8 @@ class RegistryStatementsGraphProcessor:
                 constraintext="none",
                 marker_color="#E1000F",
             )
-            ticks0.append(statements_received_by_month.index.min())
-            max_y = max(max_y, statements_received_by_month.max())
+            ticks0.append(statements_received_by_month["date"].min())
+            max_y = max(max_y, statements_received_by_month["id"].max())
             nums_points.append(len(statements_received_by_month))
             bars.append(statements_received_bars)
 
@@ -2115,8 +2108,8 @@ class IntermediaryBordereauxCountsGraphProcessor:
     def __init__(
         self,
         company_siret: str,
-        bs_data_dfs: Dict[str, pd.DataFrame],
-        transporters_data_df: Dict[str, pd.DataFrame],  # Handling new multi-modal Trackdéchets feature
+        bs_data_dfs: Dict[str, pl.LazyFrame],
+        transporters_data_df: Dict[str, pl.LazyFrame],  # Handling new multi-modal Trackdéchets feature
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
@@ -2138,31 +2131,30 @@ class IntermediaryBordereauxCountsGraphProcessor:
         bs_data_dfs = self.bs_data_dfs
 
         for bs_type, df in bs_data_dfs.items():
-            df = df.copy()
+            df = df
             if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA]:
                 transport_df = self.transporters_data_df.get(bs_type)
 
-                if (transport_df is None) or len(transport_df) == 0:
+                if transport_df is None:
                     continue
 
-                df.drop(
-                    columns=["sent_at"], errors="ignore", inplace=True
-                )  # To avoid column duplication with transport data
+                df = df.select(pl.selectors.exclude("sent_at"))  # To avoid column duplication with transport data
 
-                df = df.merge(
-                    transport_df[["bs_id", "sent_at"]],
+                df = df.join(
+                    transport_df.select(["bs_id", "sent_at"]),
                     left_on="id",
                     right_on="bs_id",
                     how="left",
-                    validate="one_to_many",
+                    validate="1:m",
                 )
 
-            df = df[
-                df["sent_at"].between(*self.data_date_interval) & (df["eco_organisme_siret"] == self.company_siret)
-            ]
+            df = df.filter(
+                pl.col("sent_at").is_between(*self.data_date_interval)
+                & (pl.col("eco_organisme_siret") == self.company_siret)
+            )
 
-            if len(df) > 0:
-                df_by_month = df.groupby(pd.Grouper(key="sent_at", freq="1M"))["id"].nunique()
+            df_by_month = df.group_by(pl.col("sent_at").dt.truncate("1mo")).agg(pl.col("id").n_unique()).collect()
+            if len(df_by_month) > 0:
                 self.bordereaux_stats[bs_type] = df_by_month
 
     def _check_data_empty(self) -> bool:
@@ -2206,24 +2198,24 @@ class IntermediaryBordereauxCountsGraphProcessor:
             if data is not None and len(data) > 0:
                 bars.append(
                     go.Bar(
-                        x=data.index,
-                        y=data,
+                        x=data["sent_at"],
+                        y=data["id"],
                         text=data,
                         texttemplate="%{text:.0s}",
                         textposition="auto",
                         name=config["name"],
                         hovertext=[
                             f"{index.strftime('%B %y').capitalize()} - <b>{format_number_str(e, 2)}</b> {hover_suffix}"
-                            for index, e in data.items()
+                            for index, e in data.iter_rows()
                         ],
                         hoverinfo="text",
                     )
                 )
-                min_ = data.index.min()
+                min_ = data["sent_at"].min()
                 if (tick0_min is None) or (min_ < tick0_min):
                     tick0_min = min_
 
-                max_ = data.max()
+                max_ = data["id"].max()
                 if (max_y is None) or (max_ < max_y):
                     max_y = max_
 
@@ -2302,8 +2294,8 @@ class IntermediaryBordereauxQuantitiesGraphProcessor:
     def __init__(
         self,
         company_siret: str,
-        bs_data_dfs: Dict[str, pd.DataFrame],
-        transporters_data_df: Dict[str, pd.DataFrame],  # Handling new multi-modal Trackdéchets feature
+        bs_data_dfs: Dict[str, pl.LazyFrame],
+        transporters_data_df: Dict[str, pl.LazyFrame],  # Handling new multi-modal Trackdéchets feature
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
@@ -2325,35 +2317,39 @@ class IntermediaryBordereauxQuantitiesGraphProcessor:
         bs_data_dfs = self.bs_data_dfs
 
         for bs_type, df in bs_data_dfs.items():
-            df = df.copy()
             if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA]:
                 transport_df = self.transporters_data_df.get(bs_type)
 
-                if (transport_df is None) or len(transport_df) == 0:
+                if transport_df is None:
                     continue
 
-                df.drop(
-                    columns=["sent_at"], errors="ignore", inplace=True
-                )  # To avoid column duplication with transport data
+                df = df.select(pl.selectors.exclude("sent_at"))  # To avoid column duplication with transport data
 
-                df = df.merge(
-                    transport_df[["bs_id", "sent_at"]],
+                df = df.join(
+                    transport_df.select(["bs_id", "sent_at"]),
                     left_on="id",
                     right_on="bs_id",
                     how="left",
-                    validate="one_to_many",
+                    validate="1:m",
                 )
 
-            df = df[
-                df["sent_at"].between(*self.data_date_interval) & (df["eco_organisme_siret"] == self.company_siret)
-            ]
-            df = df.drop_duplicates("id")
+            df = df.filter(
+                pl.col("sent_at").is_between(*self.data_date_interval)
+                & (pl.col("eco_organisme_siret") == self.company_siret)
+            ).unique(subset=["id"])
 
-            if len(df) > 0:
-                if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA, BSDASRI]:
-                    df["quantity_received"] = df["quantity_received"] - df["quantity_refused"].fillna(0)
+            if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDASRI]:
+                df = df.with_columns(
+                    (pl.col("quantity_received") - pl.col("quantity_refused").fill_nan(0).fill_null(0)).alias(
+                        "quantity_received"
+                    )
+                )
 
-                df_by_month = df.groupby(pd.Grouper(key="sent_at", freq="1M"))["quantity_received"].sum()
+            df_by_month = (
+                df.group_by(pl.col("sent_at").dt.truncate("1mo")).agg(pl.col("quantity_received").sum()).collect()
+            )
+
+            if len(df_by_month) > 0:
                 self.bordereaux_stats[bs_type] = df_by_month
 
     def _check_data_empty(self) -> bool:
@@ -2397,8 +2393,8 @@ class IntermediaryBordereauxQuantitiesGraphProcessor:
             if data is not None and len(data) > 0:
                 bars.append(
                     go.Scatter(
-                        x=data.index,
-                        y=data,
+                        x=data["sent_at"],
+                        y=data["quantity_received"],
                         name=config["name"],
                         mode="lines+markers",
                         hovertext=[
@@ -2406,17 +2402,17 @@ class IntermediaryBordereauxQuantitiesGraphProcessor:
                                 index.strftime("%B %y").capitalize(),
                                 format_number_str(e),
                             )
-                            for index, e in data.items()
+                            for index, e in data.iter_rows()
                         ],
                         hoverinfo="text",
                         stackgroup="one",
                     )
                 )
-                min_ = data.index.min()
+                min_ = data["sent_at"].min()
                 if (tick0_min is None) or (min_ < tick0_min):
                     tick0_min = min_
 
-                max_ = data.max()
+                max_ = data["quantity_received"].max()
                 if (max_y is None) or (max_ < max_y):
                     max_y = max_
 
@@ -2490,7 +2486,7 @@ class RegistryTransporterStatementsStatsGraphProcessor:
     def __init__(
         self,
         company_siret: str,
-        registry_data: Dict[str, pd.DataFrame],
+        registry_data: Dict[str, pl.LazyFrame],
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
@@ -2521,13 +2517,15 @@ class RegistryTransporterStatementsStatsGraphProcessor:
             if df is None:
                 continue
 
-            df = df[
-                df[date_col].between(*self.data_date_interval)
-                & (df["transporters_org_ids"].apply(lambda x: self.company_siret in x))
-            ]
+            df = df.filter(
+                pl.col(date_col).is_between(*self.data_date_interval)
+                & (pl.col("transporters_org_ids").list.contains(pl.lit(self.company_siret)))
+            )
 
-            if len(df) > 0:
-                df_by_month = df.groupby(pd.Grouper(key=date_col, freq="1M"))["id"].nunique()
+            df_by_month = (
+                df.group_by(pl.col(date_col).dt.truncate("1mo").alias("date")).agg(pl.col("id").n_unique()).collect()
+            )
+            if len(df_by_month) > 0:
                 self.transported_statements_stats[key] = df_by_month
 
     def _check_data_empty(self) -> bool:
@@ -2571,24 +2569,24 @@ class RegistryTransporterStatementsStatsGraphProcessor:
             if data is not None and len(data) > 0:
                 bars.append(
                     go.Bar(
-                        x=data.index,
-                        y=data,
+                        x=data["date"],
+                        y=data["id"],
                         text=data,
                         texttemplate="%{text:.0s}",
                         textposition="auto",
                         name=config["name"],
                         hovertext=[
                             f"{index.strftime('%B %y').capitalize()} - <b>{format_number_str(e, 2)}</b> {hover_suffix}"
-                            for index, e in data.items()
+                            for index, e in data.iter_rows()
                         ],
                         hoverinfo="text",
                     )
                 )
-                min_ = data.index.min()
+                min_ = data["date"].min()
                 if (tick0_min is None) or (min_ < tick0_min):
                     tick0_min = min_
 
-                max_ = data.max()
+                max_ = data["id"].max()
                 if (max_y is None) or (max_ < max_y):
                     max_y = max_
 
@@ -2663,7 +2661,7 @@ class RegistryTransporterQuantitiesGraphProcessor:
     def __init__(
         self,
         company_siret: str,
-        registry_data: Dict[str, pd.DataFrame],
+        registry_data: Dict[str, pl.LazyFrame],
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
@@ -2695,13 +2693,17 @@ class RegistryTransporterQuantitiesGraphProcessor:
                 continue
 
             for quantity_col in ["weight_value", "volume"]:  # Handle multiple units
-                df = df[
-                    df[date_col].between(*self.data_date_interval)
-                    & (df["transporters_org_ids"].apply(lambda x: self.company_siret in x))
-                ]
-                df = df[df[quantity_col] > 0]
-                if len(df) > 0:
-                    df_by_month = df.groupby(pd.Grouper(key=date_col, freq="1M"))[quantity_col].sum()
+                df = df.filter(
+                    pl.col(date_col).is_between(*self.data_date_interval)
+                    & pl.col("transporters_org_ids").list.contains(pl.lit(self.company_siret))
+                ).filter(pl.col(quantity_col) > 0)
+
+                df_by_month = (
+                    df.group_by(pl.col(date_col).dt.truncate("1mo").alias("date"))
+                    .agg(pl.col(quantity_col).sum())
+                    .collect()
+                )
+                if len(df_by_month) > 0:
                     self.transported_quantities_stats[key][quantity_col] = df_by_month
 
     def _check_data_empty(self) -> bool:
@@ -2749,6 +2751,8 @@ class RegistryTransporterQuantitiesGraphProcessor:
                     if (data_df is None) or len(data_df) == 0:
                         continue
 
+                    data_temp = data_df.select(["date", quantity_col])
+
                     unit_str = "t"
                     unit_name_str = "masse"
                     marker_line_style = "solid"
@@ -2763,13 +2767,13 @@ class RegistryTransporterQuantitiesGraphProcessor:
 
                     bars.append(
                         go.Scatter(
-                            x=data_df.index,
-                            y=data_df,
+                            x=data_temp["date"],
+                            y=data_temp[quantity_col],
                             name=f"{unit_name_str.capitalize()} de {config['name']}",
                             mode="lines+markers",
                             hovertext=[
                                 f"{index.strftime('%B %y').capitalize()} - <b>{format_number_str(e, 2)}<b>{unit_str} {hover_suffix}"
-                                for index, e in data_df.items()
+                                for index, e in data_temp.iter_rows()
                             ],
                             hoverinfo="text",
                             stackgroup="one",
@@ -2778,11 +2782,11 @@ class RegistryTransporterQuantitiesGraphProcessor:
                             marker_size=marker_size,
                         )
                     )
-                    min_ = data_df.index.min()
+                    min_ = data_df["date"].min()
                     if (tick0_min is None) or (min_ < tick0_min):
                         tick0_min = min_
 
-                    max_ = data_df.max()
+                    max_ = data_df[quantity_col].max()
                     if (max_y is None) or (max_ < max_y):
                         max_y = max_
 

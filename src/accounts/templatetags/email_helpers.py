@@ -8,7 +8,9 @@ register = template.Library()
 
 @register.simple_tag(takes_context=True)
 def second_factor_url(context):
-    current_site = Site.objects.get_current()
+    current_site = context.get("current_site")
+    if not current_site:
+        current_site = Site.objects.first()
 
     domain = current_site.domain
     return f"https://{domain}{reverse_lazy('second_factor')}"
@@ -16,7 +18,7 @@ def second_factor_url(context):
 
 @register.simple_tag(takes_context=True)
 def logo_url(context):
-    current_site = Site.objects.get_current()
+    current_site = Site.objects.first()
 
     domain = current_site.domain
     return f"https://{domain}{static('img/trackdechets.png')}"

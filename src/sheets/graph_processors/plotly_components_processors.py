@@ -981,8 +981,8 @@ class ICPEAnnualItemProcessor:
                 line_dash="dot",
                 line_color="black",
                 line_width=2,
-                x=x.timestamp()
-                * 1000,  # Due to this bug : https://github.com/plotly/plotly.py/issues/3065, we have to convert to epoch here
+                x=x.timestamp() * 1000,
+                # Due to this bug : https://github.com/plotly/plotly.py/issues/3065, we have to convert to epoch here
                 annotation_text=f"{year}",
                 annotation_position="top right",
             )
@@ -1044,7 +1044,7 @@ class ICPEAnnualItemProcessor:
         fig.update_yaxes(
             range=[0, max_y * 1.3],
             gridcolor="#ccc",
-            title="Quantité traitée en tonnes<br>(somme cummulée annuellement)",
+            title="Quantité traitée en tonnes<br>(somme cumulée annuellement)",
         )
 
         fig.update_xaxes(

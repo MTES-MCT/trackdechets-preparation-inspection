@@ -126,6 +126,8 @@ query_types = {
     "reception_date": pl.Datetime(time_zone=ZoneInfo("Europe/Paris")),
     "dispatch_date": pl.Datetime(time_zone=ZoneInfo("Europe/Paris")),
     "destination_company_org_id": pl.String,
+    "operation_date": pl.Datetime(time_zone=ZoneInfo("Europe/Paris")),
+    "acceptation_date": pl.Datetime(time_zone=ZoneInfo("Europe/Paris")),
 }
 
 

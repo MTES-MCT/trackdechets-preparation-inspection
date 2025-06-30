@@ -508,7 +508,10 @@ class SheetProcessor:
             self.all_bsd_data_empty = False
 
     def _build_html_components(self):
-        data_date_interval = (self.data_start_date, self.data_end_date)
+        data_date_interval = (
+            self.data_start_date.replace(tzinfo=ZoneInfo("Europe/Paris")),
+            self.data_end_date.replace(tzinfo=ZoneInfo("Europe/Paris")),
+        )
 
         for bs_type, df in self.bs_dfs.items():
             quantity_variables = get_quantity_variable_names(bs_type)

@@ -87,6 +87,16 @@ class BsdQuantitiesGraph:
             & pl.col("sent_at").is_between(*self.data_date_interval)
         )
 
+        # Handle quantity refused
+        if self.bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDASRI]:
+            incoming_data = incoming_data.with_columns(
+                (pl.col("quantity_received") - pl.col("quantity_refused").fill_nan(0).fill_null(0))
+            )
+
+            outgoing_data = outgoing_data.with_columns(
+                (pl.col("quantity_received") - pl.col("quantity_refused").fill_nan(0).fill_null(0))
+            )
+
         # We iterate over the different variables chosen to compute the statistics
         for variable_name in self.quantity_variables_names:
             # If there is a packagings_data DataFrame, then it means that we are
@@ -111,16 +121,6 @@ class BsdQuantitiesGraph:
                     pl.col(variable_name).sum()
                 )
             else:
-                # Handle quantity refused
-                if self.bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDASRI]:
-                    incoming_data = incoming_data.with_columns(
-                        (pl.col("quantity_received") - pl.col("quantity_refused"))
-                    )
-
-                    outgoing_data = outgoing_data.with_columns(
-                        (pl.col("quantity_received") - pl.col("quantity_refused"))
-                    )
-
                 outgoing_data_by_month = outgoing_data.group_by(pl.col("sent_at").dt.truncate("1mo")).agg(
                     pl.col(variable_name).sum()
                 )
@@ -181,7 +181,7 @@ class BsdQuantitiesGraph:
             if len(incoming_data_by_month) > 0:
                 incoming_line = go.Scatter(
                     x=incoming_data_by_month["received_at"].to_list(),
-                    y=incoming_data_by_month["quantity_received"].to_list(),
+                    y=incoming_data_by_month[variable_name].to_list(),
                     name=incoming_line_name,
                     mode="lines+markers",
                     hovertext=[
@@ -201,7 +201,7 @@ class BsdQuantitiesGraph:
             if len(outgoing_data_by_month) > 0:
                 outgoing_line = go.Scatter(
                     x=outgoing_data_by_month["sent_at"],
-                    y=outgoing_data_by_month["quantity_received"],
+                    y=outgoing_data_by_month[variable_name],
                     name=outgoing_line_name,
                     mode="lines+markers",
                     hovertext=[
@@ -1642,7 +1642,7 @@ class TransportedQuantitiesGraphProcessor:
                 if (tick0_min is None) or (min_ < tick0_min):
                     tick0_min = min_
 
-                max_ = data["quantity_received"]
+                max_ = data["quantity_received"].max()
                 if (max_y is None) or (max_ < max_y):
                     max_y = max_
 

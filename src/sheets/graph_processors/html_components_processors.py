@@ -1,6 +1,6 @@
 import json
 import numbers
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import chain
 from typing import Dict
 from zoneinfo import ZoneInfo
@@ -1043,7 +1043,7 @@ class ICPEItemsProcessor:
         data = self.preprocessed_df
 
         # Handle "nan" textual values not being converted to JSON null
-        data = data.with_columns(pl.col("quantite").replace("nan", pd.NA))
+        data = data.with_columns(pl.col("quantite").replace("nan", None))
         return data.to_dicts()
 
     def _check_empty_data(self) -> bool:
@@ -1123,7 +1123,7 @@ class TraceabilityInterruptionsProcessor:
         )
 
         final_df = final_df.with_columns(
-            pl.col("quantity").map_elements(lambda x: format_number_str(x, precision=2))
+            pl.col("quantity").map_elements(lambda x: format_number_str(x, precision=2), return_dtype=pl.String)
         ).sort("quantity", descending=True)
 
         self.preprocessed_data = final_df.collect()
@@ -1243,7 +1243,7 @@ class WasteIsDangerousStatementsProcessor:
         )
 
         final_df = final_df.with_columns(
-            pl.col("quantity").map_elements(lambda x: format_number_str(x, precision=2))
+            pl.col("quantity").map_elements(lambda x: format_number_str(x, precision=2), return_dtype=pl.String)
         ).sort("quantity", descending=True)
 
         self.preprocessed_data = final_df.collect()
@@ -1688,29 +1688,38 @@ class WasteProcessingWithoutICPERubriqueProcessor:
                     bs_2760_dfs.append(bsda_data_filtered)
 
             if len(bs_2760_dfs) > 0:
-                bs_df: pl.DataFrame = pl.concat(
-                    bs_2760_dfs, how="diagonal"
-                ).collect()  # Creates the list of bordereaux
+                bs_df: pl.LazyFrame = pl.concat(bs_2760_dfs, how="diagonal")
 
-                total_quantity = bs_df.select(pl.col("quantity_received").sum()).item()
+                filter_expr = pl.col("quantity_received") > 0
                 if "quantity_refused" in bs_df.columns:
-                    total_quantity -= (
-                        bs_df.select(pl.col("quantity_refused").sum()).fill_null(0).fill_nan(0).sum().item()
-                    )
+                    filter_expr = (
+                        pl.col("quantity_received") - pl.col("quantity_refused").fill_null(0).fill_nan(0)
+                    ) > 0
 
-                self.preprocessed_data["dangerous"].append(
-                    {
-                        "missing_rubriques": "2760-1, 2760-2",
-                        "num_missing_rubriques": 2,
-                        "found_processing_codes": "D5",
-                        "num_found_processing_codes": 1,
-                        "bs_list": bs_df,
-                        "stats": {
-                            "total_bs": format_number_str(len(bs_df), 0),  # Total number of bordereaux
-                            "total_quantity": format_number_str(total_quantity, 2),  # Total quantity processed
-                        },
-                    }
-                )
+                bs_df = bs_df.filter(filter_expr)
+
+                bs_df = bs_df.collect()  # Creates the list of bordereaux
+
+                if len(bs_df) > 0:
+                    total_quantity = bs_df.select(pl.col("quantity_received").sum()).item()
+                    if "quantity_refused" in bs_df.columns:
+                        total_quantity -= (
+                            bs_df.select(pl.col("quantity_refused").sum()).fill_null(0).fill_nan(0).sum().item()
+                        )
+
+                    self.preprocessed_data["dangerous"].append(
+                        {
+                            "missing_rubriques": "2760-1, 2760-2",
+                            "num_missing_rubriques": 2,
+                            "found_processing_codes": "D5",
+                            "num_found_processing_codes": 1,
+                            "bs_list": bs_df,
+                            "stats": {
+                                "total_bs": format_number_str(len(bs_df), 0),  # Total number of bordereaux
+                                "total_quantity": format_number_str(total_quantity, 2),  # Total quantity processed
+                            },
+                        }
+                    )
 
     def _preprocess_data_single_rubrique(self) -> None:
         configs = [
@@ -1774,6 +1783,8 @@ class WasteProcessingWithoutICPERubriqueProcessor:
                     bs_filtered_df = bs_filtered_df.with_columns(
                         pl.col("quantity_received") - pl.col("quantity_refused").fill_nan(0).fill_null(0)
                     )
+
+                bs_filtered_df.filter(pl.col("quantity_received") > 0)
 
                 bs_filtered_df = bs_filtered_df.collect()
                 if len(bs_filtered_df) > 0:
@@ -1850,7 +1861,7 @@ class WasteProcessingWithoutICPERubriqueProcessor:
                 )
 
                 # To handle the case of rubriques with trailing "-a" or trailing "-b", we use only the 6 first characters
-                missing_rubriques = set(rubriques) - set(installation_rubriques.collect().to_list())
+                missing_rubriques = set(rubriques) - set(installation_rubriques.collect()["rubrique"].to_list())
                 has_rubrique = len(missing_rubriques) == 0
 
             if has_rubrique:
@@ -1930,6 +1941,8 @@ class WasteProcessingWithoutICPERubriqueProcessor:
                         pl.col("operation_date").max().alias("processed_at"),
                         pl.col("acceptation_weight").sum().alias("quantity_received"),
                     )
+                else:
+                    continue
 
             df_filtered = df_filtered.with_columns(pl.lit(bs_type.upper()).alias("bs_type"))
             bs_dfs.append(df_filtered)
@@ -2087,7 +2100,7 @@ class BsdaWorkerStatsProcessor:
     def __init__(
         self,
         company_siret: str,
-        bsda_data_df: pd.DataFrame,
+        bsda_data_df: pl.LazyFrame,
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.bsda_data_df = bsda_data_df
@@ -2111,35 +2124,31 @@ class BsdaWorkerStatsProcessor:
         siret = self.company_siret
 
         df = self.bsda_data_df
-        if len(df) == 0:
-            return
 
-        if len(self.bsda_data_df) == 0:
-            return
-
-        df = df[df.worker_company_siret == siret]
-
-        if len(df) == 0:
-            return
+        df = df.filter(pl.col("worker_company_siret") == siret)
 
         self.bsda_worker_stats["signed_producer"] = len(
-            df[df["emitter_emission_signature_date"].between(*self.data_date_interval)]
+            df.filter(pl.col("emitter_emission_signature_date").is_between(*self.data_date_interval)).collect()
         )
         self.bsda_worker_stats["signed_worker"] = len(
-            df[
-                df["emitter_emission_signature_date"].between(*self.data_date_interval)
-                & df["worker_work_signature_date"].between(*self.data_date_interval)
-            ]
+            df.filter(
+                pl.col("emitter_emission_signature_date").is_between(*self.data_date_interval)
+                & pl.col("worker_work_signature_date").is_between(*self.data_date_interval)
+            ).collect()
         )
         self.bsda_worker_stats["signed_transporter"] = len(
-            df[
-                df["emitter_emission_signature_date"].between(*self.data_date_interval)
-                & df["worker_work_signature_date"].between(*self.data_date_interval)
-                & df["sent_at"].between(*self.data_date_interval)
-            ]
+            df.filter(
+                pl.col("emitter_emission_signature_date").is_between(*self.data_date_interval)
+                & pl.col("worker_work_signature_date").is_between(*self.data_date_interval)
+                & pl.col("sent_at").is_between(*self.data_date_interval)
+            ).collect()
         )
-        self.bsda_worker_stats["received"] = len(df[df["received_at"].between(*self.data_date_interval)])
-        self.bsda_worker_stats["processed"] = len(df[df["processed_at"].between(*self.data_date_interval)])
+        self.bsda_worker_stats["received"] = len(
+            df.filter(pl.col("received_at").is_between(*self.data_date_interval)).collect()
+        )
+        self.bsda_worker_stats["processed"] = len(
+            df.filter(pl.col("processed_at").is_between(*self.data_date_interval)).collect()
+        )
 
         if self.bsda_worker_stats["signed_worker"] > 0:
             self.bsda_worker_stats["signed_vs_processed_ratio"] = format_number_str(
@@ -2147,42 +2156,54 @@ class BsdaWorkerStatsProcessor:
                 2,
             )
 
-        df_filtered = df[
-            df["processed_at"].between(*self.data_date_interval)
-            & df["emitter_emission_signature_date"].between(*self.data_date_interval)
-            & df["worker_work_signature_date"].between(*self.data_date_interval)
-        ]
-        times_to_process_from_emission = df_filtered["processed_at"] - df_filtered["emitter_emission_signature_date"]
-        max_time_to_process_from_emission = times_to_process_from_emission.max()
-        avg_time_to_process_from_emission = times_to_process_from_emission.mean()
+        df_filtered = df.filter(
+            pl.col("processed_at").is_between(*self.data_date_interval)
+            & pl.col("emitter_emission_signature_date").is_between(*self.data_date_interval)
+            & pl.col("worker_work_signature_date").is_between(*self.data_date_interval)
+        )
+        times_to_process_from_emission = df_filtered.select(
+            (pl.col("processed_at") - pl.col("emitter_emission_signature_date")).alias("time_to_process")
+        )
+        max_time_to_process_from_emission: timedelta | None = (
+            times_to_process_from_emission.select(pl.col("time_to_process").max()).collect().item()
+        )
+        avg_time_to_process_from_emission: timedelta | None = (
+            times_to_process_from_emission.select(pl.col("time_to_process").mean()).collect().item()
+        )
 
-        if not pd.isna(max_time_to_process_from_emission):
+        if max_time_to_process_from_emission is not None:
             self.bsda_worker_stats["max_processing_time_from_emission"] = format_number_str(
-                max_time_to_process_from_emission.value / (1e9 * 3600 * 24), 2
+                max_time_to_process_from_emission.total_seconds() / (3600 * 24), 2
             )
 
-        if not pd.isna(avg_time_to_process_from_emission):
+        if avg_time_to_process_from_emission is not None:
             self.bsda_worker_stats["avg_processing_time_from_emission"] = format_number_str(
-                avg_time_to_process_from_emission.value / (1e9 * 3600 * 24)
+                avg_time_to_process_from_emission.total_seconds() / (3600 * 24)
             )
 
-        df_filtered = df[
-            df["processed_at"].between(*self.data_date_interval)
-            & df["sent_at"].between(*self.data_date_interval)
-            & df["worker_work_signature_date"].between(*self.data_date_interval)
-        ]
-        times_to_process_from_sending = df_filtered["processed_at"] - df_filtered["sent_at"]
-        max_time_to_process_from_sending = times_to_process_from_sending.max()
-        avg_time_to_process_from_sending = times_to_process_from_sending.mean()
+        df_filtered = df.filter(
+            pl.col("processed_at").is_between(*self.data_date_interval)
+            & pl.col("sent_at").is_between(*self.data_date_interval)
+            & pl.col("worker_work_signature_date").is_between(*self.data_date_interval)
+        )
+        times_to_process_from_sending = df_filtered.select(
+            (pl.col("processed_at") - pl.col("sent_at")).alias("time_to_process")
+        )
+        max_time_to_process_from_sending: timedelta | None = (
+            times_to_process_from_sending.select(pl.col("time_to_process").max()).collect().item()
+        )
+        avg_time_to_process_from_sending: timedelta | None = (
+            times_to_process_from_sending.select(pl.col("time_to_process").mean()).collect().item()
+        )
 
-        if not pd.isna(max_time_to_process_from_sending):
+        if max_time_to_process_from_sending is not None:
             self.bsda_worker_stats["max_processing_time_from_sending"] = format_number_str(
-                max_time_to_process_from_sending.value / (1e9 * 3600 * 24), 2
+                max_time_to_process_from_sending.total_seconds() / (3600 * 24), 2
             )
 
-        if not pd.isna(avg_time_to_process_from_sending):
+        if avg_time_to_process_from_sending is not None:
             self.bsda_worker_stats["avg_processing_time_from_sending"] = format_number_str(
-                avg_time_to_process_from_sending.value / (1e9 * 3600 * 24)
+                avg_time_to_process_from_sending.total_seconds() / (3600 * 24)
             )
 
     def _check_empty_data(self) -> bool:
@@ -2222,10 +2243,10 @@ class TransporterBordereauxStatsProcessor:
     def __init__(
         self,
         company_siret: str,
-        transporters_data_df: Dict[str, pd.DataFrame],  # Handling new multi-modal Trackdéchets feature
-        bs_data_dfs: Dict[str, pd.DataFrame],
+        transporters_data_df: Dict[str, pl.LazyFrame],  # Handling new multi-modal Trackdéchets feature
+        bs_data_dfs: Dict[str, pl.LazyFrame],
         data_date_interval: tuple[datetime, datetime],
-        packagings_data_df: pd.DataFrame | None = None,
+        packagings_data_df: pl.LazyFrame | None = None,
     ) -> None:
         self.company_siret = company_siret
         self.transporters_data_df = transporters_data_df
@@ -2248,19 +2269,17 @@ class TransporterBordereauxStatsProcessor:
         bs_data_dfs = self.bs_data_dfs
 
         for bs_type, df in chain(transporter_data_dfs.items(), bs_data_dfs.items()):
-            df = df[
-                df["sent_at"].between(*self.data_date_interval)
-                & (df["transporter_company_siret"] == self.company_siret)
-            ]
+            df = df.filter(
+                pl.col("sent_at").is_between(*self.data_date_interval)
+                & (pl.col("transporter_company_siret") == self.company_siret)
+            )
 
-            if len(df) > 0:
-                quantity_col = "quantity_received"
-                id_col = "bs_id" if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA, BSFF] else "id"
+            id_col = "bs_id" if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA, BSFF] else "id"
 
-                num_bordereaux = df[id_col].nunique()
-                quantity = df[quantity_col].sum()
-                self.transported_bordereaux_stats[bs_type]["count"] = num_bordereaux
-                self.transported_bordereaux_stats[bs_type]["quantity"] = format_number_str(quantity, 2)
+            num_bordereaux = df.select(pl.col(id_col).n_unique()).collect().item()
+            quantity = df.select(pl.col("quantity_received").sum()).collect().item()
+            self.transported_bordereaux_stats[bs_type]["count"] = num_bordereaux
+            self.transported_bordereaux_stats[bs_type]["quantity"] = format_number_str(quantity, 2)
 
     def _check_data_empty(self) -> bool:
         if all((e is None) or (e == {}) for e in self.transported_bordereaux_stats.values()):
@@ -2297,9 +2316,9 @@ class FollowedWithPNTTDTableProcessor:
     def __init__(
         self,
         company_siret: str,
-        bs_data_dfs: Dict[str, pd.DataFrame],
+        bs_data_dfs: Dict[str, pl.LazyFrame],
         data_date_interval: tuple[datetime, datetime],
-        waste_codes_df: pd.DataFrame,
+        waste_codes_df: pl.LazyFrame,
     ) -> None:
         self.bs_data_dfs = bs_data_dfs
         self.data_date_interval = data_date_interval
@@ -2314,60 +2333,64 @@ class FollowedWithPNTTDTableProcessor:
         dfs_to_concat = [df for df in self.bs_data_dfs.values() if df is not None]
 
         if len(dfs_to_concat) == 0:
-            self.preprocessed_df = pd.DataFrame()
+            self.preprocessed_df = pl.DataFrame()
             return
 
-        df = pd.concat(dfs_to_concat)
+        df: pl.LazyFrame = pl.concat(dfs_to_concat, how="diagonal")
 
-        df = df[
-            (df["recipient_company_siret"] == siret)
-            & (df["status"] == "FOLLOWED_WITH_PNTTD")
-            & df["processed_at"].between(*self.data_date_interval)
-        ]
+        df = df.filter(
+            (pl.col("recipient_company_siret") == siret)
+            & (pl.col("status") == "FOLLOWED_WITH_PNTTD")
+            & pl.col("processed_at").is_between(*self.data_date_interval)
+        )
 
-        if len(df) > 0:
-            df["foreign_org_id"] = df.apply(
-                lambda x: x["next_destination_company_siret"]
-                if not (pd.isna(x["next_destination_company_siret"]) or x["next_destination_company_siret"] == "")
-                else x["next_destination_company_vat_number"],
-                axis=1,
+        df = df.with_columns(
+            pl.when(
+                (
+                    pl.col("next_destination_company_siret").is_null()
+                    | (pl.col("next_destination_company_siret") == "")
+                ).not_()
             )
+            .then("next_destination_company_siret")
+            .otherwise("next_destination_company_vat_number")
+            .alias("foreign_org_id"),
+            (pl.col("quantity_received") - pl.col("quantity_refused").fill_nan(0).fill_null(0)).alias(
+                "quantity_received"
+            ),  # Handle quantity refused
+        )
 
-            # Handle quantity refused
-            df["quantity_received"] = df["quantity_received"] - df["quantity_refused"].fillna(0)
+        # We compute the quantity by waste codes
+        df_grouped = df.group_by(
+            [
+                "foreign_org_id",
+                "waste_code",
+                "next_destination_processing_operation",
+            ]
+        ).agg(
+            pl.col("quantity_received").sum().alias("quantity"),
+            pl.col("next_destination_company_country").max().alias("destination_country"),
+        )
+        # We add the waste code description from the waste nomenclature
+        final_df = df_grouped.join(
+            self.waste_codes_df,
+            left_on="waste_code",
+            right_on="code",
+            how="left",
+            validate="m:1",
+        )
 
-            # We compute the quantity by waste codes
-            df_grouped = df.groupby(
-                [
-                    "foreign_org_id",
-                    "waste_code",
-                    "next_destination_processing_operation",
-                ],
-                as_index=False,
-            ).agg(
-                quantity=pd.NamedAgg("quantity_received", "sum"),
-                destination_country=pd.NamedAgg("next_destination_company_country", "max"),
+        company_names = df.group_by("foreign_org_id").agg(
+            pl.col("next_destination_company_name").max().alias("destination_name")
+        )
+
+        final_df = final_df.join(company_names, on="foreign_org_id")
+
+        final_df = (
+            final_df.with_columns(
+                pl.col("quantity").map_elements(lambda x: format_number_str(x, 2), return_dtype=pl.String),
+                pl.col("description").fill_null(""),
             )
-            # We add the waste code description from the waste nomenclature
-            final_df = pd.merge(
-                df_grouped,
-                self.waste_codes_df,
-                left_on="waste_code",
-                right_index=True,
-                how="left",
-                validate="many_to_one",
-            )
-
-            company_names = (
-                df.groupby(by="foreign_org_id")["next_destination_company_name"].max().rename("destination_name")
-            )
-
-            final_df = final_df.merge(company_names, left_on="foreign_org_id", right_index=True)
-
-            final_df["quantity"] = final_df["quantity"].apply(lambda x: format_number_str(x, 2))
-            final_df["description"] = final_df["description"].fillna("")
-            final_df = final_df.rename_axis(None, axis=0)
-            self.preprocessed_df = final_df[
+            .select(
                 [
                     "foreign_org_id",
                     "destination_name",
@@ -2377,16 +2400,23 @@ class FollowedWithPNTTDTableProcessor:
                     "next_destination_processing_operation",
                     "quantity",
                 ]
-            ].sort_values(by=["foreign_org_id", "waste_code"])
+            )
+            .sort(["foreign_org_id", "waste_code"])
+        )
+
+        self.preprocessed_df = final_df.collect()
 
     def _check_empty_data(self) -> bool:
         if self.preprocessed_df is None:
             return True
 
+        if len(self.preprocessed_df) == 0:
+            return True
+
         return False
 
     def build_context(self):
-        return self.preprocessed_df.to_dict("records")
+        return self.preprocessed_df.to_dicts()
 
     def build(self):
         self._preprocess_data()
@@ -2409,7 +2439,7 @@ class GistridStatsProcessor:
         DataFrame containing Gistrid notifications.
     """
 
-    def __init__(self, company_siret: str, gistrid_data_df: pd.DataFrame | None) -> None:
+    def __init__(self, company_siret: str, gistrid_data_df: pl.LazyFrame | None) -> None:
         self.company_siret = company_siret
         self.gistrid_data_df = gistrid_data_df
 
@@ -2418,58 +2448,84 @@ class GistridStatsProcessor:
     def _preprocess_gistrid_data(self) -> None:
         """Preprocess raw 'bordereaux' data to prepare it to be displayed."""
         df = self.gistrid_data_df
-        if (df is None) or (len(df) == 0):
+        if df is None:
             return
 
         df = self.gistrid_data_df
-        df["annee_fin_autorisation"] = df["date_autorisee_fin_transferts"].str[-2:]
 
-        import_data = df[df["siret_installation_traitement"] == self.company_siret]
+        df = df.with_columns(
+            pl.col("date_autorisee_fin_transferts").str.slice(-2, None).alias("annee_fin_autorisation")
+        )
 
-        def parse_codes(x):
-            codes = set()
-            for codes_str in x:
-                codes.update(codes_str.split(", "))
-            return ", ".join(sorted(codes))
+        import_data = df.filter(pl.col("siret_installation_traitement") == self.company_siret)
 
         import_data_grouped = (
-            import_data.groupby(["annee_fin_autorisation", "numero_gistrid_notifiant"], as_index=False)
-            .aggregate(
-                nom_origine=pd.NamedAgg(column="nom_notifiant", aggfunc="max"),
-                pays_origine=pd.NamedAgg(column="pays_notifiant", aggfunc="max"),
-                quantites_recues=pd.NamedAgg(column="somme_quantites_recues", aggfunc="sum"),
-                nombre_transferts=pd.NamedAgg(column="nombre_transferts_receptionnes", aggfunc="sum"),
-                codes_dechets=pd.NamedAgg(column="code_ced", aggfunc=parse_codes),
-                codes_operations=pd.NamedAgg(column="code_d_r", aggfunc=parse_codes),
+            import_data.group_by(["annee_fin_autorisation", "numero_gistrid_notifiant"])
+            .agg(
+                pl.col("nom_notifiant").max().alias("nom_origine"),
+                pl.col("pays_notifiant").max().alias("pays_origine"),
+                pl.col("somme_quantites_recues").sum().alias("quantites_recues"),
+                pl.col("nombre_transferts_receptionnes").sum().alias("nombre_transferts"),
+                pl.col("code_ced")
+                .str.join(", ")
+                .str.split(", ")
+                .list.unique()
+                .str.join(", ")
+                .alias("codes_dechets"),  # To avoid duplicates in list
+                pl.col("code_d_r")
+                .str.join(", ")
+                .str.split(", ")
+                .list.unique()
+                .str.join(", ")
+                .alias("codes_operations"),  # To avoid duplicates in list
             )
-            .sort_values("annee_fin_autorisation")
+            .sort("annee_fin_autorisation")
+            .with_columns(
+                pl.col("quantites_recues").map_elements(lambda x: format_number_str(x, 2), return_dtype=pl.String)
+            )
+            .collect()
         )
-        import_data_grouped["quantites_recues"] = import_data_grouped["quantites_recues"].apply(format_number_str, 2)
         if len(import_data_grouped) > 0:
-            self.gistrid_stats["import"] = import_data_grouped.to_dict(orient="records")
-            self.gistrid_stats["numero_gistrid"] = import_data["numero_gistrid_installation_traitement"].iloc[0]
+            self.gistrid_stats["import"] = import_data_grouped.to_dicts()
+            self.gistrid_stats["numero_gistrid"] = (
+                import_data.select(pl.col("numero_gistrid_installation_traitement").first()).collect().item()
+            )
 
-        export_data = df[df["siret_notifiant"] == self.company_siret]
+        export_data = df.filter(pl.col("siret_notifiant") == self.company_siret)
 
         export_data_grouped = (
-            export_data.groupby(
+            export_data.group_by(
                 ["annee_fin_autorisation", "numero_gistrid_installation_traitement"],
-                as_index=False,
             )
-            .aggregate(
-                nom_destination=pd.NamedAgg(column="nom_installation_traitement", aggfunc="max"),
-                pays_destination=pd.NamedAgg(column="pays_installation_traitement", aggfunc="max"),
-                quantites_recues=pd.NamedAgg(column="somme_quantites_recues", aggfunc="sum"),
-                nombre_transferts=pd.NamedAgg(column="nombre_transferts_receptionnes", aggfunc="sum"),
-                codes_dechets=pd.NamedAgg(column="code_ced", aggfunc=parse_codes),
-                codes_operations=pd.NamedAgg(column="code_d_r", aggfunc=parse_codes),
+            .agg(
+                pl.col("nom_installation_traitement").max().alias("nom_destination"),
+                pl.col("pays_installation_traitement").max().alias("pays_destination"),
+                pl.col("somme_quantites_recues").sum().alias("quantites_recues"),
+                pl.col("nombre_transferts_receptionnes").sum().alias("nombre_transferts"),
+                pl.col("code_ced")
+                .str.join(", ")
+                .str.split(", ")
+                .list.unique()
+                .str.join(", ")
+                .alias("codes_dechets"),  # To avoid duplicates in list
+                pl.col("code_d_r")
+                .str.join(", ")
+                .str.split(", ")
+                .list.unique()
+                .str.join(", ")
+                .alias("codes_operations"),  # To avoid duplicates in list
             )
-            .sort_values("annee_fin_autorisation")
+            .sort("annee_fin_autorisation")
+            .with_columns(
+                pl.col("quantites_recues").map_elements(lambda x: format_number_str(x, 2), return_dtype=pl.String)
+            )
+            .collect()
         )
-        export_data_grouped["quantites_recues"] = export_data_grouped["quantites_recues"].apply(format_number_str, 2)
         if len(export_data_grouped) > 0:
-            self.gistrid_stats["export"] = export_data_grouped.to_dict(orient="records")
-            self.gistrid_stats["numero_gistrid"] = export_data["numero_gistrid_notifiant"].iloc[0]
+            self.gistrid_stats["export"] = export_data_grouped.to_dicts()
+            self.gistrid_stats["numero_gistrid"] = (
+                export_data.select(pl.col("numero_gistrid_notifiant").first()).collect().item()
+            )
 
     def _check_data_empty(self) -> bool:
         if len(self.gistrid_stats) == 0:
@@ -2505,8 +2561,8 @@ class RegistryStatsProcessor:
     def __init__(
         self,
         company_siret: str,
-        registry_incoming_data: pd.DataFrame,
-        registry_outgoing_data: pd.DataFrame,
+        registry_incoming_data: pl.LazyFrame,
+        registry_outgoing_data: pl.LazyFrame,
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
@@ -2541,31 +2597,20 @@ class RegistryStatsProcessor:
         incoming_data = self.registry_incoming_data
         outgoing_data = self.registry_outgoing_data
 
-        if incoming_data is not None:
-            incoming_data = incoming_data[
-                incoming_data["reception_date"].between(*self.data_date_interval)
-                & (incoming_data["siret"] == self.company_siret)
-            ]
-            if len(incoming_data) > 0:
-                self.stats["total_statements_incoming"] = incoming_data["id"].nunique()
+        for data_suffix, data_to_process, date_col in [
+            ("incoming", incoming_data, "reception_date"),
+            ("outgoing", outgoing_data, "dispatch_date"),
+        ]:
+            if data_to_process is not None:
+                data = data_to_process.filter(
+                    pl.col(date_col).is_between(*self.data_date_interval) & (pl.col("siret") == self.company_siret)
+                )
 
+                self.stats[f"total_statements_{data_suffix}"] = data.select(pl.col("id").n_unique()).collect().item()
                 for quantity_col, key in [("weight_value", "weight"), ("volume", "volume")]:
-                    total = incoming_data[quantity_col].sum()
+                    total = data.select(pl.col(quantity_col).sum()).collect().item()
                     if total is not None:
-                        self.stats[f"total_{key}_incoming"] = total
-
-        if outgoing_data is not None:
-            outgoing_data = outgoing_data[
-                outgoing_data["dispatch_date"].between(*self.data_date_interval)
-                & (outgoing_data["siret"] == self.company_siret)
-            ]
-            if len(outgoing_data) > 0:
-                self.stats["total_statements_outgoing"] = outgoing_data["id"].nunique()
-
-                for quantity_col, key in [("weight_value", "weight"), ("volume", "volume")]:
-                    total = outgoing_data[quantity_col].sum()
-                    if total is not None:
-                        self.stats[f"total_{key}_outgoing"] = total
+                        self.stats[f"total_{key}_{data_suffix}"] = total
 
         for key in ["weight", "volume"]:
             incoming_bar_size = 0
@@ -2642,8 +2687,8 @@ class IntermediaryBordereauxStatsProcessor:
     def __init__(
         self,
         company_siret: str,
-        bs_data_dfs: Dict[str, pd.DataFrame],
-        transporters_data_df: Dict[str, pd.DataFrame],  # Handling new multi-modal Trackdéchets feature
+        bs_data_dfs: Dict[str, pl.LazyFrame],
+        transporters_data_df: Dict[str, pl.LazyFrame],  # Handling new multi-modal Trackdéchets feature
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
@@ -2660,42 +2705,44 @@ class IntermediaryBordereauxStatsProcessor:
 
     def _preprocess_bs_data(self) -> None:
         """Preprocess raw 'bordereaux' data to prepare it to be displayed."""
-        bs_data_dfs = self.bs_data_dfs.copy()
+        bs_data_dfs = self.bs_data_dfs
 
         for bs_type, df in bs_data_dfs.items():
             if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA]:
                 transport_df = self.transporters_data_df.get(bs_type)
 
-                if (transport_df is None) or len(transport_df) == 0:
+                if transport_df is None:
                     continue
 
-                df.drop(
-                    columns=["sent_at"], errors="ignore", inplace=True
-                )  # To avoid column duplication with transport data
+                df = df.select(pl.selectors.exclude("sent_at"))  # To avoid column duplication with transport data
 
-                df = df.merge(
-                    transport_df[["bs_id", "sent_at"]],
+                df = df.join(
+                    transport_df.select(["bs_id", "sent_at"]),
                     left_on="id",
                     right_on="bs_id",
                     how="left",
-                    validate="one_to_many",
+                    validate="1:m",
                 )
 
-            df = df[
-                df["sent_at"].between(*self.data_date_interval) & (df["eco_organisme_siret"] == self.company_siret)
-            ]
-            df = df.drop_duplicates("id")
+            df = df.filter(
+                pl.col("sent_at").is_between(*self.data_date_interval)
+                & (pl.col("eco_organisme_siret") == self.company_siret)
+            )
+            df = df.unique("id")
 
-            if len(df) > 0:
-                num_bordereaux = df["id"].nunique()
+            num_bordereaux = df.select(pl.col("id").n_unique()).collect().item()
 
-                # handle quantity refused
-                if bs_type in [BSDD, BSDD_NON_DANGEROUS]:
-                    df["quantity_received"] = df["quantity_received"] - df["quantity_refused"].fillna(0)
+            # handle quantity refused
+            if bs_type in [BSDD, BSDD_NON_DANGEROUS]:
+                df = df.with_columns(
+                    (pl.col("quantity_received") - pl.col("quantity_refused").fill_nan(0).fill_null(0)).alias(
+                        "quantity_received"
+                    )
+                )
 
-                quantity = df.drop_duplicates("id")["quantity_received"].sum()
-                self.bordereaux_stats[bs_type]["count"] = format_number_str(num_bordereaux, 0)
-                self.bordereaux_stats[bs_type]["quantity"] = format_number_str(quantity, 2)
+            quantity = df.unique("id").select(pl.col("quantity_received").sum()).collect().item()
+            self.bordereaux_stats[bs_type]["count"] = format_number_str(num_bordereaux, 0)
+            self.bordereaux_stats[bs_type]["quantity"] = format_number_str(quantity, 2)
 
     def _check_data_empty(self) -> bool:
         if all((e is None) or (e == {}) for e in self.bordereaux_stats.values()):
@@ -2733,10 +2780,10 @@ class IncineratorOutgoingWasteProcessor:
     def __init__(
         self,
         company_siret: str,
-        bs_data_dfs: Dict[str, pd.DataFrame],
-        transporters_data_df: Dict[str, pd.DataFrame],  # Handling new multi-modal Trackdéchets feature
-        icpe_data: pd.DataFrame | None,
-        registry_outgoing_data: pd.DataFrame | None,
+        bs_data_dfs: Dict[str, pl.LazyFrame],
+        transporters_data_df: Dict[str, pl.LazyFrame],  # Handling new multi-modal Trackdéchets feature
+        icpe_data: pl.LazyFrame | None,
+        registry_outgoing_data: pl.LazyFrame | None,
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
@@ -2746,7 +2793,7 @@ class IncineratorOutgoingWasteProcessor:
         self.registry_outgoing_data = registry_outgoing_data
         self.data_date_interval = data_date_interval
 
-        self.preprocessed_data = {"dangerous": pd.DataFrame(), "non_dangerous": pd.DataFrame()}
+        self.preprocessed_data = {"dangerous": pl.DataFrame(), "non_dangerous": pl.DataFrame()}
 
     def _preprocess_bs_data(self) -> None:
         """Preprocess raw 'bordereaux' data to prepare it to be displayed."""
@@ -2757,49 +2804,45 @@ class IncineratorOutgoingWasteProcessor:
             if bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDA]:
                 transport_df = self.transporters_data_df.get(bs_type)
 
-                if (transport_df is None) or len(transport_df) == 0:
+                if transport_df is None:
                     continue
 
-                df.drop(
-                    columns=["sent_at"], errors="ignore", inplace=True
-                )  # To avoid column duplication with transport data
+                df = df.select(pl.selectors.exclude("sent_at"))  # To avoid column duplication with transport data
 
-                df = df.merge(
-                    transport_df[["bs_id", "sent_at"]],
+                df = df.join(
+                    transport_df.select(["bs_id", "sent_at"]),
                     left_on="id",
                     right_on="bs_id",
                     how="left",
-                    validate="one_to_many",
+                    validate="1:m",
                 )
 
-            df = df[
-                df["sent_at"].between(*self.data_date_interval) & (df["emitter_company_siret"] == self.company_siret)
-            ]
-            df = df.drop_duplicates("id")
-
-            if len(df) > 0:
-                dfs_to_concat.append(df)
+            df = df.filter(
+                pl.col("sent_at").is_between(*self.data_date_interval)
+                & (pl.col("emitter_company_siret") == self.company_siret)
+            )
+            df = df.unique("id")
+            dfs_to_concat.append(df)
 
         if len(dfs_to_concat) > 0:
-            concat_df = pd.concat(dfs_to_concat)
-            concat_df["waste_name"] = concat_df["waste_name"].fillna("")
+            concat_df: pl.LazyFrame = pl.concat(dfs_to_concat, how="diagonal")
 
+            concat_df = concat_df.with_columns(pl.col("waste_name").fill_null(""))
             # Handle quantity refused
             if "quantity_refused" in concat_df.columns:
-                concat_df["quantity_received"] = concat_df["quantity_received"] - concat_df["quantity_refused"].fillna(
-                    0
+                concat_df = concat_df.with_columns(
+                    (pl.col("quantity_received") - pl.col("quantity_refused").fill_nan(0).fill_null(0)).alias(
+                        "quantity_refused"
+                    )
                 )
 
             aggregated_data_df = (
-                concat_df.groupby(
-                    ["waste_code", "recipient_company_siret", "processing_operation_code"], as_index=False
+                concat_df.group_by(["waste_code", "recipient_company_siret", "processing_operation_code"])
+                .agg(
+                    pl.col("quantity_received").sum().alias("quantity"), pl.col("waste_name").max().alias("waste_name")
                 )
-                .aggregate(
-                    quantity=pd.NamedAgg(column="quantity_received", aggfunc="sum"),
-                    waste_name=pd.NamedAgg(column="waste_name", aggfunc="max"),
-                )
-                .sort_values(by=["waste_code", "recipient_company_siret", "quantity"], ascending=[True, True, False])
-            )
+                .sort(["waste_code", "recipient_company_siret", "quantity"], descending=[False, False, True])
+            ).collect()
 
             if len(aggregated_data_df) > 0:
                 self.preprocessed_data["dangerous"] = aggregated_data_df
@@ -2808,45 +2851,42 @@ class IncineratorOutgoingWasteProcessor:
         """Preprocess raw registry statements data to prepare it to be displayed."""
         registry_data = self.registry_outgoing_data
 
-        if (registry_data is None) or (len(registry_data) == 0):
+        if registry_data is None:
             return
 
-        registry_data["waste_description"] = registry_data["waste_description"].fillna("")
+        registry_data = registry_data.with_columns(pl.col("waste_description").fill_null(""))
 
         dfs = []
         for quantity_colname in ["weight_value", "volume"]:
             aggregated_data_df = (
-                registry_data[
-                    (registry_data["siret"] == self.company_siret)
-                    & (registry_data["dispatch_date"].between(*self.data_date_interval))
-                ]
-                .groupby(["waste_code", "destination_company_org_id", "operation_code"], as_index=False)
+                registry_data.filter(
+                    (pl.col("siret") == self.company_siret)
+                    & (pl.col("dispatch_date").is_between(*self.data_date_interval))
+                )
+                .group_by(["waste_code", "destination_company_org_id", "operation_code"])
                 .agg(
-                    quantity=pd.NamedAgg(column=quantity_colname, aggfunc="sum"),
-                    waste_name=pd.NamedAgg(column="waste_description", aggfunc="max"),
+                    pl.col(quantity_colname).sum().alias("quantity"),
+                    pl.col("waste_description").max().alias("waste_name"),
                 )
-                .sort_values(
-                    by=["waste_code", "destination_company_org_id", "quantity"], ascending=[True, True, False]
-                )
-            )
-            aggregated_data_df["unit"] = "t" if quantity_colname == "weight_value" else "m³"
-
-            aggregated_data_df = aggregated_data_df[aggregated_data_df["quantity"] > 0]
+                .sort(["waste_code", "destination_company_org_id", "quantity"], descending=[False, False, True])
+                .with_columns(pl.lit("t" if quantity_colname == "weight_value" else "m³").alias("unit"))
+                .filter(pl.col("quantity") > 0)
+            ).collect()
 
             if len(aggregated_data_df):
                 dfs.append(aggregated_data_df)
 
         if len(dfs) > 0:
-            final_df = pd.concat(dfs, ignore_index=True)
+            final_df = pl.concat(dfs, how="diagonal")
             self.preprocessed_data["non_dangerous"] = final_df
 
     def is_incinerator(self, dangerous_waste: bool) -> bool:
         rubrique = "2770" if dangerous_waste else "2771"
-        icpe_data = self.icpe_data
+        icpe_data = self.icpe_data.collect()
         if (icpe_data is None) or (len(icpe_data) == 0):
             return False
 
-        return (icpe_data["rubrique"] == rubrique).any()
+        return icpe_data.select((pl.col("rubrique") == rubrique).any()).item()
 
     def _preprocess_data(self):
         if self.is_incinerator(dangerous_waste=True):
@@ -3001,7 +3041,7 @@ class RegistryTransporterStatsProcessor:
     def __init__(
         self,
         company_siret: str,
-        registry_data: Dict[str, pd.DataFrame | None],
+        registry_data: Dict[str, pl.LazyFrame | None],
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
@@ -3027,18 +3067,26 @@ class RegistryTransporterStatsProcessor:
             ("excavated_land_outgoing", "dispatch_date"),
         ]:
             df = registry_data[key]
-            if (df is None) or (len(df) == 0):
+            if df is None:
                 continue
 
-            df = df[
-                df[date_col].between(*self.data_date_interval)
-                & (df["transporters_org_ids"].apply(lambda x: self.company_siret in x))
-            ]
+            df = (
+                df.filter(
+                    pl.col(date_col).is_between(*self.data_date_interval)
+                    & (pl.col("transporters_org_ids").list.contains(self.company_siret))
+                )
+                .select(
+                    pl.col("id").n_unique().alias("num_statements"),
+                    pl.col("weight_value").sum().alias("mass_quantity"),
+                    pl.col("volume").sum().alias("volume_quantity"),
+                )
+                .collect()
+            )
 
             if len(df) > 0:
-                num_statements = df["id"].nunique()
-                mass_quantity = df["weight_value"].sum()
-                volume_quantity = df["volume"].sum()
+                num_statements = df["num_statements"].item()
+                mass_quantity = df["mass_quantity"].item()
+                volume_quantity = df["volume_quantity"].item()
                 self.transported_statements_stats[key]["count"] = num_statements
                 self.transported_statements_stats[key]["mass_quantity"] = format_number_str(mass_quantity, 2)
                 self.transported_statements_stats[key]["volume_quantity"] = format_number_str(volume_quantity, 2)

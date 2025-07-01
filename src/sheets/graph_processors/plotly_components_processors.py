@@ -1134,8 +1134,8 @@ class BsdaWorkerQuantityProcessor:
     def __init__(
         self,
         company_siret: str,
-        bsda_data_df: pd.DataFrame,
-        bsda_transporters_data_df: pd.DataFrame | None,
+        bsda_data_df: pl.LazyFrame,
+        bsda_transporters_data_df: pl.LazyFrame | None,
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
@@ -1151,60 +1151,62 @@ class BsdaWorkerQuantityProcessor:
 
     def _preprocess_bs_data(self) -> None:
         """Preprocess raw 'bordereaux' data to prepare it for plotting."""
-        bsda_data = self.bsda_data.copy()
+        bsda_data = self.bsda_data
         transport_df = self.bsda_transporters_data_df
 
         if (bsda_data is None) or (transport_df is None):
             return
 
         # Handling multimodal
-        bsda_data.drop(
-            columns=["sent_at"],
-            errors="ignore",
-            inplace=True,
+        bsda_data = bsda_data.select(
+            pl.selectors.exclude("sent_at")
         )  # To avoid column duplication with transport data
 
-        bsda_data = bsda_data.merge(
-            transport_df[["bs_id", "sent_at", "transporter_company_siret"]],
+        bsda_data = bsda_data.join(
+            transport_df.select(["bs_id", "sent_at", "transporter_company_siret"]),
             left_on="id",
             right_on="bs_id",
             how="left",
-            validate="one_to_many",
+            validate="1:m",
         )
 
-        bsda_data = bsda_data.groupby("id", as_index=False).agg(
-            {
-                "worker_company_siret": "max",
-                "quantity_received": "max",
-                "waste_details_quantity": "max",
-                "sent_at": "min",
-                "processed_at": "min",
-                "worker_work_signature_date": "min",
-            }
+        bsda_data = bsda_data.group_by("id").agg(
+            pl.col("worker_company_siret").max(),
+            pl.col("quantity_received").max(),
+            pl.col("waste_details_quantity").max(),
+            pl.col("sent_at").min(),
+            pl.col("processed_at").min(),
+            pl.col("worker_work_signature_date").min(),
         )
 
-        bsda_data = bsda_data[bsda_data["worker_company_siret"] == self.company_siret]
+        bsda_data = bsda_data.filter(pl.col("worker_company_siret") == self.company_siret)
 
-        if len(bsda_data) == 0:
-            return
+        res = (
+            bsda_data.filter(pl.col("worker_work_signature_date").is_between(*self.data_date_interval))
+            .group_by(pl.col("worker_work_signature_date").dt.truncate("1mo").alias("date"))
+            .agg(pl.col("waste_details_quantity").sum().alias("quantity_received"))
+            .collect()
+        )
+        if len(res) > 0:
+            self.quantities_signed_by_worker_by_month = res
 
-        bsda_data_filtered = bsda_data[bsda_data["worker_work_signature_date"].between(*self.data_date_interval)]
-        if len(bsda_data_filtered) > 0:
-            self.quantities_signed_by_worker_by_month = bsda_data_filtered.groupby(
-                pd.Grouper(key="worker_work_signature_date", freq="1M")
-            )["waste_details_quantity"].sum()
+        res = (
+            bsda_data.filter(pl.col("sent_at").is_between(*self.data_date_interval))
+            .group_by(pl.col("sent_at").dt.truncate("1mo").alias("date"))
+            .agg(pl.col("quantity_received").sum())
+            .collect()
+        )
+        if len(res) > 0:
+            self.quantities_transported_by_month = res
 
-        bsda_data_filtered = bsda_data[bsda_data["sent_at"].between(*self.data_date_interval)]
-        if len(bsda_data_filtered) > 0:
-            self.quantities_transported_by_month = bsda_data_filtered.groupby(pd.Grouper(key="sent_at", freq="1M"))[
-                "quantity_received"
-            ].sum()
-
-        bsda_data_filtered = bsda_data[bsda_data["processed_at"].between(*self.data_date_interval)]
-        if len(bsda_data_filtered) > 0:
-            self.quantities_processed_by_month = bsda_data_filtered.groupby(pd.Grouper(key="processed_at", freq="1M"))[
-                "quantity_received"
-            ].sum()
+        res = (
+            bsda_data.filter(pl.col("processed_at").is_between(*self.data_date_interval))
+            .group_by(pl.col("processed_at").dt.truncate("1mo").alias("date"))
+            .agg(pl.col("quantity_received").sum())
+            .collect()
+        )
+        if len(res) > 0:
+            self.quantities_processed_by_month = res
 
     def _check_data_empty(self) -> bool:
         if all(
@@ -1247,29 +1249,29 @@ class BsdaWorkerQuantityProcessor:
         max_y = None
         max_points = 0
         for config in configs:
-            data = config["data"]
+            data: pl.DataFrame | None = config["data"]
             hover_suffix = config["hover_suffix"]
             if data is not None and len(data) > 0:
                 lines.append(
                     go.Scatter(
-                        x=data.index,
-                        y=data,
+                        x=data["date"].to_list(),
+                        y=data["quantity_received"].to_list(),
                         name=config["name"],
                         mode="lines+markers",
                         hovertext=[
                             f"{index.strftime('%B %y').capitalize()} - <b>{format_number_str(e, 2)}</b> {hover_suffix}"
-                            for index, e in data.items()
+                            for index, e in data.iter_rows()
                         ],
                         marker_color=config["color"],
                         line_color=config["color"],
                         hoverinfo="text",
                     )
                 )
-                min_ = data.index.min()
+                min_ = data["date"].min()
                 if (tick0_min is None) or (min_ < tick0_min):
                     tick0_min = min_
 
-                max_ = data.max()
+                max_ = data["quantity_received"].max()
                 if (max_y is None) or (max_ < max_y):
                     max_y = max_
 
@@ -1808,7 +1810,7 @@ class RegistryQuantitiesGraphProcessor:
                 marker_symbol = "triangle-up"
                 marker_size = 10
 
-            if len(incoming_data_by_month) > 0:
+            if (incoming_data_by_month is not None) and len(incoming_data_by_month) > 0:
                 incoming_line = go.Scatter(
                     x=incoming_data_by_month["date"].to_list(),
                     y=incoming_data_by_month[variable_name].to_list(),

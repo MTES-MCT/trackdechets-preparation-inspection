@@ -507,6 +507,14 @@ class SheetProcessor:
         if self.computed.eco_organisme_bordereaux_graph_data:
             self.all_bsd_data_empty = False
 
+        bsda_worker_quantities_graph = BsdaWorkerQuantityProcessor(
+            company_siret=self.siret,
+            bsda_data_df=self.bs_dfs[BSDA],
+            bsda_transporters_data_df=self.transporter_data_dfs.get(BSDA),
+            data_date_interval=data_date_interval,
+        )
+        self.computed.bsda_worker_quantity_data = bsda_worker_quantities_graph.build()
+
     def _build_html_components(self):
         data_date_interval = (
             self.data_start_date.replace(tzinfo=ZoneInfo("Europe/Paris")),
@@ -627,14 +635,6 @@ class SheetProcessor:
         self.computed.bsda_worker_stats_data = bsda_worker_stats.build()
         if self.computed.bsda_worker_stats_data:
             self.all_bsd_data_empty = False
-
-        bsda_worker_quantities = BsdaWorkerQuantityProcessor(
-            company_siret=self.siret,
-            bsda_data_df=self.bs_dfs[BSDA],
-            bsda_transporters_data_df=self.transporter_data_dfs.get(BSDA),
-            data_date_interval=data_date_interval,
-        )
-        self.computed.bsda_worker_quantity_data = bsda_worker_quantities.build()
 
         transporter_bordereaux_stats = TransporterBordereauxStatsProcessor(
             company_siret=self.siret,

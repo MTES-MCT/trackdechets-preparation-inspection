@@ -1185,6 +1185,7 @@ class BsdaWorkerQuantityProcessor:
             bsda_data.filter(pl.col("worker_work_signature_date").is_between(*self.data_date_interval))
             .group_by(pl.col("worker_work_signature_date").dt.truncate("1mo").alias("date"))
             .agg(pl.col("waste_details_quantity").sum().alias("quantity_received"))
+            .sort("date")
             .collect()
         )
         if len(res) > 0:
@@ -1194,6 +1195,7 @@ class BsdaWorkerQuantityProcessor:
             bsda_data.filter(pl.col("sent_at").is_between(*self.data_date_interval))
             .group_by(pl.col("sent_at").dt.truncate("1mo").alias("date"))
             .agg(pl.col("quantity_received").sum())
+            .sort("date")
             .collect()
         )
         if len(res) > 0:
@@ -1203,6 +1205,7 @@ class BsdaWorkerQuantityProcessor:
             bsda_data.filter(pl.col("processed_at").is_between(*self.data_date_interval))
             .group_by(pl.col("processed_at").dt.truncate("1mo").alias("date"))
             .agg(pl.col("quantity_received").sum())
+            .sort("date")
             .collect()
         )
         if len(res) > 0:

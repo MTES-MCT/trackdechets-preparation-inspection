@@ -7,7 +7,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.views.generic import DetailView, FormView, TemplateView
 
-from accounts.constants import PERMS_BSD, PERMS_ROAD_CONTROL
+from accounts.constants import PERMS_BSD_SEARCH, PERMS_ROAD_CONTROL
 from common.constants import STATE_DONE, STATE_RUNNING
 from common.mixins import FullyLoggedMixin
 from config.celery_app import app
@@ -136,9 +136,11 @@ class NoResultRoadControlPdf(FullyLoggedMixin, BsdRetrievingMixin, FormView):
         return response
 
 
-class RoadControlPdf(FullyLoggedMixin, BsdRetrievingMixin, TemplateView):
+class SingleBsdPdfDownload(FullyLoggedMixin, BsdRetrievingMixin, TemplateView):
+    """Pdf download view used by control and bsd views"""
+
     template_name = "roadcontrol/road_control_pdf.html"
-    allowed_user_categories = PERMS_ROAD_CONTROL
+    allowed_user_categories = list({*PERMS_ROAD_CONTROL, *PERMS_BSD_SEARCH})
 
     def get_pdf_download_link(self, bsd_type, bsd_id):
         link = query_td_pdf(bsd_type=bsd_type, bsd_id=bsd_id)
@@ -315,7 +317,7 @@ class RoadControlRecentPdfs(FullyLoggedMixin, TemplateView):
 
 class BsdSearch(FullyLoggedMixin, TemplateView):
     template_name = "roadcontrol/bsd_search.html"
-    allowed_user_categories = PERMS_BSD
+    allowed_user_categories = PERMS_BSD_SEARCH
 
     def get_context_data(self, **kwargs):
         form = BsdSearchForm()
@@ -326,7 +328,7 @@ class BsdSearchResult(FullyLoggedMixin, FormView):
     form_class = BsdSearchForm
     success_url = ""
     template_name = "roadcontrol/partials/search_result.html"
-    allowed_user_categories = PERMS_BSD
+    allowed_user_categories = PERMS_BSD_SEARCH
 
     def form_valid(self, form):
         bsd_id = form.cleaned_data["bsd_id"]
@@ -375,7 +377,7 @@ class BsdSearchResult(FullyLoggedMixin, FormView):
 
 class BsdRecentPdfs(FullyLoggedMixin, TemplateView):
     template_name = "roadcontrol/partials/_recent_pdfs.html"
-    allowed_user_categories = PERMS_BSD
+    allowed_user_categories = PERMS_BSD_SEARCH
 
     def get_recent_downloads(self):
         user = self.request.user

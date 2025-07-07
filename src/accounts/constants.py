@@ -44,7 +44,16 @@ PERMS_ROAD_CONTROL = [
     UserCategoryChoice.GENDARMERIE,
     UserCategoryChoice.DOUANE,
 ]
-PERMS_BSD = PERMS_SHEET_AND_REGISTRY
+PERMS_BSD_SEARCH = [
+    UserCategoryChoice.STAFF_TD,
+    UserCategoryChoice.ADMINISTRATION_CENTRALE,
+    UserCategoryChoice.INSPECTEUR_ICPE,
+    UserCategoryChoice.CTT,
+    UserCategoryChoice.GENDARMERIE,
+    UserCategoryChoice.DOUANE,
+    UserCategoryChoice.INSPECTION_TRAVAIL,
+    UserCategoryChoice.ARS,
+]
 PERMS_MAP = [
     UserCategoryChoice.STAFF_TD,
     UserCategoryChoice.ADMINISTRATION_CENTRALE,

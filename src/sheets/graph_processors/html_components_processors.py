@@ -910,12 +910,14 @@ class StorageStatsProcessor:
         self,
         company_siret: str,
         bs_data_dfs: Dict[str, pl.LazyFrame],
+        transporters_data_df: Dict[str, pl.LazyFrame],
         waste_codes_df: pl.LazyFrame,
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
 
         self.bs_data_dfs = bs_data_dfs
+        self.transporters_data_df = transporters_data_df
         self.waste_codes_df = waste_codes_df
         self.data_date_interval = data_date_interval
 
@@ -925,58 +927,97 @@ class StorageStatsProcessor:
     def _preprocess_data(self) -> pd.Series | None:
         siret = self.company_siret
 
-        dfs_to_concat = [df for bs_type, df in self.bs_data_dfs.items() if bs_type != BSDD_NON_DANGEROUS]
+        dfs_to_concat = []
+        for bs_type, df in self.bs_data_dfs.items():
+            if (df is None) or (bs_type == BSDD_NON_DANGEROUS):
+                continue
 
-        df = pl.concat(dfs_to_concat, how="diagonal")
+            if bs_type in BS_TYPES_WITH_MULTIMODAL_TRANSPORT:
+                transport_df = self.transporters_data_df.get(bs_type)
+                if transport_df is None:
+                    continue
 
-        # Handle quantity refused
-        if "quantity_refused" in df.columns:
-            df = df.with_columns(pl.col("quantity_received") - pl.col("quantity_refused").fill_nan(0).fill_null(0))
+                agg_exprs = [
+                    pl.col("emitter_company_siret").max(),
+                    pl.col("recipient_company_siret").max(),
+                    pl.col("waste_code").max(),
+                    pl.col("quantity_received").max(),
+                    pl.col("sent_at").min(),
+                    pl.col("received_at").min(),
+                ]
+                if "quantity_refused" in df.columns:
+                    agg_exprs.append(
+                        pl.col("quantity_refused").max(),
+                    )
 
-        emitted_mask = (pl.col("emitter_company_siret") == siret) & pl.col("sent_at").is_between(
-            *self.data_date_interval
-        )
-        received_mask = (pl.col("recipient_company_siret") == siret) & pl.col("received_at").is_between(
-            *self.data_date_interval
-        )
+                df_to_concat = (
+                    df.select(pl.selectors.exclude("sent_at"))
+                    .join(transport_df, left_on="id", right_on="bs_id", suffix="_transport", validate="1:m")
+                    .group_by("id")
+                    .agg(*agg_exprs)
+                )
+                dfs_to_concat.append(df_to_concat)
 
-        emitted = df.filter(emitted_mask).group_by("waste_code").agg(pl.col("quantity_received").sum())
-        received = df.filter(received_mask).group_by("waste_code").agg(pl.col("quantity_received").sum())
+            else:
+                dfs_to_concat.append(df)
 
-        # Index wise sum (index being the waste codes)
-        # to compute the theoretical stock of waste
-        # (difference between incoming and outgoing quantities)
-        stock_by_waste_code = (
-            emitted.join(received, on="waste_code", how="full", validate="1:1")
-            .with_columns(
-                pl.col("quantity_received_right").fill_nan(0).fill_null(0)
-                - pl.col("quantity_received").fill_nan(0).fill_null(0)
-            )  # emitted - received
-            .select(["waste_code", "quantity_received"])  # We can discard temp column from received df
-            .filter(pl.col("quantity_received") > 0)  # Only positive differences are kept
-            .sort("quantity_received", descending=True)
-        )
+        if len(dfs_to_concat) > 0:
+            df = pl.concat(dfs_to_concat, how="diagonal")
 
-        total_stock = format_number_str(
-            stock_by_waste_code.select(pl.col("quantity_received").sum()).collect().item(), precision=1
-        )
+            # Handle quantity refused
+            if "quantity_refused" in df.columns:
+                df = df.with_columns(pl.col("quantity_received") - pl.col("quantity_refused").fill_nan(0).fill_null(0))
 
-        stock_by_waste_code = stock_by_waste_code.with_columns(
-            pl.col("quantity_received").map_elements(lambda x: format_number_str(x, precision=1))
-        )
+            emitted_mask = (pl.col("emitter_company_siret") == siret) & pl.col("sent_at").is_between(
+                *self.data_date_interval
+            )
+            received_mask = (pl.col("recipient_company_siret") == siret) & pl.col("received_at").is_between(
+                *self.data_date_interval
+            )
 
-        # Data is enriched with waste description from the waste nomenclature
-        stock_by_waste_code = stock_by_waste_code.join(
-            self.waste_codes_df,
-            left_on="waste_code",
-            right_on="code",
-            how="left",
-            validate="1:1",
-        )
-        stock_by_waste_code.with_columns(pl.col("description").fill_null(""))
+            emitted = df.filter(emitted_mask).group_by("waste_code").agg(pl.col("quantity_received").sum())
+            received = df.filter(received_mask).group_by("waste_code").agg(pl.col("quantity_received").sum())
 
-        self.stock_by_waste_code = stock_by_waste_code.collect()
-        self.total_stock = total_stock
+            # Index wise sum (index being the waste codes)
+            # to compute the theoretical stock of waste
+            # (difference between incoming and outgoing quantities)
+            stock_by_waste_code = (
+                emitted.join(received, on="waste_code", how="full", validate="1:1")
+                .with_columns(
+                    (
+                        pl.col("quantity_received_right").fill_nan(0).fill_null(0)
+                        - pl.col("quantity_received").fill_nan(0).fill_null(0)
+                    ).alias("quantity_received")
+                )  # emitted - received
+                .select(["waste_code", "quantity_received"])  # We can discard temp column from received df
+                .filter(
+                    (pl.col("quantity_received") > 0) & pl.col("waste_code").is_not_null()
+                )  # Only positive differences are kept
+                .sort("quantity_received", descending=True)
+            )
+
+            total_stock = format_number_str(
+                stock_by_waste_code.select(pl.col("quantity_received").sum()).collect().item(), precision=1
+            )
+
+            stock_by_waste_code = stock_by_waste_code.with_columns(
+                pl.col("quantity_received").map_elements(
+                    lambda x: format_number_str(x, precision=1), return_dtype=pl.String
+                )
+            )
+
+            # Data is enriched with waste description from the waste nomenclature
+            stock_by_waste_code = stock_by_waste_code.join(
+                self.waste_codes_df,
+                left_on="waste_code",
+                right_on="code",
+                how="left",
+                validate="1:1",
+            )
+            stock_by_waste_code.with_columns(pl.col("description").fill_null(""))
+
+            self.stock_by_waste_code = stock_by_waste_code.collect()
+            self.total_stock = total_stock
 
     def _check_data_empty(self) -> bool:
         if len(self.stock_by_waste_code) == 0:

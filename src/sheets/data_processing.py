@@ -570,6 +570,7 @@ class SheetProcessor:
         storage_stats = StorageStatsProcessor(
             self.siret,
             self.bs_dfs,
+            self.transporter_data_dfs,
             WASTE_CODES_DATA,
             data_date_interval,
         )

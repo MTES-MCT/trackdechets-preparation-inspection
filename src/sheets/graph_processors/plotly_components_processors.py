@@ -579,8 +579,8 @@ class WasteOriginProcessor:
 
         serie = serie.sort(
             pl.when(pl.col("cp_formatted") == "Autres origines")
-            .then(0)
-            .otherwise(pl.col("quantity_received").rank(descending=True))
+            .then(-1)
+            .otherwise(pl.col("quantity_received").rank(descending=False))
         )
 
         final_serie = serie.collect()

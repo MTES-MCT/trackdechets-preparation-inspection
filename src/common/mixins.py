@@ -78,6 +78,7 @@ class FullyLoggedMixin(AccessMixin):
             return True
 
         user_category = self.request.user.user_category
+        # breakpoint()
         return user_category in categories
 
     def dispatch(self, request, *args, **kwargs):
@@ -86,7 +87,7 @@ class FullyLoggedMixin(AccessMixin):
 
         if not user_test_result:
             return self.handle_no_permission(request)
-
+        # breakpoint()
         in_category = self.check_has_right_categories(self.get_allowed_user_categories())
         if not in_category:
             raise PermissionDenied()

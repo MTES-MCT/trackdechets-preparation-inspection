@@ -189,3 +189,39 @@ def test_roadcontrol_bsd_search_result(verified_user):
     url = reverse("roadcontrol_bsd_search_result")
     res = verified_user.get(url)
     assert res.status_code == 200
+
+
+def test_single_bsd_pdf_download_anon(anon_client):
+    url = reverse("single_bsd_pdf_download")
+    res = anon_client.get(url)
+    assert res.status_code == 302
+
+
+@pytest.mark.parametrize(
+    "get_profile",
+    [
+        "verified_icpe",
+        "verified_ctt",
+        "verified_inspection_travail",
+        "verified_gendarme",
+        "verified_ars",
+        "verified_douane",
+        "verified_adm_centrale",
+    ],
+    indirect=True,
+)
+def test_single_bsd_pdf_download_is_allowed(get_profile):
+    url = reverse("single_bsd_pdf_download")
+    res = get_profile.get(url)
+    assert res.status_code == 200
+
+
+@pytest.mark.parametrize(
+    "get_profile",
+    ["verified_observatoire"],
+    indirect=True,
+)
+def test_single_bsd_pdf_download_is_denied(get_profile):
+    url = reverse("single_bsd_pdf_download")
+    res = get_profile.get(url)
+    assert res.status_code == 403

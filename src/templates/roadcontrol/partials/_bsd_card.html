@@ -49,7 +49,7 @@
                 </div>
             </div>
             <div class="bsd-card__content__cta">
-                <form hx-post="{% url "roadcontrol_pdf" %}"
+                <form hx-post="{% url "single_bsd_pdf_download" %}"
                       hx-indicator="#id_bsd_spinner-{{ bsd.id }}">
                     {% csrf_token %}
                     <input type="hidden" value="{{ bsd.id }}" name="bsd_id" />

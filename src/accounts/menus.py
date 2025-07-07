@@ -2,7 +2,7 @@ from django.urls import reverse
 from simple_menu import Menu, MenuItem
 
 from accounts.constants import (
-    PERMS_BSD,
+    PERMS_BSD_SEARCH,
     PERMS_DATA_EXPORT,
     PERMS_MAP,
     PERMS_MAP_ICPE,
@@ -45,7 +45,7 @@ Menu.add_item("main", PermsItem("Contrôle routier", reverse("roadcontrol"), all
 
 Menu.add_item(
     "main",
-    PermsItem("Bordereau", reverse("roadcontrol_bsd_search"), allowed_categories=PERMS_BSD),
+    PermsItem("Bordereau", reverse("roadcontrol_bsd_search"), allowed_categories=PERMS_BSD_SEARCH),
 )
 
 Menu.add_item(

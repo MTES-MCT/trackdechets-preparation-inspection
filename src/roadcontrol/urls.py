@@ -7,18 +7,18 @@ from .views import (
     BundleProcessingView,
     FragmentBundleProcessingView,
     NoResultRoadControlPdf,
-    RoadControlPdf,
     RoadControlPdfBundle,
     RoadControlPdfBundleResult,
     RoadControlRecentPdfs,
     RoadControlSearch,
     RoadControlSearchResult,
+    SingleBsdPdfDownload,
 )
 
 urlpatterns = [
     path("", RoadControlSearch.as_view(), name="roadcontrol"),
     path("search-result/", RoadControlSearchResult.as_view(), name="roadcontrol_search_result"),
-    path("pdf/", RoadControlPdf.as_view(), name="roadcontrol_pdf"),
+    path("pdf/", SingleBsdPdfDownload.as_view(), name="single_bsd_pdf_download"),
     path("no-result-pdf/", NoResultRoadControlPdf.as_view(), name="no_result_roadcontrol_pdf"),
     path("pdf-bundle-process/", RoadControlPdfBundle.as_view(), name="roadcontrol_pdf_bundle"),
     path(

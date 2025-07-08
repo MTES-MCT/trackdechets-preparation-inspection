@@ -110,7 +110,9 @@ class BsdStatsProcessor:
 
     def _check_data_empty(self) -> bool:
         # If all values after preprocessing are empty, then output data will be empty
-        if all((e is None) for e in chain(self.emitted_bs_stats.values(), self.received_bs_stats.values())):
+        if all(
+            (e is None) or (e == 0) for e in chain(self.emitted_bs_stats.values(), self.received_bs_stats.values())
+        ):
             return True
 
         return False
@@ -274,11 +276,11 @@ class BsdStatsProcessor:
                 df_emitted = bs_emitted_data
                 if self.bs_type in [BSDD, BSDD_NON_DANGEROUS, BSDASRI]:
                     # Handle quantity refused
-                    df_received = df_received.with_columns(
-                        (pl.col("quantity_received") - pl.col("quantity_refused").fill_nan(0).fill_null(0)).alias(
-                            "quantity_received"
-                        )
-                    )
+                    col_expr = (
+                        pl.col("quantity_received") - pl.col("quantity_refused").fill_nan(0).fill_null(0)
+                    ).alias("quantity_received")
+                    df_received = df_received.with_columns(col_expr)
+                    df_emitted = df_emitted.with_columns(col_expr)
 
                 total_quantity_incoming = df_received.select(pl.col(key).sum()).collect().item()
                 total_quantity_outgoing = df_emitted.select(pl.col(key).sum()).collect().item()

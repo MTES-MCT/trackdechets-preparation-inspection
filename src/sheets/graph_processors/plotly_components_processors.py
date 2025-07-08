@@ -111,14 +111,18 @@ class BsdQuantitiesGraph:
                 incoming_data_by_month = pd.Series()
                 outgoing_data_by_month = pd.Series()
 
-                incoming_data = incoming_data.join(self.packagings_data, left_on="id", right_on="bsff_id")
+                incoming_data = incoming_data.join(
+                    self.packagings_data.filter(pl.col("acceptation_date").is_not_null()),
+                    left_on="id",
+                    right_on="bsff_id",
+                )
                 incoming_data_by_month = incoming_data.group_by(
                     pl.col("acceptation_date").dt.truncate("1mo").alias("received_at")
-                ).agg(pl.col(variable_name).sum())
+                ).agg(pl.col(variable_name).sum().cast(pl.Float64))
 
                 outgoing_data = outgoing_data.join(self.packagings_data, left_on="id", right_on="bsff_id")
                 outgoing_data_by_month = outgoing_data.group_by(pl.col("sent_at").dt.truncate("1mo")).agg(
-                    pl.col(variable_name).sum()
+                    pl.col(variable_name).sum().cast(pl.Float64)
                 )
             else:
                 outgoing_data_by_month = outgoing_data.group_by(pl.col("sent_at").dt.truncate("1mo")).agg(

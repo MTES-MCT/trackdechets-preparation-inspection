@@ -1,16 +1,18 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-import numpy as np
 import pandas as pd
 import polars as pl
 import pytest
+from polars.testing import assert_frame_equal
 
 from sheets.constants import BSDD, BSFF
 
 from ..graph_processors.plotly_components_processors import (
     BsdQuantitiesGraph,
 )  # Remplace "your_module" par le bon module
+
+tz = ZoneInfo("Europe/Paris")
 
 
 @pytest.fixture
@@ -20,16 +22,16 @@ def sample_data_bsdd():
         "recipient_company_siret": ["12345678900011", "12345678900011", "98765432100022", "12345678900011"],
         "emitter_company_siret": ["98765432100022", "98765432100022", "12345678900011", "98765432100011"],
         "received_at": [
-            datetime(2024, 1, 10, tzinfo=ZoneInfo("Europe/Paris")),
-            datetime(2024, 2, 15, tzinfo=ZoneInfo("Europe/Paris")),
-            datetime(2024, 3, 20, tzinfo=ZoneInfo("Europe/Paris")),
-            datetime(2024, 4, 25, tzinfo=ZoneInfo("Europe/Paris")),
+            datetime(2024, 1, 10, tzinfo=tz),
+            datetime(2024, 2, 15, tzinfo=tz),
+            datetime(2024, 3, 20, tzinfo=tz),
+            datetime(2024, 4, 25, tzinfo=tz),
         ],
         "sent_at": [
-            datetime(2024, 1, 5, tzinfo=ZoneInfo("Europe/Paris")),
-            datetime(2024, 2, 10, tzinfo=ZoneInfo("Europe/Paris")),
-            datetime(2024, 3, 15, tzinfo=ZoneInfo("Europe/Paris")),
-            datetime(2024, 4, 20, tzinfo=ZoneInfo("Europe/Paris")),
+            datetime(2024, 1, 5, tzinfo=tz),
+            datetime(2024, 2, 10, tzinfo=tz),
+            datetime(2024, 3, 15, tzinfo=tz),
+            datetime(2024, 4, 20, tzinfo=tz),
         ],
         "quantity_received": [10, 20, 30, 40],
         "quantity_refused": [1, None, 2, 40],
@@ -43,8 +45,18 @@ def sample_data_bsff():
         "id": [1, 2, 3, 4],
         "recipient_company_siret": ["12345678900011", "98765432100022", "98765432100022", "12345678900011"],
         "emitter_company_siret": ["98765432100022", "12345678900011", "12345678900011", "98765432100011"],
-        "sent_at": pd.to_datetime(["2024-01-05", "2024-02-10", "2024-03-15", "2024-04-20"]),
-        "received_at": pd.to_datetime(["2024-01-10", "2024-02-15", "2024-03-20", "2024-04-25"]),
+        "sent_at": [
+            datetime(2024, 1, 5, tzinfo=tz),
+            datetime(2024, 2, 10, tzinfo=tz),
+            datetime(2024, 3, 15, tzinfo=tz),
+            datetime(2024, 4, 20, tzinfo=tz),
+        ],
+        "received_at": [
+            datetime(2024, 1, 10, tzinfo=tz),
+            datetime(2024, 2, 15, tzinfo=tz),
+            datetime(2024, 3, 20, tzinfo=tz),
+            datetime(2024, 4, 25, tzinfo=tz),
+        ],
     }
     return pl.DataFrame(data).lazy()
 
@@ -53,7 +65,13 @@ def sample_data_bsff():
 def sample_packagings():
     data = {
         "bsff_id": [1, 2, 2, 4, 4],
-        "acceptation_date": pd.to_datetime(["2024-01-12", "2024-02-18", "2024-03-22", "2024-04-28", "2024-04-30"]),
+        "acceptation_date": [
+            datetime(2024, 1, 12, tzinfo=tz),
+            datetime(2024, 2, 18, tzinfo=tz),
+            datetime(2024, 3, 22, tzinfo=tz),
+            datetime(2024, 4, 28, tzinfo=tz),
+            datetime(2024, 4, 30, tzinfo=tz),
+        ],
         "acceptation_weight": [5, 10, 15, 20, 3],
     }
     return pl.DataFrame(data).lazy()
@@ -63,8 +81,8 @@ def test_bsd_quantities_graph_bsdd(sample_data_bsdd):
     company_siret = "12345678900011"
     bs_type = BSDD
     data_date_interval = (
-        datetime(2024, 1, 1, tzinfo=ZoneInfo("Europe/Paris")),
-        datetime(2024, 12, 31, tzinfo=ZoneInfo("Europe/Paris")),
+        datetime(2024, 1, 1, tzinfo=tz),
+        datetime(2024, 12, 31, tzinfo=tz),
     )
     quantity_variables_names = ["quantity_received"]
 
@@ -81,34 +99,34 @@ def test_bsd_quantities_graph_bsdd(sample_data_bsdd):
     expected_incoming_data_by_month_series = pl.DataFrame(
         {
             "received_at": [
-                9.0,
-                20.0,
-                np.nan,
-                np.nan,
+                datetime(2024, 1, 1, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+                datetime(2024, 2, 1, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+                datetime(2024, 4, 1, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
             ],
-            "quantity_received": [
-                pd.Timestamp("2024-01-31 00:00:00", freq="M"),
-                pd.Timestamp("2024-02-29 00:00:00", freq="M"),
-                pd.Timestamp("2024-03-31 00:00:00", freq="M"),
-                pd.Timestamp("2024-04-30 00:00:00", freq="M"),
-            ],
+            "quantity_received": [9, 20, 0],
         }
     )
-    expected_outgoing_data_by_month_series = pd.Series(
-        data=[28.0], index=[pd.Timestamp("2024-03-31 00:00:00", freq="M")]
+    expected_outgoing_data_by_month_series = pl.DataFrame(
+        {
+            "sent_at": [datetime(2024, 3, 1, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris"))],
+            "quantity_received": [28],
+        }
     )
 
-    assert processor.incoming_data_by_month_series[0].equals(expected_incoming_data_by_month_series)
-    assert processor.outgoing_data_by_month_series[0].equals(expected_outgoing_data_by_month_series)
+    assert_frame_equal(processor.incoming_data_by_month_series[0], expected_incoming_data_by_month_series)
+    assert_frame_equal(processor.outgoing_data_by_month_series[0], expected_outgoing_data_by_month_series)
 
 
 def test_empty_data(sample_data_bsdd):
-    # Case no data matching dates
     company_siret = "12345678900011"
     bs_type = BSDD
-    data_date_interval = (datetime(2025, 1, 1), datetime(2025, 12, 31))
     quantity_variables_names = ["quantity_received"]
 
+    # First case: no data in the interval
+    data_date_interval = (
+        datetime(2025, 1, 1, tzinfo=tz),
+        datetime(2025, 12, 31, tzinfo=tz),
+    )
     processor = BsdQuantitiesGraph(
         company_siret=company_siret,
         bs_type=bs_type,
@@ -116,32 +134,43 @@ def test_empty_data(sample_data_bsdd):
         data_date_interval=data_date_interval,
         quantity_variables_names=quantity_variables_names,
     )
-
     processor._preprocess_data()
-
     assert processor._check_data_empty() is True
 
-    sample_data_bsdd["quantity_received"] = [np.nan] * len(sample_data_bsdd)
-    sample_data_bsdd["quantity_refused"] = [np.nan] * len(sample_data_bsdd)
-    data_date_interval = (datetime(2024, 1, 1), datetime(2024, 12, 31))
+    # Second case: all NaNs
+    empty_df = (
+        sample_data_bsdd.collect()
+        .with_columns(
+            [
+                pl.lit(None).alias("quantity_received").cast(pl.Float64),
+                pl.lit(None).alias("quantity_refused").cast(pl.Float64),
+            ]
+        )
+        .lazy()
+    )
+
+    data_date_interval = (
+        datetime(2024, 1, 1, tzinfo=tz),
+        datetime(2024, 12, 31, tzinfo=tz),
+    )
     processor = BsdQuantitiesGraph(
         company_siret=company_siret,
         bs_type=bs_type,
-        bs_data=sample_data_bsdd,
+        bs_data=empty_df,
         data_date_interval=data_date_interval,
         quantity_variables_names=quantity_variables_names,
     )
-
     processor._preprocess_data()
 
 
 def test_bsd_quantities_graph_bsff(sample_data_bsff, sample_packagings):
     company_siret = "12345678900011"
     bs_type = BSFF
-    data_date_interval = (datetime(2024, 1, 1), datetime(2024, 12, 31))
-    quantity_variables_names = [
-        "acceptation_weight",
-    ]
+    data_date_interval = (
+        datetime(2024, 1, 1, tzinfo=tz),
+        datetime(2024, 12, 31, tzinfo=tz),
+    )
+    quantity_variables_names = ["acceptation_weight"]
 
     processor = BsdQuantitiesGraph(
         company_siret=company_siret,
@@ -151,40 +180,44 @@ def test_bsd_quantities_graph_bsff(sample_data_bsff, sample_packagings):
         quantity_variables_names=quantity_variables_names,
         packagings_data=sample_packagings,
     )
-
     processor._preprocess_data()
 
-    expected_incoming_data_by_month_series = pd.Series(
-        data=[
-            5.0,
-            np.nan,
-            np.nan,
-            23.0,
-        ],
-        index=[
-            pd.Timestamp("2024-01-31 00:00:00", freq="M"),
-            pd.Timestamp("2024-02-29 00:00:00", freq="M"),
-            pd.Timestamp("2024-03-31 00:00:00", freq="M"),
-            pd.Timestamp("2024-04-30 00:00:00", freq="M"),
-        ],
-    )
-    expected_outgoing_data_by_month_series = pd.Series(
-        data=[25], index=[pd.Timestamp("2024-02-29 00:00:00", freq="M")]
+    expected_incoming_data_by_month_series = pl.DataFrame(
+        {
+            "received_at": [
+                datetime(2024, 1, 1, tzinfo=tz),
+                datetime(2024, 4, 1, tzinfo=tz),
+            ],
+            "acceptation_weight": [5.0, 23.0],
+        },
     )
 
-    assert processor.incoming_data_by_month_series[0].equals(expected_incoming_data_by_month_series)
-    assert processor.outgoing_data_by_month_series[0].equals(expected_outgoing_data_by_month_series)
+    expected_outgoing_data_by_month_series = pl.DataFrame(
+        {
+            "sent_at": [datetime(2024, 2, 1, tzinfo=tz)],
+            "acceptation_weight": [25.0],
+        },
+    )
+
+    assert_frame_equal(processor.incoming_data_by_month_series[0], expected_incoming_data_by_month_series)
+    assert_frame_equal(processor.outgoing_data_by_month_series[0], expected_outgoing_data_by_month_series)
 
 
 def test_bsd_quantities_graph_bsff_without_acceptation_date(sample_data_bsff, sample_packagings):
     company_siret = "12345678900011"
     bs_type = BSFF
-    data_date_interval = (datetime(2024, 1, 1), datetime(2024, 12, 31))
-    quantity_variables_names = [
-        "acceptation_weight",
-    ]
+    data_date_interval = (
+        datetime(2024, 1, 1, tzinfo=tz),
+        datetime(2024, 12, 31, tzinfo=tz),
+    )
+    quantity_variables_names = ["acceptation_weight"]
 
-    sample_packagings["acceptation_date"] = [pd.NaT] * len(sample_packagings)
+    # Remove acceptation_date
+    empty_packagings = (
+        sample_packagings.collect()
+        .with_columns(pl.lit(None).cast(pl.Datetime(time_zone="Europe/Paris")).alias("acceptation_date"))
+        .lazy()
+    )
 
     processor = BsdQuantitiesGraph(
         company_siret=company_siret,
@@ -192,15 +225,22 @@ def test_bsd_quantities_graph_bsff_without_acceptation_date(sample_data_bsff, sa
         bs_data=sample_data_bsff,
         data_date_interval=data_date_interval,
         quantity_variables_names=quantity_variables_names,
-        packagings_data=sample_packagings,
+        packagings_data=empty_packagings,
     )
 
     processor._preprocess_data()
 
-    expected_incoming_data_by_month_series = pd.Series([])
-    expected_outgoing_data_by_month_series = pd.Series(
-        data=[25], index=[pd.Timestamp("2024-02-29 00:00:00", freq="M")]
+    expected_incoming_data_by_month_series = pl.DataFrame(
+        {"received_at": [], "acceptation_weight": []},
+        schema_overrides={
+            "received_at": pl.Datetime(time_unit="us", time_zone="Europe/Paris"),
+            "acceptation_weight": pl.Float64,
+        },
     )
 
-    assert processor.incoming_data_by_month_series[0].equals(expected_incoming_data_by_month_series)
-    assert processor.outgoing_data_by_month_series[0].equals(expected_outgoing_data_by_month_series)
+    expected_outgoing_data_by_month_series = pl.DataFrame(
+        {"sent_at": [datetime(2024, 2, 1, tzinfo=tz)], "acceptation_weight": [25.0]},
+    )
+
+    assert_frame_equal(processor.incoming_data_by_month_series[0], expected_incoming_data_by_month_series)
+    assert_frame_equal(processor.outgoing_data_by_month_series[0], expected_outgoing_data_by_month_series)

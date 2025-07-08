@@ -2875,7 +2875,7 @@ class IncineratorOutgoingWasteProcessor:
             if "quantity_refused" in concat_df.columns:
                 concat_df = concat_df.with_columns(
                     (pl.col("quantity_received") - pl.col("quantity_refused").fill_nan(0).fill_null(0)).alias(
-                        "quantity_refused"
+                        "quantity_received"
                     )
                 )
 
@@ -2946,26 +2946,26 @@ class IncineratorOutgoingWasteProcessor:
     def _serialize_stats(self) -> dict:
         res = {"dangerous": [], "non_dangerous": []}
 
-        for _, row in self.preprocessed_data["dangerous"].iterrows():
+        for row in self.preprocessed_data["dangerous"].iter_rows(named=True):
             res["dangerous"].append(
                 {
-                    "waste_code": row.waste_code,
-                    "waste_name": row.waste_name,
-                    "destination_company_siret": row.recipient_company_siret,
-                    "processing_opration": row.processing_operation_code,
-                    "quantity": format_number_str(row.quantity, 2),
+                    "waste_code": row["waste_code"],
+                    "waste_name": row["waste_name"],
+                    "destination_company_siret": row["recipient_company_siret"],
+                    "processing_opration": row["processing_operation_code"],
+                    "quantity": format_number_str(row["quantity"], 2),
                 }
             )
 
-        for _, row in self.preprocessed_data["non_dangerous"].iterrows():
+        for row in self.preprocessed_data["non_dangerous"].iter_rows(named=True):
             res["non_dangerous"].append(
                 {
-                    "waste_code": row.waste_code,
-                    "waste_name": row.waste_name,
-                    "destination_company_siret": row.destination_company_org_id,
-                    "unit": row.unit,
-                    "processing_opration": row.operation_code,
-                    "quantity": format_number_str(row.quantity, 2),
+                    "waste_code": row["waste_code"],
+                    "waste_name": row["waste_name"],
+                    "destination_company_siret": row["destination_company_org_id"],
+                    "unit": row["unit"],
+                    "processing_opration": row["operation_code"],
+                    "quantity": format_number_str(row["quantity"], 2),
                 }
             )
         return res

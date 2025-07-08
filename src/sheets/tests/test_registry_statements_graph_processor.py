@@ -1,21 +1,25 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
-import pandas as pd
 import pytest
+import polars as pl
+
 
 from ..graph_processors.plotly_components_processors import RegistryStatementsGraphProcessor
+
+tz = ZoneInfo("Europe/Paris")
 
 
 @pytest.fixture
 def sample_data():
-    incoming_data = pd.DataFrame(
+    incoming_data = pl.LazyFrame(
         {
             "id": [1, 2, 3, 4],
             "reception_date": [
-                datetime(2024, 8, 9),
-                datetime(2024, 9, 10),
-                datetime(2024, 7, 15),  # Not in data interval
-                datetime(2024, 8, 15),
+                datetime(2024, 8, 9, tzinfo=tz),
+                datetime(2024, 9, 10, tzinfo=tz),
+                datetime(2024, 7, 15, tzinfo=tz),  # Not in data interval
+                datetime(2024, 8, 15, tzinfo=tz),
             ],
             "siret": [
                 "12345678901234",
@@ -26,13 +30,13 @@ def sample_data():
         }
     )
 
-    outgoing_data = pd.DataFrame(
+    outgoing_data = pl.LazyFrame(
         {
             "id": [4, 5, 6],
             "dispatch_date": [
-                datetime(2024, 8, 11),
-                datetime(2024, 8, 12),
-                datetime(2024, 8, 1),
+                datetime(2024, 8, 11, tzinfo=tz),
+                datetime(2024, 8, 12, tzinfo=tz),
+                datetime(2024, 8, 1, tzinfo=tz),
             ],
             "siret": [
                 "12345678901234",
@@ -42,7 +46,7 @@ def sample_data():
         }
     )
 
-    date_interval = (datetime(2024, 8, 1), datetime(2024, 9, 30))
+    date_interval = (datetime(2024, 8, 1, tzinfo=tz), datetime(2024, 9, 30, tzinfo=tz))
 
     return incoming_data, outgoing_data, date_interval
 
@@ -83,11 +87,11 @@ def test_preprocess_bs_data(sample_data):
 
     # Only two rows for each data set should be included in the series, as the others are either outside the date interval or have a different SIRET
     assert processor.statements_received_by_month_serie is not None
-    assert processor.statements_received_by_month_serie.shape == (2,)
-    assert processor.statements_received_by_month_serie.sum() == 2
+    assert processor.statements_received_by_month_serie.shape == (2, 2)
+    assert processor.statements_received_by_month_serie["id"].sum() == 2
     assert processor.statements_emitted_by_month_serie is not None
-    assert processor.statements_emitted_by_month_serie.shape == (1,)
-    assert processor.statements_emitted_by_month_serie.sum() == 2
+    assert processor.statements_emitted_by_month_serie.shape == (1, 2)
+    assert processor.statements_emitted_by_month_serie["id"].sum() == 2
 
 
 def test_check_data_empty(sample_data):
@@ -110,7 +114,7 @@ def test_check_data_empty(sample_data):
         registry_incoming_data=incoming_data,
         registry_outgoing_data=outgoing_data,
         statement_type="non_dangerous_waste",
-        data_date_interval=(datetime(2023, 8, 1), datetime(2024, 7, 1)),
+        data_date_interval=(datetime(2023, 8, 1, tzinfo=tz), datetime(2024, 7, 1, tzinfo=tz)),
     )
 
     processor._preprocess_bs_data()

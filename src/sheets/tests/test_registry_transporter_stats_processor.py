@@ -1,61 +1,70 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
-import pandas as pd
 import pytest
+import polars as pl
 
 from ..graph_processors.html_components_processors import RegistryTransporterStatsProcessor
+
+tz = ZoneInfo("Europe/Paris")
 
 
 @pytest.fixture
 def sample_rndts_data():
     # Sample RNDTS data for different cases
     return {
-        "ndw_incoming": pd.DataFrame(
+        "ndw_incoming": pl.LazyFrame(
             {
                 "id": [1, 2, 3],
-                "reception_date": [datetime(2024, 8, 9), datetime(2024, 8, 10), datetime(2024, 8, 10)],
+                "reception_date": [
+                    datetime(2024, 8, 9, tzinfo=tz),
+                    datetime(2024, 8, 10, tzinfo=tz),
+                    datetime(2024, 8, 10, tzinfo=tz),
+                ],
                 "transporters_org_ids": [
                     ["12345678901234"],
                     ["23456789012345"],
                     ["12345678901234", "34567890123456"],
                 ],
-                "weight_value": [25, 12, None],
+                "weight_value": [25.0, 12.0, None],
                 "volume": [None, None, 9.7],
             }
         ),
-        "ndw_outgoing": pd.DataFrame(
+        "ndw_outgoing": pl.LazyFrame(
             {
                 "id": [3],
-                "dispatch_date": [datetime(2024, 8, 11)],
+                "dispatch_date": [datetime(2024, 8, 11, tzinfo=tz)],
                 "transporters_org_ids": [["12345678901234"]],
-                "volume": [30],
+                "volume": [30.0],
                 "weight_value": [None],
-            }
+            },
+            schema_overrides={"weight_value": pl.Float64},
         ),
-        "excavated_land_incoming": pd.DataFrame(
+        "excavated_land_incoming": pl.LazyFrame(
             {
                 "id": [4, 5],
-                "reception_date": [datetime(2024, 8, 12), datetime(2024, 8, 13)],
+                "reception_date": [datetime(2024, 8, 12, tzinfo=tz), datetime(2024, 8, 13, tzinfo=tz)],
                 "transporters_org_ids": [["34567890123456"], ["12345678901234"]],
-                "weight_value": [None, 3],
+                "weight_value": [None, 3.0],
                 "volume": [12.6, None],
             }
         ),
-        "excavated_land_outgoing": pd.DataFrame(
+        "excavated_land_outgoing": pl.LazyFrame(
             {
                 "id": [6],
-                "dispatch_date": [datetime(2024, 8, 14)],
+                "dispatch_date": [datetime(2024, 8, 14, tzinfo=tz)],
                 "transporters_org_ids": [["12345678901234"]],
-                "weight_value": [40],
+                "weight_value": [40.0],
                 "volume": [None],
-            }
+            },
+            schema_overrides={"volume": pl.Float64},
         ),
     }
 
 
 @pytest.fixture
 def date_interval():
-    return (datetime(2024, 8, 1), datetime(2024, 8, 31))
+    return (datetime(2024, 8, 1, tzinfo=tz), datetime(2024, 8, 31, tzinfo=tz))
 
 
 def test_initialization(sample_rndts_data, date_interval):
@@ -74,10 +83,70 @@ def test_initialization(sample_rndts_data, date_interval):
 
 def test_empty_data(sample_rndts_data, date_interval):
     empty_data = {
-        "ndw_incoming": pd.DataFrame(),
-        "ndw_outgoing": pd.DataFrame(),
-        "excavated_land_incoming": pd.DataFrame(),
-        "excavated_land_outgoing": pd.DataFrame(),
+        "ndw_incoming": pl.LazyFrame(
+            {
+                "id": [],
+                "reception_date": [],
+                "transporters_org_ids": [],
+                "weight_value": [],
+                "volume": [],
+            },
+            schema={
+                "id": pl.String,
+                "reception_date": pl.Datetime(time_zone="Europe/Paris"),
+                "transporters_org_ids": pl.List(inner=pl.String),
+                "weight_value": pl.Float64,
+                "volume": pl.Float64,
+            },
+        ),
+        "ndw_outgoing": pl.LazyFrame(
+            {
+                "id": [],
+                "dispatch_date": [],
+                "transporters_org_ids": [],
+                "weight_value": [],
+                "volume": [],
+            },
+            schema={
+                "id": pl.String,
+                "dispatch_date": pl.Datetime(time_zone="Europe/Paris"),
+                "transporters_org_ids": pl.List(inner=pl.String),
+                "weight_value": pl.Float64,
+                "volume": pl.Float64,
+            },
+        ),
+        "excavated_land_incoming": pl.LazyFrame(
+            {
+                "id": [],
+                "reception_date": [],
+                "transporters_org_ids": [],
+                "weight_value": [],
+                "volume": [],
+            },
+            schema={
+                "id": pl.String,
+                "reception_date": pl.Datetime(time_zone="Europe/Paris"),
+                "transporters_org_ids": pl.List(inner=pl.String),
+                "weight_value": pl.Float64,
+                "volume": pl.Float64,
+            },
+        ),
+        "excavated_land_outgoing": pl.LazyFrame(
+            {
+                "id": [],
+                "dispatch_date": [],
+                "transporters_org_ids": [],
+                "weight_value": [],
+                "volume": [],
+            },
+            schema={
+                "id": pl.String,
+                "dispatch_date": pl.Datetime(time_zone="Europe/Paris"),
+                "transporters_org_ids": pl.List(inner=pl.String),
+                "weight_value": pl.Float64,
+                "volume": pl.Float64,
+            },
+        ),
     }
     processor = RegistryTransporterStatsProcessor(
         company_siret="12345678901234",
@@ -101,10 +170,15 @@ def test_empty_data(sample_rndts_data, date_interval):
     processor = RegistryTransporterStatsProcessor(
         company_siret="12345678901234",
         registry_data=sample_rndts_data,
-        data_date_interval=(datetime(2023, 8, 1), datetime(2024, 7, 30)),
+        data_date_interval=(datetime(2023, 8, 1, tzinfo=tz), datetime(2024, 7, 30, tzinfo=tz)),
     )
 
-    assert processor.build() == {}
+    assert processor.build() == {
+        "ndw_incoming": {"count": 0, "mass_quantity": "0", "volume_quantity": "0"},
+        "ndw_outgoing": {"count": 0, "mass_quantity": "0", "volume_quantity": "0"},
+        "excavated_land_incoming": {"count": 0, "mass_quantity": "0", "volume_quantity": "0"},
+        "excavated_land_outgoing": {"count": 0, "mass_quantity": "0", "volume_quantity": "0"},
+    }
 
 
 def test_data_preprocessing(sample_rndts_data, date_interval):

@@ -2996,14 +2996,14 @@ class SSDProcessor:
     def __init__(
         self,
         company_siret: str,
-        ssd_data: pd.DataFrame | None,
+        ssd_data: pl.LazyFrame | None,
         data_date_interval: tuple[datetime, datetime],
     ) -> None:
         self.company_siret = company_siret
         self.ssd_data = ssd_data
         self.data_date_interval = data_date_interval
 
-        self.preprocessed_data = pd.DataFrame()
+        self.preprocessed_data = pl.DataFrame()
 
     def _preprocess_data(self) -> None:
         """Preprocess raw 'bordereaux' data to prepare it to be displayed."""
@@ -3012,30 +3012,24 @@ class SSDProcessor:
         if ssd_data_df is None:
             return
 
-        ssd_data = ssd_data_df[
-            (ssd_data_df["siret"] == self.company_siret)
-            & (ssd_data_df["dispatch_date"].between(*self.data_date_interval))
-        ]
+        ssd_data = ssd_data_df.filter(
+            (pl.col("siret") == self.company_siret) & (pl.col("dispatch_date").is_between(*self.data_date_interval))
+        )
 
-        if len(ssd_data) > 0:
-            dfs = []
-            for quantity_colname in ["weight_value", "volume"]:
-                ssd_data_agg = ssd_data.groupby(
-                    [
-                        "waste_code",
-                    ],
-                    as_index=False,
-                ).agg(
-                    quantity=pd.NamedAgg(column=quantity_colname, aggfunc="sum"),
-                    waste_description=pd.NamedAgg(column="waste_description", aggfunc="max"),
-                )
-                ssd_data_agg["unit"] = "t" if quantity_colname == "weight_value" else "m³"
-                ssd_data_agg = ssd_data_agg.sort_values(["waste_code", "unit"])
-                dfs.append(ssd_data_agg)
+        dfs = []
+        for quantity_colname in ["weight_value", "volume"]:
+            ssd_data_agg = ssd_data.group_by("waste_code").agg(
+                pl.col(quantity_colname).sum().alias("quantity"), pl.col("waste_description").max()
+            )
+            ssd_data_agg = ssd_data_agg.with_columns(
+                pl.lit("t" if quantity_colname == "weight_value" else "m³").alias("unit")
+            )
+            ssd_data_agg = ssd_data_agg.sort(["waste_code", "unit"])
+            dfs.append(ssd_data_agg)
 
-            if len(dfs) > 0:
-                final_df = pd.concat(dfs, ignore_index=True)
-                self.preprocessed_data = final_df
+        if len(dfs) > 0:
+            final_df: pl.LazyFrame = pl.concat(dfs, how="diagonal")
+            self.preprocessed_data = final_df.collect()
 
     def _check_data_empty(self) -> bool:
         if len(self.preprocessed_data) == 0:
@@ -3046,13 +3040,13 @@ class SSDProcessor:
     def _serialize_stats(self) -> list[dict]:
         res = []
 
-        for _, row in self.preprocessed_data.iterrows():
+        for row in self.preprocessed_data.iter_rows(named=True):
             res.append(
                 {
-                    "waste_code": row.waste_code,
-                    "waste_name": row.waste_description,
-                    "quantity": format_number_str(row.quantity, 2),
-                    "unit": row.unit,
+                    "waste_code": row["waste_code"],
+                    "waste_name": row["waste_description"],
+                    "quantity": format_number_str(row["quantity"], 2),
+                    "unit": row["unit"],
                 }
             )
 
@@ -3130,12 +3124,19 @@ class RegistryTransporterStatsProcessor:
                 num_statements = df["num_statements"].item()
                 mass_quantity = df["mass_quantity"].item()
                 volume_quantity = df["volume_quantity"].item()
-                self.transported_statements_stats[key]["count"] = num_statements
-                self.transported_statements_stats[key]["mass_quantity"] = format_number_str(mass_quantity, 2)
-                self.transported_statements_stats[key]["volume_quantity"] = format_number_str(volume_quantity, 2)
+
+                if num_statements is not None:
+                    self.transported_statements_stats[key]["count"] = num_statements
+                if mass_quantity is not None:
+                    self.transported_statements_stats[key]["mass_quantity"] = format_number_str(mass_quantity, 2)
+                if volume_quantity is not None:
+                    self.transported_statements_stats[key]["volume_quantity"] = format_number_str(volume_quantity, 2)
 
     def _check_data_empty(self) -> bool:
-        if all((e is None) or (e == {}) for e in self.transported_statements_stats.values()):
+        if all(
+            (e is None) or (e == {}) or (all(y == 0 for y in e.values()))
+            for e in self.transported_statements_stats.values()
+        ):
             return True
 
         return False

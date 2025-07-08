@@ -983,7 +983,7 @@ class ICPEAnnualItemProcessor:
         )
         final_df = final_df.with_columns(
             pl.col("processed_quantity")
-            .sum()
+            .cum_sum()
             .over(partition_by=[pl.col("day_of_processing").dt.year()], order_by=pl.col("day_of_processing"))
             .alias("quantity_cumsum")
         ).collect()

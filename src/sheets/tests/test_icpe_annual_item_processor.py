@@ -1,11 +1,16 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import pandas as pd
+import polars as pl
 import plotly.graph_objects as go
 import pytest
-from pandas import Timestamp
+from polars.exceptions import ColumnNotFoundError, InvalidOperationError
+from polars.testing import assert_frame_equal
 
 from ..graph_processors.plotly_components_processors import ICPEAnnualItemProcessor
+
+tz = ZoneInfo("Europe/Paris")
 
 
 # Sample data fixture
@@ -13,23 +18,23 @@ from ..graph_processors.plotly_components_processors import ICPEAnnualItemProces
 def sample_icpe_data():
     data = {
         "day_of_processing": [
-            datetime(2023, 1, 1),
-            datetime(2023, 1, 2),
-            datetime(2023, 1, 3),
-            datetime(2023, 1, 4),
-            datetime(2023, 1, 5),
-            datetime(2023, 1, 6),
-            datetime(2023, 1, 7),
-            datetime(2023, 1, 8),
-            datetime(2023, 1, 9),
-            datetime(2023, 1, 10),
+            datetime(2023, 1, 1, tzinfo=tz),
+            datetime(2023, 1, 2, tzinfo=tz),
+            datetime(2023, 1, 3, tzinfo=tz),
+            datetime(2023, 1, 4, tzinfo=tz),
+            datetime(2023, 1, 5, tzinfo=tz),
+            datetime(2023, 1, 6, tzinfo=tz),
+            datetime(2023, 1, 7, tzinfo=tz),
+            datetime(2023, 1, 8, tzinfo=tz),
+            datetime(2023, 1, 9, tzinfo=tz),
+            datetime(2023, 1, 10, tzinfo=tz),
         ],
         "processed_quantity": [10, 20, 15, 0, 5, 0, 25, 30, 0, 5],
         "authorized_quantity": [50, 50, 50, 50, 50, 50, 50, 50, 50, 50],
         "target_quantity": [25, 25, 25, 25, 25, 25, 25, 25, 25, 25],
     }
 
-    return pd.DataFrame(data)
+    return pl.DataFrame(data).lazy()
 
 
 def test_preprocess_data(sample_icpe_data):
@@ -39,26 +44,26 @@ def test_preprocess_data(sample_icpe_data):
 
     preprocessed_df = processor.preprocessed_df
 
-    expected_output = pd.DataFrame(
+    expected_output = pl.DataFrame(
         {
             "day_of_processing": [
-                Timestamp("2023-01-01 00:00:00"),
-                Timestamp("2023-01-02 00:00:00"),
-                Timestamp("2023-01-03 00:00:00"),
-                Timestamp("2023-01-04 00:00:00"),
-                Timestamp("2023-01-05 00:00:00"),
-                Timestamp("2023-01-06 00:00:00"),
-                Timestamp("2023-01-07 00:00:00"),
-                Timestamp("2023-01-08 00:00:00"),
-                Timestamp("2023-01-09 00:00:00"),
-                Timestamp("2023-01-10 00:00:00"),
+                datetime(2023, 1, 1, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+                datetime(2023, 1, 2, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+                datetime(2023, 1, 3, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+                datetime(2023, 1, 4, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+                datetime(2023, 1, 5, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+                datetime(2023, 1, 6, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+                datetime(2023, 1, 7, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+                datetime(2023, 1, 8, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+                datetime(2023, 1, 9, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+                datetime(2023, 1, 10, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
             ],
             "processed_quantity": [10, 20, 15, 0, 5, 0, 25, 30, 0, 5],
             "quantity_cumsum": [10, 30, 45, 45, 50, 50, 75, 105, 105, 110],
         }
     )
 
-    assert preprocessed_df.equals(expected_output)
+    assert_frame_equal(preprocessed_df, expected_output)
 
 
 def test_only_one_data_point(sample_icpe_data):
@@ -69,11 +74,9 @@ def test_only_one_data_point(sample_icpe_data):
 
     preprocessed_df = processor.preprocessed_df
 
-    expected_output = pd.DataFrame(
+    expected_output = pl.DataFrame(
         {
-            "day_of_processing": [
-                Timestamp("2023-01-01 00:00:00"),
-            ],
+            "day_of_processing": [datetime(2023, 1, 1, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris"))],
             "processed_quantity": [
                 10,
             ],
@@ -83,11 +86,26 @@ def test_only_one_data_point(sample_icpe_data):
         }
     )
 
-    assert preprocessed_df.equals(expected_output)
+    assert_frame_equal(preprocessed_df, expected_output)
 
 
 def test_empty_icpe_data():
-    processor = ICPEAnnualItemProcessor(icpe_item_daily_data=pd.DataFrame())
+    processor = ICPEAnnualItemProcessor(
+        icpe_item_daily_data=pl.LazyFrame(
+            {
+                "day_of_processing": [],
+                "processed_quantity": [],
+                "authorized_quantity": [],
+                "target_quantity": [],
+            },
+            schema={
+                "day_of_processing": pl.Datetime(time_zone="Europe/Paris"),
+                "processed_quantity": pl.Float64,
+                "authorized_quantity": pl.Float64,
+                "target_quantity": pl.Float64,
+            },
+        )
+    )
 
     processor._preprocess_data()
 
@@ -122,14 +140,14 @@ def test_process_build(sample_icpe_data):
 
 
 def test_missing_columns():
-    data = {"day_of_processing": [datetime(2023, 1, 1)], "processed_quantity": [10]}
+    data = {"day_of_processing": [datetime(2023, 1, 1, tzinfo=tz)], "processed_quantity": [10]}
 
-    icpe_data_df = pd.DataFrame(data)
+    icpe_data_df = pl.DataFrame(data).lazy()
 
     processor = ICPEAnnualItemProcessor(icpe_item_daily_data=icpe_data_df)
 
     # Should raise a KeyError
-    with pytest.raises(KeyError):
+    with pytest.raises(ColumnNotFoundError):
         processor._preprocess_data()
 
 
@@ -140,24 +158,28 @@ def test_incorrect_data_format():
         "authorized_quantity": [50],
     }
 
-    icpe_data_df = pd.DataFrame(data)
+    icpe_data_df = pl.LazyFrame(data)
 
     processor = ICPEAnnualItemProcessor(icpe_item_daily_data=icpe_data_df)
 
     # Should raise a TypeError due to type column not being Timestamp
-    with pytest.raises(TypeError):
+    with pytest.raises(InvalidOperationError):
         processor._preprocess_data()
 
 
 def test_zero_processed_quantities():
     data = {
-        "day_of_processing": [datetime(2023, 1, 1), datetime(2023, 1, 2), datetime(2023, 1, 3)],
+        "day_of_processing": [
+            datetime(2023, 1, 1, tzinfo=tz),
+            datetime(2023, 1, 2, tzinfo=tz),
+            datetime(2023, 1, 3, tzinfo=tz),
+        ],
         "processed_quantity": [0, 0, 0],
         "authorized_quantity": [50, 50, 50],
         "target_quantity": [25, 25, 25],
     }
 
-    icpe_data_df = pd.DataFrame(data)
+    icpe_data_df = pl.LazyFrame(data)
 
     processor = ICPEAnnualItemProcessor(icpe_item_daily_data=icpe_data_df)
 
@@ -170,13 +192,17 @@ def test_zero_processed_quantities():
 
 def test_only_nan_processed_quantities():
     data = {
-        "day_of_processing": [datetime(2023, 1, 1), datetime(2023, 1, 2), datetime(2023, 1, 3)],
-        "processed_quantity": [float("nan"), float("nan"), float("nan")],
+        "day_of_processing": [
+            datetime(2023, 1, 1, tzinfo=tz),
+            datetime(2023, 1, 2, tzinfo=tz),
+            datetime(2023, 1, 3, tzinfo=tz),
+        ],
+        "processed_quantity": [None, None, None],
         "authorized_quantity": [50, 50, 50],
         "target_quantity": [25, 25, 25],
     }
 
-    icpe_data_df = pd.DataFrame(data)
+    icpe_data_df = pl.LazyFrame(data)
 
     processor = ICPEAnnualItemProcessor(icpe_item_daily_data=icpe_data_df)
 

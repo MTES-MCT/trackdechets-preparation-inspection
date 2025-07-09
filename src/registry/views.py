@@ -4,10 +4,11 @@ import httpx
 from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponseRedirect
-from django.views.generic import CreateView, FormView, ListView, TemplateView
+from django.views.generic import CreateView, FormView, ListView
 from rest_framework.reverse import reverse_lazy
 
 from accounts.constants import PERMS_SHEET_AND_REGISTRY
+from common.constants import HISTORY_SIZE
 from common.mixins import FullyLoggedMixin
 from data_exports.views import DummyForm
 
@@ -31,7 +32,7 @@ class RegistryV2Prepare(FullyLoggedMixin, CreateView):
     template_name = "registry/registry_v2_prepare.html"
     form_class = RegistryV2PrepareForm
     allowed_user_categories = PERMS_SHEET_AND_REGISTRY
-    success_url = reverse_lazy("registry_v2_list")
+    success_url = reverse_lazy("registry_v2_prepare")
 
     def get_form_kwargs(self):
         kw = super().get_form_kwargs()
@@ -54,11 +55,6 @@ class RegistryV2Prepare(FullyLoggedMixin, CreateView):
         return res
 
 
-class RegistryV2ListWrapper(FullyLoggedMixin, TemplateView):
-    template_name = "registry/registry_v2_list_wrapper.html"
-    allowed_user_categories = PERMS_SHEET_AND_REGISTRY
-
-
 class RegistryV2ListContent(FullyLoggedMixin, ListView):
     template_name = "registry/fragments/_registry_v2_list_content.html"
     allowed_user_categories = PERMS_SHEET_AND_REGISTRY
@@ -66,11 +62,11 @@ class RegistryV2ListContent(FullyLoggedMixin, ListView):
     context_object_name = "exports"
 
     def get_queryset(self):
-        return super().get_queryset().recent().filter(created_by=self.request.user)
+        return super().get_queryset().filter(created_by=self.request.user)[:HISTORY_SIZE]
 
 
 class RegistryV2Retrieve(FullyLoggedMixin, FormView):
-    template_name = "registry/registry_v2_list_wrapper.html"  # Create this template
+    template_name = "registry/fragments/_registry_v2_list_content.html"
     form_class = DummyForm
     success_url = None
     allowed_user_categories = PERMS_SHEET_AND_REGISTRY
@@ -96,5 +92,5 @@ class RegistryV2Retrieve(FullyLoggedMixin, FormView):
             url = resp["data"]["registryV2ExportDownloadSignedUrl"]["signedUrl"]
         except (TypeError, KeyError):
             messages.add_message(self.request, messages.ERROR, "Erreur, le registre n'a pu être téléchargé")
-            return HttpResponseRedirect(reverse_lazy("registry_v2_list"))
+            return HttpResponseRedirect(reverse_lazy("registry_v2_prepare"))
         return HttpResponseRedirect(url)

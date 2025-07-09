@@ -1,4 +1,5 @@
 {% load form_helpers %}
+{# use skip_optional=True to hide "optional" text #}
 {{ form.media }}
 {% if form.errors or has_errors %}
     {% if not form.non_field_errors %}
@@ -18,6 +19,6 @@
     {% elif field|is_radio %}
         {% include 'forms/_radio.html' with field=field %}
     {% else %}
-        {% include 'forms/_field.html' with field=field %}
+        {% include 'forms/_field.html' with field=field skip_optional=skip_optional %}
     {% endif %}
 {% endfor %}

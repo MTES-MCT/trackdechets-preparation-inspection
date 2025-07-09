@@ -88,7 +88,7 @@ def test_registry_prepare_v2_post(get_client):
             },
         )
     assert res.status_code == 302
-    assert res.url == reverse("registry_v2_list")
+    assert res.url == reverse("registry_v2_prepare")
     reg = RegistryV2Export.objects.first()
     assert reg.pk
     assert reg.siret == "51212357100030"
@@ -120,7 +120,7 @@ def test_registry_v2_prepare_form_valid_calls_task(verified_user):
 
         # Check that the view redirected to success URL
         assert response.status_code == 302
-        assert response.url == reverse("registry_v2_list")
+        assert response.url == reverse("registry_v2_prepare")
 
         # Check that a new RegistryV2Export was created
         export = RegistryV2Export.objects.latest("created_at")
@@ -130,27 +130,6 @@ def test_registry_v2_prepare_form_valid_calls_task(verified_user):
 
         # Assert that the task was called with the correct argument
         mock_delay.assert_called_once_with(export.pk)
-
-
-def test_registry_v2_list_deny_anon(anon_client):
-    url = reverse("registry_v2_list")
-    res = anon_client.get(url)
-    assert res.status_code == 302
-
-
-def test_registry_v2_list_deny_observatoire(verified_observatoire):
-    url = reverse("registry_v2_list")
-    res = verified_observatoire.get(url)
-    assert res.status_code == 403
-
-
-@pytest.mark.parametrize(
-    "get_client", ["verified_client", "logged_monaiot_client", "logged_proconnect_client"], indirect=True
-)
-def test_registry_v2_list(get_client):
-    url = reverse("registry_v2_list")
-    res = get_client.get(url)
-    assert res.status_code == 200
 
 
 def test_registry_v2_list_content_deny_anon(anon_client):
@@ -242,9 +221,9 @@ def test_registry_v2_retrieve_api_error(verified_user):
         url = reverse("registry_v2_retrieve", args=[registry_export.pk])
         response = verified_user.post(url, follow=True)
 
-        # Check redirect to list view
+        # Check redirect to main view
         assert response.status_code == 200
-        assert response.redirect_chain[-1][0] == reverse("registry_v2_list")
+        assert response.redirect_chain[-1][0] == reverse("registry_v2_prepare")
 
         # Check error message was added
         messages = list(response.context["messages"])
@@ -271,9 +250,9 @@ def test_registry_v2_retrieve_missing_data(
         url = reverse("registry_v2_retrieve", args=[registry_export.pk])
         response = verified_user.post(url, follow=True)
 
-        # Check redirect to list view
+        # Check redirect to main view
         assert response.status_code == 200
-        assert response.redirect_chain[-1][0] == reverse("registry_v2_list")
+        assert response.redirect_chain[-1][0] == reverse("registry_v2_prepare")
 
         # Check error message was added
         # Check error message was added

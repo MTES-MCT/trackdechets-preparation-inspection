@@ -5,7 +5,6 @@
 {% block main %}
     <div class="fr-container fr-mt-1v">
         <div class="fr-container--fluid">
-            <h3>Bordereau</h3>
             <div class="fr-grid-row fr-grid-row--gutters fr-mt-4w">
                 <div class="fr-col-4">
                     <h4 class="fr-mb-1w">Rechercher un bordereau</h4>
@@ -18,7 +17,7 @@
                     </form>
                 </div>
                 <div class="fr-col-7 fr-col-offset-1">
-                    <h4 class="fr-mb-1w">Recherches récentes</h4>
+                    <h4 class="fr-mb-1w">Derniers téléchargements</h4>
                     <div hx-get="{% url "bsd_recent_pdfs" %}"
                          hx-trigger="load,reloadRecentPdfs from:body"></div>
                 </div>

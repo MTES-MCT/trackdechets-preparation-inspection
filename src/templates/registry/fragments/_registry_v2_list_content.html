@@ -6,8 +6,8 @@
     <tr>
         <th scope="col">Date</th>
         <th scope="col">Établissement</th>
-        <th scope="col">Type de registre</th>
-        <th scope="col">Type de déclaration</th>
+        <th scope="col">Type</th>
+        <th scope="col">Déclaration</th>
         <th scope="col">Période</th>
         <th scope="col">Fichier</th>
 
@@ -27,7 +27,7 @@
             <td> {{ export.get_registry_type_display }}</td>
             <td> {{ export.get_declaration_type_display }}</td>
             <td>{{ export.start_date|date:"SHORT_DATE_FORMAT" }}
-                - {{ export.end_date|date:"SHORT_DATE_FORMAT" }}</td>
+                <br> {{ export.end_date|date:"SHORT_DATE_FORMAT" }}</td>
 
             <td>
 

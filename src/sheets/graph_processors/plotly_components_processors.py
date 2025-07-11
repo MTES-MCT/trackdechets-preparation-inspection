@@ -6,8 +6,8 @@ from typing import Dict, Literal
 
 import geopandas as gpd
 import pandas as pd
-import polars as pl
 import plotly.graph_objects as go
+import polars as pl
 
 from sheets.utils import format_number_str
 

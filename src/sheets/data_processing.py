@@ -6,7 +6,6 @@ from zoneinfo import ZoneInfo
 
 import pandas as pd
 import polars as pl
-
 from django.utils import timezone
 
 from .constants import BS_TYPES_WITH_MULTIMODAL_TRANSPORT, BSDA, BSDASRI, BSDD, BSDD_NON_DANGEROUS, BSFF, BSVHU

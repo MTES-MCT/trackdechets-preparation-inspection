@@ -2,9 +2,8 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 import polars as pl
-from polars.testing import assert_frame_equal
-
 import pytest
+from polars.testing import assert_frame_equal
 
 from ..graph_processors.html_components_processors import PrivateIndividualsCollectionsTableProcessor
 

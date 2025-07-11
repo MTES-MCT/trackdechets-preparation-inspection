@@ -1,8 +1,8 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-import pytest
 import polars as pl
+import pytest
 
 from ..graph_processors.html_components_processors import RegistryTransporterStatsProcessor
 

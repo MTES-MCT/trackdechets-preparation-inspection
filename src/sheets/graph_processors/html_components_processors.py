@@ -1835,13 +1835,15 @@ class WasteProcessingWithoutICPERubriqueProcessor:
 
                 bs_filtered_df = bs_filtered_df.collect()
                 if len(bs_filtered_df) > 0:
-                    found_processing_codes = bs_filtered_df["processing_operation_code"].unique()
+                    found_processing_codes = sorted(
+                        bs_filtered_df["processing_operation_code"].unique().drop_nulls().to_list()
+                    )
                     self.preprocessed_data["dangerous"].append(
                         {
                             "bs_list": bs_filtered_df,  # Creates the list of bordereaux
                             "missing_rubriques": rubrique,
                             "num_missing_rubriques": 1,
-                            "found_processing_codes": ", ".join(found_processing_codes.drop_nulls().to_list()),
+                            "found_processing_codes": ", ".join(found_processing_codes),
                             "num_found_processing_codes": len(found_processing_codes),
                             "stats": {
                                 "total_bs": format_number_str(len(bs_filtered_df), 0),  # Total number of bordereaux
@@ -1923,7 +1925,7 @@ class WasteProcessingWithoutICPERubriqueProcessor:
             )
 
             if len(filtered_registry_data_df) > 0:
-                found_processing_codes = filtered_registry_data_df["operation_code"].unique().to_list()
+                found_processing_codes = sorted(filtered_registry_data_df["operation_code"].unique().to_list())
 
                 self.preprocessed_data["non_dangerous"].append(
                     {

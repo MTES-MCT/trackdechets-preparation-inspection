@@ -157,6 +157,10 @@ class BsdQuantitiesGraph:
         # This is used to configure the dticks in case of low number of data points.
         numbers_of_data_points = []
 
+        # We store the minimum date of each series to be able to configure
+        # the tick 0 of y axis the figure
+        maxs_y = []
+
         # We create two lines (for incoming and outgoing) for each quantity variable chosen
         for variable_name, incoming_data_by_month, outgoing_data_by_month in zip(
             self.quantity_variables_names,
@@ -198,6 +202,7 @@ class BsdQuantitiesGraph:
                     line_dash=marker_line_style,
                 )
                 mins_x.append(incoming_data_by_month["received_at"].min())
+                maxs_y.append(incoming_data_by_month[variable_name].max())
                 numbers_of_data_points.append(len(incoming_data_by_month))
                 lines.append(incoming_line)
 
@@ -218,6 +223,7 @@ class BsdQuantitiesGraph:
                     line_dash=marker_line_style,
                 )
                 mins_x.append(outgoing_data_by_month["sent_at"].min())
+                maxs_y.append(outgoing_data_by_month[variable_name].max())
                 numbers_of_data_points.append(len(outgoing_data_by_month))
                 lines.append(outgoing_line)
 
@@ -250,7 +256,7 @@ class BsdQuantitiesGraph:
             dtick=dtick,
             gridcolor="#ccc",
         )
-        fig.update_yaxes(exponentformat="B", tickformat=".2s", gridcolor="#ccc")
+        fig.update_yaxes(exponentformat="B", tickformat=".2s", gridcolor="#ccc", range=[-1, max(maxs_y) * 1.2])
 
         self.figure = fig
 
@@ -410,7 +416,7 @@ class BsdTrackedAndRevisedProcessor:
             tickangle = -90
             y_legend = -0.15
 
-        if bs_revised_by_month is not None:
+        if bs_revised_by_month is not None and len(bs_revised_by_month) > 0:
             fig.add_trace(
                 go.Bar(
                     x=bs_revised_by_month["created_at"].to_list(),
@@ -1756,7 +1762,9 @@ class RegistryQuantitiesGraphProcessor:
                 agg_series = []
                 for colname in ("weight_value", "volume"):
                     agg_series.append(
-                        data.group_by(pl.col(date_col).dt.truncate("1mo").alias("date")).agg(pl.col(colname).sum())
+                        data.group_by(pl.col(date_col).dt.truncate("1mo").alias("date"))
+                        .agg(pl.col(colname).sum())
+                        .sort("date")
                     )
                 agg_series = pl.collect_all(agg_series)
                 for serie, attr in zip(agg_series, ("{}_weight_by_month_serie", "{}_volume_by_month_serie")):
@@ -1954,6 +1962,7 @@ class RegistryStatementsGraphProcessor:
                 agg_serie = (
                     data.group_by(pl.col(date_col).dt.truncate("1mo").alias("date"))
                     .agg(pl.col("id").count())
+                    .sort("date")
                     .collect()
                 )
 

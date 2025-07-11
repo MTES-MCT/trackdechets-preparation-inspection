@@ -2931,8 +2931,12 @@ class IncineratorOutgoingWasteProcessor:
 
     def is_incinerator(self, dangerous_waste: bool) -> bool:
         rubrique = "2770" if dangerous_waste else "2771"
-        icpe_data = self.icpe_data.collect()
-        if (icpe_data is None) or (len(icpe_data) == 0):
+
+        icpe_data = self.icpe_data
+        if icpe_data is None:
+            return False
+        icpe_data = icpe_data.collect()
+        if len(icpe_data) == 0:
             return False
 
         return icpe_data.select((pl.col("rubrique") == rubrique).any()).item()

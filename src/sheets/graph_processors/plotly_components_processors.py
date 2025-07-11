@@ -5,12 +5,11 @@ from itertools import chain
 from typing import Dict, Literal
 
 import geopandas as gpd
-import numpy as np
 import pandas as pd
 import polars as pl
 import plotly.graph_objects as go
 
-from sheets.utils import format_number_str, get_code_departement
+from sheets.utils import format_number_str
 
 from ..constants import BSDA, BSDASRI, BSDD, BSDD_NON_DANGEROUS, BSFF, BSVHU
 

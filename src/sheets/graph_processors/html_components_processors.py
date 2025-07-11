@@ -1,12 +1,9 @@
-import json
 import numbers
 from datetime import datetime, timedelta
 from itertools import chain
 from typing import Dict
 from zoneinfo import ZoneInfo
 
-import numpy as np
-import pandas as pd
 import polars as pl
 
 from sheets.utils import format_number_str
@@ -426,7 +423,9 @@ class WasteFlowsTableProcessor:
 
                 if transport_df is not None:
                     if len(df.collect()) > 0:
-                        df = df.drop("sent_at")  # To avoid column duplication with transport data
+                        df = df.select(
+                            pl.selectors.exclude("sent_at")
+                        )  # To avoid column duplication with transport data
                         if bs_type == BSFF:
                             if self.packagings_data is not None:
                                 # Quantity is taken from packagings data in case of BSFF
@@ -638,6 +637,11 @@ class WasteFlowsTableProcessor:
 
         final_df = final_df.filter(pl.col("quantity_received") > 0)
         final_df = final_df.with_columns(pl.col("description").fill_null(""))
+        final_df = final_df.group_by(
+            ["waste_code", "flow_status", "unit"]
+        ).agg(
+            pl.col("description").max(), pl.col("quantity_received").sum()
+        )  # A waste code can be present in different registries or bordereaux, this final aggregation aims to have only one value for a tuple ()"waste_code", "flow_status", "unit")
         final_df = final_df.select(["waste_code", "description", "flow_status", "quantity_received", "unit"]).sort(
             by=["waste_code", "flow_status", "unit"], descending=[False, False, True]
         )
@@ -926,7 +930,7 @@ class StorageStatsProcessor:
         self.stock_by_waste_code = None
         self.total_stock = None
 
-    def _preprocess_data(self) -> pd.Series | None:
+    def _preprocess_data(self):
         siret = self.company_siret
 
         dfs_to_concat = []

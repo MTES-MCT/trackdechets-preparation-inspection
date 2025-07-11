@@ -1,18 +1,22 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
-import pandas as pd
+import polars as pl
 import pytest
 from plotly.graph_objects import Figure
+from polars.testing import assert_frame_equal
 
 from ..graph_processors.plotly_components_processors import (
     BsdaWorkerQuantityProcessor,
 )  # Replace with actual module name
 
+tz = ZoneInfo("Europe/Paris")
+
 
 @pytest.fixture
 def bsda_data():
     """Fixture for sample BSDA data."""
-    return pd.DataFrame(
+    return pl.DataFrame(
         {
             "id": [1, 2, 3, 4, 5],
             "worker_company_siret": [
@@ -25,43 +29,43 @@ def bsda_data():
             "waste_details_quantity": [10.5, 20, 30.5, 15, 5.9],
             "quantity_received": [9.0, 20.5, 18.0, 14.5, 6.1],
             "sent_at": [
-                datetime(2024, 1, 15),
-                datetime(2024, 2, 15),
-                datetime(2024, 3, 15),
-                datetime(2024, 4, 15),
-                datetime(2024, 5, 15),
+                datetime(2024, 1, 15, tzinfo=tz),
+                datetime(2024, 2, 15, tzinfo=tz),
+                datetime(2024, 3, 15, tzinfo=tz),
+                datetime(2024, 4, 15, tzinfo=tz),
+                datetime(2024, 5, 15, tzinfo=tz),
             ],
             "processed_at": [
-                datetime(2024, 2, 1),
-                datetime(2024, 3, 1),
+                datetime(2024, 2, 1, tzinfo=tz),
+                datetime(2024, 3, 1, tzinfo=tz),
                 None,
-                datetime(2024, 5, 1),
-                datetime(2024, 6, 1),
+                datetime(2024, 5, 1, tzinfo=tz),
+                datetime(2024, 6, 1, tzinfo=tz),
             ],
             "worker_work_signature_date": [
                 None,
-                datetime(2024, 2, 1),
-                datetime(2024, 3, 1),
-                datetime(2024, 4, 1),
-                datetime(2024, 5, 1),
+                datetime(2024, 2, 1, tzinfo=tz),
+                datetime(2024, 3, 1, tzinfo=tz),
+                datetime(2024, 4, 1, tzinfo=tz),
+                datetime(2024, 5, 1, tzinfo=tz),
             ],
         }
-    )
+    ).lazy()
 
 
 @pytest.fixture
 def transporters_data():
     """Fixture for sample transporter data."""
-    return pd.DataFrame(
+    return pl.DataFrame(
         {
             "bs_id": [1, 2, 3, 4, 5],
             "quantity_received": [9.0, 20.5, 18.0, 14.5, 6.1],
             "sent_at": [
-                datetime(2024, 1, 15),
-                datetime(2024, 1, 15),
-                datetime(2024, 2, 15),
-                datetime(2024, 4, 15),
-                datetime(2024, 5, 15),
+                datetime(2024, 1, 15, tzinfo=tz),
+                datetime(2024, 1, 15, tzinfo=tz),
+                datetime(2024, 2, 15, tzinfo=tz),
+                datetime(2024, 4, 15, tzinfo=tz),
+                datetime(2024, 5, 15, tzinfo=tz),
             ],
             "transporter_company_siret": [
                 "98765432100001",
@@ -71,13 +75,13 @@ def transporters_data():
                 "98765432100002",
             ],
         }
-    )
+    ).lazy()
 
 
 @pytest.fixture
 def date_interval():
     """Fixture for the date interval."""
-    return (datetime(2024, 1, 1), datetime(2024, 5, 31))
+    return (datetime(2024, 1, 1, tzinfo=tz), datetime(2024, 5, 31, tzinfo=tz))
 
 
 def test_preprocess_bs_data(bsda_data, transporters_data, date_interval):
@@ -95,36 +99,41 @@ def test_preprocess_bs_data(bsda_data, transporters_data, date_interval):
     assert processor.quantities_processed_by_month is not None
 
     # Validate values
-    expected_value = pd.Series(
+    expected_value = pl.DataFrame(
         {
-            pd.Timestamp("2024-02-29 00:00:00", freq="M"): 20.0,
-            pd.Timestamp("2024-03-31 00:00:00", freq="M"): 0.0,
-            pd.Timestamp("2024-04-30 00:00:00", freq="M"): 15.0,
-            pd.Timestamp("2024-05-31 00:00:00", freq="M"): 5.9,
+            "date": [
+                datetime(2024, 2, 1, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+                datetime(2024, 4, 1, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+                datetime(2024, 5, 1, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+            ],
+            "quantity_received": [20.0, 15.0, 5.9],
         }
     )
-    assert processor.quantities_signed_by_worker_by_month.equals(expected_value)
+    assert_frame_equal(processor.quantities_signed_by_worker_by_month, expected_value)
 
-    expected_value = pd.Series(
+    expected_value = pl.DataFrame(
         {
-            pd.Timestamp("2024-01-31 00:00:00", freq="M"): 29.5,
-            pd.Timestamp("2024-02-29 00:00:00", freq="M"): 0.0,
-            pd.Timestamp("2024-03-31 00:00:00", freq="M"): 0.0,
-            pd.Timestamp("2024-04-30 00:00:00", freq="M"): 14.5,
-            pd.Timestamp("2024-05-31 00:00:00", freq="M"): 6.1,
+            "date": [
+                datetime(2024, 1, 1, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+                datetime(2024, 4, 1, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+                datetime(2024, 5, 1, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+            ],
+            "quantity_received": [29.5, 14.5, 6.1],
         }
     )
-    assert processor.quantities_transported_by_month.equals(expected_value)
+    assert_frame_equal(processor.quantities_transported_by_month, expected_value)
 
-    expected_value = pd.Series(
+    expected_value = pl.DataFrame(
         {
-            pd.Timestamp("2024-02-29 00:00:00", freq="M"): 9.0,
-            pd.Timestamp("2024-03-31 00:00:00", freq="M"): 20.5,
-            pd.Timestamp("2024-04-30 00:00:00", freq="M"): 0.0,
-            pd.Timestamp("2024-05-31 00:00:00", freq="M"): 14.5,
+            "date": [
+                datetime(2024, 2, 1, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+                datetime(2024, 3, 1, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+                datetime(2024, 5, 1, 0, 0, tzinfo=ZoneInfo(key="Europe/Paris")),
+            ],
+            "quantity_received": [9.0, 20.5, 14.5],
         }
     )
-    assert processor.quantities_processed_by_month.equals(expected_value)  # Total waste processed
+    assert_frame_equal(processor.quantities_processed_by_month, expected_value)  # Total waste processed
 
 
 def test_check_data_empty(bsda_data, transporters_data, date_interval):

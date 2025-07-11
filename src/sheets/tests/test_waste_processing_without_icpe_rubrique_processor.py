@@ -1,66 +1,68 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
-import numpy as np
-import pandas as pd
+import polars as pl
 import pytest
-from pandas import Timestamp
+from polars.testing import assert_frame_equal
 
 from sheets.constants import BSDA, BSDD
 
 from ..graph_processors.html_components_processors import WasteProcessingWithoutICPERubriqueProcessor
+
+tz = ZoneInfo("Europe/Paris")
 
 
 # Example data for testing
 @pytest.fixture
 def sample_data():
     # Sample data for ICPE data with different "rubriques"
-    icpe_data = pd.DataFrame({"rubrique": ["2770", "2791-1", "2718-1"]})
+    icpe_data = pl.LazyFrame({"rubrique": ["2770", "2791-1", "2718-1"]})
 
     # Sample bordereau data for BSDD
-    bsdd_data = pd.DataFrame(
+    bsdd_data = pl.LazyFrame(
         {
             "recipient_company_siret": ["12345678900000", "12345678900000", "12345678900000"],
             "processing_operation_code": ["D8", "D5", "D10"],
             "processed_at": [
-                datetime(2023, 1, 1),
-                datetime(2023, 2, 2),
-                datetime(2023, 4, 3),
+                datetime(2023, 1, 1, tzinfo=tz),
+                datetime(2023, 2, 2, tzinfo=tz),
+                datetime(2023, 4, 3, tzinfo=tz),
             ],
-            "quantity_received": [12.5, 22, 30.1],
-            "quantity_refused": [0, 2, 25.1],
+            "quantity_received": [12.5, 22.0, 30.1],
+            "quantity_refused": [0.0, 2.0, 25.1],
         }
     )
 
     # Sample bordereau data for BSDA
-    bsda_data = pd.DataFrame(
+    bsda_data = pl.LazyFrame(
         {
             "recipient_company_siret": ["12345678900000", "12345678900000"],
             "processing_operation_code": ["D5", "R2"],
             "processed_at": [
-                datetime(2023, 2, 2),
-                datetime(2023, 4, 3),
+                datetime(2023, 2, 2, tzinfo=tz),
+                datetime(2023, 4, 3, tzinfo=tz),
             ],
-            "quantity_received": [5, 15],
+            "quantity_received": [5.0, 15.0],
         }
     )
 
     # Sample RNDTS incoming data
-    rndts_incoming_data = pd.DataFrame(
+    rndts_incoming_data = pl.LazyFrame(
         {
             "siret": ["12345678900000", "12345678900000"],
             "reception_date": [
-                datetime(2023, 1, 1),
-                datetime(2023, 2, 2),
+                datetime(2023, 1, 1, tzinfo=tz),
+                datetime(2023, 2, 2, tzinfo=tz),
             ],
             "operation_code": ["D5", "R1"],
-            "weight_value": [30, 20],
+            "weight_value": [30.0, 20.0],
         }
     )
 
     bs_data_dfs = {BSDD: bsdd_data, BSDA: bsda_data}
     data_date_interval = (
-        datetime(2023, 1, 1),
-        datetime(2023, 4, 30),
+        datetime(2023, 1, 1, tzinfo=tz),
+        datetime(2023, 4, 30, tzinfo=tz),
     )
 
     return bs_data_dfs, rndts_incoming_data, icpe_data, data_date_interval
@@ -81,7 +83,7 @@ def test_initialization(sample_data):
     assert processor.siret == "12345678900000"
     assert processor.data_date_interval is not None
     assert isinstance(processor.bs_data_dfs, dict)
-    assert isinstance(processor.icpe_data, pd.DataFrame)
+    assert isinstance(processor.icpe_data, pl.LazyFrame)
 
 
 def test_preprocess_data_multi_rubriques(sample_data):
@@ -106,13 +108,13 @@ def test_preprocess_data_multi_rubriques(sample_data):
         "num_missing_rubriques": 2,
         "found_processing_codes": "D5",
         "num_found_processing_codes": 1,
-        "bs_list": pd.DataFrame(
+        "bs_list": pl.DataFrame(
             {
                 "recipient_company_siret": ["12345678900000", "12345678900000"],
                 "processing_operation_code": ["D5", "D5"],
-                "processed_at": [Timestamp("2023-02-02 00:00:00"), Timestamp("2023-02-02 00:00:00")],
+                "processed_at": [datetime(2023, 2, 2, tzinfo=tz), datetime(2023, 2, 2, tzinfo=tz)],
                 "quantity_received": [22.0, 5.0],
-                "quantity_refused": [2.0, np.nan],
+                "quantity_refused": [2.0, None],
                 "bs_type": ["BSDD", "BSDA"],
             }
         ),
@@ -124,7 +126,7 @@ def test_preprocess_data_multi_rubriques(sample_data):
     for key in item.keys():
         if key == "bs_list":
             # Dataframes equality test
-            assert item[key].equals(expected_output[key])
+            assert_frame_equal(item[key], expected_output[key])
         else:
             assert item[key] == expected_output[key]
 
@@ -150,15 +152,15 @@ def test_preprocess_data_single_rubrique(sample_data):
     expected_output = {
         "missing_rubriques": "2790",
         "num_missing_rubriques": 1,
-        "found_processing_codes": "R2, D8",
+        "found_processing_codes": "D8, R2",
         "num_found_processing_codes": 2,
-        "bs_list": pd.DataFrame(
+        "bs_list": pl.DataFrame(
             {
                 "recipient_company_siret": ["12345678900000", "12345678900000"],
                 "processing_operation_code": ["R2", "D8"],
-                "processed_at": [Timestamp("2023-04-03 00:00:00"), Timestamp("2023-01-01 00:00:00")],
+                "processed_at": [datetime(2023, 4, 3, tzinfo=tz), datetime(2023, 1, 1, tzinfo=tz)],
                 "quantity_received": [15.0, 12.5],
-                "quantity_refused": [np.nan, 0.0],
+                "quantity_refused": [None, 0.0],
                 "bs_type": ["BSDA", "BSDD"],
             }
         ),
@@ -169,7 +171,7 @@ def test_preprocess_data_single_rubrique(sample_data):
     for key in item.keys():
         if key == "bs_list":
             # Dataframes equality test
-            assert item[key].equals(expected_output[key])
+            assert_frame_equal(item[key], expected_output[key])
         else:
             assert item[key] == expected_output[key]
 
@@ -196,12 +198,12 @@ def test_preprocess_non_dangerous_rubriques(sample_data):
             "num_missing_rubriques": 1,
             "found_processing_codes": "D5",
             "num_found_processing_codes": 1,
-            "statements_list": pd.DataFrame(
+            "statements_list": pl.DataFrame(
                 {
                     "siret": ["12345678900000"],
-                    "reception_date": [Timestamp("2023-01-01 00:00:00")],
+                    "reception_date": [datetime(2023, 1, 1, tzinfo=tz)],
                     "operation_code": ["D5"],
-                    "weight_value": [30],
+                    "weight_value": [30.0],
                 }
             ),
             "stats": {"total_statements": "1", "total_quantity": "30"},
@@ -211,12 +213,12 @@ def test_preprocess_non_dangerous_rubriques(sample_data):
             "num_missing_rubriques": 1,
             "found_processing_codes": "R1",
             "num_found_processing_codes": 1,
-            "statements_list": pd.DataFrame(
+            "statements_list": pl.DataFrame(
                 {
                     "siret": ["12345678900000"],
-                    "reception_date": [Timestamp("2023-02-02 00:00:00")],
+                    "reception_date": [datetime(2023, 2, 2, tzinfo=tz)],
                     "operation_code": ["R1"],
-                    "weight_value": [20],
+                    "weight_value": [20.0],
                 }
             ),
             "stats": {"total_statements": "1", "total_quantity": "20"},
@@ -229,7 +231,7 @@ def test_preprocess_non_dangerous_rubriques(sample_data):
         for key in item.keys():
             if key == "statements_list":
                 # Dataframes equality test
-                assert item[key].equals(expected_item[key])
+                assert_frame_equal(item[key], expected_item[key])
             else:
                 assert item[key] == expected_item[key]
 
@@ -241,7 +243,7 @@ def test_preprocess_data_multi_rubriques_without_quantity_refused(sample_data):
         company_siret="12345678900000",
         bs_data_dfs={k: v for k, v in bs_data_dfs.items() if k == BSDA},
         registry_incoming_data=None,
-        icpe_data=pd.DataFrame({"rubrique": ["2791-1", "2718-1"]}),
+        icpe_data=pl.LazyFrame({"rubrique": ["2791-1", "2718-1"]}),
         data_date_interval=data_date_interval,
         packagings_data_df=None,
     )
@@ -256,12 +258,12 @@ def test_preprocess_data_multi_rubriques_without_quantity_refused(sample_data):
         "num_missing_rubriques": 2,
         "found_processing_codes": "D5",
         "num_found_processing_codes": 1,
-        "bs_list": pd.DataFrame(
+        "bs_list": pl.DataFrame(
             {
                 "recipient_company_siret": ["12345678900000"],
                 "processing_operation_code": ["D5"],
-                "processed_at": [Timestamp("2023-02-02 00:00:00")],
-                "quantity_received": [5],
+                "processed_at": [datetime(2023, 2, 2, tzinfo=tz)],
+                "quantity_received": [5.0],
                 "bs_type": ["BSDA"],
             }
         ),
@@ -273,7 +275,7 @@ def test_preprocess_data_multi_rubriques_without_quantity_refused(sample_data):
     for key in item.keys():
         if key == "bs_list":
             # Dataframes equality test
-            assert item[key].equals(expected_output[key])
+            assert_frame_equal(item[key], expected_output[key])
         else:
             assert item[key] == expected_output[key]
 
@@ -283,12 +285,28 @@ def test_check_data_empty():
 
     processor = WasteProcessingWithoutICPERubriqueProcessor(
         company_siret="12345678900000",
-        bs_data_dfs={BSDD: None, BSDA: pd.DataFrame()},
+        bs_data_dfs={
+            BSDD: None,
+            BSDA: pl.LazyFrame(
+                {
+                    "recipient_company_siret": [],
+                    "processing_operation_code": [],
+                    "processed_at": [],
+                    "quantity_received": [],
+                },
+                schema={
+                    "recipient_company_siret": pl.String,
+                    "processing_operation_code": pl.String,
+                    "processed_at": pl.Datetime(time_zone="Europe/Paris"),
+                    "quantity_received": pl.Float64,
+                },
+            ),
+        },
         registry_incoming_data=None,
         icpe_data=None,
         data_date_interval=(
-            datetime(2023, 1, 1),
-            datetime(2023, 4, 30),
+            datetime(2023, 1, 1, tzinfo=tz),
+            datetime(2023, 4, 30, tzinfo=tz),
         ),
         packagings_data_df=None,
     )

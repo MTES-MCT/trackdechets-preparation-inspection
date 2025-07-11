@@ -24,11 +24,11 @@ class BsdQuantitiesGraph:
     ----------
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
-    bs_data: DataFrame
-        DataFrame containing data for a given 'bordereau' type.
+    bs_data: LazyFrame
+        LazyFrame containing data for a given 'bordereau' type.
     quantity_variables_names: list of str
         The names of the variables to use to compute quantity statistics. Several variables can be used.
-    packagings_data : DataFrame
+    packagings_data : LazyFrame
         For BSFF data, packagings dataset to be able to compute the quantities.
     """
 
@@ -98,7 +98,7 @@ class BsdQuantitiesGraph:
 
         # We iterate over the different variables chosen to compute the statistics
         for variable_name in self.quantity_variables_names:
-            # If there is a packagings_data DataFrame, then it means that we are
+            # If there is a packagings_data LazyFrame, then it means that we are
             # computing BSFF statistics, in this case we use the packagings data instead of
             # 'bordereaux' data as quantity information is stored at packaging level
 
@@ -107,8 +107,8 @@ class BsdQuantitiesGraph:
                     # Case when there is BSFFs but no packagings info
                     continue
 
-                incoming_data_by_month = pd.Series()
-                outgoing_data_by_month = pd.Series()
+                incoming_data_by_month = pl.DataFrame()
+                outgoing_data_by_month = pl.DataFrame()
 
                 incoming_data = incoming_data.join(
                     self.packagings_data.filter(pl.col("acceptation_date").is_not_null()),
@@ -272,12 +272,12 @@ class BsdTrackedAndRevisedProcessor:
     ----------
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
-    bs_data: DataFrame
-        DataFrame containing data for a given 'bordereau' type.
+    bs_data: LazyFrame
+        LazyFrame containing data for a given 'bordereau' type.
     data_date_interval: tuple
         Date interval to filter data.
-    bs_revised_data: DataFrame
-        Optional DataFrame containing list of revised 'bordereaux' for a given 'bordereau' type.
+    bs_revised_data: LazyFrame
+        Optional LazyFrame containing list of revised 'bordereaux' for a given 'bordereau' type.
     """
 
     def __init__(
@@ -482,8 +482,8 @@ class WasteOriginProcessor:
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     bs_data_dfs: dict
-        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
-    departements_regions_df: DataFrame
+        Dict with key being the 'bordereau' type and values the LazyFrame containing the bordereau data.
+    departements_regions_df: LazyFrame
         Static data about regions and départements with their codes.
     data_date_interval: tuple
         Date interval to filter data.
@@ -1126,10 +1126,10 @@ class BsdaWorkerQuantityProcessor:
     ----------
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
-    bsda_data_df: DataFrame
-        DataFrame containing BSDA data.
-    bsda_transporters_data_df : DataFrame
-        DataFrames containing information about the transported BSDA waste.
+    bsda_data_df: LazyFrame
+        LazyFrame containing BSDA data.
+    bsda_transporters_data_df : LazyFrame
+        LazyFrames containing information about the transported BSDA waste.
     data_date_interval: tuple
         Date interval to filter data.
     """
@@ -1342,10 +1342,10 @@ class TransporterBordereauxGraphProcessor:
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     transporters_data_df: dict
-        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau transported data.
+        Dict with key being the 'bordereau' type and values the LazyFrame containing the bordereau transported data.
         Correspond to the new way of managing transporters in Trackdéchets.
     bs_data_dfs: dict
-        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
+        Dict with key being the 'bordereau' type and values the LazyFrame containing the bordereau data.
     data_date_interval: tuple
         Date interval to filter data.
     """
@@ -1528,14 +1528,14 @@ class TransportedQuantitiesGraphProcessor:
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     transporters_data_df: dict
-        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau transported data.
+        Dict with key being the 'bordereau' type and values the LazyFrame containing the bordereau transported data.
         Correspond to the new way of managing transporters in Trackdéchets.
     bs_data_dfs: dict
-        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
+        Dict with key being the 'bordereau' type and values the LazyFrame containing the bordereau data.
     data_date_interval: tuple
         Date interval to filter data.
-    packagings_data_df : pd.DataFrame | None
-        Optional parameter that represents a DataFrame containing data about BSFF packagings.
+    packagings_data_df : pl.LazyFrame | None
+        Optional parameter that represents a LazyFrame containing data about BSFF packagings.
     """
 
     def __init__(
@@ -1911,10 +1911,10 @@ class RegistryStatementsGraphProcessor:
     ----------
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
-    registry_incoming_data: DataFrame
-        DataFrame containing data for incoming non dangerous waste (from registry).
-    registry_outgoing_data: DataFrame
-        DataFrame containing data for outgoing non dangerous waste (from registry).
+    registry_incoming_data: LazyFrame
+        LazyFrame containing data for incoming non dangerous waste (from registry).
+    registry_outgoing_data: LazyFrame
+        LazyFrame containing data for outgoing non dangerous waste (from registry).
     statement_type: str
         Type of statement used as input, either non dangerous waste statements, excavated lands statements or ssd.
     data_date_interval: tuple
@@ -2105,10 +2105,10 @@ class IntermediaryBordereauxCountsGraphProcessor:
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     transporters_data_df: dict
-        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau transported data.
+        Dict with key being the 'bordereau' type and values the LazyFrame containing the bordereau transported data.
         Correspond to the new way of managing transporters in Trackdéchets.
     bs_data_dfs: dict
-        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
+        Dict with key being the 'bordereau' type and values the LazyFrame containing the bordereau data.
     data_date_interval: tuple
         Date interval to filter data.
     """
@@ -2291,10 +2291,10 @@ class IntermediaryBordereauxQuantitiesGraphProcessor:
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     transporters_data_df: dict
-        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau transported data.
+        Dict with key being the 'bordereau' type and values the LazyFrame containing the bordereau transported data.
         Correspond to the new way of managing transporters in Trackdéchets.
     bs_data_dfs: dict
-        Dict with key being the 'bordereau' type and values the DataFrame containing the bordereau data.
+        Dict with key being the 'bordereau' type and values the LazyFrame containing the bordereau data.
     data_date_interval: tuple
         Date interval to filter data.
     """
@@ -2486,7 +2486,7 @@ class RegistryTransporterStatementsStatsGraphProcessor:
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     registry_data: dict
-        Dict with key being the registry data type and values the DataFrame containing the statements data.
+        Dict with key being the registry data type and values the LazyFrame containing the statements data.
     data_date_interval: tuple
         Date interval to filter data.
     """
@@ -2661,7 +2661,7 @@ class RegistryTransporterQuantitiesGraphProcessor:
     company_siret: str
         SIRET number of the establishment for which the data is displayed (used for data preprocessing).
     registry_data: dict
-        Dict with key being the registry data type and values the DataFrame containing the statements data.
+        Dict with key being the registry data type and values the LazyFrame containing the statements data.
     data_date_interval: tuple
         Date interval to filter data.
     """

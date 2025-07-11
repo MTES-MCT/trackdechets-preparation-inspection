@@ -969,7 +969,6 @@ class StorageStatsProcessor:
 
         if len(dfs_to_concat) > 0:
             df = pl.concat(dfs_to_concat, how="diagonal")
-
             # Handle quantity refused
             if "quantity_refused" in df.columns:
                 df = df.with_columns(pl.col("quantity_received") - pl.col("quantity_refused").fill_nan(0).fill_null(0))
@@ -995,7 +994,9 @@ class StorageStatsProcessor:
                         - pl.col("quantity_received").fill_nan(0).fill_null(0)
                     ).alias("quantity_received")
                 )  # emitted - received
-                .select(["waste_code", "quantity_received"])  # We can discard temp column from received df
+                .select(
+                    [pl.coalesce(pl.col("waste_code"), pl.col("waste_code_right")), "quantity_received"]
+                )  # We can discard temp column from received df
                 .filter(
                     (pl.col("quantity_received") > 0) & pl.col("waste_code").is_not_null()
                 )  # Only positive differences are kept

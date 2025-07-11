@@ -996,7 +996,7 @@ class StorageStatsProcessor:
                 )  # emitted - received
                 .select(
                     [pl.coalesce(pl.col("waste_code"), pl.col("waste_code_right")), "quantity_received"]
-                )  # We can discard temp column from received df
+                )  # We can discard temp columns from received df
                 .filter(
                     (pl.col("quantity_received") > 0) & pl.col("waste_code").is_not_null()
                 )  # Only positive differences are kept

@@ -43,6 +43,7 @@ sshtunnel = "*"
 django-admin-rangefilter = "*"
 polars = "*"
 django-solo = "*"
+pyarrow = "*"
 
 [dev-packages]
 isort = "*"

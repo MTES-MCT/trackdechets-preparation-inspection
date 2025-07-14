@@ -256,7 +256,7 @@ class BsdQuantitiesGraph:
             dtick=dtick,
             gridcolor="#ccc",
         )
-        fig.update_yaxes(exponentformat="B", tickformat=".2s", gridcolor="#ccc", range=[-1, max(maxs_y) * 1.2])
+        fig.update_yaxes(exponentformat="B", tickformat=".2s", gridcolor="#ccc", range=[0, max(maxs_y) * 1.2])
 
         self.figure = fig
 

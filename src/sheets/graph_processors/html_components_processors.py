@@ -1009,7 +1009,7 @@ class StorageStatsProcessor:
 
             stock_by_waste_code = stock_by_waste_code.with_columns(
                 pl.col("quantity_received").map_elements(
-                    lambda x: format_number_str(x, precision=1), return_dtype=pl.String
+                    lambda x: format_number_str(x, precision=2), return_dtype=pl.String
                 )
             )
 

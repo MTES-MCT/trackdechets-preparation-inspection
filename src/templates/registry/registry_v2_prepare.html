@@ -7,8 +7,15 @@
 {% endblock extra_head %}
 
 {% block main %}
-    <div class="fr-container fr-mt-1v">
-        <h3>Exporter</h3>
+    <div class="fr-container  ">
+
+    <div class="fr-grid-row   fr-mt-4w">
+        <div class="fr-col">
+            <h3>Registre</h3></div>
+    </div>
+    <div class="fr-grid-row fr-grid-row--gutters">
+    <div class="fr-col-4">
+
 
         <form method="post"
                 {% url "registry_v2_prepare" %}
@@ -25,33 +32,34 @@
                 </div>
             {% endif %}
             <div class="fr-grid-row fr-grid-row--gutters">
-                <div class="fr-col-6">{% include 'forms/_field.html' with field=form.siret %}</div>
+                <div class="fr-col">{% include 'forms/_field.html' with field=form.siret %}</div>
             </div>
             <div class="fr-grid-row fr-grid-row--gutters">
-                <div class="fr-col-6">{% include 'forms/_field.html' with field=form.registry_type %}</div>
+                <div class="fr-col">{% include 'forms/_field.html' with field=form.registry_type %}</div>
             </div>
 
             <div class="fr-grid-row fr-grid-row--gutters">
-                <div class="fr-col-6">{% include 'forms/_field.html' with field=form.declaration_type %}</div>
+                <div class="fr-col">{% include 'forms/_field.html' with field=form.declaration_type %}</div>
             </div>
             <fieldset class="fr-fieldset fr-mt-2w">
-                <legend id="fr-fieldset-checkbox-:rg:-legend" class="fr-fieldset__legend fr-text--regular">Type de
+                <legend id="fr-fieldset-checkbox-:rg:-legend" class="fr-fieldset__legend fr-text--regular">Type
+                    de
                     déchets<span class="fr-hint-text">Sélectionner au moins un type de déchets</span></legend>
 
                 <div class="fr-fieldset__content">
                     <div class="fr-grid-row fr-grid-row--gutters">
-                        <div class="fr-col-6">{% include 'forms/_checkbox.html' with field=form.waste_types_dnd %}</div>
+                        <div class="fr-col">{% include 'forms/_checkbox.html' with field=form.waste_types_dnd %}</div>
                     </div>
                     <div class="fr-grid-row fr-grid-row--gutters">
-                        <div class="fr-col-6">{% include 'forms/_checkbox.html' with field=form.waste_types_dd %}</div>
+                        <div class="fr-col">{% include 'forms/_checkbox.html' with field=form.waste_types_dd %}</div>
                     </div>
                     <div class="fr-grid-row fr-grid-row--gutters">
-                        <div class="fr-col-6">{% include 'forms/_checkbox.html' with field=form.waste_types_texs %}</div>
+                        <div class="fr-col">{% include 'forms/_checkbox.html' with field=form.waste_types_texs %}</div>
                     </div>
                 </div>
             </fieldset>
             <div class="fr-grid-row fr-grid-row--gutters">
-                <div class="fr-col-7">
+                <div class="fr-col">
 
                     {{ form.waste_codes.as_field_group }}
 
@@ -75,11 +83,11 @@
                 </div>
             </div>
             <div class="fr-grid-row fr-grid-row--gutters">
-                <div class="fr-col-3">{% include 'forms/_field.html' with field=form.start_date %}</div>
-                <div class="fr-col-3">{% include 'forms/_field.html' with field=form.end_date %}</div>
+                <div class="fr-col-6">{% include 'forms/_field.html' with field=form.start_date %}</div>
+                <div class="fr-col-6">{% include 'forms/_field.html' with field=form.end_date %}</div>
             </div>
             <div class="fr-grid-row fr-grid-row--gutters">
-                <div class="fr-col-3">{% include 'forms/_field.html' with field=form.export_format %}</div>
+                <div class="fr-col-6">{% include 'forms/_field.html' with field=form.export_format %}</div>
             </div>
             <div class="fr-mt-5v">
                 <input type="submit"
@@ -90,6 +98,23 @@
                 <span id="id_registry_prepare_message"></span>
             </div>
         </form>
+    </div>
+
+
+    <div class="fr-col-8">
+        <h5>Téléchargements récents</h5>
+        <div class="fr-table">
+
+            <div class="fr-table__wrapper">
+                <div class="fr-table__container">
+                    <div class="fr-table__content" hx-get="{% url "registry_v2_list_content" %}"
+                         hx-trigger="load, every 10s">
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
     </div>
 {% endblock main %}
 

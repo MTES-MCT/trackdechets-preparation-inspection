@@ -36,124 +36,117 @@
 <body>
 
 {% if site_config.banner_content or site_config.banner_title %}
-<div class="fr-notice fr-notice--info">
-    <div class="fr-container">
-        <div class="fr-notice__body">
-            <p>
-                <span class="fr-notice__title">{{ site_config.banner_title }}</span>
-                <span class="fr-notice__desc">{{ site_config.banner_content }}</span>
-             </p>
-         </div>
+    <div class="fr-notice fr-notice--info">
+        <div class="fr-container">
+            <div class="fr-notice__body">
+                <p>
+                    <span class="fr-notice__title">{{ site_config.banner_title }}</span>
+                    <span class="fr-notice__desc">{{ site_config.banner_content }}</span>
+                </p>
+            </div>
+        </div>
     </div>
-</div>
 {% endif %}
- <header role="banner" class="fr-header fr-mb-2v">
-            <div class="fr-header__body">
-                <div class="fr-container">
-                    <div class="fr-header__body-row">
-                        <a href="/">
-                            <div class="fr-header__brand fr-enlarge-link">
-                                <div class="fr-header__brand-top">
-                                    <div class="fr-header__logo">
-                                        <p class="fr-logo">
-                                            Ministère
-                                            <br>
-                                            de la transition
-                                            <br>
-                                            écologique,
-                                            <br>
-                                            de la biodiversité,
-                                            <br>
-                                            de la forêt, de la mer
-                                            <br>
-                                            et de la pêche
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="fr-header__service">
-                                    <img src="{% static "img/trackdechets.png" %}"
-                                         width="70px"
-                                         height="70px"
-                                         alt="Icone trackdéchets" />
-                                </div>
-                                <div class="fr-h5">
 
-                                   Vigiedéchets
+<header role="banner" class="fr-header fr-mb-2v">
+    {% if not user.is_verified and not user.is_authenticated_from_oidc %}
+
+        <div class="fr-header__body">
+            <div class="fr-container">
+                <div class="fr-header__body-row">
+                    <a href="/">
+                        <div class="fr-header__brand fr-enlarge-link">
+                            <div class="fr-header__brand-top">
+                                <div class="fr-header__logo">
+                                    <p class="fr-logo">
+                                        Ministère
+                                        <br>
+                                        de la transition
+                                        <br>
+                                        écologique,
+                                        <br>
+                                        de la biodiversité,
+                                        <br>
+                                        de la forêt, de la mer
+                                        <br>
+                                        et de la pêche
+                                    </p>
                                 </div>
                             </div>
-                        </a>
-                        <div class="fr-header__tools">
-                            <div class="fr-header__tools-links">
-                                <ul class="fr-btns-group">
-                                    {% if user.is_verified or user.is_authenticated_from_oidc %}
-                                        {% if user.is_staff %}
-                                            <li>
-                                                <a href="{% url "admin:index" %}"
-                                                   class="fr-btn fr-icon-admin-line fr-link--icon-right">Admin équipe</a>
-                                            </li>
-                                        {% endif %}
-                                        <li>
-                                            <a target="_blank"
-                                               href="{% static "user-manual/trackdechets-mode-emploi-fiche-inspection.pdf" %}"
-                                               title="Trackdéchets - nouvelle fenêtre"
-                                               class="fr-btn">Guide d'utilisation</a>
-                                        </li>
-                                        <li>
-                                            <form action="{% logout_url %}" method="post">
-                                                {% csrf_token %}
-                                                <button class="fr-btn  fr-icon-logout-box-r-line fr-link--icon-right"
-                                                        aria-controls="modal-header__menu">Déconnexion</button>
-                                            </form>
-                                        </li>
-                                    {% endif %}
-                                </ul>
+                            <div class="fr-header__service">
+                                <img src="{% static "img/trackdechets.png" %}"
+                                     width="70px"
+                                     height="70px"
+                                     alt="Icone trackdéchets"/>
+                            </div>
+                            <div class="fr-h5">
+                                Vigiedéchets
                             </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             </div>
-            {% if user.is_verified or user.is_authenticated_from_oidc %}
-                {% generate_menu %}
-                <div class="fr-container">
-                    <div class="fr-header__menu-links"></div>
-                    <nav role="navigation" aria-label="Menu principal" class="fr-nav">
-                        <ul class="fr-nav__list">
-                            {% for item in menus.main %}
-                                <li class="fr-nav__item">
-                                    {% if item.children %}
-                                        <button class="fr-nav__btn"
-                                                aria-expanded="false"
-                                                aria-controls="{{ item.menu_id }}"
-                                                {% if item.selected %}aria-current="page"{% endif %}>
-                                            {{ item.title }}
-                                        </button>
-                                        <div class="fr-collapse fr-menu" id="{{ item.menu_id }}">
-                                            <ul class="fr-menu__list">
-                                                {% for subitem in item.children %}
-                                                    <li>
-                                                        <a href="{{ subitem.url }}"
-                                                           aria-controls="modal-header__menu"
-                                                           target="{{ subitem.target|default:"_self" }}"
-                                                           {% if subitem.selected %}aria-current="page"{% endif %}
-                                                           class="fr-nav__link">{{ subitem.title }}</a>
-                                                    </li>
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                    {% else %}
-                                        <a href="{{ item.url }}"
-                                           aria-controls="modal-header__menu"
-                                           target="{{ item.target|default:"_self" }}"
-                                           {% if item.selected %}aria-current="page"{% endif %}
-                                           class="fr-nav__link">{{ item.title }}</a>
-                                    {% endif %}
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </nav>
-                </div>
-            {% endif %}
-        </header>
+        </div>
+    {% endif %}
+
+    {% if user.is_verified or user.is_authenticated_from_oidc %}
+        {% generate_menu %}
+        <div class="fr-container">
+            <nav role="navigation" aria-label="Menu principal" class="fr-nav">
+                <ul class="fr-nav__list">
+                    <li class="fr-nav__item" style="display: flex">
+                        <a class="fr-nav__link" href="/">
+
+                            <img src="{% static "img/marianne.svg" %}" alt="Logo marianne"
+                                 style="height: 40px; width: 40px; margin-right: 8px;">
+                            <span class="fr-text--bold"> Vigiedéchets</span> </a>
+
+
+                    </li>
+                    {% for item in menus.main %}
+                        <li class="fr-nav__item">
+                            {% if item.children %}
+                                <button class="fr-nav__btn"
+                                        aria-expanded="false"
+                                        aria-controls="{{ item.menu_id }}"
+                                        {% if item.selected %}aria-current="page"{% endif %}>
+                                    {{ item.title }}
+                                </button>
+                                <div class="fr-collapse fr-menu" id="{{ item.menu_id }}">
+                                    <ul class="fr-menu__list">
+                                        {% for subitem in item.children %}
+                                            <li>
+                                                <a href="{{ subitem.url }}"
+                                                   aria-controls="modal-header__menu"
+                                                   target="{{ subitem.target|default:"_self" }}"
+                                                   {% if subitem.selected %}aria-current="page"{% endif %}
+                                                   class="fr-nav__link">{{ subitem.title }}</a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% else %}
+                                <a href="{{ item.url }}"
+                                   aria-controls="modal-header__menu"
+                                   target="{{ item.target|default:"_self" }}"
+                                   {% if item.selected %}aria-current="page"{% endif %}
+                                   class="fr-nav__link">{{ item.title }}</a>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+
+                    <li style="margin-left: auto;">
+                        <form action="{% logout_url %}" method="post" class="fr-nav__link">
+                            {% csrf_token %}
+                            <button class="fr-btn fr-btn--tertiary-no-outline fr-icon-logout-box-r-line"
+                                    title="Se déconnecter"></button>
+                        </form>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
+</header>
 {% if messages %}
     <div class="fr-container">
         {% for message in messages %}

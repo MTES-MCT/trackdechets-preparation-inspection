@@ -27,8 +27,8 @@ class PermsItem(MenuItem):
 
 
 submenu = (
-    PermsItem("Préparer une fiche", reverse("sheet_prepare"), allowed_categories=PERMS_SHEET_AND_REGISTRY),
-    PermsItem("Exports (Registre V2)", reverse("registry_v2_list"), allowed_categories=PERMS_SHEET_AND_REGISTRY),
+    PermsItem("Fiche établissement", reverse("sheet_prepare"), allowed_categories=PERMS_SHEET_AND_REGISTRY),
+    PermsItem("Registre établissement", reverse("registry_v2_prepare"), allowed_categories=PERMS_SHEET_AND_REGISTRY),
 )
 Menu.add_item(
     "main",
@@ -60,4 +60,9 @@ Menu.add_item(
 Menu.add_item(
     "main",
     PermsItem("Observatoires", reverse("data_export_list"), allowed_categories=PERMS_DATA_EXPORT),
+)
+
+Menu.add_item(
+    "main",
+    StaffMenuItem("Admin équipe", reverse("admin:index")),
 )

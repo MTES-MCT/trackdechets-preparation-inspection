@@ -5,7 +5,6 @@
 {% block main %}
     <div class="fr-container fr-mt-1v">
         <div class="fr-container--fluid">
-            <h3>Contrôle transport</h3>
             <div class="fr-grid-row fr-grid-row--gutters fr-mt-4w">
                 <div class="fr-col-4">
                     <h4 class="fr-mb-1w">Rechercher un transport</h4>
@@ -13,12 +12,12 @@
                           hx-target="#id_search_results"
                           hx-indicator="#id_spinner__wrapper">
                         {% csrf_token %}
-                        {% include "forms/_form_snippet.html" with form=form %}
+                        {% include "forms/_form_snippet.html" with form=form skip_optional=True %}
                         <button class="fr-btn">Afficher les bordereaux</button>
                     </form>
                 </div>
                 <div class="fr-col-7 fr-col-offset-1">
-                    <h4 class="fr-mb-1w">Recherches récentes</h4>
+                    <h4 class="fr-mb-1w">Derniers téléchargements</h4>
                     <div hx-get="{% url "roadcontrol_recent_pdfs" %}"
                          hx-trigger="load,reloadRecentPdfs from:body"></div>
                 </div>

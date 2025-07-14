@@ -41,8 +41,9 @@
                     <div class="fr-select-group fr-mb-1w">
                         <label class="fr-label" for="year-select">Année</label>
                         <select class="fr-select" id="year-select" name="select-annee">
+                            <option selected value="2025">2025</option>
                             <option value="2024">2024</option>
-                            <option selected value="2023">2023</option>
+                            <option value="2023">2023</option>
                             <option value="2022">2022</option>
                         </select>
                     </div>
@@ -53,8 +54,7 @@
                             <option selected value="2770">2770 (Incinération DD)</option>
                             <option selected value="2790">2790 (Traitement DD)</option>
                             <option value="2760-2">2760-2 (Enfouissement DND/TEXS)</option>
-                            <option selected value="2771">2771 (Incinération DND/TEXS)</option>
-                            <option selected value="2791">2791 (Traitement DND/TEXS)</option>
+
                         </select>
                     </div>
                     <button id="back-to-france" class="fr-btn fr-btn--secondary fr-mb-2w">
@@ -115,7 +115,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="stats-container">
+                <div id="stats-container" class="stats-container--closed">
                     <div class="stats-container-header">
                         <button class="fr-btn fr-btn--tertiary-no-outline fr-btn--icon-right fr-icon-close-line"
                                 title="Fermer"
@@ -138,7 +138,7 @@
 {% endblock main %}
 
 {% block scripts %}
-        <script src="{% static "js/plotly-3.0.0.min.js" %}" charset="utf-8"></script>
+    <script src="{% static "js/plotly-3.0.0.min.js" %}" charset="utf-8"></script>
     <script src="{% static 'js/leaflet.js' %}"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="></script>
 
@@ -217,6 +217,6 @@
         legend.addTo(map);
 
         prepareMap(selectedLayer, selectedRubrique, selectedYear);
-        showFranceStats(selectedRubrique, selectedYear);
+        {# showFranceStats(selectedRubrique, selectedYear); #}
     </script>
 {% endblock scripts %}

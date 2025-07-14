@@ -645,7 +645,9 @@ class WasteFlowsTableProcessor:
         final_df = final_df.select(["waste_code", "description", "flow_status", "quantity_received", "unit"]).sort(
             by=["waste_code", "flow_status", "unit"], descending=[False, False, True]
         )
-        final_df = final_df.with_columns(pl.col("quantity_received").map_elements(lambda x: format_number_str(x, 3)))
+        final_df = final_df.with_columns(
+            pl.col("quantity_received").map_elements(lambda x: format_number_str(x, 3), return_dtype=pl.String)
+        )
 
         self.preprocessed_df = final_df.collect()
 

@@ -1,11 +1,14 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
-import pandas as pd
+import polars as pl
 import pytest
+from polars.exceptions import ColumnNotFoundError
+from polars.testing import assert_frame_equal
 
-from ..graph_processors.html_components_processors import (
-    SSDProcessor,
-)  # Import SSDProcessor from the module where it is defined
+from ..graph_processors.html_components_processors import SSDProcessor
+
+tz = ZoneInfo("Europe/Paris")
 
 
 # Sample data fixture
@@ -25,19 +28,19 @@ def sample_ssd_data():
             "56789012345678",
         ],
         "dispatch_date": [
-            datetime(2023, 1, 10),
-            datetime(2023, 2, 5),
-            datetime(2023, 3, 15),
-            datetime(2023, 3, 20),
-            datetime(2023, 4, 10),
-            datetime(2023, 4, 5),
-            datetime(2023, 5, 25),
-            datetime(2023, 6, 30),
-            datetime(2023, 7, 1),
-            datetime(2023, 2, 15),
+            datetime(2023, 1, 10, tzinfo=tz),
+            datetime(2023, 2, 5, tzinfo=tz),
+            datetime(2023, 3, 15, tzinfo=tz),
+            datetime(2023, 3, 20, tzinfo=tz),
+            datetime(2023, 4, 10, tzinfo=tz),
+            datetime(2023, 4, 5, tzinfo=tz),
+            datetime(2023, 5, 25, tzinfo=tz),
+            datetime(2023, 6, 30, tzinfo=tz),
+            datetime(2023, 7, 1, tzinfo=tz),
+            datetime(2023, 2, 15, tzinfo=tz),
         ],
-        "weight_value": [10, 20.5, None, 5, None, 35, 50, 45, None, 30.2],
-        "volume": [None, None, 15, None, 25, None, None, None, 5, None],
+        "weight_value": [10.0, 20.5, None, 5.0, None, 35.0, 50.0, 45.0, None, 30.2],
+        "volume": [None, None, 15.0, None, 25.0, None, None, None, 5.0, None],
         "waste_code": [
             "13 01 10*",
             "13 01 10*",
@@ -64,23 +67,23 @@ def sample_ssd_data():
         ],
     }
 
-    return pd.DataFrame(data)
+    return pl.LazyFrame(data)
 
 
 def test_preprocess_data(sample_ssd_data):
     processor = SSDProcessor(
         company_siret="12345678901234",
         ssd_data=sample_ssd_data,
-        data_date_interval=(datetime(2023, 1, 1), datetime(2023, 6, 30)),
+        data_date_interval=(datetime(2023, 1, 1, tzinfo=tz), datetime(2023, 6, 30, tzinfo=tz)),
     )
 
     processor._preprocess_data()
 
     preprocessed_data = processor.preprocessed_data
 
-    assert not preprocessed_data.empty, "Preprocessed data should not be empty."
+    assert preprocessed_data is not None, "Preprocessed data should not be empty."
 
-    expected_output = pd.DataFrame(
+    expected_output = pl.DataFrame(
         {
             "waste_code": ["13 01 10*", "13 07 03*", "16 01 14*", "13 01 10*", "13 07 03*", "16 01 14*"],
             "quantity": [75.5, 0.0, 5.0, 0.0, 25.0, 15.0],
@@ -96,12 +99,14 @@ def test_preprocess_data(sample_ssd_data):
         }
     )
     # Check aggregated quantities and sorting
-    assert preprocessed_data.equals(expected_output)
+    assert_frame_equal(preprocessed_data, expected_output)
 
 
 def test_empty_ssd_data():
     processor = SSDProcessor(
-        company_siret="12345678901234", ssd_data=None, data_date_interval=(datetime(2023, 1, 1), datetime(2023, 6, 30))
+        company_siret="12345678901234",
+        ssd_data=None,
+        data_date_interval=(datetime(2023, 1, 1, tzinfo=tz), datetime(2023, 6, 30, tzinfo=tz)),
     )
 
     processor._preprocess_data()
@@ -113,7 +118,10 @@ def test_data_outside_date_range(sample_ssd_data):
     processor = SSDProcessor(
         company_siret="12345678901234",
         ssd_data=sample_ssd_data,
-        data_date_interval=(datetime(2023, 7, 2), datetime(2023, 8, 1)),  # No data falls in this range
+        data_date_interval=(
+            datetime(2023, 7, 2, tzinfo=tz),
+            datetime(2023, 8, 1, tzinfo=tz),
+        ),  # No data falls in this range
     )
 
     processor._preprocess_data()
@@ -125,7 +133,7 @@ def test_correct_serialization(sample_ssd_data):
     processor = SSDProcessor(
         company_siret="12345678901234",
         ssd_data=sample_ssd_data,
-        data_date_interval=(datetime(2023, 1, 1), datetime(2023, 6, 30)),
+        data_date_interval=(datetime(2023, 1, 1, tzinfo=tz), datetime(2023, 6, 30, tzinfo=tz)),
     )
 
     processor._preprocess_data()
@@ -148,18 +156,18 @@ def test_incorrect_data_format():
     data = {
         "siret": ["12345678901234"],
         "dispatch_date": ["Not a datetime"],  # Incorrect date format
-        "weight_value": [10],
+        "weight_value": [10.0],
         "volume": [None],
         "waste_code": ["01 01 01"],
         "waste_description": ["Waste Type A"],
     }
 
-    ssd_data_df = pd.DataFrame(data)
+    ssd_data_df = pl.LazyFrame(data)
 
     processor = SSDProcessor(
         company_siret="12345678901234",
         ssd_data=ssd_data_df,
-        data_date_interval=(datetime(2023, 1, 1), datetime(2023, 6, 30)),
+        data_date_interval=(datetime(2023, 1, 1, tzinfo=tz), datetime(2023, 6, 30, tzinfo=tz)),
     )
 
     with pytest.raises(Exception):
@@ -169,18 +177,18 @@ def test_incorrect_data_format():
 def test_missing_columns():
     data = {
         "siret": ["12345678901234"],
-        "weight_value": [10],
+        "weight_value": [10.0],
         "volume": [None],
         "waste_code": ["01 01 01"],
     }
 
-    ssd_data_df = pd.DataFrame(data)
+    ssd_data_df = pl.LazyFrame(data)
 
     processor = SSDProcessor(
         company_siret="12345678901234",
         ssd_data=ssd_data_df,
-        data_date_interval=(datetime(2023, 1, 1), datetime(2023, 6, 30)),
+        data_date_interval=(datetime(2023, 1, 1, tzinfo=tz), datetime(2023, 6, 30, tzinfo=tz)),
     )
 
-    with pytest.raises(KeyError):
+    with pytest.raises(ColumnNotFoundError):
         processor._preprocess_data()

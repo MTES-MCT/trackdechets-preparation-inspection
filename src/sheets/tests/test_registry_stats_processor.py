@@ -1,23 +1,26 @@
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
-import pandas as pd
+import polars as pl
 import pytest
 
 from ..graph_processors.html_components_processors import RegistryStatsProcessor
+
+tz = ZoneInfo("Europe/Paris")
 
 
 # Sample fixture for test data
 @pytest.fixture
 def rndts_test_data():
-    incoming_data = pd.DataFrame(
+    incoming_data = pl.LazyFrame(
         {
             "id": [1, 2, 3, 4, 5],
             "reception_date": [
-                datetime(2024, 8, 9),
-                datetime(2024, 8, 10),
-                datetime(2024, 7, 15),  # Outside date interval
-                datetime(2024, 8, 11),
-                datetime(2024, 9, 12),
+                datetime(2024, 8, 9, tzinfo=tz),
+                datetime(2024, 8, 10, tzinfo=tz),
+                datetime(2024, 7, 15, tzinfo=tz),  # Outside date interval
+                datetime(2024, 8, 11, tzinfo=tz),
+                datetime(2024, 9, 12, tzinfo=tz),
             ],
             "siret": [
                 "12345678901234",
@@ -26,19 +29,19 @@ def rndts_test_data():
                 "12345678901234",
                 "12345678901234",
             ],
-            "weight_value": [10, None, 30, None, 50],
-            "volume": [None, 20, None, 40, None],
+            "weight_value": [10.0, None, 30.0, None, 50.0],
+            "volume": [None, 20.0, None, 40.0, None],
         }
     )
-    outgoing_data = pd.DataFrame(
+    outgoing_data = pl.LazyFrame(
         {
             "id": [6, 7, 8, 9, 10],
             "dispatch_date": [
-                datetime(2024, 8, 13),
-                datetime(2024, 8, 14),
-                datetime(2024, 10, 1),  # Outside date interval
-                datetime(2024, 8, 15),
-                datetime(2024, 8, 16),
+                datetime(2024, 8, 13, tzinfo=tz),
+                datetime(2024, 8, 14, tzinfo=tz),
+                datetime(2024, 10, 1, tzinfo=tz),  # Outside date interval
+                datetime(2024, 8, 15, tzinfo=tz),
+                datetime(2024, 8, 16, tzinfo=tz),
             ],
             "siret": [
                 "12345678901234",
@@ -47,12 +50,12 @@ def rndts_test_data():
                 "12345678901234",
                 "12345678901234",
             ],
-            "weight_value": [15, None, 35, None, 55],
-            "volume": [None, 25, None, 45, None],
+            "weight_value": [15.0, None, 35.0, None, 55.0],
+            "volume": [None, 25.0, None, 45.0, None],
         }
     )
 
-    date_interval = (datetime(2024, 8, 1), datetime(2024, 9, 30))
+    date_interval = (datetime(2024, 8, 1, tzinfo=tz), datetime(2024, 9, 30, tzinfo=tz))
     company_siret = "12345678901234"
 
     return company_siret, incoming_data, outgoing_data, date_interval

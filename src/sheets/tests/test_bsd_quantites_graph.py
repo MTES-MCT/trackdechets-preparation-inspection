@@ -1,7 +1,6 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-import pandas as pd
 import polars as pl
 import pytest
 from polars.testing import assert_frame_equal

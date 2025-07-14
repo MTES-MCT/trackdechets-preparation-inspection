@@ -1,7 +1,6 @@
 from typing import Any, Union
 from zoneinfo import ZoneInfo
 
-import pandas as pd
 import polars as pl
 from sqlalchemy.sql import text
 

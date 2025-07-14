@@ -1,5 +1,4 @@
 import geopandas as gpd
-import pandas as pd
 import polars as pl
 from django.conf import settings
 

@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-import pandas as pd
 import polars as pl
 import pytest
 

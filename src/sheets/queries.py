@@ -510,6 +510,7 @@ where siret = :siret
 and (
     libelle_etat_site not in ('A l’arrêt','Non construit','Projet abandonné','Sans titre')
     and etat_administratif_rubrique = 'En vigueur' 
+    and etat_technique_rubrique = 'Exploité'
     )
 """
 
